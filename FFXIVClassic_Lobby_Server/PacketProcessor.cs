@@ -117,19 +117,24 @@ namespace FFXIVClassic_Lobby_Server
 
         private void ProcessSessionAcknowledgement(ClientConnection client, SubPacket packet)
         {
-            //String sessionId = Utils.unsafeAsciiBytesToString(packet.data, 0x30);
-            //String clientVersion = Utils.unsafeAsciiBytesToString(packet.data, 0x70);
+            PacketStructs.SessionPacket sessionPacket = PacketStructs.toSessionStruct(packet.data);
+            String sessionId = sessionPacket.session;
+            String clientVersion = sessionPacket.version;
 
-            Debug.WriteLine("Got acknowledgment for secure session.");
-            // Debug.WriteLine("SESSION_ID: {0}", sessionId);
-            // Debug.WriteLine("CLIENT_VERSION: {0}", clientVersion);
+            Console.WriteLine("Got acknowledgment for secure session.");
+            Console.WriteLine("SESSION ID: {0}", sessionId);
+            Console.WriteLine("CLIENT VERSION: {0}", clientVersion);
 
-            //Check if got MYSQL Conn
+            uint userId = Database.getUserIdFromSession(sessionId);
+            client.currentUserId = userId;
 
+            if (userId == 0)
+            {
+                client.disconnect();
+                Console.WriteLine("Invalid session, kicking...");
+            }
 
-            //auto query = string_format("SELECT userId FROM ffxiv_sessions WHERE id = '%s' AND expiration > NOW()", sessionId.c_str());
-
-            //Console.WriteLine("UserId {0} logged in.", id);
+            Console.WriteLine("USER ID: {0}", userId);
             BasePacket outgoingPacket = new BasePacket("./packets/loginAck.bin");
             BasePacket.encryptPacket(client.blowfish, outgoingPacket);
             client.queuePacket(outgoingPacket);
@@ -137,7 +142,7 @@ namespace FFXIVClassic_Lobby_Server
 
         private void ProcessGetCharacters(ClientConnection client, SubPacket packet)
         {   
-	        Console.WriteLine("{0} => Get characters", client.getAddress());
+	        Console.WriteLine("{0} => Get characters", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId);
 	        BasePacket outgoingPacket = new BasePacket("./packets/getCharsPacket.bin");
             BasePacket.encryptPacket(client.blowfish, outgoingPacket);
 	        client.queuePacket(outgoingPacket);
@@ -153,7 +158,7 @@ namespace FFXIVClassic_Lobby_Server
                 binReader.Close();
             }
 
-            Console.WriteLine("{0} => Select character id {1}", client.getAddress(), characterId);	        
+            Console.WriteLine("{0} => Select character id {1}", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId, characterId);	        
 
 	        String serverIp = "141.117.162.99";
             ushort port = 54992;
@@ -180,7 +185,7 @@ namespace FFXIVClassic_Lobby_Server
         {
             packet.debugPrintSubPacket();
 
-            CharacterRequestPacket.CharacterRequest charaReq = CharacterRequestPacket.toStruct(packet.data);
+            PacketStructs.CharacterRequestPacket charaReq = PacketStructs.toCharacterRequestStruct(packet.data);
             var slot = charaReq.slot;
             var code = charaReq.command;
             var name = charaReq.characterName;
@@ -189,23 +194,26 @@ namespace FFXIVClassic_Lobby_Server
             switch (code)
             {
                 case 0x01://Reserve
-                    //Database.reserveCharacter(0, slot, worldId, name);
+                    var alreadyTaken = Database.reserveCharacter(client.currentUserId, slot, worldId, name);
+
+                    if (alreadyTaken)
+                    { }
 
                     //Confirm Reserve
                     BasePacket confirmReservePacket = new BasePacket("./packets/chara/confirmReserve.bin");
                     BasePacket.encryptPacket(client.blowfish, confirmReservePacket);
                     client.queuePacket(confirmReservePacket);
-                    Console.WriteLine("Reserving character \"{0}\"", charaReq.characterName);
+                    Console.WriteLine("User {0} => Reserving character \"{1}\"", client.currentUserId, charaReq.characterName);
                     break;
                 case 0x02://Make                    
                     Character character = Character.EncodedToCharacter(charaReq.characterInfoEncoded);
-                    Database.makeCharacter(0, name, character);
+                    Database.makeCharacter(client.currentUserId, name, character);
 
                     //Confirm
                     BasePacket confirmMakePacket = new BasePacket("./packets/chara/confirmMake.bin");
                     BasePacket.encryptPacket(client.blowfish, confirmMakePacket);
                     client.queuePacket(confirmMakePacket);
-                    Console.WriteLine("Character created!");
+                    Console.WriteLine("User {0} => Character created!", client.currentUserId);
                     break;
                 case 0x03://Rename
                     break;
@@ -216,7 +224,7 @@ namespace FFXIVClassic_Lobby_Server
                     BasePacket deleteConfirmPacket = new BasePacket("./packets/chara/confirmDelete.bin");
                     BasePacket.encryptPacket(client.blowfish, deleteConfirmPacket);
                     client.queuePacket(deleteConfirmPacket);
-                    Console.WriteLine("Character deleted \"{0}\"", charaReq.characterName);
+                    Console.WriteLine("User {0} => Character deleted \"{1}\"", client.currentUserId, charaReq.characterName);
                     break;
                 case 0x06://Rename Retainer
                     break;

@@ -40,6 +40,9 @@
     <Reference Include="MySql.Data">
       <HintPath>..\packages\MySql.Data.6.9.7\lib\net45\MySql.Data.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -49,17 +52,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Character.cs" />
+    <Compile Include="dataobjects\Character.cs" />
     <Compile Include="ClientConnection.cs" />
     <Compile Include="common\Blowfish.cs" />
     <Compile Include="common\IniFile.cs" />
     <Compile Include="common\Utils.cs" />
     <Compile Include="ConfigConstants.cs" />
     <Compile Include="Database.cs" />
+    <Compile Include="dataobjects\World.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\BasePacket.cs" />
-    <Compile Include="packets\CharacterRequestPacket.cs" />
     <Compile Include="packets\HardCoded_Packets.cs" />
+    <Compile Include="packets\PacketStructs.cs" />
     <Compile Include="packets\SubPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

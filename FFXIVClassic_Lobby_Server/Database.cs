@@ -13,22 +13,66 @@ namespace FFXIVClassic_Lobby_Server
 
     class Database
     {
-        public static void reserveCharacter(int accountId, int slot, int serverId, String name)
+        public static uint getUserIdFromSession(String sessionId)
         {
+            uint id = 0;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand();
-                    cmd.Connection = conn;
-                    cmd.CommandText = "INSERT INTO ffxiv_characters2(accountId, slot, serverId, name, charState) VALUES(@accountId, @slot, @serverId, @name, 0)";
-                    cmd.Prepare();
-                    cmd.Parameters.AddWithValue("@accountId", accountId);
-                    cmd.Parameters.AddWithValue("@slot", slot);
+                    MySqlCommand cmd = new MySqlCommand("SELECT * FROM ffxiv_sessions WHERE id = @sessionId AND expiration > NOW()", conn);
+                    cmd.Parameters.AddWithValue("@sessionId", sessionId);
+                    using (MySqlDataReader Reader = cmd.ExecuteReader())
+                    {
+                            while (Reader.Read())
+                            {
+                                id = Reader.GetUInt32("userId");
+                            }                        
+                    }
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Close();
+                }
+            }
+            return id;
+        }
+
+        public static bool reserveCharacter(uint userId, uint slot, uint serverId, String name)
+        {
+            bool alreadyExists = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {                    
+                    conn.Open();
+
+                    //Check if exists                    
+                    MySqlCommand cmd = new MySqlCommand("SELECT * FROM ffxiv_characters2 WHERE name=@name AND serverId=@serverId", conn);
                     cmd.Parameters.AddWithValue("@serverId", serverId);
                     cmd.Parameters.AddWithValue("@name", name);
-                    cmd.ExecuteNonQuery();
+                    using (MySqlDataReader Reader = cmd.ExecuteReader())
+                    {
+                        if (Reader.HasRows)
+                            alreadyExists = true;
+                    }
+
+                    //Reserve
+                    if (!alreadyExists)
+                    {
+                        MySqlCommand cmd2 = new MySqlCommand();
+                        cmd2.Connection = conn;
+                        cmd2.CommandText = "INSERT INTO ffxiv_characters2(userId, slot, serverId, name, state) VALUES(@userId, @slot, @serverId, @name, 0)";
+                        cmd2.Prepare();
+                        cmd2.Parameters.AddWithValue("@userId", userId);
+                        cmd2.Parameters.AddWithValue("@slot", slot);
+                        cmd2.Parameters.AddWithValue("@serverId", serverId);
+                        cmd2.Parameters.AddWithValue("@name", name);
+                        cmd2.ExecuteNonQuery();
+                    }
 
                 }
                 catch (MySqlException e)
@@ -40,9 +84,11 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Close();
                 }
             }
-        }
 
-        public static void makeCharacter(int accountId, String name, Character charaInfo)
+            return alreadyExists;
+        }        
+
+        public static void makeCharacter(uint accountId, String name, Character charaInfo)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -234,5 +280,6 @@ namespace FFXIVClassic_Lobby_Server
                 return world;
             }
         }
+
     }
 }

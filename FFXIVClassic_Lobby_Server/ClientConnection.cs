@@ -24,7 +24,7 @@ namespace FFXIVClassic_Lobby_Server
         public BlockingCollection<BasePacket> sendPacketQueue = new BlockingCollection<BasePacket>(100);
 
         //Instance Stuff
-        public uint currentSession;
+        public uint currentUserId = 0;
         public uint currentAccount;
         
 
@@ -43,6 +43,9 @@ namespace FFXIVClassic_Lobby_Server
 
         public void flushQueuedSendPackets()
         {
+            if (!socket.Connected)
+                return;
+
             while (sendPacketQueue.Count > 0)
             {
                 BasePacket packet = sendPacketQueue.Take();
@@ -55,14 +58,12 @@ namespace FFXIVClassic_Lobby_Server
                 catch(Exception e)
                 { Debug.WriteLine("Weird case, socket was d/ced: {0}", e); }
             }
-
-            
         }
 
         public String getAddress()
         {
             return String.Format("{0}:{1}", (socket.RemoteEndPoint as IPEndPoint).Address, (socket.RemoteEndPoint as IPEndPoint).Port);
-        }
+        }        
 
         public void disconnect()
         {

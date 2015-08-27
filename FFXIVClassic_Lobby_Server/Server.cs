@@ -121,7 +121,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 else
                 {
-                    Console.WriteLine("Connection {0}:{1} has disconnected.", (conn.socket.RemoteEndPoint as IPEndPoint).Address, (conn.socket.RemoteEndPoint as IPEndPoint).Port);
+                    Console.WriteLine("{0} has disconnected.", conn.currentUserId == 0 ? conn.getAddress() : "User " + conn.currentUserId);
                     conn.socket.Close();
                     lock (mConnectionList)
                     {
@@ -133,7 +133,7 @@ namespace FFXIVClassic_Lobby_Server
             {                
                 if (conn.socket != null)
                 {
-                    Console.WriteLine("Connection @ {0}:{1} has disconnected.", (conn.socket.RemoteEndPoint as IPEndPoint).Address, (conn.socket.RemoteEndPoint as IPEndPoint).Port);
+                    Console.WriteLine("Connection @ {0}:{1} has disconnected.", conn.currentUserId == 0 ? conn.getAddress() : "User " + conn.currentUserId);
                     conn.socket.Close();
                     lock (mConnectionList)
                     {
