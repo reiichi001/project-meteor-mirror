@@ -1,0 +1,5 @@
+Pop Range:
+
+0x00 - 0x3B: Low Pop
+0x3C - 0x50: Medium Pop
+0x50+          : High Pop
