@@ -133,7 +133,7 @@ namespace FFXIVClassic_Lobby_Server
             {                
                 if (conn.socket != null)
                 {
-                    Console.WriteLine("Connection @ {0}:{1} has disconnected.", conn.currentUserId == 0 ? conn.getAddress() : "User " + conn.currentUserId);
+                    Console.WriteLine("Connection @ {0} has disconnected.", conn.currentUserId == 0 ? "Unknown User " : "User " + conn.currentUserId);
                     conn.socket.Close();
                     lock (mConnectionList)
                     {

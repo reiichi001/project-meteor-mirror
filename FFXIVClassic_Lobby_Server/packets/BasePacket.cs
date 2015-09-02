@@ -142,7 +142,7 @@ namespace FFXIVClassic_Lobby_Server.packets
         }
 
         #region Utility Functions
-        public BasePacket createPacket(List<SubPacket> subpackets, bool isAuthed, bool isEncrypted)
+        public static BasePacket createPacket(List<SubPacket> subpackets, bool isAuthed, bool isEncrypted)
         {
             //Create Header
             BasePacketHeader header = new BasePacketHeader();
@@ -169,6 +169,32 @@ namespace FFXIVClassic_Lobby_Server.packets
             }
 
             Debug.Assert(data != null && offset == data.Length && header.packetSize == 0x10 + offset);
+
+            BasePacket packet = new BasePacket(header, data);
+            return packet;
+        }
+
+        public static BasePacket createPacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)
+        {
+            //Create Header
+            BasePacketHeader header = new BasePacketHeader();
+            byte[] data = null;
+
+            header.isAuthenticated = isAuthed ? (byte)1 : (byte)0;
+            header.isEncrypted = isEncrypted ? (byte)1 : (byte)0;
+            header.numSubpackets = (ushort)1;
+            header.packetSize = BASEPACKET_SIZE;
+
+            //Get packet size
+            header.packetSize += subpacket.header.subpacketSize;
+
+            data = new byte[header.packetSize - 0x10];
+
+            //Add Subpackets
+            byte[] subpacketData = subpacket.getBytes();
+            Array.Copy(subpacketData, 0, data, 0, subpacketData.Length);            
+
+            Debug.Assert(data != null);
 
             BasePacket packet = new BasePacket(header, data);
             return packet;

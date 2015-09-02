@@ -13,7 +13,7 @@ namespace FFXIVClassic_Lobby_Server.packets
         public unsafe struct SessionPacket
         {
             [FieldOffset(0)]
-            public uint sequence;            
+            public UInt64 sequence;            
             [FieldOffset(0x50)]
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
             public String version;
@@ -23,12 +23,34 @@ namespace FFXIVClassic_Lobby_Server.packets
         }
 
         [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct WorldListPacket
+        {
+            public UInt64 sequence;
+            public byte isEndList;
+            public uint   numWorlds;
+            public byte unknown1;
+            public ushort unknown2;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
+            public WorldListEntry[] worlds;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct WorldListEntry
+        {
+            public ushort id;
+            public ushort listPosition;
+            public uint population;
+            public UInt64 unknown;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x40)]
+            public String name;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
         public unsafe struct CharacterRequestPacket
         {
-            public uint sequence;
-            public uint unknown;
+            public UInt64 sequence;
             public uint characterId;
-            public uint unknown2;
+            public uint personType;
             public byte slot;
             public byte command;
             public ushort worldId;
@@ -36,6 +58,51 @@ namespace FFXIVClassic_Lobby_Server.packets
             public String characterName;
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x190)]
             public String characterInfoEncoded;
+        }
+
+        //Response Packets
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct ReserveCharaResponse
+        {
+            public UInt64 sequence;
+            public uint errorCode;
+            public uint statusCode;
+            public uint errorId;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x2BB)]
+            public String errorMessage;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct MakeCharaResponse
+        {
+            public UInt64 sequence;
+            public uint errorCode;
+            public uint statusCode;
+            public uint errorId;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x2BB)]
+            public String errorMessage;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct DeleteCharaResponse
+        {
+            public UInt64 sequence;
+            public uint errorCode;
+            public uint statusCode;
+            public uint errorId;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x2BB)]
+            public String errorMessage;
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        public unsafe struct ErrorPacket
+        {
+            public UInt64 sequence;
+            public uint errorCode;
+            public uint statusCode;
+            public uint errorId;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x2BB)]
+            public String errorMessage;
         }
 
         public static unsafe CharacterRequestPacket toCharacterRequestStruct(byte[] bytes)
@@ -52,6 +119,23 @@ namespace FFXIVClassic_Lobby_Server.packets
             {
                 return (SessionPacket)Marshal.PtrToStructure(new IntPtr(pdata), typeof(SessionPacket));
             }
+        }
+
+        public static byte[] StructureToByteArray(object obj)
+        {
+            int len = Marshal.SizeOf(obj);
+
+            byte[] arr = new byte[len];
+
+            IntPtr ptr = Marshal.AllocHGlobal(len);
+
+            Marshal.StructureToPtr(obj, ptr, true);
+
+            Marshal.Copy(ptr, arr, 0, len);
+
+            Marshal.FreeHGlobal(ptr);
+
+            return arr;
         }
     }
 }

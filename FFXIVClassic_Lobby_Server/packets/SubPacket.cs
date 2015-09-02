@@ -17,7 +17,7 @@ namespace FFXIVClassic_Lobby_Server.packets
         public uint         sourceId; 
         public uint         targetId;
         public uint         unknown1;
-        public ushort       unknown4; //Always 0x13
+        public ushort       unknown4; //Always 0x14
         public ushort       opcode;
         public uint         unknown5; 
         public uint         timestamp;
@@ -48,6 +48,27 @@ namespace FFXIVClassic_Lobby_Server.packets
             Array.Copy(bytes, offset + SUBPACKET_SIZE, data, 0, data.Length);
 
             offset += header.subpacketSize;
+        }
+
+        public SubPacket(ushort opcode, uint sourceId, uint targetId, byte[] data)
+        {
+            this.header = new SubPacketHeader();
+            header.opcode = opcode;
+            header.sourceId = sourceId;
+            header.targetId = targetId;
+
+            UInt32 unixTimestamp = (UInt32)(DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            header.timestamp = unixTimestamp;
+
+            header.unknown0 = 0x03;
+            header.unknown1 = 0x00;
+            header.unknown4 = 0x14;
+            header.unknown5 = 0x00;
+            header.unknown6 = 0x00;
+
+            this.data = data;
+
+            header.subpacketSize = (ushort)(0x20 + data.Length);
         }
 
         public byte[] getHeaderBytes()

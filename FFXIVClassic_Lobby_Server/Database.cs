@@ -193,7 +193,7 @@ namespace FFXIVClassic_Lobby_Server
                         var name = Reader.GetString("name");
                         var address = Reader.GetString("address");
                         var port = Reader.GetUInt16("port");
-                        var unknown = Reader.GetUInt16("unknown");
+                        var listPosition = Reader.GetUInt16("listPosition");
                         var numChars = Reader.GetUInt32("numChars");
                         var maxChars = Reader.GetUInt32("maxChars");
                         var isActive = Reader.GetBoolean("isActive");
@@ -205,7 +205,7 @@ namespace FFXIVClassic_Lobby_Server
                             world.name = name;
                             world.address = address;
                             world.port = port;
-                            world.unknown = unknown;
+                            world.listPosition = listPosition;
                             uint result = ((numChars / maxChars) *0xFF) & 0xFF;
                             world.population = (ushort)result;
                             world.isActive = isActive;
@@ -248,7 +248,7 @@ namespace FFXIVClassic_Lobby_Server
                         var name = Reader.GetString("name");
                         var address = Reader.GetString("address");
                         var port = Reader.GetUInt16("port");
-                        var unknown = Reader.GetUInt16("unknown");
+                        var listPosition = Reader.GetUInt16("listPosition");
                         var numChars = Reader.GetUInt32("numChars");
                         var maxChars = Reader.GetUInt32("maxChars");
                         var isActive = Reader.GetBoolean("isActive");
@@ -260,7 +260,7 @@ namespace FFXIVClassic_Lobby_Server
                             world.name = name;
                             world.address = address;
                             world.port = port;
-                            world.unknown = unknown;
+                            world.listPosition = listPosition;
                             uint result = ((numChars / maxChars) * 0xFF) & 0xFF;
                             world.population = (ushort)result;
                             world.isActive = isActive;                           

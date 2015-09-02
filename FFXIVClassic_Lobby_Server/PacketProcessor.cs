@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
 using MySql.Data.MySqlClient;
 using System;
@@ -91,7 +92,9 @@ namespace FFXIVClassic_Lobby_Server
                         break;
                     case 0x0B:
                         ProcessModifyCharacter(client, subpacket);
-                        break;                    
+                        break;  
+                    case 0x0F:
+                        //Mod Retainers
                     default:
                         Debug.WriteLine("Unknown command 0x{0:X} received.", subpacket.header.opcode);
                         break;
@@ -143,6 +146,9 @@ namespace FFXIVClassic_Lobby_Server
         private void ProcessGetCharacters(ClientConnection client, SubPacket packet)
         {   
 	        Console.WriteLine("{0} => Get characters", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId);
+
+            buildWorldLists(client, packet);
+
 	        BasePacket outgoingPacket = new BasePacket("./packets/getCharsPacket.bin");
             BasePacket.encryptPacket(client.blowfish, outgoingPacket);
 	        client.queuePacket(outgoingPacket);
@@ -183,7 +189,6 @@ namespace FFXIVClassic_Lobby_Server
 
         private void ProcessModifyCharacter(ClientConnection client, SubPacket packet)
         {
-            packet.debugPrintSubPacket();
 
             PacketStructs.CharacterRequestPacket charaReq = PacketStructs.toCharacterRequestStruct(packet.data);
             var slot = charaReq.slot;
@@ -197,7 +202,23 @@ namespace FFXIVClassic_Lobby_Server
                     var alreadyTaken = Database.reserveCharacter(client.currentUserId, slot, worldId, name);
 
                     if (alreadyTaken)
-                    { }
+                    {
+                        PacketStructs.ErrorPacket errorPacket = new PacketStructs.ErrorPacket();
+                        errorPacket.sequence = charaReq.sequence;
+                        errorPacket.errorId = 13005;
+                        errorPacket.errorCode = 0;
+                        errorPacket.statusCode = 0;
+                        byte[] data = PacketStructs.StructureToByteArray(errorPacket);
+
+                        SubPacket subpacket = new SubPacket(0x02, packet.header.sourceId, packet.header.targetId, data);
+                        BasePacket basePacket = BasePacket.createPacket(subpacket, true, false);
+                        basePacket.debugPrintPacket();
+                        BasePacket.encryptPacket(client.blowfish, basePacket);
+                        client.queuePacket(basePacket);
+
+                        Console.WriteLine("User {0} => Error; name taken: \"{1}\"", client.currentUserId, charaReq.characterName);
+                        return;
+                    }
 
                     //Confirm Reserve
                     BasePacket confirmReservePacket = new BasePacket("./packets/chara/confirmReserve.bin");
@@ -229,6 +250,55 @@ namespace FFXIVClassic_Lobby_Server
                 case 0x06://Rename Retainer
                     break;
             }           
+        }
+
+        private void buildWorldLists(ClientConnection client, SubPacket packet)
+        {
+            List<World> serverList = Database.getServers();
+
+            int serverCount = 0;
+            int totalCount = 0;
+            PacketStructs.WorldListPacket worldListPacket = new PacketStructs.WorldListPacket();
+            worldListPacket.isEndList = serverList.Count <= 6 ? (byte)1 : (byte)0;
+            worldListPacket.numWorlds = serverList.Count <= 6 ? (byte)serverList.Count : (byte)6;
+            worldListPacket.sequence = 0;
+            worldListPacket.unknown1 = 0;
+            worldListPacket.unknown2 = 0;
+
+            foreach (World world in serverList)
+            {
+                //Insert world entry
+                PacketStructs.WorldListEntry entry = new PacketStructs.WorldListEntry();
+                entry.id = world.id;
+                entry.listPosition = world.listPosition;
+                entry.population = world.population;
+                entry.name = world.name;
+                worldListPacket.worlds[serverCount] = entry;
+
+                serverCount++;
+                totalCount++;
+                if (serverCount % 6 == 0 || totalCount >= serverList.Count)
+                {
+                    //Send this chunk of world list
+                    byte[] data = PacketStructs.StructureToByteArray(worldListPacket);
+                    SubPacket subpacket = new SubPacket(0x02, packet.header.sourceId, packet.header.targetId, data);
+                    BasePacket basePacket = BasePacket.createPacket(subpacket, true, false);
+                    basePacket.debugPrintPacket();
+                    BasePacket.encryptPacket(client.blowfish, basePacket);
+                    client.queuePacket(basePacket);
+
+                    //Make new worldlist if still remaining
+                    if (totalCount <= serverList.Count)
+                    {
+                        worldListPacket = new PacketStructs.WorldListPacket();
+                        worldListPacket.isEndList = serverList.Count - totalCount <= 6 ? (byte)1 : (byte)0;
+                        worldListPacket.numWorlds = serverList.Count - totalCount <= 6 ? (byte)(serverList.Count - totalCount) : (byte)6;
+                        worldListPacket.sequence = 0;
+                        worldListPacket.unknown1 = 0;
+                        worldListPacket.unknown2 = 0;
+                    }
+                }
+            }
         }
 
     }

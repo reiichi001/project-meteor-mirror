@@ -11,7 +11,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
         public ushort id;
         public string address;
         public ushort port;
-        public ushort unknown;
+        public ushort listPosition;
         public ushort population;
         public string name;
         public bool   isActive;
