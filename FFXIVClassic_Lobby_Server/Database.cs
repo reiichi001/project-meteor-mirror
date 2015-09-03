@@ -206,8 +206,9 @@ namespace FFXIVClassic_Lobby_Server
                             world.address = address;
                             world.port = port;
                             world.listPosition = listPosition;
-                            uint result = ((numChars / maxChars) *0xFF) & 0xFF;
+                            uint result = (uint)(((float)numChars / (float)maxChars) * (float)100);
                             world.population = (ushort)result;
+
                             world.isActive = isActive;
                             worldList.Add(world);
                         }

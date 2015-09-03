@@ -259,11 +259,14 @@ namespace FFXIVClassic_Lobby_Server
             int serverCount = 0;
             int totalCount = 0;
             PacketStructs.WorldListPacket worldListPacket = new PacketStructs.WorldListPacket();
-            worldListPacket.isEndList = serverList.Count <= 6 ? (byte)1 : (byte)0;
-            worldListPacket.numWorlds = serverList.Count <= 6 ? (byte)serverList.Count : (byte)6;
+            uint isEndList = serverList.Count <= 6 ? (byte)(serverList.Count+1) : (byte)0;
+            uint numWorlds = serverList.Count <= 6 ? (byte)serverList.Count : (byte)6;
+            numWorlds <<= 8;
+
+            worldListPacket.isEndListANDNumWorlds = (uint)(isEndList | numWorlds);
             worldListPacket.sequence = 0;
             worldListPacket.unknown1 = 0;
-            worldListPacket.unknown2 = 0;
+            worldListPacket.worlds = new PacketStructs.WorldListEntry[6];
 
             foreach (World world in serverList)
             {
@@ -281,9 +284,8 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     //Send this chunk of world list
                     byte[] data = PacketStructs.StructureToByteArray(worldListPacket);
-                    SubPacket subpacket = new SubPacket(0x02, packet.header.sourceId, packet.header.targetId, data);
+                    SubPacket subpacket = new SubPacket(0x15, 0xe0006868, 0xe0006868, data);
                     BasePacket basePacket = BasePacket.createPacket(subpacket, true, false);
-                    basePacket.debugPrintPacket();
                     BasePacket.encryptPacket(client.blowfish, basePacket);
                     client.queuePacket(basePacket);
 
@@ -291,11 +293,12 @@ namespace FFXIVClassic_Lobby_Server
                     if (totalCount <= serverList.Count)
                     {
                         worldListPacket = new PacketStructs.WorldListPacket();
-                        worldListPacket.isEndList = serverList.Count - totalCount <= 6 ? (byte)1 : (byte)0;
-                        worldListPacket.numWorlds = serverList.Count - totalCount <= 6 ? (byte)(serverList.Count - totalCount) : (byte)6;
+                        isEndList = serverList.Count <= 6 ? (byte)(serverList.Count + 1) : (byte)0;
+                        numWorlds = serverList.Count <= 6 ? (byte)serverList.Count : (byte)6;
+                        numWorlds <<= 8;
+                        worldListPacket.isEndListANDNumWorlds = (uint)(isEndList | numWorlds);
                         worldListPacket.sequence = 0;
                         worldListPacket.unknown1 = 0;
-                        worldListPacket.unknown2 = 0;
                     }
                 }
             }

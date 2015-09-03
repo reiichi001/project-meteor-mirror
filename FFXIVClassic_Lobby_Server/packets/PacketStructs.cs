@@ -25,11 +25,9 @@ namespace FFXIVClassic_Lobby_Server.packets
         [StructLayout(LayoutKind.Sequential)]
         public unsafe struct WorldListPacket
         {
-            public UInt64 sequence;
-            public byte isEndList;
-            public uint   numWorlds;
-            public byte unknown1;
-            public ushort unknown2;
+            public UInt64 sequence;            
+            public uint isEndListANDNumWorlds;
+            public uint unknown1;            
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
             public WorldListEntry[] worlds;
         }
