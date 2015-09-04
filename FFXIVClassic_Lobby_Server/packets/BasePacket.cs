@@ -165,7 +165,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             {
                 byte[] subpacketData = subpacket.getBytes();
                 Array.Copy(subpacketData, 0, data, offset, subpacketData.Length);
-                header.packetSize += (ushort)subpacketData.Length;
+                offset += (ushort)subpacketData.Length;
             }
 
             Debug.Assert(data != null && offset == data.Length && header.packetSize == 0x10 + offset);

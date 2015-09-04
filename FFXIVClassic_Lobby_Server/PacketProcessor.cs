@@ -254,7 +254,8 @@ namespace FFXIVClassic_Lobby_Server
 
             BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
             BasePacket.encryptPacket(client.blowfish, basePacket);
-            client.queuePacket(basePacket);            
+            client.queuePacket(basePacket);
+
         }
 
         private void sendUnknownList(ClientConnection client, SubPacket packet)

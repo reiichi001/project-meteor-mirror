@@ -37,9 +37,9 @@ namespace FFXIVClassic_Lobby_Server.packets
                     //Write List Info
                     binWriter.Write((UInt64)0);
                     binWriter.Write(worldList.Count - totalCount <= 6 ? (byte)(worldList.Count + 1) : (byte)0);
-                    binWriter.Write(worldList.Count - totalCount <= 6 ? (UInt32)worldList.Count - totalCount : (UInt32)6);
-                    binWriter.Write((byte)0);
-                    binWriter.Write((UInt16)0);
+                    binWriter.Write(worldList.Count - totalCount <= 6 ? (UInt32)(worldList.Count - totalCount) : (UInt32)6);
+                    binWriter.Write((byte)6);
+                    binWriter.Write((UInt16)5);
                 }
 
                 //Write Entries
