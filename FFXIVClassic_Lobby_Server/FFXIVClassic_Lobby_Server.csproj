@@ -62,9 +62,11 @@
     <Compile Include="dataobjects\World.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\BasePacket.cs" />
+    <Compile Include="packets\ErrorPacket.cs" />
     <Compile Include="packets\HardCoded_Packets.cs" />
     <Compile Include="packets\PacketStructs.cs" />
     <Compile Include="packets\SubPacket.cs" />
+    <Compile Include="packets\WorldListPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server.cs" />

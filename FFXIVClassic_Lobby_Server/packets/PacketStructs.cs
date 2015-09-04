@@ -23,27 +23,6 @@ namespace FFXIVClassic_Lobby_Server.packets
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct WorldListPacket
-        {
-            public UInt64 sequence;            
-            public uint isEndListANDNumWorlds;
-            public uint unknown1;            
-            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
-            public WorldListEntry[] worlds;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct WorldListEntry
-        {
-            public ushort id;
-            public ushort listPosition;
-            public uint population;
-            public UInt64 unknown;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x40)]
-            public String name;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
         public unsafe struct CharacterRequestPacket
         {
             public UInt64 sequence;
@@ -83,17 +62,6 @@ namespace FFXIVClassic_Lobby_Server.packets
 
         [StructLayout(LayoutKind.Sequential)]
         public unsafe struct DeleteCharaResponse
-        {
-            public UInt64 sequence;
-            public uint errorCode;
-            public uint statusCode;
-            public uint errorId;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x2BB)]
-            public String errorMessage;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct ErrorPacket
         {
             public UInt64 sequence;
             public uint errorCode;
