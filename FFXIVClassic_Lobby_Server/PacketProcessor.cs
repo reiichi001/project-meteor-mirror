@@ -148,6 +148,7 @@ namespace FFXIVClassic_Lobby_Server
 	        Console.WriteLine("{0} => Get characters", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId);
 
             sendWorldList(client, packet);
+            sendCharacterList(client, packet);
 
 	        BasePacket outgoingPacket = new BasePacket("./packets/getCharsPacket.bin");
             BasePacket.encryptPacket(client.blowfish, outgoingPacket);
@@ -270,7 +271,18 @@ namespace FFXIVClassic_Lobby_Server
 
         private void sendCharacterList(ClientConnection client, SubPacket packet)
         {
+            //List<Character> serverList = Database.getServers();
 
+            List<Character> charaList = new List<Character>();
+            charaList.Add(new Character());
+            charaList.Add(new Character());
+
+            CharacterListPacket characterlistPacket = new CharacterListPacket(1, charaList);
+            List<SubPacket> subPackets = characterlistPacket.buildPackets();
+
+            BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
+            BasePacket.encryptPacket(client.blowfish, basePacket);
+            client.queuePacket(basePacket);
         }
 
     }

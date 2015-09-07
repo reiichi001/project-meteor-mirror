@@ -9,7 +9,8 @@ namespace FFXIVClassic_Lobby_Server
 {
     class Character
     {
-        public string		name = "";
+        public string		name = "Test Test";
+        public string       world = "Test World";
 
         public uint	        id = 0;
 
