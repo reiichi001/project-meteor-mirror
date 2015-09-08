@@ -233,37 +233,37 @@ namespace FFXIVClassic_Lobby_Server
 
                     if (alreadyTaken)
                     {
-                        ErrorPacket errorPacket = new ErrorPacket(charaReq.sequence, 0, 0, 13005, "");
+                        ErrorPacket errorPacket = new ErrorPacket(charaReq.sequence, 0xBDB, 0, 13005, "");
                         SubPacket subpacket = errorPacket.buildPacket();
                         BasePacket basePacket = BasePacket.createPacket(subpacket, true, false);
                         BasePacket.encryptPacket(client.blowfish, basePacket);
                         client.queuePacket(basePacket);
 
-                        Console.WriteLine("User {0} => Error; name taken: \"{1}\"", client.currentUserId, charaReq.characterName);
+                        Log.info(String.Format("User {0} => Error; name taken: \"{1}\"", client.currentUserId, charaReq.characterName));
                         return;
-                    }                                                     
+                    }
 
-                    Console.WriteLine("User {0} => Character reserved \"{1}\"", client.currentUserId, charaReq.characterName);
+                    Log.info(String.Format("User {0} => Character reserved \"{1}\"", client.currentUserId, charaReq.characterName));
                     break;
                 case 0x02://Make                    
                     Character character = Character.EncodedToCharacter(charaReq.characterInfoEncoded);
 
                     Database.makeCharacter(client.currentUserId, name, character);
 
-                    Console.WriteLine("User {0} => Character created \"{1}\"", client.currentUserId, charaReq.characterName);
+                    Log.info(String.Format("User {0} => Character created \"{1}\"", client.currentUserId, charaReq.characterName));
                     break;
                 case 0x03://Rename
                     
-                    Console.WriteLine("User {0} => Character renamed \"{1}\"", client.currentUserId, charaReq.characterName);
+                    Log.info(String.Format("User {0} => Character renamed \"{1}\"", client.currentUserId, charaReq.characterName));
                     break;
                 case 0x04://Delete
                     Database.deleteCharacter(charaReq.characterId, charaReq.characterName);
                     
-                    Console.WriteLine("User {0} => Character deleted \"{1}\"", client.currentUserId, charaReq.characterName);
+                    Log.info(String.Format("User {0} => Character deleted \"{1}\"", client.currentUserId, charaReq.characterName));
                     break;
                 case 0x06://Rename Retainer
 
-                    Console.WriteLine("User {0} => Retainer renamed \"{1}\"", client.currentUserId, charaReq.characterName);
+                    Log.info(String.Format("User {0} => Retainer renamed \"{1}\"", client.currentUserId, charaReq.characterName));
                     break;
             }
 

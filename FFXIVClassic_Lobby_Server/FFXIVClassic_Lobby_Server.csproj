@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="common\Log.cs" />
     <Compile Include="dataobjects\Retainer.cs" />
     <Compile Include="dataobjects\Character.cs" />
     <Compile Include="ClientConnection.cs" />

@@ -56,7 +56,7 @@ namespace FFXIVClassic_Lobby_Server
                     socket.Send(packetBytes);
                 }
                 catch(Exception e)
-                { Debug.WriteLine("Weird case, socket was d/ced: {0}", e); }
+                { Log.error(String.Format("Weird case, socket was d/ced: {0}", e)); }
             }
         }
 

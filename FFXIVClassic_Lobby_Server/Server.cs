@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using System.Threading;
+using FFXIVClassic_Lobby_Server.common;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -78,7 +79,7 @@ namespace FFXIVClassic_Lobby_Server
                 conn.socket.BeginReceive(conn.buffer, 0, conn.buffer.Length, SocketFlags.None, new AsyncCallback(receiveCallback), conn);
                 //Queue the accept of the next incomming connection
                 mServerSocket.BeginAccept(new AsyncCallback(acceptCallback), mServerSocket);
-                Console.WriteLine("Connection {0}:{1} has connected.", (conn.socket.RemoteEndPoint as IPEndPoint).Address, (conn.socket.RemoteEndPoint as IPEndPoint).Port);
+                Log.conn(String.Format("Connection {0}:{1} has connected.", (conn.socket.RemoteEndPoint as IPEndPoint).Address, (conn.socket.RemoteEndPoint as IPEndPoint).Port));
             }
             catch (SocketException)
             {
@@ -121,7 +122,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 else
                 {
-                    Console.WriteLine("{0} has disconnected.", conn.currentUserId == 0 ? conn.getAddress() : "User " + conn.currentUserId);
+                    Log.conn(String.Format("{0} has disconnected.", conn.currentUserId == 0 ? conn.getAddress() : "User " + conn.currentUserId));
                     conn.socket.Close();
                     lock (mConnectionList)
                     {
@@ -133,7 +134,7 @@ namespace FFXIVClassic_Lobby_Server
             {                
                 if (conn.socket != null)
                 {
-                    Console.WriteLine("Connection @ {0} has disconnected.", conn.currentUserId == 0 ? "Unknown User " : "User " + conn.currentUserId);
+                    Log.conn(String.Format("Connection @ {0} has disconnected.", conn.currentUserId == 0 ? "Unknown User " : "User " + conn.currentUserId));
                     conn.socket.Close();
                     lock (mConnectionList)
                     {
@@ -143,9 +144,6 @@ namespace FFXIVClassic_Lobby_Server
             }
         }        
 
-        #endregion
-
-        #region Packet Handling
         #endregion
 
     }
