@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FFXIVClassic_Lobby_Server
@@ -58,6 +59,12 @@ namespace FFXIVClassic_Lobby_Server
                             client.flushQueuedSendPackets();
                     }
                 }
+
+                //Don't waste CPU if isn't needed
+                if (mConnections.Count == 0)
+                    Thread.Sleep(2000);
+                else
+                    Thread.Sleep(100);
             }
         }
 
