@@ -63,8 +63,7 @@
     <Compile Include="dataobjects\World.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\BasePacket.cs" />
-    <Compile Include="packets\MakeCharaPacket.cs" />
-    <Compile Include="packets\ReserveCharaPacket.cs" />
+    <Compile Include="packets\CharaCreatorPacket.cs" />
     <Compile Include="packets\RetainerListPacket.cs" />
     <Compile Include="packets\ErrorPacket.cs" />
     <Compile Include="packets\HardCoded_Packets.cs" />

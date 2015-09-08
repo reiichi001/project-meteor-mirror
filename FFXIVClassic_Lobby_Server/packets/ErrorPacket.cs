@@ -35,7 +35,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             binWriter.Write(errorCode);
             binWriter.Write(statusCode);
             binWriter.Write(textId);
-            binWriter.Write(message);
+            binWriter.Write(Encoding.ASCII.GetBytes(message));
 
             byte[] data = memStream.GetBuffer();
             binWriter.Dispose();
