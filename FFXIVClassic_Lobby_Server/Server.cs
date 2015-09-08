@@ -23,7 +23,7 @@ namespace FFXIVClassic_Lobby_Server
         #region Socket Handling
         public bool startServer()
         {
-            IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse("141.117.161.40"), FFXIV_LOBBY_PORT);
+            IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse("127.0.0.1"), FFXIV_LOBBY_PORT);
            
             try{
                 mServerSocket = new System.Net.Sockets.Socket(serverEndPoint.Address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);                

@@ -11,7 +11,7 @@ namespace FFXIVClassic_Lobby_Server.packets
     class CharacterListPacket
     {
         public const ushort OPCODE = 0x0D;
-        public const ushort MAXPERPACKET = 3;
+        public const ushort MAXPERPACKET = 2;
 
         private ulong sequence;
         private List<Character> characterList;
@@ -42,21 +42,22 @@ namespace FFXIVClassic_Lobby_Server.packets
                     //Write List Info
                     binWriter.Write((UInt64)sequence);
                     binWriter.Write(characterList.Count - totalCount <= MAXPERPACKET ? (byte)(characterList.Count + 1) : (byte)0);
+                    //binWriter.Write((byte)1);
                     binWriter.Write(characterList.Count - totalCount <= MAXPERPACKET ? (UInt32)(characterList.Count - totalCount) : (UInt32)MAXPERPACKET);
-                    binWriter.Write((byte)6);
-                    binWriter.Write((UInt16)5);
+                    binWriter.Write((byte)0);
+                    binWriter.Write((UInt16)0);
                 }
 
                 binWriter.Seek(0x10 + (0x1D0 * characterCount), SeekOrigin.Begin);
 
                 //Write Entries
-                binWriter.Write((uint)0);
-                binWriter.Write((uint)totalCount);
-                binWriter.Write((uint)0);
-                binWriter.Write((uint)0);
-                binWriter.Write(Encoding.ASCII.GetBytes(chara.name.PadRight(0x20, '\0')));
-                binWriter.Write(Encoding.ASCII.GetBytes(chara.world.PadRight(0x10, '\0')));
-                binWriter.Write("wAQAAOonIyMNAAAAV3Jlbml4IFdyb25nABwAAAAEAAAAAwAAAAMAAAA_8OADAAHQFAAEAAABAAAAABTQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGEgAAAAMQAAQCQAAMAsAACKVAAAAPgCAAAAAAAAAAAAAAAAAAAAAAAAAAAAACQAAAAkAwAAAAAAAAAAANvb1M05AQAABBoAAAEABqoiIuIKAAAAcHJ2MElubjAxABEAAABkZWZhdWx0VGVycml0b3J5AAwJAhcABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAIAAAAAAAAAAAAAAAA=");
+                binWriter.Write((uint)0); //???
+                binWriter.Write((uint)(totalCount + 1)); //Character Id            
+                binWriter.Write((uint)totalCount); //Slot
+                binWriter.Write((uint)0); //Options (0x01: Service Account not active, 0x72: Change Chara Name)
+                binWriter.Write(Encoding.ASCII.GetBytes(chara.name.PadRight(0x20, '\0'))); //Name
+                binWriter.Write(Encoding.ASCII.GetBytes(chara.world.PadRight(0xE, '\0'))); //World Name
+                binWriter.Write("wAQAAOonIyMNAAAAV3Jlbml4IFdyb25nABwAAAAEAAAAAwAAAAMAAAA_8OADAAHQFAAEAAABAAAAABTQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGEgAAAAMQAAQCQAAMAsAACKVAAAAPgCAAAAAAAAAAAAAAAAAAAAAAAAAAAAACQAAAAkAwAAAAAAAAAAANvb1M05AQAABBoAAAEABqoiIuIKAAAAcHJ2MElubjAxABEAAABkZWZhdWx0VGVycml0b3J5AAwJAhcABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAIAAAAAAAAAAAAAAAA="); //Appearance Data
                 
                 characterCount++;
                 totalCount++;                

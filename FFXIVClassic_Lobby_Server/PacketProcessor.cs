@@ -133,7 +133,7 @@ namespace FFXIVClassic_Lobby_Server
 
             if (userId == 0)
             {
-                client.disconnect();
+                //client.disconnect();
                 Console.WriteLine("Invalid session, kicking...");
             }
 
@@ -147,12 +147,13 @@ namespace FFXIVClassic_Lobby_Server
         {   
 	        Console.WriteLine("{0} => Get characters", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId);
 
-            sendWorldList(client, packet);
-            sendCharacterList(client, packet);
+            sendWorldList(client, packet);            
 
 	        BasePacket outgoingPacket = new BasePacket("./packets/getCharsPacket.bin");
             BasePacket.encryptPacket(client.blowfish, outgoingPacket);
 	        client.queuePacket(outgoingPacket);
+
+            //sendCharacterList(client, packet);
         }
 
         private void ProcessSelectCharacter(ClientConnection client, SubPacket packet)
@@ -216,33 +217,54 @@ namespace FFXIVClassic_Lobby_Server
                     }
 
                     //Confirm Reserve
-                    BasePacket confirmReservePacket = new BasePacket("./packets/chara/confirmReserve.bin");
+                    CharaCreatorPacket confirmReserve = new CharaCreatorPacket(charaReq.sequence, CharaCreatorPacket.RESERVE, 1, 1, 1, name, "World Name");                    
+                    BasePacket confirmReservePacket = BasePacket.createPacket(confirmReserve.buildPacket(), true, false);
                     BasePacket.encryptPacket(client.blowfish, confirmReservePacket);
                     client.queuePacket(confirmReservePacket);
+
                     Console.WriteLine("User {0} => Reserving character \"{1}\"", client.currentUserId, charaReq.characterName);
                     break;
                 case 0x02://Make                    
                     Character character = Character.EncodedToCharacter(charaReq.characterInfoEncoded);
+
                     Database.makeCharacter(client.currentUserId, name, character);
 
                     //Confirm
-                    BasePacket confirmMakePacket = new BasePacket("./packets/chara/confirmMake.bin");
+                    CharaCreatorPacket makeChara = new CharaCreatorPacket(charaReq.sequence, CharaCreatorPacket.MAKE, 1, 1, 1, name, "World Name");
+                    BasePacket confirmMakePacket = BasePacket.createPacket(makeChara.buildPacket(), true, false);
                     BasePacket.encryptPacket(client.blowfish, confirmMakePacket);
                     client.queuePacket(confirmMakePacket);
+
                     Console.WriteLine("User {0} => Character created!", client.currentUserId);
                     break;
                 case 0x03://Rename
+
+                    //Confirm
+                    CharaCreatorPacket renameChara = new CharaCreatorPacket(charaReq.sequence, CharaCreatorPacket.RENAME, 1, 1, 1, name, "World Name");
+                    BasePacket confirmRenamePacket = BasePacket.createPacket(renameChara.buildPacket(), true, false);
+                    BasePacket.encryptPacket(client.blowfish, confirmRenamePacket);
+                    client.queuePacket(confirmRenamePacket);
+
+                    Console.WriteLine("User {0} => Character renamed to \"{1}\"", client.currentUserId, charaReq.characterName);
                     break;
                 case 0x04://Delete
                     Database.deleteCharacter(charaReq.characterId, charaReq.characterName);
 
                     //Confirm
-                    BasePacket deleteConfirmPacket = new BasePacket("./packets/chara/confirmDelete.bin");
-                    BasePacket.encryptPacket(client.blowfish, deleteConfirmPacket);
-                    client.queuePacket(deleteConfirmPacket);
+                    CharaCreatorPacket deleteChara = new CharaCreatorPacket(charaReq.sequence, CharaCreatorPacket.MAKE, 1, 1, 1, name, "World Name");
+                    BasePacket confirmDeletePacket = BasePacket.createPacket(deleteChara.buildPacket(), true, false);
+                    BasePacket.encryptPacket(client.blowfish, confirmDeletePacket);
+                    client.queuePacket(confirmDeletePacket);
+
                     Console.WriteLine("User {0} => Character deleted \"{1}\"", client.currentUserId, charaReq.characterName);
                     break;
                 case 0x06://Rename Retainer
+
+                    //Confirm
+                    CharaCreatorPacket renameRetainerChara = new CharaCreatorPacket(charaReq.sequence, CharaCreatorPacket.RENAME_RETAINER, 1, 1, 1, name, "World Name");
+                    BasePacket confirmRenameRetainerPacket = BasePacket.createPacket(renameRetainerChara.buildPacket(), true, false);
+                    BasePacket.encryptPacket(client.blowfish, confirmRenameRetainerPacket);
+                    client.queuePacket(confirmRenameRetainerPacket);
                     break;
             }           
         }        
@@ -279,7 +301,7 @@ namespace FFXIVClassic_Lobby_Server
 
             CharacterListPacket characterlistPacket = new CharacterListPacket(1, charaList);
             List<SubPacket> subPackets = characterlistPacket.buildPackets();
-
+            subPackets[0].debugPrintSubPacket();
             BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
             BasePacket.encryptPacket(client.blowfish, basePacket);
             client.queuePacket(basePacket);
