@@ -41,7 +41,7 @@ namespace FFXIVClassic_Lobby_Server.packets
 
                     //Write List Info
                     binWriter.Write((UInt64)sequence);
-                    binWriter.Write(characterList.Count - totalCount <= MAXPERPACKET ? (byte)(characterList.Count + 1) : (byte)0);
+                    binWriter.Write(characterList.Count - totalCount <= MAXPERPACKET ? (byte)(1) : (byte)0);
                     //binWriter.Write((byte)1);
                     binWriter.Write(characterList.Count - totalCount <= MAXPERPACKET ? (UInt32)(characterList.Count - totalCount) : (UInt32)MAXPERPACKET);
                     binWriter.Write((byte)0);
@@ -51,12 +51,26 @@ namespace FFXIVClassic_Lobby_Server.packets
                 binWriter.Seek(0x10 + (0x1D0 * characterCount), SeekOrigin.Begin);
 
                 //Write Entries
+                World world = Database.getServer(chara.serverId);
+                string worldname = world == null ? "Unknown" : world.name;
+
                 binWriter.Write((uint)0); //???
-                binWriter.Write((uint)(totalCount + 1)); //Character Id            
-                binWriter.Write((uint)totalCount); //Slot
-                binWriter.Write((uint)0); //Options (0x01: Service Account not active, 0x72: Change Chara Name)
+                binWriter.Write((uint)chara.id); //Character Id            
+                binWriter.Write((byte)totalCount); //Slot
+
+                byte options = 0;
+                if (chara.state == 2)
+                    options |= 0x01;
+                if (chara.doRename)
+                    options |= 0x02;
+                if (chara.isLegacy)
+                    options |= 0x08;
+
+                binWriter.Write((byte)options); //Options (0x01: Service Account not active, 0x72: Change Chara Name) 
+                binWriter.Write((ushort)0);  
+                binWriter.Write((uint)0xF4); //Logged out zone
                 binWriter.Write(Encoding.ASCII.GetBytes(chara.name.PadRight(0x20, '\0'))); //Name
-                binWriter.Write(Encoding.ASCII.GetBytes(chara.world.PadRight(0xE, '\0'))); //World Name
+                binWriter.Write(Encoding.ASCII.GetBytes(worldname.PadRight(0xE, '\0'))); //World Name
                 binWriter.Write("wAQAAOonIyMNAAAAV3Jlbml4IFdyb25nABwAAAAEAAAAAwAAAAMAAAA_8OADAAHQFAAEAAABAAAAABTQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGEgAAAAMQAAQCQAAMAsAACKVAAAAPgCAAAAAAAAAAAAAAAAAAAAAAAAAAAAACQAAAAkAwAAAAAAAAAAANvb1M05AQAABBoAAAEABqoiIuIKAAAAcHJ2MElubjAxABEAAABkZWZhdWx0VGVycml0b3J5AAwJAhcABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAIAAAAAAAAAAAAAAAA="); //Appearance Data
                 
                 characterCount++;

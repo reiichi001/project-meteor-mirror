@@ -33,7 +33,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             this.command = command;
             this.pid = pid;
             this.cid = cid;
-            this.type = 0x400000;
+            this.type = 0x400017;
             this.ticket = ticket;
             this.charaName = charaName; 
             this.worldName = worldName;

@@ -37,6 +37,9 @@
     <Reference Include="Cyotek.Collections.Generic.CircularBuffer">
       <HintPath>..\packages\Cyotek.CircularBuffer.1.0.0.0\lib\net20\Cyotek.Collections.Generic.CircularBuffer.dll</HintPath>
     </Reference>
+    <Reference Include="Dapper">
+      <HintPath>..\packages\Dapper.1.42\lib\net45\Dapper.dll</HintPath>
+    </Reference>
     <Reference Include="MySql.Data">
       <HintPath>..\packages\MySql.Data.6.9.7\lib\net45\MySql.Data.dll</HintPath>
     </Reference>
@@ -53,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="common\Log.cs" />
+    <Compile Include="dataobjects\CharaInfo.cs" />
     <Compile Include="dataobjects\Retainer.cs" />
     <Compile Include="dataobjects\Character.cs" />
     <Compile Include="ClientConnection.cs" />

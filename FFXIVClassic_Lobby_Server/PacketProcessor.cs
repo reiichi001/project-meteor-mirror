@@ -154,13 +154,13 @@ namespace FFXIVClassic_Lobby_Server
         {   
 	        Console.WriteLine("{0} => Get characters", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId);
 
-            sendWorldList(client, packet);            
+            sendWorldList(client, packet);
 
-	        BasePacket outgoingPacket = new BasePacket("./packets/getCharsPacket.bin");
+	        BasePacket outgoingPacket = new BasePacket("./packets/getChars_wo_chars");
             BasePacket.encryptPacket(client.blowfish, outgoingPacket);
 	        client.queuePacket(outgoingPacket);
 
-            //sendCharacterList(client, packet);
+            sendCharacterList(client, packet);
         }
 
         private void ProcessSelectCharacter(ClientConnection client, SubPacket packet)
@@ -207,9 +207,11 @@ namespace FFXIVClassic_Lobby_Server
 
             uint pid = 0, cid = 0;
 
-            World world = Database.getServer(worldId);
-            string worldName = null;
+            if (worldId == 0)
+                worldId = client.newCharaWorldId;
 
+            string worldName = null;           
+            World world = Database.getServer(worldId);
             if (world != null)
                 worldName = world.name;
 
@@ -233,7 +235,7 @@ namespace FFXIVClassic_Lobby_Server
 
                     if (alreadyTaken)
                     {
-                        ErrorPacket errorPacket = new ErrorPacket(charaReq.sequence, 0xBDB, 0, 13005, "");
+                        ErrorPacket errorPacket = new ErrorPacket(charaReq.sequence, 1003, 0, 13005, ""); //BDB - Chara Name Used, //1003 - Bad Word
                         SubPacket subpacket = errorPacket.buildPacket();
                         BasePacket basePacket = BasePacket.createPacket(subpacket, true, false);
                         BasePacket.encryptPacket(client.blowfish, basePacket);
@@ -242,13 +244,25 @@ namespace FFXIVClassic_Lobby_Server
                         Log.info(String.Format("User {0} => Error; name taken: \"{1}\"", client.currentUserId, charaReq.characterName));
                         return;
                     }
+                    else
+                    {
+                        pid = 0;
+                        client.newCharaCid = cid;
+                        client.newCharaSlot = slot;
+                        client.newCharaWorldId = worldId;
+                        client.newCharaName = name;
+                    }
 
                     Log.info(String.Format("User {0} => Character reserved \"{1}\"", client.currentUserId, charaReq.characterName));
                     break;
                 case 0x02://Make                    
-                    Character character = Character.EncodedToCharacter(charaReq.characterInfoEncoded);
+                    CharaInfo info = new CharaInfo();
 
-                    Database.makeCharacter(client.currentUserId, name, character);
+                    Database.makeCharacter(client.currentUserId, client.newCharaCid, info);
+
+                    pid = 1;
+                    cid = client.newCharaCid;
+                    name = client.newCharaName;
 
                     Log.info(String.Format("User {0} => Character created \"{1}\"", client.currentUserId, charaReq.characterName));
                     break;
@@ -299,13 +313,9 @@ namespace FFXIVClassic_Lobby_Server
 
         private void sendCharacterList(ClientConnection client, SubPacket packet)
         {
-            //List<Character> serverList = Database.getServers();
+            List<Character> characterList = Database.getCharacters(client.currentUserId);
 
-            List<Character> charaList = new List<Character>();
-            charaList.Add(new Character());
-            charaList.Add(new Character());
-
-            CharacterListPacket characterlistPacket = new CharacterListPacket(1, charaList);
+            CharacterListPacket characterlistPacket = new CharacterListPacket(2, characterList);
             List<SubPacket> subPackets = characterlistPacket.buildPackets();
             subPackets[0].debugPrintSubPacket();
             BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);

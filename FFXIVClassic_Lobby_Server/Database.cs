@@ -1,5 +1,6 @@
 ﻿using FFXIVClassic_Lobby_Server.dataobjects;
 using MySql.Data.MySqlClient;
+using Dapper;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,7 @@ namespace FFXIVClassic_Lobby_Server
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand("SELECT * FROM ffxiv_sessions WHERE id = @sessionId AND expiration > NOW()", conn);
+                    MySqlCommand cmd = new MySqlCommand("SELECT * FROM sessions WHERE id = @sessionId AND expiration > NOW()", conn);
                     cmd.Parameters.AddWithValue("@sessionId", sessionId);
                     using (MySqlDataReader Reader = cmd.ExecuteReader())
                     {
@@ -35,7 +36,7 @@ namespace FFXIVClassic_Lobby_Server
                 { Console.WriteLine(e); }
                 finally
                 {
-                    conn.Close();
+                    conn.Dispose();
                 }
             }
             return id;
@@ -51,7 +52,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Open();
 
                     //Check if exists                    
-                    MySqlCommand cmd = new MySqlCommand("SELECT * FROM ffxiv_characters2 WHERE name=@name AND serverId=@serverId", conn);
+                    MySqlCommand cmd = new MySqlCommand("SELECT * FROM characters WHERE name=@name AND serverId=@serverId", conn);
                     cmd.Parameters.AddWithValue("@serverId", serverId);
                     cmd.Parameters.AddWithValue("@name", name);
                     using (MySqlDataReader Reader = cmd.ExecuteReader())
@@ -67,16 +68,15 @@ namespace FFXIVClassic_Lobby_Server
                     {
                         MySqlCommand cmd2 = new MySqlCommand();
                         cmd2.Connection = conn;
-                        cmd2.CommandText = "INSERT INTO ffxiv_characters2(userId, slot, serverId, name, state) VALUES(@userId, @slot, @serverId, @name, 0)";
+                        cmd2.CommandText = "INSERT INTO characters(userId, slot, serverId, name, state) VALUES(@userId, @slot, @serverId, @name, 0)";
                         cmd2.Prepare();
                         cmd2.Parameters.AddWithValue("@userId", userId);
                         cmd2.Parameters.AddWithValue("@slot", slot);
                         cmd2.Parameters.AddWithValue("@serverId", serverId);
                         cmd2.Parameters.AddWithValue("@name", name);
                         cmd2.ExecuteNonQuery();
-
-                        pid = 1;
-                        cid = 1;
+                        cid = (ushort)cmd2.LastInsertedId;
+                        pid = 0xBABE;
                     }
                     else
                     {
@@ -91,14 +91,14 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 finally
                 {
-                    conn.Close();
+                    conn.Dispose();
                 }
             }
 
             return alreadyExists;
         }        
 
-        public static void makeCharacter(uint accountId, String name, Character charaInfo)
+        public static void makeCharacter(uint accountId, uint cid, CharaInfo charaInfo)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -107,12 +107,13 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Open();
                     MySqlCommand cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = "UPDATE ffxiv_characters2 SET data=@encodedInfo WHERE accountId=@accountId AND name=@name";
+                    cmd.CommandText = "UPDATE characters SET state=3, charaInfo=@encodedInfo WHERE userId=@userId AND id=@cid";
                     cmd.Prepare();
 
-                    cmd.Parameters.AddWithValue("@accountId", accountId);
-                    cmd.Parameters.AddWithValue("@name", name);
-                    cmd.Parameters.AddWithValue("@encodedInfo", JsonConvert.SerializeObject(charaInfo));
+                    cmd.Parameters.AddWithValue("@userId", accountId);
+                    cmd.Parameters.AddWithValue("@cid", cid);
+                    string json = JsonConvert.SerializeObject(charaInfo);
+                    cmd.Parameters.AddWithValue("@encodedInfo", json);
                     cmd.ExecuteNonQuery();
 
                 }
@@ -122,7 +123,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 finally
                 {
-                    conn.Close();
+                    conn.Dispose();
                 }
             }
         }
@@ -136,7 +137,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Open();
                     MySqlCommand cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = "UPDATE ffxiv_characters2 SET name=@name WHERE id=@cid";
+                    cmd.CommandText = "UPDATE characters SET name=@name WHERE id=@cid";
                     cmd.Prepare();
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     cmd.Parameters.AddWithValue("@name", newName);
@@ -149,7 +150,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 finally
                 {
-                    conn.Close();
+                    conn.Dispose();
                 }
             }
         }
@@ -163,7 +164,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Open();
                     MySqlCommand cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = "UPDATE ffxiv_characters2 SET state=1 WHERE id=@cid AND name=@name";
+                    cmd.CommandText = "UPDATE characters SET state=1 WHERE id=@cid AND name=@name";
                     cmd.Prepare();
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     cmd.Parameters.AddWithValue("@name", name);
@@ -176,61 +177,26 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 finally
                 {
-                    conn.Close();
+                    conn.Dispose();
                 }
             }
         }
 
         public static List<World> getServers()
         {
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                List<World> worldList = new List<World>();
+                List<World> worldList = null;
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand();
-                    cmd.Connection = conn;
-                    cmd.CommandText = "SELECT * FROM servers WHERE isActive=true";
-                    cmd.Prepare();
-                    MySqlDataReader Reader = cmd.ExecuteReader();
-
-                    
-                    if (!Reader.HasRows) return worldList;
-                    while (Reader.Read())
-                    {
-                        var id = Reader.GetUInt16("id");
-                        var name = Reader.GetString("name");
-                        var address = Reader.GetString("address");
-                        var port = Reader.GetUInt16("port");
-                        var listPosition = Reader.GetUInt16("listPosition");
-                        var numChars = Reader.GetUInt32("numChars");
-                        var maxChars = Reader.GetUInt32("maxChars");
-                        var isActive = Reader.GetBoolean("isActive");
-
-                        if (isActive)
-                        {
-                            World world = new World();
-                            world.id = id; 
-                            world.name = name;
-                            world.address = address;
-                            world.port = port;
-                            world.listPosition = listPosition;
-                            uint result = (uint)(((float)numChars / (float)maxChars) * (float)100);
-                            world.population = (ushort)result;
-
-                            world.isActive = isActive;
-                            worldList.Add(world);
-                        }
-                    }
-
-                    
+                    worldList = conn.Query<World>("SELECT * FROM servers WHERE isActive=true").ToList();                                       
                 }
                 catch (MySqlException e)
-                { }
+                { worldList = new List<World>(); }
                 finally
-                {
-                    conn.Close();
+                {                    
+                    conn.Dispose();
                 }
                 return worldList;
             }
@@ -238,46 +204,13 @@ namespace FFXIVClassic_Lobby_Server
 
         public static World getServer(uint serverId)
         {
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 World world = null;
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand();
-                    cmd.Connection = conn;
-                    cmd.CommandText = "SELECT * FROM servers WHERE id='%serverId'";
-                    cmd.Prepare();
-                    cmd.Parameters.AddWithValue("@serverId", serverId);
-
-                    MySqlDataReader Reader = cmd.ExecuteReader();
-
-                    if (!Reader.HasRows) return world;
-                    while (Reader.Read())
-                    {
-                        var id = Reader.GetUInt16("id");
-                        var name = Reader.GetString("name");
-                        var address = Reader.GetString("address");
-                        var port = Reader.GetUInt16("port");
-                        var listPosition = Reader.GetUInt16("listPosition");
-                        var numChars = Reader.GetUInt32("numChars");
-                        var maxChars = Reader.GetUInt32("maxChars");
-                        var isActive = Reader.GetBoolean("isActive");
-
-                        if (isActive)
-                        {
-                            world = new World();
-                            world.id = id;
-                            world.name = name;
-                            world.address = address;
-                            world.port = port;
-                            world.listPosition = listPosition;
-                            uint result = ((numChars / maxChars) * 0xFF) & 0xFF;
-                            world.population = (ushort)result;
-                            world.isActive = isActive;                           
-                        }
-                    }
-
+                    world = conn.Query<World>("SELECT * FROM servers WHERE id=@ServerId", new {ServerId = serverId}).SingleOrDefault();                  
                 }
                 catch (MySqlException e)
                 {                    
@@ -288,6 +221,26 @@ namespace FFXIVClassic_Lobby_Server
                 }
 
                 return world;
+            }
+        }
+
+        public static List<Character> getCharacters(uint userId)
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                List<Character> charaList = null;
+                try
+                {
+                    conn.Open();
+                    charaList = conn.Query<Character>("SELECT * FROM characters WHERE userId=@UserId AND state in (2,3) ORDER BY slot", new { UserId = userId }).ToList();
+                }
+                catch (MySqlException e)
+                { charaList = new List<Character>(); }
+                finally
+                {
+                    conn.Dispose();
+                }
+                return charaList;
             }
         }
 

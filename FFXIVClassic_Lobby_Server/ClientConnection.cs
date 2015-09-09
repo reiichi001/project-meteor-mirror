@@ -26,6 +26,13 @@ namespace FFXIVClassic_Lobby_Server
         //Instance Stuff
         public uint currentUserId = 0;
         public uint currentAccount;
+
+        //Chara Creation
+        public string newCharaName;
+        public uint newCharaPid;
+        public uint newCharaCid;
+        public ushort newCharaSlot;
+        public ushort newCharaWorldId;
         
 
         public void processIncoming(int bytesIn)
