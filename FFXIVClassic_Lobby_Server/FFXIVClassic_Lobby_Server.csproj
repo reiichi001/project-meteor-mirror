@@ -75,6 +75,7 @@
     <Compile Include="packets\PacketStructs.cs" />
     <Compile Include="packets\SubPacket.cs" />
     <Compile Include="packets\CharacterListPacket.cs" />
+    <Compile Include="packets\ImportListPacket.cs" />
     <Compile Include="packets\WorldListPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -244,5 +244,45 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
+        public static List<String> getReservedNames(uint userId)
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                List<String> nameList = null;
+                try
+                {
+                    conn.Open();
+                    nameList = conn.Query<String>("SELECT name FROM reserved_names WHERE userId=@UserId", new { UserId = userId }).ToList();
+                }
+                catch (MySqlException e)
+                { nameList = new List<String>(); }
+                finally
+                {
+                    conn.Dispose();
+                }
+                return nameList;
+            }
+        }
+
+        public static List<Retainer> getRetainers(uint userId)
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                List<Retainer> retainerList = null;
+                try
+                {
+                    conn.Open();
+                    retainerList = conn.Query<Retainer>("SELECT * FROM retainers WHERE id=@UserId ORDER BY characterId, slot", new { UserId = userId }).ToList();
+                }
+                catch (MySqlException e)
+                { retainerList = new List<Retainer>(); }
+                finally
+                {
+                    conn.Dispose();
+                }
+                return retainerList;
+            }
+        }
+
     }
 }

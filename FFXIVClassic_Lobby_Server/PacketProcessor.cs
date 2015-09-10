@@ -155,12 +155,10 @@ namespace FFXIVClassic_Lobby_Server
 	        Console.WriteLine("{0} => Get characters", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId);
 
             sendWorldList(client, packet);
-
-	        BasePacket outgoingPacket = new BasePacket("./packets/getChars_wo_chars");
-            BasePacket.encryptPacket(client.blowfish, outgoingPacket);
-	        client.queuePacket(outgoingPacket);
-
+            sendImportList(client, packet);
+            sendRetainerList(client, packet);
             sendCharacterList(client, packet);
+
         }
 
         private void ProcessSelectCharacter(ClientConnection client, SubPacket packet)
@@ -262,7 +260,7 @@ namespace FFXIVClassic_Lobby_Server
 
                     pid = 1;
                     cid = client.newCharaCid;
-                    name = client.newCharaName;
+                    name = client.newCharaName; 
 
                     Log.info(String.Format("User {0} => Character created \"{1}\"", client.currentUserId, charaReq.characterName));
                     break;
@@ -292,7 +290,7 @@ namespace FFXIVClassic_Lobby_Server
         private void sendWorldList(ClientConnection client, SubPacket packet)
         {            
             List<World> serverList = Database.getServers();
-            WorldListPacket worldlistPacket = new WorldListPacket(serverList);
+            WorldListPacket worldlistPacket = new WorldListPacket(2, serverList);
             List<SubPacket> subPackets = worldlistPacket.buildPackets();
 
             BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
@@ -303,12 +301,24 @@ namespace FFXIVClassic_Lobby_Server
 
         private void sendImportList(ClientConnection client, SubPacket packet)
         {
+            List<String> names = Database.getReservedNames(client.currentUserId);
 
+            ImportListPacket importListPacket = new ImportListPacket(2, names);
+            List<SubPacket> subPackets = importListPacket.buildPackets();
+            BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
+            BasePacket.encryptPacket(client.blowfish, basePacket);
+            client.queuePacket(basePacket);
         }
 
         private void sendRetainerList(ClientConnection client, SubPacket packet)
         {
-            
+            List<Retainer> retainers = Database.getRetainers(client.currentUserId);
+
+            RetainerListPacket retainerListPacket = new RetainerListPacket(2, retainers);
+            List<SubPacket> subPackets = retainerListPacket.buildPackets();
+            BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
+            BasePacket.encryptPacket(client.blowfish, basePacket);
+            client.queuePacket(basePacket);
         }
 
         private void sendCharacterList(ClientConnection client, SubPacket packet)

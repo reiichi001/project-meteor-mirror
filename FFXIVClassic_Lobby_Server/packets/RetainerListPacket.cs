@@ -11,12 +11,14 @@ namespace FFXIVClassic_Lobby_Server.packets
     class RetainerListPacket
     {
         public const ushort OPCODE = 0x17;
-        public const ushort MAXPERPACKET = 3;
+        public const ushort MAXPERPACKET = 9;
 
+        private UInt64 sequence;
         private List<Retainer> retainerList;
 
-        public RetainerListPacket(List<Retainer> retainerList)
+        public RetainerListPacket(UInt64 sequence, List<Retainer> retainerList)
         {
+            this.sequence = sequence;
             this.retainerList = retainerList;
         }        
 
@@ -30,7 +32,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             MemoryStream memStream = null;
             BinaryWriter binWriter = null;
 
-            foreach (Retainer chara in retainerList)
+            foreach (Retainer retainer in retainerList)
             {
                 if (totalCount == 0 || retainerCount % MAXPERPACKET == 0)
                 {
@@ -38,19 +40,23 @@ namespace FFXIVClassic_Lobby_Server.packets
                     binWriter = new BinaryWriter(memStream);
 
                     //Write List Info
-                    binWriter.Write((UInt64)0);
+                    binWriter.Write((UInt64)sequence);
                     binWriter.Write(retainerList.Count - totalCount <= MAXPERPACKET ? (byte)(retainerList.Count + 1) : (byte)0);
                     binWriter.Write(retainerList.Count - totalCount <= MAXPERPACKET ? (UInt32)(retainerList.Count - totalCount) : (UInt32)MAXPERPACKET);
-                    binWriter.Write((byte)6);
-                    binWriter.Write((UInt16)5);
+                    binWriter.Write((byte)0);
+                    binWriter.Write((UInt16)0);
+
+                    binWriter.Write((UInt64)0);
+                    binWriter.Write((UInt32)0);
                 }
 
                 //Write Entries
-                //binWriter.Write((ushort)world.id);
-                //binWriter.Write((ushort)world.listPosition);
-                //binWriter.Write((uint)world.population);
-                //binWriter.Write((UInt64)0);
-                //binWriter.Write(Encoding.ASCII.GetBytes(world.name.PadRight(64, '\0')));
+                binWriter.Write((uint)retainer.id);
+                binWriter.Write((uint)retainer.characterId);
+                binWriter.Write((ushort)retainer.slot);
+                binWriter.Write((ushort)(retainer.doRename ? 0x04 : 0x00));
+                binWriter.Write((uint)0);
+                binWriter.Write(Encoding.ASCII.GetBytes(retainer.name.PadRight(0x20, '\0')));
 
                 retainerCount++;
                 totalCount++;
@@ -77,7 +83,7 @@ namespace FFXIVClassic_Lobby_Server.packets
                     binWriter = new BinaryWriter(memStream);
 
                     //Write Empty List Info
-                    binWriter.Write((UInt64)0);
+                    binWriter.Write((UInt64)sequence);
                     binWriter.Write((byte)1);
                     binWriter.Write((UInt32)0);
                     binWriter.Write((byte)0);
