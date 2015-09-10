@@ -12,7 +12,7 @@ namespace FFXIVClassic_Lobby_Server.common
         {
             Console.Write("[{0}]", DateTime.Now.ToString("dd/MMM HH:mm"));
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.Write("[ERROR]");
+            Console.Write("[ERROR] ");
             Console.ForegroundColor = ConsoleColor.Gray ;
             Console.WriteLine(message);
         }
@@ -21,7 +21,7 @@ namespace FFXIVClassic_Lobby_Server.common
         {
             Console.Write("[{0}]", DateTime.Now.ToString("dd/MMM HH:mm"));
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.Write("[DEBUG]");
+            Console.Write("[DEBUG] ");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(message);
         }
@@ -30,7 +30,7 @@ namespace FFXIVClassic_Lobby_Server.common
         {
             Console.Write("[{0}]", DateTime.Now.ToString("dd/MMM HH:mm"));
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.Write("[INFO]");
+            Console.Write("[INFO] ");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(message);
         }
@@ -39,7 +39,7 @@ namespace FFXIVClassic_Lobby_Server.common
         {
             Console.Write("[{0}]", DateTime.Now.ToString("dd/MMM HH:mm"));
             Console.ForegroundColor = ConsoleColor.Magenta;
-            Console.Write("[SQL]");
+            Console.Write("[SQL] ");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(message);
         }
@@ -48,7 +48,7 @@ namespace FFXIVClassic_Lobby_Server.common
         {
             Console.Write("[{0}]", DateTime.Now.ToString("dd/MMM HH:mm"));
             Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.Write("[CONN]");
+            Console.Write("[CONN] ");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(message);
         }

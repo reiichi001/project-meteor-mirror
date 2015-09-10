@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server.common;
+using STA.Settings;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +11,7 @@ namespace FFXIVClassic_Lobby_Server
 {
     class ConfigConstants
     {
+        public static String OPTIONS_BINDIP;
         public static bool OPTIONS_TIMESTAMP = false;
 
         public static String DATABASE_HOST;
@@ -29,16 +31,17 @@ namespace FFXIVClassic_Lobby_Server
                 Console.ForegroundColor = ConsoleColor.Gray;
                 return false;
             }
- 
-            IniFile ini = new IniFile("./config.ini");
 
-            ConfigConstants.OPTIONS_TIMESTAMP = ini.IniReadValue("General", "showtimestamp").ToLower().Equals("true");
+            INIFile configIni = new INIFile("./config.ini");
 
-            ConfigConstants.DATABASE_HOST = ini.IniReadValue("Database", "host");
-            ConfigConstants.DATABASE_PORT = ini.IniReadValue("Database", "port");
-            ConfigConstants.DATABASE_NAME = ini.IniReadValue("Database", "database");
-            ConfigConstants.DATABASE_USERNAME = ini.IniReadValue("Database", "username");
-            ConfigConstants.DATABASE_PASSWORD = ini.IniReadValue("Database", "password");
+            ConfigConstants.OPTIONS_BINDIP =        configIni.GetValue("General", "server_ip", "127.0.0.1");
+            ConfigConstants.OPTIONS_TIMESTAMP =     configIni.GetValue("General", "showtimestamp", "true").ToLower().Equals("true");            
+
+            ConfigConstants.DATABASE_HOST =         configIni.GetValue("Database", "host", "");
+            ConfigConstants.DATABASE_PORT =         configIni.GetValue("Database", "port", "");
+            ConfigConstants.DATABASE_NAME =         configIni.GetValue("Database", "database", "");
+            ConfigConstants.DATABASE_USERNAME =     configIni.GetValue("Database", "username", "");
+            ConfigConstants.DATABASE_PASSWORD =     configIni.GetValue("Database", "password", "");
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("[OK]");

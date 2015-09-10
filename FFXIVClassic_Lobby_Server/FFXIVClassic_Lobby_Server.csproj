@@ -56,12 +56,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="common\Log.cs" />
+    <Compile Include="common\STA_INIFile.cs" />
     <Compile Include="dataobjects\CharaInfo.cs" />
     <Compile Include="dataobjects\Retainer.cs" />
     <Compile Include="dataobjects\Character.cs" />
     <Compile Include="ClientConnection.cs" />
     <Compile Include="common\Blowfish.cs" />
-    <Compile Include="common\IniFile.cs" />
     <Compile Include="common\Utils.cs" />
     <Compile Include="ConfigConstants.cs" />
     <Compile Include="Database.cs" />
