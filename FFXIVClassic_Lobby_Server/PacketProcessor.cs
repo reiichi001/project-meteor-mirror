@@ -103,7 +103,7 @@ namespace FFXIVClassic_Lobby_Server
                     case 0x0F:
                         //Mod Retainers
                     default:
-                        Debug.WriteLine("Unknown command 0x{0:X} received.", subpacket.header.opcode);
+                        Log.debug(String.Format("Unknown command 0x{0:X} received.", subpacket.header.opcode));
                         break;
                 }
             }
@@ -117,7 +117,7 @@ namespace FFXIVClassic_Lobby_Server
             byte[] blowfishKey = { 0xB4, 0xEE, 0x3F, 0x6C, 0x01, 0x6F, 0x5B, 0xD9, 0x71, 0x50, 0x0D, 0xB1, 0x85, 0xA2, 0xAB, 0x43};
             client.blowfish = new Blowfish(blowfishKey);
 
-            Console.WriteLine("Received encryption key: 0x{0:X}", clientTime);
+            Log.info(String.Format("Received encryption key: 0x{0:X}", clientTime));
 
             //Respond with acknowledgment
             BasePacket outgoingPacket = new BasePacket(HardCoded_Packets.g_secureConnectionAcknowledgment);
@@ -131,9 +131,9 @@ namespace FFXIVClassic_Lobby_Server
             String sessionId = sessionPacket.session;
             String clientVersion = sessionPacket.version;
 
-            Console.WriteLine("Got acknowledgment for secure session.");
-            Console.WriteLine("SESSION ID: {0}", sessionId);
-            Console.WriteLine("CLIENT VERSION: {0}", clientVersion);
+            Log.info(String.Format("Got acknowledgment for secure session."));
+            Log.info(String.Format("SESSION ID: {0}", sessionId));
+            Log.info(String.Format("CLIENT VERSION: {0}", clientVersion));
 
             uint userId = Database.getUserIdFromSession(sessionId);
             client.currentUserId = userId;
@@ -141,10 +141,10 @@ namespace FFXIVClassic_Lobby_Server
             if (userId == 0)
             {
                 //client.disconnect();
-                Console.WriteLine("Invalid session, kicking...");
+                Log.info(String.Format("Invalid session, kicking..."));
             }
 
-            Console.WriteLine("USER ID: {0}", userId);
+            Log.info(String.Format("USER ID: {0}", userId));
             BasePacket outgoingPacket = new BasePacket("./packets/loginAck.bin");
             BasePacket.encryptPacket(client.blowfish, outgoingPacket);
             client.queuePacket(outgoingPacket);
@@ -152,12 +152,18 @@ namespace FFXIVClassic_Lobby_Server
 
         private void ProcessGetCharacters(ClientConnection client, SubPacket packet)
         {   
-	        Console.WriteLine("{0} => Get characters", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId);
+	        Log.info(String.Format("{0} => Get characters", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId));
 
             sendWorldList(client, packet);
             sendImportList(client, packet);
             sendRetainerList(client, packet);
-            sendCharacterList(client, packet);
+            //sendCharacterList(client, packet);
+
+            //BasePacket outgoingPacket = new BasePacket("./packets/getCharsPacket.bin");
+            BasePacket outgoingPacket = new BasePacket("./packets/getChars_GOOD.bin");
+            BasePacket.encryptPacket(client.blowfish, outgoingPacket);
+            client.queuePacket(outgoingPacket);
+
 
         }
 
@@ -171,7 +177,7 @@ namespace FFXIVClassic_Lobby_Server
                 binReader.Close();
             }
 
-            Console.WriteLine("{0} => Select character id {1}", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId, characterId);	        
+            Log.info(String.Format("{0} => Select character id {1}", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId, characterId));	        
 
 	        String serverIp = "141.117.162.99";
             ushort port = 54992;
@@ -221,7 +227,7 @@ namespace FFXIVClassic_Lobby_Server
                 BasePacket.encryptPacket(client.blowfish, basePacket);
                 client.queuePacket(basePacket);
 
-                Console.WriteLine("User {0} => Error; invalid server id: \"{1}\"", client.currentUserId, worldId);
+                Log.info(String.Format("User {0} => Error; invalid server id: \"{1}\"", client.currentUserId, worldId));
                 return;
             }
 
@@ -325,9 +331,8 @@ namespace FFXIVClassic_Lobby_Server
         {
             List<Character> characterList = Database.getCharacters(client.currentUserId);
 
-            CharacterListPacket characterlistPacket = new CharacterListPacket(2, characterList);
+            CharacterListPacket characterlistPacket = new CharacterListPacket(2, characterList, 2);
             List<SubPacket> subPackets = characterlistPacket.buildPackets();
-            subPackets[0].debugPrintSubPacket();
             BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
             BasePacket.encryptPacket(client.blowfish, basePacket);
             client.queuePacket(basePacket);

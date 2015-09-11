@@ -47,7 +47,7 @@ namespace FFXIVClassic_Lobby_Server.common
         public static void conn(String message)
         {
             Console.Write("[{0}]", DateTime.Now.ToString("dd/MMM HH:mm"));
-            Console.ForegroundColor = ConsoleColor.DarkGreen;
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.Write("[CONN] ");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(message);
