@@ -43,7 +43,8 @@ namespace FFXIVClassic_Lobby_Server.packets
 
                     //Write List Info
                     binWriter.Write((UInt64)sequence);
-                    binWriter.Write(maxChars - totalCount <= MAXPERPACKET ? (byte)(maxChars + 1) : (byte)0);
+                    byte listTracker = (byte)((MAXPERPACKET * 2) * subPackets.Count);
+                    binWriter.Write(characterList.Count - totalCount <= MAXPERPACKET ? (byte)(listTracker + 1) : (byte)(listTracker));
                     //binWriter.Write((byte)1);
                     binWriter.Write(maxChars - totalCount <= MAXPERPACKET ? (UInt32)(maxChars - totalCount) : (UInt32)MAXPERPACKET);
                     binWriter.Write((byte)0);
@@ -144,7 +145,8 @@ namespace FFXIVClassic_Lobby_Server.packets
 
                     //Write Empty List Info
                     binWriter.Write((UInt64)sequence);
-                    binWriter.Write((byte)1);
+                    byte listTracker = (byte)((MAXPERPACKET * 2) * subPackets.Count);
+                    binWriter.Write(characterList.Count - totalCount <= MAXPERPACKET ? (byte)(listTracker + 1) : (byte)(listTracker));
                     binWriter.Write((UInt32)0);
                     binWriter.Write((byte)0);
                     binWriter.Write((UInt16)0);
