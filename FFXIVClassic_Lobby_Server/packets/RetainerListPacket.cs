@@ -11,7 +11,7 @@ namespace FFXIVClassic_Lobby_Server.packets
     class RetainerListPacket
     {
         public const ushort OPCODE = 0x17;
-        public const ushort MAXPERPACKET = 9;
+        public const ushort MAXPERPACKET = 9; 
 
         private UInt64 sequence;
         private List<Retainer> retainerList;
@@ -41,11 +41,11 @@ namespace FFXIVClassic_Lobby_Server.packets
 
                     //Write List Info
                     binWriter.Write((UInt64)sequence);
-                    binWriter.Write(retainerList.Count - totalCount <= MAXPERPACKET ? (byte)(retainerList.Count + 1) : (byte)0);
+                    byte listTracker = (byte)((MAXPERPACKET * 2) * subPackets.Count);
+                    binWriter.Write(retainerList.Count - totalCount <= MAXPERPACKET ? (byte)(listTracker + 1) : (byte)(listTracker));
                     binWriter.Write(retainerList.Count - totalCount <= MAXPERPACKET ? (UInt32)(retainerList.Count - totalCount) : (UInt32)MAXPERPACKET);
                     binWriter.Write((byte)0);
                     binWriter.Write((UInt16)0);
-
                     binWriter.Write((UInt64)0);
                     binWriter.Write((UInt32)0);
                 }
@@ -84,7 +84,8 @@ namespace FFXIVClassic_Lobby_Server.packets
 
                     //Write Empty List Info
                     binWriter.Write((UInt64)sequence);
-                    binWriter.Write((byte)1);
+                    byte listTracker = (byte)((MAXPERPACKET * 2) * subPackets.Count);
+                    binWriter.Write(retainerList.Count - totalCount <= MAXPERPACKET ? (byte)(listTracker + 1) : (byte)(listTracker));
                     binWriter.Write((UInt32)0);
                     binWriter.Write((byte)0);
                     binWriter.Write((UInt16)0);
