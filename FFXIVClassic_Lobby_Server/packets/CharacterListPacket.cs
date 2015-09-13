@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server.dataobjects;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,19 +15,19 @@ namespace FFXIVClassic_Lobby_Server.packets
         public const ushort MAXPERPACKET = 2;
 
         private ulong sequence;
-        private ushort maxChars;
         private List<Character> characterList;
 
-        public CharacterListPacket(ulong sequence, List<Character> characterList, ushort maxChars)
+        public CharacterListPacket(ulong sequence, List<Character> characterList)
         {
             this.sequence = sequence;
             this.characterList = characterList;
-            this.maxChars = maxChars;
         }        
 
         public List<SubPacket> buildPackets()
         {
             List<SubPacket> subPackets = new List<SubPacket>();
+
+            int numCharacters = characterList.Count >= 8 ? 8 : characterList.Count + 1;
 
             int characterCount = 0;
             int totalCount = 0;
@@ -44,9 +45,8 @@ namespace FFXIVClassic_Lobby_Server.packets
                     //Write List Info
                     binWriter.Write((UInt64)sequence);
                     byte listTracker = (byte)((MAXPERPACKET * 2) * subPackets.Count);
-                    binWriter.Write(characterList.Count - totalCount <= MAXPERPACKET ? (byte)(listTracker + 1) : (byte)(listTracker));
-                    //binWriter.Write((byte)1);
-                    binWriter.Write(maxChars - totalCount <= MAXPERPACKET ? (UInt32)(maxChars - totalCount) : (UInt32)MAXPERPACKET);
+                    binWriter.Write(numCharacters - totalCount <= MAXPERPACKET ? (byte)(listTracker + 1) : (byte)(listTracker));
+                    binWriter.Write(numCharacters - totalCount <= MAXPERPACKET ? (UInt32)(numCharacters - totalCount) : (UInt32)MAXPERPACKET);
                     binWriter.Write((byte)0);
                     binWriter.Write((UInt16)0);
                 }
@@ -68,13 +68,16 @@ namespace FFXIVClassic_Lobby_Server.packets
                     options |= 0x02;
                 if (chara.isLegacy)
                     options |= 0x08;
-
+                
                 binWriter.Write((byte)options); //Options (0x01: Service Account not active, 0x72: Change Chara Name) 
                 binWriter.Write((ushort)0);  
                 binWriter.Write((uint)0xF4); //Logged out zone
                 binWriter.Write(Encoding.ASCII.GetBytes(chara.name.PadRight(0x20, '\0'))); //Name
                 binWriter.Write(Encoding.ASCII.GetBytes(worldname.PadRight(0xE, '\0'))); //World Name
-                binWriter.Write("wAQAAOonIyMNAAAAV3Jlbml4IFdyb25nABwAAAAEAAAAAwAAAAMAAAA_8OADAAHQFAAEAAABAAAAABTQCAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGEgAAAAMQAAQCQAAMAsAACKVAAAAPgCAAAAAAAAAAAAAAAAAAAAAAAAAAAAACQAAAAkAwAAAAAAAAAAANvb1M05AQAABBoAAAEABqoiIuIKAAAAcHJ2MElubjAxABEAAABkZWZhdWx0VGVycml0b3J5AAwJAhcABAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAIAAAAAAAAAAAAAAAA="); //Appearance Data
+
+                CharaInfo info = JsonConvert.DeserializeObject<CharaInfo>(chara.charaInfo);
+                //binWriter.Write(info.buildForCharaList(chara)); //Appearance Data
+                binWriter.Write(CharaInfo.debug()); //Appearance Data
                 
                 characterCount++;
                 totalCount++;                
@@ -90,21 +93,24 @@ namespace FFXIVClassic_Lobby_Server.packets
                     characterCount = 0;
                 }                
 
+                //Incase DB came back with more than max
+                if (totalCount >= 8)
+                    break;
             }
 
-            //Keep creating empty slots until done max characters
-            while (maxChars - totalCount > 0)
+            //Add a 'NEW' slot if there is space
+            if (characterList.Count < 8)
             {
                 if (characterCount % MAXPERPACKET == 0)
                 {
-                    memStream = new MemoryStream(0x3D0);
+                    memStream = new MemoryStream(0x3B0);
                     binWriter = new BinaryWriter(memStream);
 
                     //Write List Info
                     binWriter.Write((UInt64)sequence);
-                    binWriter.Write(maxChars - totalCount <= MAXPERPACKET ? (byte)(maxChars + 1) : (byte)0);
-                    //binWriter.Write((byte)1);
-                    binWriter.Write(maxChars - totalCount <= MAXPERPACKET ? (UInt32)(maxChars - totalCount) : (UInt32)MAXPERPACKET);
+                    byte listTracker = (byte)((MAXPERPACKET * 2) * subPackets.Count);
+                    binWriter.Write(numCharacters - totalCount <= MAXPERPACKET ? (byte)(listTracker + 1) : (byte)(listTracker));
+                    binWriter.Write(numCharacters - totalCount <= MAXPERPACKET ? (UInt32)(numCharacters-totalCount) : (UInt32)MAXPERPACKET);
                     binWriter.Write((byte)0);
                     binWriter.Write((UInt16)0);
                 }
@@ -115,7 +121,6 @@ namespace FFXIVClassic_Lobby_Server.packets
                 binWriter.Write((uint)0); //???
                 binWriter.Write((uint)0); //Character Id            
                 binWriter.Write((byte)(totalCount)); //Slot
-
                 binWriter.Write((byte)0); //Options (0x01: Service Account not active, 0x72: Change Chara Name) 
                 binWriter.Write((ushort)0);
                 binWriter.Write((uint)0); //Logged out zone
@@ -136,22 +141,8 @@ namespace FFXIVClassic_Lobby_Server.packets
             }
 
             //If there is anything left that was missed or the list is empty
-            if (characterCount > 0 || maxChars == 0)
-            {
-                if (maxChars == 0)
-                {
-                    memStream = new MemoryStream(0x3D0);
-                    binWriter = new BinaryWriter(memStream);
-
-                    //Write Empty List Info
-                    binWriter.Write((UInt64)sequence);
-                    byte listTracker = (byte)((MAXPERPACKET * 2) * subPackets.Count);
-                    binWriter.Write(characterList.Count - totalCount <= MAXPERPACKET ? (byte)(listTracker + 1) : (byte)(listTracker));
-                    binWriter.Write((UInt32)0);
-                    binWriter.Write((byte)0);
-                    binWriter.Write((UInt16)0);
-                }
-
+            if (characterCount > 0 || numCharacters == 0)
+            {                
                 byte[] data = memStream.GetBuffer();
                 binWriter.Dispose();
                 memStream.Dispose();

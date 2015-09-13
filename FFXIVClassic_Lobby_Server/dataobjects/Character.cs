@@ -20,13 +20,7 @@ namespace FFXIVClassic_Lobby_Server
         public bool doRename;
         public uint currentZoneId;
         
-        public static String characterToEncoded(CharaInfo chara)
-        {
-            String charaInfo = System.Convert.ToBase64String(chara.toBytes());
-            charaInfo.Replace("+", "-");
-            charaInfo.Replace("/", "_");
-            return charaInfo;
-        }
+        
 
         public static CharaInfo EncodedToCharacter(String charaInfo)
         {

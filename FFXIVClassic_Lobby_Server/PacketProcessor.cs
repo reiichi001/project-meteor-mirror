@@ -157,13 +157,11 @@ namespace FFXIVClassic_Lobby_Server
             sendWorldList(client, packet);
             sendImportList(client, packet);
             sendRetainerList(client, packet);
-            //sendCharacterList(client, packet);
-
-            //BasePacket outgoingPacket = new BasePacket("./packets/getCharsPacket.bin");
-            BasePacket outgoingPacket = new BasePacket("./packets/getChars_GOOD.bin");
+            sendCharacterList(client, packet);            
+            /*BasePacket outgoingPacket = new BasePacket("./packets/getChars_GOOD.bin");
+            outgoingPacket.debugPrintPacket();
             BasePacket.encryptPacket(client.blowfish, outgoingPacket);
-            client.queuePacket(outgoingPacket);
-
+            client.queuePacket(outgoingPacket);*/
 
         }
 
@@ -211,8 +209,17 @@ namespace FFXIVClassic_Lobby_Server
 
             uint pid = 0, cid = 0;
 
+            //Get world from new char instance
             if (worldId == 0)
                 worldId = client.newCharaWorldId;
+
+            //Check if this character exists, get world from there
+            if (worldId == 0 && charaReq.characterId != 0)
+            {
+                Character chara = Database.getCharacter(client.currentUserId, charaReq.characterId);
+                if (chara != null)
+                    worldId = chara.serverId;                
+            }
 
             string worldName = null;           
             World world = Database.getServer(worldId);
@@ -231,11 +238,13 @@ namespace FFXIVClassic_Lobby_Server
                 return;
             }
 
+            bool alreadyTaken;
+
             switch (code)
             {
                 case 0x01://Reserve
                     
-                    var alreadyTaken = Database.reserveCharacter(client.currentUserId, slot, worldId, name, out pid, out cid);
+                    alreadyTaken = Database.reserveCharacter(client.currentUserId, slot, worldId, name, out pid, out cid);
 
                     if (alreadyTaken)
                     {
@@ -257,31 +266,45 @@ namespace FFXIVClassic_Lobby_Server
                         client.newCharaName = name;
                     }
 
-                    Log.info(String.Format("User {0} => Character reserved \"{1}\"", client.currentUserId, charaReq.characterName));
+                    Log.info(String.Format("User {0} => Character reserved \"{1}\"", client.currentUserId, name));
                     break;
                 case 0x02://Make                    
-                    CharaInfo info = new CharaInfo();
+                    CharaInfo info = CharaInfo.getFromNewCharRequest(charaReq.characterInfoEncoded);
 
                     Database.makeCharacter(client.currentUserId, client.newCharaCid, info);
 
                     pid = 1;
                     cid = client.newCharaCid;
-                    name = client.newCharaName; 
+                    name = client.newCharaName;
 
-                    Log.info(String.Format("User {0} => Character created \"{1}\"", client.currentUserId, charaReq.characterName));
+                    Log.info(String.Format("User {0} => Character created \"{1}\"", client.currentUserId, name));
                     break;
                 case 0x03://Rename
-                    
-                    Log.info(String.Format("User {0} => Character renamed \"{1}\"", client.currentUserId, charaReq.characterName));
+
+                    alreadyTaken = Database.renameCharacter(client.currentUserId, charaReq.characterId, worldId, charaReq.characterName);
+
+                    if (alreadyTaken)
+                    {
+                        ErrorPacket errorPacket = new ErrorPacket(charaReq.sequence, 1003, 0, 13005, ""); //BDB - Chara Name Used, //1003 - Bad Word
+                        SubPacket subpacket = errorPacket.buildPacket();
+                        BasePacket basePacket = BasePacket.createPacket(subpacket, true, false);
+                        BasePacket.encryptPacket(client.blowfish, basePacket);
+                        client.queuePacket(basePacket);
+
+                        Log.info(String.Format("User {0} => Error; name taken: \"{1}\"", client.currentUserId, charaReq.characterName));
+                        return;
+                    }
+
+                    Log.info(String.Format("User {0} => Character renamed \"{1}\"", client.currentUserId, name));
                     break;
                 case 0x04://Delete
                     Database.deleteCharacter(charaReq.characterId, charaReq.characterName);
-                    
-                    Log.info(String.Format("User {0} => Character deleted \"{1}\"", client.currentUserId, charaReq.characterName));
+
+                    Log.info(String.Format("User {0} => Character deleted \"{1}\"", client.currentUserId, name));
                     break;
                 case 0x06://Rename Retainer
 
-                    Log.info(String.Format("User {0} => Retainer renamed \"{1}\"", client.currentUserId, charaReq.characterName));
+                    Log.info(String.Format("User {0} => Retainer renamed \"{1}\"", client.currentUserId, name));
                     break;
             }
 
@@ -296,7 +319,7 @@ namespace FFXIVClassic_Lobby_Server
         private void sendWorldList(ClientConnection client, SubPacket packet)
         {            
             List<World> serverList = Database.getServers();
-            WorldListPacket worldlistPacket = new WorldListPacket(2, serverList);
+            WorldListPacket worldlistPacket = new WorldListPacket(0, serverList);
             List<SubPacket> subPackets = worldlistPacket.buildPackets();
 
             BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
@@ -309,7 +332,7 @@ namespace FFXIVClassic_Lobby_Server
         {
             List<String> names = Database.getReservedNames(client.currentUserId);
 
-            ImportListPacket importListPacket = new ImportListPacket(2, names);
+            ImportListPacket importListPacket = new ImportListPacket(0, names);
             List<SubPacket> subPackets = importListPacket.buildPackets();
             BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
             BasePacket.encryptPacket(client.blowfish, basePacket);
@@ -320,7 +343,7 @@ namespace FFXIVClassic_Lobby_Server
         {
             List<Retainer> retainers = Database.getRetainers(client.currentUserId);
 
-            RetainerListPacket retainerListPacket = new RetainerListPacket(2, retainers);
+            RetainerListPacket retainerListPacket = new RetainerListPacket(0, retainers);
             List<SubPacket> subPackets = retainerListPacket.buildPackets();
             BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
             BasePacket.encryptPacket(client.blowfish, basePacket);
@@ -331,7 +354,10 @@ namespace FFXIVClassic_Lobby_Server
         {
             List<Character> characterList = Database.getCharacters(client.currentUserId);
 
-            CharacterListPacket characterlistPacket = new CharacterListPacket(2, characterList, 2);
+            if (characterList.Count > 8)
+                Log.error("Warning, got more than 8 characters. List truncated, check DB for issues.");
+
+            CharacterListPacket characterlistPacket = new CharacterListPacket(0, characterList);
             List<SubPacket> subPackets = characterlistPacket.buildPackets();
             BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
             BasePacket.encryptPacket(client.blowfish, basePacket);

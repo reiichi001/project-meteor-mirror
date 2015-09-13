@@ -128,17 +128,31 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static void renameCharacter(uint characterId, String newName)
+        public static bool renameCharacter(uint userId, uint characterId, uint serverId, String newName)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand();
+
+                    //Check if exists                    
+                    MySqlCommand cmd = new MySqlCommand("SELECT * FROM characters WHERE name=@name AND serverId=@serverId", conn);
+                    cmd.Parameters.AddWithValue("@serverId", serverId);
+                    cmd.Parameters.AddWithValue("@name", newName);
+                    using (MySqlDataReader Reader = cmd.ExecuteReader())
+                    {
+                        if (Reader.HasRows)
+                        {
+                            return true;
+                        }
+                    }
+
+                    cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = "UPDATE characters SET name=@name WHERE id=@cid";
+                    cmd.CommandText = "UPDATE characters SET name=@name, doRename=0 WHERE id=@cid AND userId=@uid";
                     cmd.Prepare();
+                    cmd.Parameters.AddWithValue("@uid", userId);
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     cmd.Parameters.AddWithValue("@name", newName);
                     cmd.ExecuteNonQuery();
@@ -152,6 +166,8 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     conn.Dispose();
                 }
+
+                return false;
             }
         }
 
@@ -164,7 +180,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Open();
                     MySqlCommand cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = "UPDATE characters SET state=1 WHERE id=@cid AND name=@name";
+                    cmd.CommandText = "DELETE FROM characters WHERE id=@cid AND name=@name";
                     cmd.Prepare();
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     cmd.Parameters.AddWithValue("@name", name);
@@ -241,6 +257,29 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Dispose();
                 }
                 return charaList;
+            }
+        }
+
+
+        public static Character getCharacter(uint userId, uint charId)
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                Character chara = null;
+                try
+                {
+                    conn.Open();
+                    chara = conn.Query<Character>("SELECT * FROM characters WHERE id=@CharaId and userId=@UserId", new { UserId = userId, CharaId = charId }).SingleOrDefault();
+                }
+                catch (MySqlException e)
+                {
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+
+                return chara;
             }
         }
 
