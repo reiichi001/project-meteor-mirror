@@ -21,10 +21,36 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
         public ushort eyeColor = 0;
         public ushort characteristicsColor = 0;
 
+        public struct FaceInfo
+        {
+            [BitfieldLength(5)]
+            public uint characteristics;
+            [BitfieldLength(3)]
+            public uint characteristicsColor;
+            [BitfieldLength(6)]
+            public uint type;
+            [BitfieldLength(2)]
+            public uint ears;
+            [BitfieldLength(2)]
+            public uint mouth;
+            [BitfieldLength(2)]
+            public uint features;
+            [BitfieldLength(3)]
+            public uint nose;
+            [BitfieldLength(3)]
+            public uint eyeShape;
+            [BitfieldLength(1)]
+            public uint irisSize;
+            [BitfieldLength(3)]
+            public uint eyebrows;
+            [BitfieldLength(2)]
+            public uint unknown;
+        }
+
         public uint faceType = 0;
-        public uint faceEyebrow = 0;
+        public uint faceEyebrows = 0;
         public uint faceEyeShape = 0;
-        public uint faceEyeSize = 0;
+        public uint faceIrisSize = 0;
         public uint faceNose = 0;
         public uint faceMouth = 0;
         public uint faceFeatures = 0;
@@ -75,8 +101,8 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
 
                     reader.ReadUInt32();
 
-                    info.faceEyebrow = reader.ReadByte();
-                    info.faceEyeSize = reader.ReadByte();
+                    info.faceEyebrows = reader.ReadByte();
+                    info.faceIrisSize = reader.ReadByte();
                     info.faceEyeShape = reader.ReadByte();
                     info.faceNose = reader.ReadByte();
                     info.faceFeatures = reader.ReadByte();
@@ -119,6 +145,20 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                 {
+                    //Build faceinfo for later
+                    FaceInfo faceInfo = new FaceInfo();
+                    faceInfo.characteristics = characteristics;
+                    faceInfo.characteristicsColor = characteristicsColor;
+                    faceInfo.type = faceType;
+                    faceInfo.ears = ears;
+                    faceInfo.features = faceFeatures;
+                    faceInfo.eyebrows = faceEyebrows;
+                    faceInfo.eyeShape = faceEyeShape;
+                    faceInfo.irisSize = faceIrisSize;
+                    faceInfo.mouth = faceMouth;
+                    faceInfo.nose = faceNose;
+
+
                     string location1 = "prv0Inn01\0";
                     string location2 = "defaultTerritory\0";
 
@@ -132,7 +172,10 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     writer.Write((UInt32)size);
                     uint colorVal = skinColor | (uint)(hairColor << 10) | (uint)(eyeColor << 20);
                     writer.Write((UInt32)colorVal);
-                    writer.Write((UInt32)0x14d00100); //FACE, Figure this out!
+
+                    var bitfield = PrimitiveConversion.ToUInt32(faceInfo);
+
+                    writer.Write((UInt32)bitfield); //FACE, Figure this out!
                     uint hairVal = hairHighlightColor | (uint)(hairStyle << 10) | (uint)(characteristicsColor << 20);
                     writer.Write((UInt32)hairVal);
                     writer.Write((UInt32)voice);                    

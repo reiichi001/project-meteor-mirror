@@ -80,7 +80,7 @@ namespace FFXIVClassic_Lobby_Server
             
             BasePacket.decryptPacket(client.blowfish, ref packet);
 
-            packet.debugPrintPacket();
+            //packet.debugPrintPacket();
 
             List<SubPacket> subPackets = packet.getSubpackets();
             foreach (SubPacket subpacket in subPackets)
@@ -157,11 +157,7 @@ namespace FFXIVClassic_Lobby_Server
             sendWorldList(client, packet);
             sendImportList(client, packet);
             sendRetainerList(client, packet);
-            sendCharacterList(client, packet);            
-            /*BasePacket outgoingPacket = new BasePacket("./packets/getChars_GOOD.bin");
-            outgoingPacket.debugPrintPacket();
-            BasePacket.encryptPacket(client.blowfish, outgoingPacket);
-            client.queuePacket(outgoingPacket);*/
+            sendCharacterList(client, packet);                        
 
         }
 
@@ -177,7 +173,7 @@ namespace FFXIVClassic_Lobby_Server
 
             Log.info(String.Format("{0} => Select character id {1}", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId, characterId));	        
 
-	        String serverIp = "141.117.162.99";
+	        String serverIp = "141.117.161.40";
             ushort port = 54992;
             BitConverter.GetBytes(port);
 	        BasePacket outgoingPacket = new BasePacket("./packets/selectChar.bin");
@@ -309,8 +305,7 @@ namespace FFXIVClassic_Lobby_Server
             }
 
             CharaCreatorPacket charaCreator = new CharaCreatorPacket(charaReq.sequence, code, pid, cid, 1, name, worldName);
-            BasePacket charaCreatorPacket = BasePacket.createPacket(charaCreator.buildPacket(), true, false);
-            charaCreatorPacket.debugPrintPacket();
+            BasePacket charaCreatorPacket = BasePacket.createPacket(charaCreator.buildPacket(), true, false);            
             BasePacket.encryptPacket(client.blowfish, charaCreatorPacket);
             client.queuePacket(charaCreatorPacket);
 

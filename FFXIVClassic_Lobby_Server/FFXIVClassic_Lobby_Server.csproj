@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="common\Bitfield.cs" />
     <Compile Include="common\Log.cs" />
     <Compile Include="common\STA_INIFile.cs" />
     <Compile Include="dataobjects\CharaInfo.cs" />
