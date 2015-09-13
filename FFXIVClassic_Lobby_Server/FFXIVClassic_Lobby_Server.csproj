@@ -58,6 +58,7 @@
     <Compile Include="common\Bitfield.cs" />
     <Compile Include="common\Log.cs" />
     <Compile Include="common\STA_INIFile.cs" />
+    <Compile Include="dataobjects\Account.cs" />
     <Compile Include="dataobjects\CharaInfo.cs" />
     <Compile Include="dataobjects\Retainer.cs" />
     <Compile Include="dataobjects\Character.cs" />
@@ -74,9 +75,11 @@
     <Compile Include="packets\ErrorPacket.cs" />
     <Compile Include="packets\HardCoded_Packets.cs" />
     <Compile Include="packets\PacketStructs.cs" />
+    <Compile Include="packets\SelectCharacterConfirmPacket.cs" />
     <Compile Include="packets\SubPacket.cs" />
     <Compile Include="packets\CharacterListPacket.cs" />
     <Compile Include="packets\ImportListPacket.cs" />
+    <Compile Include="packets\AccountListPacket.cs" />
     <Compile Include="packets\WorldListPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -84,8 +84,8 @@ namespace FFXIVClassic_Lobby_Server
 
             List<SubPacket> subPackets = packet.getSubpackets();
             foreach (SubPacket subpacket in subPackets)
-            {                             
-
+            {
+                subpacket.debugPrintSubPacket();
                 switch (subpacket.header.opcode)
                 {
                     case 0x03:
@@ -127,27 +127,39 @@ namespace FFXIVClassic_Lobby_Server
 
         private void ProcessSessionAcknowledgement(ClientConnection client, SubPacket packet)
         {
-            PacketStructs.SessionPacket sessionPacket = PacketStructs.toSessionStruct(packet.data);
-            String sessionId = sessionPacket.session;
+            PacketStructs.SessionPacket sessionPacket = PacketStructs.toSessionStruct(packet.data);           
             String clientVersion = sessionPacket.version;
 
-            Log.info(String.Format("Got acknowledgment for secure session."));
-            Log.info(String.Format("SESSION ID: {0}", sessionId));
+            Log.info(String.Format("Got acknowledgment for secure session."));         
             Log.info(String.Format("CLIENT VERSION: {0}", clientVersion));
 
-            uint userId = Database.getUserIdFromSession(sessionId);
+            uint userId = Database.getUserIdFromSession(sessionPacket.session);
             client.currentUserId = userId;
+            client.currentSessionToken = sessionPacket.session; ;
 
             if (userId == 0)
             {
-                //client.disconnect();
-                Log.info(String.Format("Invalid session, kicking..."));
+                    ErrorPacket errorPacket = new ErrorPacket(sessionPacket.sequence, 0, 0, 13001, "Your session has expired, please login again.");
+                    SubPacket subpacket = errorPacket.buildPacket();
+                    BasePacket errorBasePacket = BasePacket.createPacket(subpacket, true, false);
+                    BasePacket.encryptPacket(client.blowfish, errorBasePacket);
+                    client.queuePacket(errorBasePacket);
+
+                    Log.info(String.Format("Invalid session, kicking..."));
+                    return;
             }
 
             Log.info(String.Format("USER ID: {0}", userId));
-            BasePacket outgoingPacket = new BasePacket("./packets/loginAck.bin");
-            BasePacket.encryptPacket(client.blowfish, outgoingPacket);
-            client.queuePacket(outgoingPacket);
+
+            List<Account> accountList = new List<Account>();
+            Account defaultAccount = new Account();
+            defaultAccount.id = 1;
+            defaultAccount.name = "FINAL FANTASY XIV";
+            accountList.Add(defaultAccount);
+            AccountListPacket listPacket = new AccountListPacket(1, accountList);
+            BasePacket basePacket = BasePacket.createPacket(listPacket.buildPackets(), true, false);
+            BasePacket.encryptPacket(client.blowfish, basePacket);
+            client.queuePacket(basePacket);
         }
 
         private void ProcessGetCharacters(ClientConnection client, SubPacket packet)
@@ -163,33 +175,29 @@ namespace FFXIVClassic_Lobby_Server
 
         private void ProcessSelectCharacter(ClientConnection client, SubPacket packet)
         {
-            uint characterId = 0;
-            using (BinaryReader binReader = new BinaryReader(new MemoryStream(packet.data)))
+            FFXIVClassic_Lobby_Server.packets.PacketStructs.SelectCharRequestPacket selectCharRequest = PacketStructs.toSelectCharRequestStruct(packet.data);
+
+            Log.info(String.Format("{0} => Select character id {1}", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId, selectCharRequest.characterId));
+
+            Character chara = Database.getCharacter(client.currentUserId, selectCharRequest.characterId);
+            World world = null;
+
+            if (chara != null)
+                world = Database.getServer(chara.serverId);
+
+            if (world == null)
             {
-                binReader.BaseStream.Seek(0x8, SeekOrigin.Begin);
-                characterId = binReader.ReadUInt32();
-                binReader.Close();
+                ErrorPacket errorPacket = new ErrorPacket(selectCharRequest.sequence, 0, 0, 13001, "World does not exist or is inactive.");
+                SubPacket subpacket = errorPacket.buildPacket();
+                BasePacket basePacket = BasePacket.createPacket(subpacket, true, false);
+                BasePacket.encryptPacket(client.blowfish, basePacket);
+                client.queuePacket(basePacket);
+                return;
             }
 
-            Log.info(String.Format("{0} => Select character id {1}", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId, characterId));	        
+            SelectCharacterConfirmPacket connectCharacter = new SelectCharacterConfirmPacket(selectCharRequest.sequence, selectCharRequest.characterId, client.currentSessionToken, world.address, world.port, selectCharRequest.ticket);
 
-	        String serverIp = "141.117.161.40";
-            ushort port = 54992;
-            BitConverter.GetBytes(port);
-	        BasePacket outgoingPacket = new BasePacket("./packets/selectChar.bin");
-
-            //Write Character ID and Server info
-            using (BinaryWriter binWriter = new BinaryWriter(new MemoryStream(outgoingPacket.data)))
-            {
-                binWriter.Seek(0x28, SeekOrigin.Begin);
-                binWriter.Write(characterId);
-                binWriter.Seek(0x78, SeekOrigin.Begin);
-                binWriter.Write(System.Text.Encoding.ASCII.GetBytes(serverIp));
-                binWriter.Seek(0x76, SeekOrigin.Begin);
-                binWriter.Write(port);
-                binWriter.Close();
-            }
-
+            BasePacket outgoingPacket = BasePacket.createPacket(connectCharacter.buildPackets(), true, false);
             BasePacket.encryptPacket(client.blowfish, outgoingPacket);
 	        client.queuePacket(outgoingPacket);
         }

@@ -8,11 +8,11 @@ namespace FFXIVClassic_Lobby_Server.common
   
     public class Blowfish
     {
-        [DllImport("../../../Debug/Blowfish.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./Blowfish.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern short initializeBlowfish(byte[] key, short keySize, uint[] P, uint[,] S);
-        [DllImport("../../../Debug/Blowfish.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./Blowfish.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void blowfish_encipher(ref int xl, ref int xr, uint[] P);
-        [DllImport("../../../Debug/Blowfish.dll", CallingConvention = CallingConvention.Cdecl)]
+        [DllImport("./Blowfish.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void blowfish_decipher(ref int xl, ref int xr, uint[] P);
 
         private uint[] P = new uint[16+2];

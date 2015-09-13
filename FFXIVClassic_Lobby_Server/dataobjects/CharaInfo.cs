@@ -141,6 +141,14 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
         {
             byte[] data;
 
+            mainHand = 79707136;
+            offHand = 32509954;
+            headGear = 43008;
+            bodyGear = 43008;
+            legsGear = 43008;
+            handsGear = 43008;
+            feetGear = 43008;
+
             using (MemoryStream stream = new MemoryStream())
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
@@ -240,8 +248,6 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                 }
 
                 data = stream.GetBuffer();
-
-                File.WriteAllBytes("./packets/out.bin",data);
             }
 
             return Convert.ToBase64String(data).Replace('+', '-').Replace('/', '_');

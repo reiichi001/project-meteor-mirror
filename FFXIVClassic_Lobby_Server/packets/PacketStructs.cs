@@ -13,13 +13,13 @@ namespace FFXIVClassic_Lobby_Server.packets
         public unsafe struct SessionPacket
         {
             [FieldOffset(0)]
-            public UInt64 sequence;            
+            public UInt64 sequence;
+            [FieldOffset(0x10)]
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x40)]
+            public String session;
             [FieldOffset(0x50)]
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
-            public String version;
-            [FieldOffset(0x70)]
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
-            public String session;
+            public String version;            
         }
 
         [StructLayout(LayoutKind.Sequential)]
@@ -37,38 +37,13 @@ namespace FFXIVClassic_Lobby_Server.packets
             public String characterInfoEncoded;
         }
 
-        //Response Packets
         [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct ReserveCharaResponse
+        public unsafe struct SelectCharRequestPacket
         {
             public UInt64 sequence;
-            public uint errorCode;
-            public uint statusCode;
-            public uint errorId;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x2BB)]
-            public String errorMessage;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct MakeCharaResponse
-        {
-            public UInt64 sequence;
-            public uint errorCode;
-            public uint statusCode;
-            public uint errorId;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x2BB)]
-            public String errorMessage;
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        public unsafe struct DeleteCharaResponse
-        {
-            public UInt64 sequence;
-            public uint errorCode;
-            public uint statusCode;
-            public uint errorId;
-            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x2BB)]
-            public String errorMessage;
+            public uint characterId;
+            public uint unknownId;
+            public UInt64 ticket;            
         }
 
         public static unsafe CharacterRequestPacket toCharacterRequestStruct(byte[] bytes)
@@ -84,6 +59,14 @@ namespace FFXIVClassic_Lobby_Server.packets
             fixed (byte* pdata = &bytes[0])
             {
                 return (SessionPacket)Marshal.PtrToStructure(new IntPtr(pdata), typeof(SessionPacket));
+            }
+        }
+
+        public static unsafe SelectCharRequestPacket toSelectCharRequestStruct(byte[] bytes)
+        {
+            fixed (byte* pdata = &bytes[0])
+            {
+                return (SelectCharRequestPacket)Marshal.PtrToStructure(new IntPtr(pdata), typeof(SelectCharRequestPacket));
             }
         }
 

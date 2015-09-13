@@ -7,10 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic_Lobby_Server.common;
 
 namespace FFXIVClassic_Lobby_Server
 {
-    //charState: 0 - Reserved, 1 - Deleted, 2 - Inactive, 3 - Active
+    //charState: 0 - Reserved, 1 - Inactive, 2 - Active
 
     class Database
     {
@@ -37,7 +38,7 @@ namespace FFXIVClassic_Lobby_Server
                 finally
                 {
                     conn.Dispose();
-                }
+                }                
             }
             return id;
         }
@@ -93,6 +94,8 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     conn.Dispose();
                 }
+
+                Log.database(String.Format("CID={0} created on 'characters' table.", cid));
             }
 
             return alreadyExists;
@@ -107,7 +110,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Open();
                     MySqlCommand cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = "UPDATE characters SET state=3, charaInfo=@encodedInfo WHERE userId=@userId AND id=@cid";
+                    cmd.CommandText = "UPDATE characters SET state=2, charaInfo=@encodedInfo WHERE userId=@userId AND id=@cid";
                     cmd.Prepare();
 
                     cmd.Parameters.AddWithValue("@userId", accountId);
@@ -125,6 +128,8 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     conn.Dispose();
                 }
+
+                Log.database(String.Format("CID={0} state updated to active(2).", cid));
             }
         }
 
@@ -167,6 +172,8 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Dispose();
                 }
 
+                Log.database(String.Format("CID={0} name updated to \"{1}\".", characterId, newName));
+
                 return false;
             }
         }
@@ -196,6 +203,8 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Dispose();
                 }
             }
+
+            Log.database(String.Format("CID={0} deleted.", characterId));
         }
 
         public static List<World> getServers()
