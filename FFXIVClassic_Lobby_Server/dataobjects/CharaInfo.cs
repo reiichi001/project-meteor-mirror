@@ -119,13 +119,13 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                 {
-                    string location1 = "prv0Inn01";
-                    string location2 = "defaultTerritory";
+                    string location1 = "prv0Inn01\0";
+                    string location2 = "defaultTerritory\0";
 
                     writer.Write((UInt32)0x000004c0);
                     writer.Write((UInt32)0x232327ea);
-                    writer.Write((UInt32)System.Text.Encoding.UTF8.GetBytes(chara.name).Length);
-                    writer.Write(System.Text.Encoding.UTF8.GetBytes(chara.name));
+                    writer.Write((UInt32)System.Text.Encoding.UTF8.GetBytes(chara.name + '\0').Length);
+                    writer.Write(System.Text.Encoding.UTF8.GetBytes(chara.name + '\0'));
                     writer.Write((UInt32)0x1c);
                     writer.Write((UInt32)0x04);
                     writer.Write((UInt32)getTribeModel());
@@ -163,7 +163,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     writer.Write((UInt32)rightFingerGear);
                     writer.Write((UInt32)leftFingerGear);
 
-                    for (int i = 0; i < 0xC; i++)
+                    for (int i = 0; i < 0x8; i++)
                         writer.Write((byte)0);
 
                     writer.Write((UInt32)1);
@@ -175,6 +175,8 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     writer.Write((UInt16)1);
                     writer.Write((byte)tribe);
 
+                    writer.Write((UInt32)0xe22222aa);
+
                     writer.Write((UInt32)System.Text.Encoding.UTF8.GetBytes(location1).Length);
                     writer.Write(System.Text.Encoding.UTF8.GetBytes(location1));
                     writer.Write((UInt32)System.Text.Encoding.UTF8.GetBytes(location2).Length);
@@ -184,6 +186,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     writer.Write((byte)birthMonth);
                     writer.Write((byte)birthDay);
 
+                    writer.Write((UInt16)0x17);
                     writer.Write((UInt32)4);
                     writer.Write((UInt32)4);
 
