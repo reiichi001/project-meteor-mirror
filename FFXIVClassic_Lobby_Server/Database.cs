@@ -257,7 +257,7 @@ namespace FFXIVClassic_Lobby_Server
                 try
                 {
                     conn.Open();
-                    charaList = conn.Query<Character>("SELECT * FROM characters WHERE userId=@UserId AND state in (2,3) ORDER BY slot", new { UserId = userId }).ToList();
+                    charaList = conn.Query<Character>("SELECT * FROM characters WHERE userId=@UserId AND state in (1,2) ORDER BY slot", new { UserId = userId }).ToList();
                 }
                 catch (MySqlException e)
                 { charaList = new List<Character>(); }

@@ -62,7 +62,7 @@ namespace FFXIVClassic_Lobby_Server.packets
                 binWriter.Write((byte)(totalCount)); //Slot
 
                 byte options = 0;
-                if (chara.state == 2)
+                if (chara.state == 1)
                     options |= 0x01;
                 if (chara.doRename)
                     options |= 0x02;
