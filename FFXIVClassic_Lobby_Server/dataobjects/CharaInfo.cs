@@ -267,12 +267,11 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
             switch (tribe)
             {
                 //Hyur Midlander Male
-                case 0:
+                case 1:
                 default:
                     return 1;
 
                 //Hyur Midlander Female
-                case 1:
                 case 2:
                     return 2;
 
