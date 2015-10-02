@@ -5,8 +5,6 @@ VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClassic_Lobby_Server", "FFXIVClassic_Lobby_Server\FFXIVClassic_Lobby_Server.csproj", "{703091E0-F69C-4177-8FAE-C258AC6A65AA}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Blowfish", "Blowfish\Blowfish.vcxproj", "{2F4DF1AE-B33D-4058-A0FE-639DE9EA323A}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,16 +25,6 @@ Global
 		{703091E0-F69C-4177-8FAE-C258AC6A65AA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{703091E0-F69C-4177-8FAE-C258AC6A65AA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{703091E0-F69C-4177-8FAE-C258AC6A65AA}.Release|Win32.ActiveCfg = Release|Any CPU
-		{2F4DF1AE-B33D-4058-A0FE-639DE9EA323A}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{2F4DF1AE-B33D-4058-A0FE-639DE9EA323A}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{2F4DF1AE-B33D-4058-A0FE-639DE9EA323A}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{2F4DF1AE-B33D-4058-A0FE-639DE9EA323A}.Debug|Win32.ActiveCfg = Debug|Win32
-		{2F4DF1AE-B33D-4058-A0FE-639DE9EA323A}.Debug|Win32.Build.0 = Debug|Win32
-		{2F4DF1AE-B33D-4058-A0FE-639DE9EA323A}.Release|Any CPU.ActiveCfg = Release|Win32
-		{2F4DF1AE-B33D-4058-A0FE-639DE9EA323A}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{2F4DF1AE-B33D-4058-A0FE-639DE9EA323A}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{2F4DF1AE-B33D-4058-A0FE-639DE9EA323A}.Release|Win32.ActiveCfg = Release|Win32
-		{2F4DF1AE-B33D-4058-A0FE-639DE9EA323A}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
