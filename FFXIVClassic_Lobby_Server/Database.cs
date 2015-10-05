@@ -103,6 +103,7 @@ namespace FFXIVClassic_Lobby_Server
 
         public static void makeCharacter(uint accountId, uint cid, CharaInfo charaInfo)
         {
+            //Update character entry
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
@@ -117,6 +118,65 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.Parameters.AddWithValue("@cid", cid);
                     string json = JsonConvert.SerializeObject(charaInfo);
                     cmd.Parameters.AddWithValue("@encodedInfo", json);
+                    cmd.ExecuteNonQuery();
+
+                }
+                catch (MySqlException e)
+                {
+
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+
+                Log.database(String.Format("CID={0} state updated to active(2).", cid));
+            }
+
+            //Create appearance entry
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand();
+                    cmd.Connection = conn;
+                    cmd.CommandText = "INSERT INTO appearance(characterId, baseId, tribe, size, voice, skinColor, hairStyle, hairColor, hairHighlightColor, eyeColor, faceType, faceEyebrows, faceEyeShape, faceIrisSize, faceNose, faceMouth, faceFeatures, ears, characteristics, characteristicsColor, mainhand, offhand, head, body, hands, legs, feet, waist, leftFinger, rightFinger, leftEar, rightEar) VALUES(@characterId, @baseId, @tribe, @size, @voice, @skinColor, @hairStyle, @hairColor, @hairHighlightColor, @eyeColor, @faceType, @faceEyebrows, @faceEyeShape, @faceIrisSize, @faceNose, @faceMouth, @faceFeatures, @ears, @characteristics, @characteristicsColor, @mainhand, @offhand, @head, @body, @hands, @legs, @feet, @waist, @leftFinger, @rightFinger, @leftEar, @rightEar)";
+                    cmd.Prepare();
+
+                    cmd.Parameters.AddWithValue("@characterId", cid);
+                    cmd.Parameters.AddWithValue("@baseId", 0xFFFFFFFF);
+                    cmd.Parameters.AddWithValue("@tribe", charaInfo.appearance.tribe);
+                    cmd.Parameters.AddWithValue("@size", charaInfo.appearance.size);
+                    cmd.Parameters.AddWithValue("@voice", charaInfo.appearance.voice);
+                    cmd.Parameters.AddWithValue("@skinColor", charaInfo.appearance.skinColor);
+                    cmd.Parameters.AddWithValue("@hairStyle", charaInfo.appearance.hairStyle);
+                    cmd.Parameters.AddWithValue("@hairColor", charaInfo.appearance.hairColor);
+                    cmd.Parameters.AddWithValue("@hairHighlightColor", charaInfo.appearance.hairHighlightColor);
+                    cmd.Parameters.AddWithValue("@eyeColor", charaInfo.appearance.eyeColor);
+                    cmd.Parameters.AddWithValue("@faceType", charaInfo.appearance.faceType);
+                    cmd.Parameters.AddWithValue("@faceEyebrows", charaInfo.appearance.faceEyebrows);
+                    cmd.Parameters.AddWithValue("@faceEyeShape", charaInfo.appearance.faceEyeShape);
+                    cmd.Parameters.AddWithValue("@faceIrisSize", charaInfo.appearance.faceIrisSize);
+                    cmd.Parameters.AddWithValue("@faceNose", charaInfo.appearance.faceNose);
+                    cmd.Parameters.AddWithValue("@faceMouth", charaInfo.appearance.faceMouth);
+                    cmd.Parameters.AddWithValue("@faceFeatures", charaInfo.appearance.faceFeatures);
+                    cmd.Parameters.AddWithValue("@characteristics", charaInfo.appearance.characteristics);
+                    cmd.Parameters.AddWithValue("@characteristicsColor", charaInfo.appearance.characteristicsColor);
+
+                    cmd.Parameters.AddWithValue("@mainhand", charaInfo.appearance.mainHand);
+                    cmd.Parameters.AddWithValue("@offhand", charaInfo.appearance.offHand);
+                    cmd.Parameters.AddWithValue("@head", charaInfo.appearance.head);
+                    cmd.Parameters.AddWithValue("@body", charaInfo.appearance.body);
+                    cmd.Parameters.AddWithValue("@hands", charaInfo.appearance.hands);
+                    cmd.Parameters.AddWithValue("@legs", charaInfo.appearance.legs);
+                    cmd.Parameters.AddWithValue("@feet", charaInfo.appearance.feet);
+                    cmd.Parameters.AddWithValue("@waist", charaInfo.appearance.waist);
+                    cmd.Parameters.AddWithValue("@leftFinger", charaInfo.appearance.leftFinger);
+                    cmd.Parameters.AddWithValue("@rightFinger", charaInfo.appearance.rightFinger);
+                    cmd.Parameters.AddWithValue("@leftEar", charaInfo.appearance.leftEar);
+                    cmd.Parameters.AddWithValue("@rightEar", charaInfo.appearance.rightEar);
+
                     cmd.ExecuteNonQuery();
 
                 }
@@ -289,6 +349,28 @@ namespace FFXIVClassic_Lobby_Server
                 }
 
                 return chara;
+            }
+        }
+
+        public static Appearance getAppearance(uint charaId)
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                Appearance appearance = null;
+                try
+                {
+                    conn.Open();
+                    appearance = conn.Query<Appearance>("SELECT * FROM characters_appearance WHERE id=@CharaId", new { CharaId = charaId }).SingleOrDefault();
+                }
+                catch (MySqlException e)
+                {
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+
+                return appearance;
             }
         }
 

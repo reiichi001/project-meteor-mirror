@@ -37,6 +37,8 @@ namespace FFXIVClassic_Lobby_Server.packets
 
             foreach (Character chara in characterList)
             {
+                Appearance appearance = Database.getAppearance(chara.id);
+
                 if (totalCount == 0 || characterCount % MAXPERPACKET == 0)
                 {
                     memStream = new MemoryStream(0x3B0);
@@ -76,7 +78,7 @@ namespace FFXIVClassic_Lobby_Server.packets
                 binWriter.Write(Encoding.ASCII.GetBytes(worldname.PadRight(0xE, '\0'))); //World Name
 
                 CharaInfo info = JsonConvert.DeserializeObject<CharaInfo>(chara.charaInfo);
-                binWriter.Write(info.buildForCharaList(chara)); //Appearance Data
+                binWriter.Write(info.buildForCharaList(chara, appearance)); //Appearance Data
                 //binWriter.Write(CharaInfo.debug()); //Appearance Data
                 
                 characterCount++;

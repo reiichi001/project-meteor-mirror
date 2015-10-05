@@ -10,16 +10,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
 {
     class CharaInfo
     {
-        public uint tribe = 0;
-        public uint size = 0;
-        public uint voice = 0;
-        public ushort skinColor = 0;
-
-        public ushort hairStyle = 0;
-        public ushort hairColor = 0;
-        public ushort hairHighlightColor = 0;
-        public ushort eyeColor = 0;
-        public ushort characteristicsColor = 0;
+        public Appearance appearance;
 
         public struct FaceInfo
         {
@@ -47,16 +38,6 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
             public uint unknown;
         }
 
-        public uint faceType = 0;
-        public uint faceEyebrows = 0;
-        public uint faceEyeShape = 0;
-        public uint faceIrisSize = 0;
-        public uint faceNose = 0;
-        public uint faceMouth = 0;
-        public uint faceFeatures = 0;
-        public uint characteristics = 0;
-        public uint ears = 0;
-
         public uint guardian = 0;
         public uint birthMonth = 0;
         public uint birthDay = 0;
@@ -64,26 +45,14 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
         public uint currentJob = 0;
         public uint allegiance = 0;
 
-        public uint mainHand = 0;
-        public uint offHand = 0;
-
-        public uint headGear = 0;
-        public uint bodyGear = 0;
-        public uint legsGear = 0;
-        public uint handsGear = 0;
-        public uint feetGear = 0;
-        public uint waistGear = 0;
-        public uint rightEarGear = 0;
-        public uint leftEarGear = 0;
-        public uint rightFingerGear = 0;
-        public uint leftFingerGear = 0;
-
         public uint currentLevel = 1;
 
         public static CharaInfo getFromNewCharRequest(String encoded)
         {
             byte[] data = Convert.FromBase64String(encoded.Replace('-', '+').Replace('_', '/'));
+
             CharaInfo info = new CharaInfo();
+            Appearance appearance = new Appearance();
 
             using (MemoryStream stream = new MemoryStream(data))
             {
@@ -91,31 +60,31 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                 {
                     uint version = reader.ReadUInt32();
                     uint unknown1 = reader.ReadUInt32();
-                    info.tribe = reader.ReadByte();
-                    info.size = reader.ReadByte();
-                    info.hairStyle = reader.ReadUInt16();
-                    info.hairHighlightColor = reader.ReadUInt16();
-                    info.faceType = reader.ReadByte();
-                    info.characteristics = reader.ReadByte();
-                    info.characteristicsColor = reader.ReadByte();
+                    appearance.tribe = reader.ReadByte();
+                    appearance.size = reader.ReadByte();
+                    appearance.hairStyle = reader.ReadUInt16();
+                    appearance.hairHighlightColor = reader.ReadUInt16();
+                    appearance.faceType = reader.ReadByte();
+                    appearance.characteristics = reader.ReadByte();
+                    appearance.characteristicsColor = reader.ReadByte();
 
                     reader.ReadUInt32();
 
-                    info.faceEyebrows = reader.ReadByte();
-                    info.faceIrisSize = reader.ReadByte();
-                    info.faceEyeShape = reader.ReadByte();
-                    info.faceNose = reader.ReadByte();
-                    info.faceFeatures = reader.ReadByte();
-                    info.faceMouth = reader.ReadByte();
-                    info.ears = reader.ReadByte();
-                    info.hairColor = reader.ReadUInt16();
+                    appearance.faceEyebrows = reader.ReadByte();
+                    appearance.faceIrisSize = reader.ReadByte();
+                    appearance.faceEyeShape = reader.ReadByte();
+                    appearance.faceNose = reader.ReadByte();
+                    appearance.faceFeatures = reader.ReadByte();
+                    appearance.faceMouth = reader.ReadByte();
+                    appearance.ears = reader.ReadByte();
+                    appearance.hairColor = reader.ReadUInt16();
 
                     reader.ReadUInt32();
 
-                    info.skinColor = reader.ReadUInt16();
-                    info.eyeColor = reader.ReadUInt16();
+                    appearance.skinColor = reader.ReadUInt16();
+                    appearance.eyeColor = reader.ReadUInt16();
 
-                    info.voice = reader.ReadByte();
+                    appearance.voice = reader.ReadByte();
                     info.guardian = reader.ReadByte();
                     info.birthMonth = reader.ReadByte();
                     info.birthDay = reader.ReadByte();
@@ -132,39 +101,31 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                 }
             }
 
-
+            info.appearance = appearance;
 
             return info;
         }
 
-        public String buildForCharaList(Character chara)
+        public String buildForCharaList(Character chara, Appearance appearance)
         {
             byte[] data;
-
-            mainHand = 79707136;
-            offHand = 32509954;
-            headGear = 43008;
-            bodyGear = 43008;
-            legsGear = 43008;
-            handsGear = 43008;
-            feetGear = 43008;
-
+            
             using (MemoryStream stream = new MemoryStream())
             {
                 using (BinaryWriter writer = new BinaryWriter(stream))
                 {
                     //Build faceinfo for later
                     FaceInfo faceInfo = new FaceInfo();
-                    faceInfo.characteristics = characteristics;
-                    faceInfo.characteristicsColor = characteristicsColor;
-                    faceInfo.type = faceType;
-                    faceInfo.ears = ears;
-                    faceInfo.features = faceFeatures;
-                    faceInfo.eyebrows = faceEyebrows;
-                    faceInfo.eyeShape = faceEyeShape;
-                    faceInfo.irisSize = faceIrisSize;
-                    faceInfo.mouth = faceMouth;
-                    faceInfo.nose = faceNose;
+                    faceInfo.characteristics = appearance.characteristics;
+                    faceInfo.characteristicsColor = appearance.characteristicsColor;
+                    faceInfo.type = appearance.faceType;
+                    faceInfo.ears = appearance.ears;
+                    faceInfo.features = appearance.faceFeatures;
+                    faceInfo.eyebrows = appearance.faceEyebrows;
+                    faceInfo.eyeShape = appearance.faceEyeShape;
+                    faceInfo.irisSize = appearance.faceIrisSize;
+                    faceInfo.mouth = appearance.faceMouth;
+                    faceInfo.nose = appearance.faceNose;
 
 
                     string location1 = "prv0Inn01\0";
@@ -176,19 +137,19 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     writer.Write(System.Text.Encoding.UTF8.GetBytes(chara.name + '\0'));
                     writer.Write((UInt32)0x1c);
                     writer.Write((UInt32)0x04);
-                    writer.Write((UInt32)getTribeModel());
-                    writer.Write((UInt32)size);
-                    uint colorVal = skinColor | (uint)(hairColor << 10) | (uint)(eyeColor << 20);
+                    writer.Write((UInt32)getTribeModel(appearance.tribe));
+                    writer.Write((UInt32)appearance.size);
+                    uint colorVal = appearance.skinColor | (uint)(appearance.hairColor << 10) | (uint)(appearance.eyeColor << 20);
                     writer.Write((UInt32)colorVal);
 
                     var bitfield = PrimitiveConversion.ToUInt32(faceInfo);
 
                     writer.Write((UInt32)bitfield); //FACE, Figure this out!
-                    uint hairVal = hairHighlightColor | (uint)(hairStyle << 10) | (uint)(characteristicsColor << 20);
+                    uint hairVal = appearance.hairHighlightColor | (uint)(appearance.hairStyle << 10) | (uint)(appearance.characteristicsColor << 20);
                     writer.Write((UInt32)hairVal);
-                    writer.Write((UInt32)voice);                    
-                    writer.Write((UInt32)mainHand);
-                    writer.Write((UInt32)offHand);
+                    writer.Write((UInt32)appearance.voice);
+                    writer.Write((UInt32)appearance.mainHand);
+                    writer.Write((UInt32)appearance.offHand);
 
                     writer.Write((UInt32)0);
                     writer.Write((UInt32)0);
@@ -196,23 +157,23 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     writer.Write((UInt32)0);
                     writer.Write((UInt32)0);
 
-                    writer.Write((UInt32)headGear);
-                    writer.Write((UInt32)bodyGear);
-                    writer.Write((UInt32)legsGear);
-                    writer.Write((UInt32)handsGear);
-                    writer.Write((UInt32)feetGear);
-                    writer.Write((UInt32)waistGear);
+                    writer.Write((UInt32)appearance.head);
+                    writer.Write((UInt32)appearance.body);
+                    writer.Write((UInt32)appearance.legs);
+                    writer.Write((UInt32)appearance.hands);
+                    writer.Write((UInt32)appearance.feet);
+                    writer.Write((UInt32)appearance.waist);
 
                     writer.Write((UInt32)0);
 
-                    writer.Write((UInt32)rightEarGear);
-                    writer.Write((UInt32)leftEarGear);
+                    writer.Write((UInt32)appearance.rightEar);
+                    writer.Write((UInt32)appearance.leftEar);
 
                     writer.Write((UInt32)0);
                     writer.Write((UInt32)0);
 
-                    writer.Write((UInt32)rightFingerGear);
-                    writer.Write((UInt32)leftFingerGear);
+                    writer.Write((UInt32)appearance.rightFinger);
+                    writer.Write((UInt32)appearance.leftFinger);
 
                     for (int i = 0; i < 0x8; i++)
                         writer.Write((byte)0);
@@ -220,11 +181,11 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     writer.Write((UInt32)1);
                     writer.Write((UInt32)1);
 
-                    writer.Write((byte)currentClass);
-                    writer.Write((UInt16)currentLevel);
-                    writer.Write((byte)currentJob);
+                    writer.Write((byte)chara.currentClass);
+                    writer.Write((UInt16)chara.currentLevel);
+                    writer.Write((byte)chara.currentJob);
                     writer.Write((UInt16)1);
-                    writer.Write((byte)tribe);
+                    writer.Write((byte)appearance.tribe);
 
                     writer.Write((UInt32)0xe22222aa);
 
@@ -233,9 +194,9 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     writer.Write((UInt32)System.Text.Encoding.UTF8.GetBytes(location2).Length);
                     writer.Write(System.Text.Encoding.UTF8.GetBytes(location2));
 
-                    writer.Write((byte)guardian);
-                    writer.Write((byte)birthMonth);
-                    writer.Write((byte)birthDay);
+                    writer.Write((byte)chara.guardian);
+                    writer.Write((byte)chara.birthMonth);
+                    writer.Write((byte)chara.birthDay);
 
                     writer.Write((UInt16)0x17);
                     writer.Write((UInt32)4);
@@ -243,8 +204,8 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
 
                     writer.BaseStream.Seek(0x10, SeekOrigin.Current);
 
-                    writer.Write((UInt32)allegiance);
-                    writer.Write((UInt32)allegiance);
+                    writer.Write((UInt32)chara.allegiance);
+                    writer.Write((UInt32)chara.allegiance);
                 }
 
                 data = stream.GetBuffer();
@@ -255,14 +216,14 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
 
         public static String debug()
         {
-            byte[] bytes = File.ReadAllBytes("./packets/charaInfo.bin");
+            byte[] bytes = File.ReadAllBytes("./packets/charaappearance.bin");
 
             Console.WriteLine(Utils.ByteArrayToHex(bytes));
 
             return Convert.ToBase64String(bytes).Replace('+', '-').Replace('/', '_');
         }
 
-        public UInt32 getTribeModel()
+        public UInt32 getTribeModel(byte tribe)
         {
             switch (tribe)
             {

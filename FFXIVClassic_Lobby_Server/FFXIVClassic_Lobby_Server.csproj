@@ -60,6 +60,7 @@
     <Compile Include="common\Log.cs" />
     <Compile Include="common\STA_INIFile.cs" />
     <Compile Include="dataobjects\Account.cs" />
+    <Compile Include="dataobjects\Appearance.cs" />
     <Compile Include="dataobjects\CharaInfo.cs" />
     <Compile Include="dataobjects\Retainer.cs" />
     <Compile Include="dataobjects\Character.cs" />
