@@ -12,3 +12,17 @@ c:\users\filip\documents\visual studio 2013\Projects\FFXIVClassic Map Server\FFX
 c:\users\filip\documents\visual studio 2013\Projects\FFXIVClassic Map Server\FFXIVClassic Map Server\bin\Debug\Newtonsoft.Json.xml
 c:\users\filip\documents\visual studio 2013\Projects\FFXIVClassic Map Server\FFXIVClassic Map Server\obj\Debug\FFXIVClassic Map Server.exe
 c:\users\filip\documents\visual studio 2013\Projects\FFXIVClassic Map Server\FFXIVClassic Map Server\obj\Debug\FFXIVClassic Map Server.pdb
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\bin\Debug\FFXIVClassic Map Server.exe.config
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\obj\Debug\FFXIVClassic Map Server.csprojResolveAssemblyReference.cache
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\bin\Debug\FFXIVClassic Map Server.exe
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\bin\Debug\FFXIVClassic Map Server.pdb
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\bin\Debug\Cyotek.Collections.Generic.CircularBuffer.dll
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\bin\Debug\Dapper.dll
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\bin\Debug\MySql.Data.dll
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\bin\Debug\Newtonsoft.Json.dll
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\bin\Debug\Cyotek.Collections.Generic.CircularBuffer.xml
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\bin\Debug\Dapper.pdb
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\bin\Debug\Dapper.xml
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\bin\Debug\Newtonsoft.Json.xml
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\obj\Debug\FFXIVClassic Map Server.exe
+C:\Users\Filip\coding\ffxiv-classic-map-server\FFXIVClassic Map Server\obj\Debug\FFXIVClassic Map Server.pdb

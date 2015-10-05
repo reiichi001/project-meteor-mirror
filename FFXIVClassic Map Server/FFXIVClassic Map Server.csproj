@@ -33,17 +33,21 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Cyotek.Collections.Generic.CircularBuffer">
+    <Reference Include="Cyotek.Collections.Generic.CircularBuffer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=58daa28b0b2de221, processorArchitecture=MSIL">
       <HintPath>..\packages\Cyotek.CircularBuffer.1.0.0.0\lib\net20\Cyotek.Collections.Generic.CircularBuffer.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Dapper">
+    <Reference Include="Dapper, Version=1.40.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Dapper.1.42\lib\net45\Dapper.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="MySql.Data">
+    <Reference Include="MySql.Data, Version=6.9.7.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.6.9.7\lib\net45\MySql.Data.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -65,11 +69,16 @@
     <Compile Include="dataobjects\Actor.cs" />
     <Compile Include="dataobjects\Character.cs" />
     <Compile Include="dataobjects\CharaInfo.cs" />
+    <Compile Include="dataobjects\Item.cs" />
     <Compile Include="dataobjects\Player.cs" />
     <Compile Include="dataobjects\World.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\HandshakePacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryItemEndPacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryItemPacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventorySetBeginPacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventorySetEndPacket.cs" />
     <Compile Include="packets\send\login\0x2Packet.cs" />
     <Compile Include="packets\send\Actor\AddActorPacket.cs" />
     <Compile Include="packets\send\Actor\MoveActorToPositionPacket.cs" />

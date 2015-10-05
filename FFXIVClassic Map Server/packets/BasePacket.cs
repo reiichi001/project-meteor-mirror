@@ -28,6 +28,7 @@ namespace FFXIVClassic_Lobby_Server.packets
         public BasePacketHeader header;
         public byte[]           data;
 
+        //Loads a sniffed packet from a file
         public unsafe BasePacket(String path)
         {
             byte[] bytes = File.ReadAllBytes(path);
@@ -49,6 +50,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             Array.Copy(bytes, BASEPACKET_SIZE, data, 0, packetSize - BASEPACKET_SIZE);
         }
 
+        //Loads a sniffed packet from a byte array
         public unsafe BasePacket(byte[] bytes)
         {
             if (bytes.Length < BASEPACKET_SIZE)
@@ -139,6 +141,29 @@ namespace FFXIVClassic_Lobby_Server.packets
             Array.Copy(getHeaderBytes(), 0, outBytes, 0, BASEPACKET_SIZE);
             Array.Copy(data, 0, outBytes, BASEPACKET_SIZE, data.Length);
             return outBytes;
+        }
+
+        //Replaces all instances of the sniffed actorID with the given one
+        public void replaceActorID(uint actorID)
+        {
+            using (MemoryStream mem = new MemoryStream(data))
+            {
+                using (BinaryWriter binWriter = new BinaryWriter(mem))
+                {
+                    using (BinaryReader binreader = new BinaryReader(mem))
+                    {
+                        while (binreader.BaseStream.Position + 4 < data.Length)
+                        {
+                            uint read = binreader.ReadUInt32();
+                            if (read == 0x029B2941) //Original ID
+                            {
+                                binWriter.BaseStream.Seek(binreader.BaseStream.Position - 0x4, SeekOrigin.Begin);
+                                binWriter.Write(actorID);
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         #region Utility Functions

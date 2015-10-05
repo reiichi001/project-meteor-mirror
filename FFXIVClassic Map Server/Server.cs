@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Map_Server.dataobjects;
+using FFXIVClassic_Lobby_Server.packets;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -19,7 +20,7 @@ namespace FFXIVClassic_Lobby_Server
 
         private Socket mServerSocket;
 
-        private List<Player> mConnectedPlayerList = new List<Player>();
+        private Dictionary<uint,Player> mConnectedPlayerList = new Dictionary<uint,Player>();
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private PacketProcessor mProcessor;
         private Thread mProcessorThread;
@@ -59,7 +60,7 @@ namespace FFXIVClassic_Lobby_Server
             Console.WriteLine("{0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
             Console.ForegroundColor = ConsoleColor.Gray;
 
-            mProcessor = new PacketProcessor(mConnectionList);
+            mProcessor = new PacketProcessor(mConnectedPlayerList, mConnectionList);
             mProcessorThread = new Thread(new ThreadStart(mProcessor.update));
             mProcessorThread.Start();
             return true;
@@ -117,16 +118,16 @@ namespace FFXIVClassic_Lobby_Server
         {
             lock (mConnectedPlayerList)
             {
-                foreach (Player p in mConnectedPlayerList)
+                foreach (KeyValuePair<uint,Player> p in mConnectedPlayerList)
                 {
-                    if ((p.getConnection1().socket.RemoteEndPoint as IPEndPoint).Address.Equals((s.RemoteEndPoint as IPEndPoint).Address))
+                    if ((p.Value.getConnection1().socket.RemoteEndPoint as IPEndPoint).Address.Equals((s.RemoteEndPoint as IPEndPoint).Address))
                     {
-                        return p;
+                        return p.Value;
                     }
 
-                    if ((p.getConnection2().socket.RemoteEndPoint as IPEndPoint).Address.Equals((s.RemoteEndPoint as IPEndPoint).Address))
+                    if ((p.Value.getConnection2().socket.RemoteEndPoint as IPEndPoint).Address.Equals((s.RemoteEndPoint as IPEndPoint).Address))
                     {
-                        return p;
+                        return p.Value;
                     }
                 }
             }
@@ -179,5 +180,10 @@ namespace FFXIVClassic_Lobby_Server
 
         #endregion
 
+
+        public void sendPacket(string path, int conn)
+        {
+            mProcessor.sendPacket(path, conn);
+        }
     }
 }

@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using MySql.Data.MySqlClient;
 using System.Reflection;
 using FFXIVClassic_Lobby_Server.dataobjects;
+using System.IO;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -69,7 +70,26 @@ namespace FFXIVClassic_Lobby_Server
                 Server server = new Server();
                 server.startServer();
 
-                while (true) Thread.Sleep(10000);
+                while (true)
+                {
+                    String input = Console.ReadLine();
+                    String[] split = input.Split(' ');
+
+                    if (split.Length >= 3)
+                    {
+                        if (split[0].Equals("sendpacket"))
+                        {
+                            try{
+                                server.sendPacket("./packets/" + split[1], Int32.Parse(split[2]));
+                            }
+                            catch (Exception e)
+                            {
+                                Log.error("Could not load packet");
+                            }
+                        }
+                    }
+                    Thread.Sleep(1000);
+                }
             }
 
             Console.WriteLine("Press any key to continue...");

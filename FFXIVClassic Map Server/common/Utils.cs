@@ -52,6 +52,7 @@ namespace FFXIVClassic_Lobby_Server.common
             DateTime zuluTime = currentTime.ToUniversalTime();
             DateTime unixEpoch = new DateTime(1970, 1, 1);
             unixTimeStamp = (UInt32)(zuluTime.Subtract(unixEpoch)).TotalSeconds;
+
             return unixTimeStamp;
         }
 
