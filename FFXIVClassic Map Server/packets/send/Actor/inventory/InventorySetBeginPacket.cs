@@ -15,7 +15,8 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
 
         public const ushort CODE_ITEMS = 0x0000;
         public const ushort CODE_CURRANCYITEMS = 0x0063;
-        public const ushort CODE_KEYITEMS = 0x0064;              
+        public const ushort CODE_KEYITEMS = 0x0064;
+        public const ushort CODE_EQUIPMENT = 0x00FE;
 
         public static SubPacket buildPacket(uint playerActorID, ushort size, ushort code)
         {

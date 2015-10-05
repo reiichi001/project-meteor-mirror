@@ -24,6 +24,7 @@ namespace FFXIVClassic_Lobby_Server
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private PacketProcessor mProcessor;
         private Thread mProcessorThread;
+        private Thread mGameThread;
 
         #region Socket Handling
         public bool startServer()
@@ -63,6 +64,8 @@ namespace FFXIVClassic_Lobby_Server
             mProcessor = new PacketProcessor(mConnectedPlayerList, mConnectionList);
             mProcessorThread = new Thread(new ThreadStart(mProcessor.update));
             mProcessorThread.Start();
+            //mGameThread = new Thread(new ThreadStart(mProcessor.update));
+            //mGameThread.Start();
             return true;
         }
 

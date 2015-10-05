@@ -40,6 +40,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public uint[] appearanceIDs;
 
         public float positionX, positionY, positionZ;
+        public float oldPositionX, oldPositionY, oldPositionZ;
         public float rotation;
         public ushort moveState;
 
