@@ -259,13 +259,13 @@ namespace FFXIVClassic_Lobby_Server
                         //client.queuePacket(keyitems);
 
 #region equipsetup
-                        SetInitialEquipmentPacket initialEqupmentPacket = new SetInitialEquipmentPacket();
-                        initialEqupmentPacket.setItem(SetInitialEquipmentPacket.SLOT_BODY, 5);
-                        initialEqupmentPacket.setItem(SetInitialEquipmentPacket.SLOT_HEAD, 3);
-                        initialEqupmentPacket.setItem(SetInitialEquipmentPacket.SLOT_UNDERSHIRT, 6);
-                        initialEqupmentPacket.setItem(SetInitialEquipmentPacket.SLOT_UNDERGARMENT, 7);
-                        initialEqupmentPacket.setItem(SetInitialEquipmentPacket.SLOT_MAINHAND, 2);
-                        initialEqupmentPacket.setItem(SetInitialEquipmentPacket.SLOT_LEGS, 8);
+                        EquipmentSetupPacket initialEqupmentPacket = new EquipmentSetupPacket();
+                        initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_BODY, 5);
+                        initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_HEAD, 3);
+                        initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_UNDERSHIRT, 6);
+                        initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_UNDERGARMENT, 7);
+                        initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_MAINHAND, 2);
+                        initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_LEGS, 8);
 #endregion
 
                         //Equip Init
