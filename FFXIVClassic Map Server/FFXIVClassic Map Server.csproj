@@ -67,6 +67,7 @@
     <Compile Include="ConfigConstants.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="dataobjects\Actor.cs" />
+    <Compile Include="dataobjects\Appearance.cs" />
     <Compile Include="dataobjects\Character.cs" />
     <Compile Include="dataobjects\CharaInfo.cs" />
     <Compile Include="dataobjects\Item.cs" />
@@ -75,10 +76,14 @@
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\HandshakePacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryBeginChangePacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryEndChangePacket.cs" />
     <Compile Include="packets\send\Actor\inventory\InventoryItemEndPacket.cs" />
     <Compile Include="packets\send\Actor\inventory\InventoryItemPacket.cs" />
     <Compile Include="packets\send\Actor\inventory\InventorySetBeginPacket.cs" />
     <Compile Include="packets\send\Actor\inventory\InventorySetEndPacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\SetInitialEquipmentPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorNamePacket.cs" />
     <Compile Include="packets\send\login\0x2Packet.cs" />
     <Compile Include="packets\send\Actor\AddActorPacket.cs" />
     <Compile Include="packets\send\Actor\MoveActorToPositionPacket.cs" />

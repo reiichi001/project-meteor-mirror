@@ -15,6 +15,7 @@ using FFXIVClassic_Map_Server.packets.receive;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.login;
 using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
+using FFXIVClassic_Map_Server.packets.send.Actor;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -165,8 +166,8 @@ namespace FFXIVClassic_Lobby_Server
 
                         //Get Character info
                         //Create player actor
-                        client.sendPacketQueue.Add(init);
-                        client.sendPacketQueue.Add(reply2);
+                        client.queuePacket(init);
+                        client.queuePacket(reply2);
                         break;
                     //Ping
                     case 0x0001:
@@ -177,9 +178,6 @@ namespace FFXIVClassic_Lobby_Server
                     //Unknown
                     case 0x0002:
                         subpacket.debugPrintSubPacket();
-
-                        BasePacket setMapPacket = BasePacket.createPacket(SetMapPacket.buildPacket(player.actorID, 0xD1), true, false);
-                        BasePacket setPlayerActorPacket = BasePacket.createPacket(_0x2Packet.buildPacket(player.actorID), true, false);
              
                         BasePacket reply5 = new BasePacket("./packets/login/login5.bin");
                         BasePacket reply6 = new BasePacket("./packets/login/login6_data.bin");
@@ -192,6 +190,7 @@ namespace FFXIVClassic_Lobby_Server
                         BasePacket keyitems = new BasePacket("./packets/login/keyitems.bin");
                         BasePacket currancy = new BasePacket("./packets/login/currancy.bin");
 
+#region replaceid
                         setinv.replaceActorID(player.actorID);
                         currancy.replaceActorID(player.actorID);
                         keyitems.replaceActorID(player.actorID);
@@ -201,20 +200,31 @@ namespace FFXIVClassic_Lobby_Server
                         reply7.replaceActorID(player.actorID);
                         reply8.replaceActorID(player.actorID);
                         reply9.replaceActorID(player.actorID);
+#endregion
 
-                        client.sendPacketQueue.Add(setMapPacket);
-                        client.sendPacketQueue.Add(setPlayerActorPacket);
-                        client.sendPacketQueue.Add(reply5);
-                        client.sendPacketQueue.Add(reply6);
-
+                        client.queuePacket(BasePacket.createPacket(SetMapPacket.buildPacket(player.actorID, 0xD1), true, false));
+                        client.queuePacket(BasePacket.createPacket(_0x2Packet.buildPacket(player.actorID), true, false));
+                        client.queuePacket(reply5);
+                        client.queuePacket(reply6);
                         
+                        client.queuePacket(BasePacket.createPacket(player.getActor().createNamePacket(player.actorID), true, false));
+                        client.queuePacket(BasePacket.createPacket(player.getActor().createAppearancePacket(player.actorID), true, false));
+
+                        ////////ITEMS////////
+                        client.queuePacket(BasePacket.createPacket(InventoryBeginChangePacket.buildPacket(player.actorID), true, false));
+
+#region itemsetup
+
                         //TEST
                         List<Item> items = new List<Item>();
-                        items.Add(new Item(1337, 8030920, 0)); //Leather Jacket
+                        items.Add(new Item(1337, 8030920, 5)); //Leather Jacket
                         items.Add(new Item(1338, 8013626, 1)); //Chocobo Mask
                         items.Add(new Item(1339, 5030402, 2)); //Thyrus
                         items.Add(new Item(1340, 8013635, 3)); //Dalamud Horn
                         items.Add(new Item(1341, 10100132, 4)); //Savage Might 4
+                        items.Add(new Item(1342, 8032407, 6)); //Green Summer Halter (Female)
+                        items.Add(new Item(1343, 8051307, 7)); //Green Summer Tanga (Female)
+                        items.Add(new Item(1344, 8050766, 8)); //Flame Private's Saroul
 
                         int count = 0;
                         
@@ -240,20 +250,37 @@ namespace FFXIVClassic_Lobby_Server
                         setinvPackets.Add(beginInventory);
                         setinvPackets.Add(setInventory);
                         setinvPackets.Add(endInventory);
+#endregion
 
-                        BasePacket setInvBasePacket = BasePacket.createPacket(setinvPackets, true, false);
-                        client.sendPacketQueue.Add(setInvBasePacket);
+                        client.queuePacket(BasePacket.createPacket(setinvPackets, true, false));
                         
+                        //client.queuePacket(setinv);
+                        //client.queuePacket(currancy);
+                        //client.queuePacket(keyitems);
 
-                        //client.sendPacketQueue.Add(setinv);
-                        //client.sendPacketQueue.Add(currancy);
-                        //client.sendPacketQueue.Add(keyitems);
+#region equipsetup
+                        SetInitialEquipmentPacket initialEqupmentPacket = new SetInitialEquipmentPacket();
+                        initialEqupmentPacket.setItem(SetInitialEquipmentPacket.SLOT_BODY, 5);
+                        initialEqupmentPacket.setItem(SetInitialEquipmentPacket.SLOT_HEAD, 3);
+                        initialEqupmentPacket.setItem(SetInitialEquipmentPacket.SLOT_UNDERSHIRT, 6);
+                        initialEqupmentPacket.setItem(SetInitialEquipmentPacket.SLOT_UNDERGARMENT, 7);
+                        initialEqupmentPacket.setItem(SetInitialEquipmentPacket.SLOT_MAINHAND, 2);
+                        initialEqupmentPacket.setItem(SetInitialEquipmentPacket.SLOT_LEGS, 8);
+#endregion
 
+                        //Equip Init
+                        client.queuePacket(BasePacket.createPacket(InventorySetBeginPacket.buildPacket(player.actorID, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false));
+                        client.queuePacket(BasePacket.createPacket(initialEqupmentPacket.buildPackets(player.actorID), true, false));
+                        client.queuePacket(BasePacket.createPacket(InventorySetEndPacket.buildPacket(player.actorID), true, false));
 
-                        client.sendPacketQueue.Add(reply7);
-                        client.sendPacketQueue.Add(reply8);
-                        client.sendPacketQueue.Add(reply9);
-                        client.sendPacketQueue.Add(reply10);
+                        client.queuePacket(BasePacket.createPacket(InventoryEndChangePacket.buildPacket(player.actorID), true, false));
+                        ////////ITEMS////////
+
+                        //The rest of hardcode
+                        client.queuePacket(reply7);
+                        client.queuePacket(reply8);
+                        client.queuePacket(reply9);
+                        client.queuePacket(reply10);                        
 
                         break;
                     //Chat Received

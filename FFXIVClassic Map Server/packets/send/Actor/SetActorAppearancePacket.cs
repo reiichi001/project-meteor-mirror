@@ -38,14 +38,15 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public uint modelID;
         public uint[] appearanceIDs;
 
-        public SetActorAppearancePacket(uint monsterModelID)
+        public SetActorAppearancePacket(uint modelID)
         {
-            modelID = monsterModelID;
-            appearanceIDs = new uint[22];
+            this.modelID = modelID;
+            appearanceIDs = new uint[0x1D];
         }
 
-        public SetActorAppearancePacket(uint[] appearanceTable)
+        public SetActorAppearancePacket(uint modelID, uint[] appearanceTable)
         {
+            this.modelID = modelID;
             appearanceIDs = appearanceTable;
         }
 
@@ -58,7 +59,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
                     binWriter.Write((uint)modelID); 
-                    for (int i = 0; i < 0x1A; i++)
+                    for (int i = 0; i <= 0x1A; i++)
                     {
                         binWriter.Write((uint)i);
                         binWriter.Write((uint)appearanceIDs[i]);
@@ -68,12 +69,12 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
                     binWriter.Write((uint) 0x1C);
                     binWriter.Write((uint) 0x00);
                 }
-                data = mem.GetBuffer();
+
             }
 
             SubPacket packet = new SubPacket(OPCODE, playerActorID, actorID, data);
             return packet;
-        }
+        }       
 
     }
 }

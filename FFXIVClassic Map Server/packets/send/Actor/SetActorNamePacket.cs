@@ -32,7 +32,6 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor
                     }
 
                 }
-                data = mem.GetBuffer();
             }
 
             SubPacket packet = new SubPacket(OPCODE, playerActorID, targetActorID, data);

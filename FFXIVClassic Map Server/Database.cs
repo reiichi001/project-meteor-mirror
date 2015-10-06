@@ -64,7 +64,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }    
 
-        public static Character getCharacter(uint userId, uint charId)
+        public static Character getCharacter(uint charId)
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -72,7 +72,7 @@ namespace FFXIVClassic_Lobby_Server
                 try
                 {
                     conn.Open();
-                    chara = conn.Query<Character>("SELECT * FROM characters WHERE id=@CharaId and userId=@UserId", new { UserId = userId, CharaId = charId }).SingleOrDefault();
+                    chara = conn.Query<Character>("SELECT * FROM characters WHERE id=@CharaId", new { CharaId = charId }).SingleOrDefault();
                 }
                 catch (MySqlException e)
                 {
@@ -83,6 +83,28 @@ namespace FFXIVClassic_Lobby_Server
                 }
 
                 return chara;
+            }
+        }
+
+        public static Appearance getAppearance(uint charaId)
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                Appearance appearance = null;
+                try
+                {
+                    conn.Open();
+                    appearance = conn.Query<Appearance>("SELECT * FROM characters_appearance WHERE characterId=@CharaId", new { CharaId = charaId }).SingleOrDefault();
+                }
+                catch (MySqlException e)
+                {
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+
+                return appearance;
             }
         }
 

@@ -27,7 +27,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public Player(uint actorId)
         {
             this.actorID = actorId;
-            createPlayerActor(actorId, null);
+            Character chara = Database.getCharacter(actorId);
+            createPlayerActor(actorId, chara);
         }
 
         public void addConnection(ClientConnection conn)
@@ -72,9 +73,19 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return conn1;
         }
 
+        public Actor getActor()
+        {
+            return playerActor;
+        }
+
         public void createPlayerActor(uint actorId, Character chara)
         {
             playerActor = new Actor(actorId);
+
+            playerActor.displayNameID = 0xFFFFFFFF;
+            playerActor.customDisplayName = chara.name;
+            playerActor.setPlayerAppearance();
+
             actorInstanceList.Add(playerActor);
         }
 
