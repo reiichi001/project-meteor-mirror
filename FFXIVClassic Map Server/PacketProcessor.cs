@@ -181,6 +181,7 @@ namespace FFXIVClassic_Lobby_Server
              
                         BasePacket reply5 = new BasePacket("./packets/login/login5.bin");
                         BasePacket reply6 = new BasePacket("./packets/login/login6_data.bin");
+                        BasePacket reply62 = new BasePacket("./packets/login/login6_2.bin");
                         BasePacket reply7 = new BasePacket("./packets/login/login7_data.bin");
                         BasePacket reply8 = new BasePacket("./packets/login/login8_data.bin");
                         BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin");
@@ -204,9 +205,13 @@ namespace FFXIVClassic_Lobby_Server
 
                         client.queuePacket(BasePacket.createPacket(SetMapPacket.buildPacket(player.actorID, 0xD1), true, false));
                         client.queuePacket(BasePacket.createPacket(_0x2Packet.buildPacket(player.actorID), true, false));
+
                         client.queuePacket(reply5);
                         client.queuePacket(reply6);
-                        
+
+                        client.queuePacket(BasePacket.createPacket(player.getActor().createSpeedPacket(player.actorID), true, false));
+                        client.queuePacket(BasePacket.createPacket(player.getActor().createStatePacket(player.actorID), true, false));              
+
                         client.queuePacket(BasePacket.createPacket(player.getActor().createNamePacket(player.actorID), true, false));
                         client.queuePacket(BasePacket.createPacket(player.getActor().createAppearancePacket(player.actorID), true, false));
 

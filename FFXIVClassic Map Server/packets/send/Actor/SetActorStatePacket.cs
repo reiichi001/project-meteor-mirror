@@ -19,9 +19,11 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         public static SubPacket buildPacket(uint playerActorID, uint targetID, uint state)
         {
-            byte[] data = new byte[PACKET_SIZE - 0x20];
+            ulong combined = 0;
 
-            return new SubPacket(OPCODE, playerActorID, targetID, data);
+            combined |= state;
+
+            return new SubPacket(OPCODE, playerActorID, targetID, BitConverter.GetBytes(combined));
         }
     }
 }

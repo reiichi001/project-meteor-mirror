@@ -92,5 +92,15 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return setappearance.buildPacket(playerActorID, actorID);
         }
 
+        public SubPacket createStatePacket(uint playerActorID)
+        {
+            return SetActorStatePacket.buildPacket(playerActorID, actorID, SetActorStatePacket.STATE_PASSIVE);
+        }
+
+        public SubPacket createSpeedPacket(uint playerActorID)
+        {
+            return SetActorSpeedPacket.buildPacket(playerActorID, actorID);
+        }
+
     }
 }
