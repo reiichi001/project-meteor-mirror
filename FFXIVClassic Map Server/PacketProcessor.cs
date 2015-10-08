@@ -96,7 +96,7 @@ namespace FFXIVClassic_Lobby_Server
                     //Initial
                     case 0x0000:
                         BasePacket init = InitPacket.buildPacket(0, Utils.UnixTimeStampUTC());
-                        BasePacket reply2 = new BasePacket("./packets/login2.bin");                        
+                        BasePacket reply2 = new BasePacket("./packets/login/login2.bin");                        
 
                         //Already Handshaked
                         if (client.owner != 0)
@@ -189,12 +189,10 @@ namespace FFXIVClassic_Lobby_Server
                         BasePacket reply11 = new BasePacket("./packets/login/login11.bin");
                         BasePacket reply12 = new BasePacket("./packets/login/login12.bin");
 
-                        BasePacket setinv = new BasePacket("./packets/login/inventory_backup.bin");
                         BasePacket keyitems = new BasePacket("./packets/login/keyitems.bin");
                         BasePacket currancy = new BasePacket("./packets/login/currancy.bin");
 
 #region replaceid
-                        setinv.replaceActorID(player.actorID);
                         currancy.replaceActorID(player.actorID);
                         keyitems.replaceActorID(player.actorID);
 
@@ -269,7 +267,6 @@ namespace FFXIVClassic_Lobby_Server
 
                         client.queuePacket(BasePacket.createPacket(setinvPackets, true, false));
                         
-                        //client.queuePacket(setinv);
                         //client.queuePacket(currancy);
                         //client.queuePacket(keyitems);
 
