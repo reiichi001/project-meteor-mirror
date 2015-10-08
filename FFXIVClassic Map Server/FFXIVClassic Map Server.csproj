@@ -76,6 +76,10 @@
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\HandshakePacket.cs" />
+    <Compile Include="packets\receive\SetTargetPacket.cs" />
+    <Compile Include="packets\receive\LockTargetPacket.cs" />
+    <Compile Include="packets\receive\EndScriptPacket.cs" />
+    <Compile Include="packets\receive\StartScriptPacket.cs" />
     <Compile Include="packets\send\actor\inventory\EquipmentChangePacket.cs" />
     <Compile Include="packets\send\actor\inventory\InventoryBeginChangePacket.cs" />
     <Compile Include="packets\send\actor\inventory\InventoryEndChangePacket.cs" />
@@ -109,7 +113,9 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="packets\send\script\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

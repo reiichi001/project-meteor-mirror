@@ -17,8 +17,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public uint characterID = 0;
         public uint actorID = 0;
-        
-        uint currentZoneID = 0;
+
+        private uint currentTarget = 0;
+        private uint currentLockedTarget = 0;
+
+        private uint currentZoneID = 0;
 
         List<Actor> actorInstanceList = new List<Actor>();
 
@@ -109,5 +112,14 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         }
 
+        public void setTarget(uint actorID)
+        {
+            currentTarget = actorID;
+        }
+
+        public void setLockedTarget(uint actorID)
+        {
+            currentLockedTarget = actorID;
+        }
     }
 }

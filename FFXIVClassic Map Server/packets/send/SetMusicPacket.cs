@@ -12,9 +12,9 @@ namespace FFXIVClassic_Map_Server.packets.send
         public const ushort OPCODE = 0x000C;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket buildPacket(uint playerActorID, uint musicID, uint musicTrackMode)
+        public static SubPacket buildPacket(uint playerActorID, ushort musicID, ushort musicTrackMode)
         {
-            ulong combined = musicID | (musicTrackMode << 32);
+            ulong combined = (ulong)(musicID | (musicTrackMode << 16));
             return new SubPacket(OPCODE, 0, playerActorID, BitConverter.GetBytes(combined));
         }
     }

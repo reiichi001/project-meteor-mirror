@@ -186,6 +186,8 @@ namespace FFXIVClassic_Lobby_Server
                         BasePacket reply8 = new BasePacket("./packets/login/login8_data.bin");
                         BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin");
                         BasePacket reply10 = new BasePacket("./packets/login/login10.bin");
+                        BasePacket reply11 = new BasePacket("./packets/login/login11.bin");
+                        BasePacket reply12 = new BasePacket("./packets/login/login12.bin");
 
                         BasePacket setinv = new BasePacket("./packets/login/inventory_backup.bin");
                         BasePacket keyitems = new BasePacket("./packets/login/keyitems.bin");
@@ -201,9 +203,13 @@ namespace FFXIVClassic_Lobby_Server
                         reply7.replaceActorID(player.actorID);
                         reply8.replaceActorID(player.actorID);
                         reply9.replaceActorID(player.actorID);
+                        reply10.replaceActorID(player.actorID);
+                        reply11.replaceActorID(player.actorID);
+                        reply12.replaceActorID(player.actorID);
 #endregion
 
                         client.queuePacket(BasePacket.createPacket(SetMapPacket.buildPacket(player.actorID, 0xD1), true, false));
+                        client.queuePacket(BasePacket.createPacket(SetMusicPacket.buildPacket(player.actorID, 0x3D, 0x01), true, false));
                         client.queuePacket(BasePacket.createPacket(_0x2Packet.buildPacket(player.actorID), true, false));
 
                         client.queuePacket(reply5);
@@ -289,8 +295,9 @@ namespace FFXIVClassic_Lobby_Server
                         client.queuePacket(reply7);
                         client.queuePacket(reply8);
                         client.queuePacket(reply9);
-                        client.queuePacket(reply10);                        
-
+                        client.queuePacket(reply10);
+                        client.queuePacket(reply11);
+                        client.queuePacket(reply12);
                         break;
                     //Chat Received
                     case 0x0003:                        
@@ -301,14 +308,23 @@ namespace FFXIVClassic_Lobby_Server
                         UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
                         player.updatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
                         break;
+                    //Set Target 
                     case 0x00CD:
-                        subpacket.debugPrintSubPacket();
-				        //ProcessSetSelection(subPacket);				
+                        SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
+                        player.setTarget(setTarget.actorID);
 				        break;
+                    //Lock Target
+                    case 0x00CC:
+                        LockTargetPacket lockTarget = new LockTargetPacket(subpacket.data);
+                        player.setLockedTarget(lockTarget.actorID);
+                        break;
+                    //Start Script
                     case 0x012D:
                         subpacket.debugPrintSubPacket();
-				        //ProcessScriptCommand(subPacket);				    
-				        break;
+                        StartScriptPacket startScript = new StartScriptPacket(subpacket.data);
+                        client.queuePacket(new BasePacket("./packets/script/bed.bin"));
+                        break;
+                    //Script Result
                     case 0x012E:
                         subpacket.debugPrintSubPacket();
 				        processScriptResult(subpacket);				    
