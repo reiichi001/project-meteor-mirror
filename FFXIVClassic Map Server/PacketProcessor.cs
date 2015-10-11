@@ -293,7 +293,7 @@ namespace FFXIVClassic_Lobby_Server
                         client.queuePacket(reply8);
                         client.queuePacket(reply9);
                         client.queuePacket(reply10);
-                        client.queuePacket(reply11);
+                        //client.queuePacket(reply11);
                         client.queuePacket(reply12);
                         break;
                     //Chat Received
@@ -309,6 +309,7 @@ namespace FFXIVClassic_Lobby_Server
                     case 0x00CD:
                         SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
                         player.setTarget(setTarget.actorID);
+                        client.queuePacket(BasePacket.createPacket(SetActorTarget.buildPacket(player.actorID, player.actorID, setTarget.actorID), true, false));
 				        break;
                     //Lock Target
                     case 0x00CC:
@@ -350,7 +351,7 @@ namespace FFXIVClassic_Lobby_Server
                 return;
 
             BasePacket packet = new BasePacket(path);
-
+               
             foreach (KeyValuePair<uint, Player> entry in mPlayers)
             {
                 packet.replaceActorID(entry.Value.actorID);
