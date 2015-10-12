@@ -18,8 +18,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public uint characterID = 0;
         public uint actorID = 0;
 
-        private uint currentTarget = 0;
-        private uint currentLockedTarget = 0;
+        private uint currentTarget = 0xC0000000;
+        private uint currentLockedTarget = 0xC0000000;
 
         private uint currentZoneID = 0;
 
@@ -120,6 +120,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public void setLockedTarget(uint actorID)
         {
             currentLockedTarget = actorID;
+        }
+
+        public uint getTargetedActor()
+        {
+            return currentTarget;
         }
     }
 }

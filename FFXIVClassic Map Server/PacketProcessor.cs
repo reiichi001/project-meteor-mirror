@@ -307,6 +307,8 @@ namespace FFXIVClassic_Lobby_Server
                         break;
                     //Set Target 
                     case 0x00CD:
+                        subpacket.debugPrintSubPacket();
+
                         SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
                         player.setTarget(setTarget.actorID);
                         client.queuePacket(BasePacket.createPacket(SetActorTargetAnimatedPacket.buildPacket(player.actorID, player.actorID, setTarget.actorID), true, false));
@@ -319,8 +321,9 @@ namespace FFXIVClassic_Lobby_Server
                     //Start Script
                     case 0x012D:
                         subpacket.debugPrintSubPacket();
-                        StartScriptPacket startScript = new StartScriptPacket(subpacket.data);
-                        client.queuePacket(new BasePacket("./packets/script/bed.bin"));
+                        //StartScriptPacket startScript = new StartScriptPacket(subpacket.data);
+                        //client.queuePacket(new BasePacket("./packets/script/bed.bin"));
+                        client.queuePacket(BasePacket.createPacket(ActorDoEmotePacket.buildPacket(player.actorID, player.getTargetedActor(), 137), true, false));
                         break;
                     //Script Result
                     case 0x012E:

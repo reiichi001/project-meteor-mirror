@@ -80,6 +80,7 @@
     <Compile Include="packets\receive\LockTargetPacket.cs" />
     <Compile Include="packets\receive\EndScriptPacket.cs" />
     <Compile Include="packets\receive\StartScriptPacket.cs" />
+    <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\DeleteAllActorsPacket.cs" />
     <Compile Include="packets\send\actor\inventory\EquipmentChangePacket.cs" />
     <Compile Include="packets\send\actor\inventory\InventoryBeginChangePacket.cs" />
