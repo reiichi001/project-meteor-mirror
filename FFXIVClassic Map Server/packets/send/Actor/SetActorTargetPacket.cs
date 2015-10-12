@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.actor
 {
-    class SetActorTarget
+    class SetActorTargetPacket
     {
         public const ushort OPCODE = 0x00DB;
         public const uint PACKET_SIZE = 0x28;

@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.player
 {
-    class SetPlayerTitlePacket
+    class AchievementEarnedPacket
     {
-        public const ushort OPCODE = 0x019D;
+        public const ushort OPCODE = 0x019E;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket buildPacket(uint playerActorID, uint targetActorID, uint titleID)
+        public static SubPacket buildPacket(uint playerActorID, uint achievementID)
         {
-            return new SubPacket(OPCODE, playerActorID, targetActorID, BitConverter.GetBytes((UInt64)titleID));
+            return new SubPacket(OPCODE, playerActorID, playerActorID, BitConverter.GetBytes((UInt64)achievementID));
         }
     }
 }

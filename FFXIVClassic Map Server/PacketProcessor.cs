@@ -309,7 +309,7 @@ namespace FFXIVClassic_Lobby_Server
                     case 0x00CD:
                         SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
                         player.setTarget(setTarget.actorID);
-                        client.queuePacket(BasePacket.createPacket(SetActorTarget.buildPacket(player.actorID, player.actorID, setTarget.actorID), true, false));
+                        client.queuePacket(BasePacket.createPacket(SetActorTargetAnimatedPacket.buildPacket(player.actorID, player.actorID, setTarget.actorID), true, false));
 				        break;
                     //Lock Target
                     case 0x00CC:
@@ -329,12 +329,7 @@ namespace FFXIVClassic_Lobby_Server
 				        break;
                     case 0x012F:
                         subpacket.debugPrintSubPacket();
-                        BasePacket scriptReply = new BasePacket("./packets/charawork2");
-                        BasePacket scriptReply2 = new BasePacket("./packets/charawork3");
-                        BasePacket scriptReply3 = new BasePacket("./packets/charawork4");                        
-                        client.queuePacket(scriptReply);
-                        client.queuePacket(scriptReply2);
-                        client.queuePacket(scriptReply3);
+                        
                         break;
                     default:
                         Log.debug(String.Format("Unknown command 0x{0:X} received.", subpacket.header.opcode));
