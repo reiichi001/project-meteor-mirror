@@ -38,7 +38,7 @@ namespace FFXIVClassic_Map_Server.packets.send
             public const ushort OPCODE = 0x0003;
             public const uint PACKET_SIZE = 0x248;
 
-            public static SubPacket buildPacket(uint playerActorID, uint targetID, uint logtype, string sender, string message)
+            public static SubPacket buildPacket(uint playerActorID, uint targetID, uint messageType, string sender, string message)
             {
                 byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -46,10 +46,15 @@ namespace FFXIVClassic_Map_Server.packets.send
                 {
                     using (BinaryWriter binWriter = new BinaryWriter(mem))
                     {
-                        binWriter.Write(ASCIIEncoding.ASCII.GetBytes(sender));
+                        if (Encoding.Unicode.GetByteCount(sender) >= 0x20)
+                            sender = "ERR: Too Big";
+                        if (Encoding.Unicode.GetByteCount(message) >= 0x200)
+                            message = "ERR: Too Big";
+
+                        binWriter.Write(Encoding.Unicode.GetBytes(sender));
                         binWriter.BaseStream.Seek(0x20, SeekOrigin.Begin);
-                        binWriter.Write((UInt32)logtype);
-                        binWriter.Write(ASCIIEncoding.ASCII.GetBytes(message));
+                        binWriter.Write((UInt32)messageType);
+                        binWriter.Write(Encoding.Unicode.GetBytes(sender));
                     }
                 }
 
