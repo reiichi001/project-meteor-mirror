@@ -17,6 +17,7 @@ using FFXIVClassic_Map_Server.packets.send.login;
 using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.Actor;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -25,6 +26,8 @@ namespace FFXIVClassic_Lobby_Server
         Dictionary<uint, Player> mPlayers;
         List<ClientConnection> mConnections;
         Boolean isAlive = true;
+
+        Zone inn = new Zone();
 
         public PacketProcessor(Dictionary<uint, Player> playerList, List<ClientConnection> connectionList)
         {
@@ -64,7 +67,7 @@ namespace FFXIVClassic_Lobby_Server
                         }
                         
                         //Send packets
-                        if (conn != null && conn.sendPacketQueue.Count != 0)
+                        if (conn != null)
                             conn.flushQueuedSendPackets();
                     }
                 }
@@ -110,8 +113,8 @@ namespace FFXIVClassic_Lobby_Server
                                 }
                             }
 
-                            client.sendPacketQueue.Add(init);
-                            client.sendPacketQueue.Add(reply2);
+                            client.queuePacket(init);
+                            client.queuePacket(reply2);
                             break;
                         }
 
@@ -295,6 +298,9 @@ namespace FFXIVClassic_Lobby_Server
                         client.queuePacket(reply10);
                         //client.queuePacket(reply11);
                         client.queuePacket(reply12);
+
+                        inn.addActorToZone(player.getActor());
+
                         break;
                     //Chat Received
                     case 0x0003:                        
@@ -304,26 +310,31 @@ namespace FFXIVClassic_Lobby_Server
                     case 0x00CA:
                         UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
                         player.updatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
+
+                        List<BasePacket> instanceUpdatePackets = player.updateInstance(inn.getActorsAroundActor(player.getActor(), 50));
+                        foreach (BasePacket bp in instanceUpdatePackets)
+                            client.queuePacket(bp);
+
                         break;
                     //Set Target 
                     case 0x00CD:
                         subpacket.debugPrintSubPacket();
 
                         SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
-                        player.setTarget(setTarget.actorID);
+                        player.getActor().currentTarget = setTarget.actorID;
                         client.queuePacket(BasePacket.createPacket(SetActorTargetAnimatedPacket.buildPacket(player.actorID, player.actorID, setTarget.actorID), true, false));
 				        break;
                     //Lock Target
                     case 0x00CC:
                         LockTargetPacket lockTarget = new LockTargetPacket(subpacket.data);
-                        player.setLockedTarget(lockTarget.actorID);
+                        player.getActor().currentLockedTarget = lockTarget.actorID;
                         break;
                     //Start Script
                     case 0x012D:
                         subpacket.debugPrintSubPacket();
                         //StartScriptPacket startScript = new StartScriptPacket(subpacket.data);
                         //client.queuePacket(new BasePacket("./packets/script/bed.bin"));
-                        client.queuePacket(BasePacket.createPacket(ActorDoEmotePacket.buildPacket(player.actorID, player.getTargetedActor(), 137), true, false));
+                        client.queuePacket(BasePacket.createPacket(ActorDoEmotePacket.buildPacket(player.actorID, player.getActor().currentTarget, 137), true, false));
                         break;
                     //Script Result
                     case 0x012E:
@@ -354,9 +365,9 @@ namespace FFXIVClassic_Lobby_Server
             {
                 packet.replaceActorID(entry.Value.actorID);
                 if (conn == 1 || conn == 3)
-                    entry.Value.getConnection1().sendPacketQueue.Add(packet);
+                    entry.Value.getConnection1().queuePacket(packet);
                 if (conn == 2 || conn == 3)
-                    entry.Value.getConnection2().sendPacketQueue.Add(packet);
+                    entry.Value.getConnection2().queuePacket(packet);
             }
         }
 

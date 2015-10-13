@@ -1,5 +1,7 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.dataobjects;
+using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,11 +17,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         ClientConnection conn1;
         ClientConnection conn2;
 
-        public uint characterID = 0;
         public uint actorID = 0;
-
-        private uint currentTarget = 0xC0000000;
-        private uint currentLockedTarget = 0xC0000000;
 
         private uint currentZoneID = 0;
 
@@ -112,19 +110,28 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         }
 
-        public void setTarget(uint actorID)
-        {
-            currentTarget = actorID;
-        }
 
-        public void setLockedTarget(uint actorID)
-        {
-            currentLockedTarget = actorID;
-        }
+        public List<BasePacket> updateInstance(List<Actor> list)
+        {            
+            List<BasePacket> basePackets = new List<BasePacket>();
+            List<SubPacket> posUpdateSubpackets = new List<SubPacket>();
 
-        public uint getTargetedActor()
-        {
-            return currentTarget;
+            for (int i = 0; i < list.Count; i++)
+            {
+                Actor actor = list[i];
+
+                if (actor.actorID == playerActor.actorID)
+                    continue;
+
+                if (actorInstanceList.Contains(actor))
+                    posUpdateSubpackets.Add(actor.createPositionUpdatePacket(playerActor.actorID));
+                else
+                    basePackets.Add(actor.createActorSpawnPackets(playerActor.actorID));
+            }
+
+            basePackets.Add(BasePacket.createPacket(posUpdateSubpackets, true, false));
+
+            return basePackets;
         }
     }
 }

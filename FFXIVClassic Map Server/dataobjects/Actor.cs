@@ -41,16 +41,41 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public uint actorID;
 
-        public uint displayNameID;
+        public bool isNameplateVisible;
+        public bool isTargetable;
+
+        public uint displayNameID = 0xFFFFFFFF;
         public string customDisplayName;
+        public uint nameplateIcon;
 
         public uint modelID;
         public uint[] appearanceIDs = new uint[0x1D];
 
-        public float positionX, positionY, positionZ;
-        public float oldPositionX, oldPositionY, oldPositionZ;
-        public float rotation;
-        public ushort moveState;
+        public uint currentTarget = 0xC0000000;
+        public uint currentLockedTarget = 0xC0000000;
+
+        public float positionX, positionY, positionZ, rotation;
+        public float oldPositionX, oldPositionY, oldPositionZ, oldRotation;
+        public ushort moveState, oldMoveState;
+
+        public uint currentState = SetActorStatePacket.STATE_PASSIVE;
+
+        public uint currentZoneID;
+
+        //Properties
+        public ushort curHP, curMP, curTP;
+        public ushort maxHP, maxMP, maxTP;
+
+        public byte currentJob;
+        public ushort currentLevel;
+
+        public ushort statSTR, statVIT, statDEX, statINT, statMIN, statPIE;
+        public ushort statAttack, statDefense, statAccuracy, statAttackMgkPotency, statHealingMgkPotency, statEnchancementMgkPotency, statEnfeeblingMgkPotency, statMgkAccuracy, statMgkEvasion;
+        public ushort resistFire, resistIce, resistWind, resistEarth, resistLightning, resistWater;
+
+        public uint currentEXP;
+
+        public ushort linkshellcrest;
 
         public Actor(uint id)
         {
@@ -94,13 +119,41 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public SubPacket createStatePacket(uint playerActorID)
         {
-            return SetActorStatePacket.buildPacket(playerActorID, actorID, SetActorStatePacket.STATE_PASSIVE);
+            return SetActorStatePacket.buildPacket(playerActorID, actorID, currentState);
         }
 
         public SubPacket createSpeedPacket(uint playerActorID)
         {
             return SetActorSpeedPacket.buildPacket(playerActorID, actorID);
         }
+
+        public SubPacket createSpawnPositonPacket(uint playerActorID, uint spawnType)
+        {
+            return SetActorPositionPacket.buildPacket(playerActorID, actorID, positionX, positionY, positionZ, rotation, spawnType);
+        }
+
+        public SubPacket createPositionUpdatePacket(uint playerActorID)
+        {
+            return MoveActorToPositionPacket.buildPacket(playerActorID, actorID, positionX, positionY, positionZ, rotation, moveState);
+        }        
+
+        public SubPacket createScriptBindPacket(uint playerActorID)
+        {
+            return null;
+        }
+
+        public BasePacket createActorSpawnPackets(uint playerActorID)
+        {
+            List<SubPacket> subpackets = new List<SubPacket>();
+            subpackets.Add(AddActorPacket.buildPacket(playerActorID, actorID));
+            subpackets.Add(createSpeedPacket(playerActorID));
+            subpackets.Add(createSpawnPositonPacket(playerActorID, 0));
+            subpackets.Add(createAppearancePacket(playerActorID));
+            subpackets.Add(createNamePacket(playerActorID));
+            subpackets.Add(createStatePacket(playerActorID));
+            subpackets.Add(createScriptBindPacket(playerActorID));
+            return BasePacket.createPacket(subpackets, true, false);
+        }        
 
     }
 }

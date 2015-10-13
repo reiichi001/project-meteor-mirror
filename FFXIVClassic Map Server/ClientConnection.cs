@@ -21,7 +21,7 @@ namespace FFXIVClassic_Lobby_Server
         public Socket socket;
         public byte[] buffer = new byte[0xffff];
         public CircularBuffer<byte> incomingStream = new CircularBuffer<byte>(1024);
-        public BlockingCollection<BasePacket> sendPacketQueue = new BlockingCollection<BasePacket>(100);
+        private BlockingCollection<BasePacket> sendPacketQueue = new BlockingCollection<BasePacket>(100);
 
         //Instance Stuff
         public uint owner = 0;
@@ -68,7 +68,8 @@ namespace FFXIVClassic_Lobby_Server
 
         public void disconnect()
         {
-            socket.Disconnect(false);
+            if (socket.Connected)
+                socket.Disconnect(false);
         }
     }
 }
