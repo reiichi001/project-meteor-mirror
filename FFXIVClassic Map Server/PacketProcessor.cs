@@ -136,7 +136,7 @@ namespace FFXIVClassic_Lobby_Server
                         }
 
                         if (actorID == 0)
-                            break;
+                            break;                        
 
                         //Second connection
                         if (mPlayers.ContainsKey(actorID))
@@ -215,7 +215,7 @@ namespace FFXIVClassic_Lobby_Server
 
                         client.queuePacket(reply5);
 
-                        client.queuePacket(BasePacket.createPacket(AddActorPacket.buildPacket(player.actorID, player.actorID), true, false));
+                        client.queuePacket(BasePacket.createPacket(AddActorPacket.buildPacket(player.actorID, player.actorID, 0), true, false));
 
                         client.queuePacket(reply6);
 
@@ -308,9 +308,11 @@ namespace FFXIVClassic_Lobby_Server
                         break;
                     //Update Position
                     case 0x00CA:
+                        //Update Position
                         UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
                         player.updatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
 
+                        //Update Instance
                         List<BasePacket> instanceUpdatePackets = player.updateInstance(inn.getActorsAroundActor(player.getActor(), 50));
                         foreach (BasePacket bp in instanceUpdatePackets)
                             client.queuePacket(bp);

@@ -124,9 +124,16 @@ namespace FFXIVClassic_Map_Server.dataobjects
                     continue;
 
                 if (actorInstanceList.Contains(actor))
+                {
                     posUpdateSubpackets.Add(actor.createPositionUpdatePacket(playerActor.actorID));
+                }
                 else
-                    basePackets.Add(actor.createActorSpawnPackets(playerActor.actorID));
+                {
+                    BasePacket p = actor.createActorSpawnPackets(playerActor.actorID);
+                    p.replaceActorID(0x29b27d3, playerActor.actorID);
+                    basePackets.Add(p);
+                    actorInstanceList.Add(actor);
+                }
             }
 
             basePackets.Add(BasePacket.createPacket(posUpdateSubpackets, true, false));
