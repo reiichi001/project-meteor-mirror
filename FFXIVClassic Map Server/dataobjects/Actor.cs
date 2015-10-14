@@ -6,6 +6,7 @@ using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.Actor;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -108,33 +109,33 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public SubPacket createNamePacket(uint playerActorID)
         {            
-            return SetActorNamePacket.buildPacket(playerActorID, actorID, displayNameID, displayNameID == 0xFFFFFFFF ? customDisplayName : "");
+            return SetActorNamePacket.buildPacket(actorID, playerActorID,  displayNameID, displayNameID == 0xFFFFFFFF ? customDisplayName : "");
         }
 
         public SubPacket createAppearancePacket(uint playerActorID)
         {
             SetActorAppearancePacket setappearance = new SetActorAppearancePacket(modelID, appearanceIDs);
-            return setappearance.buildPacket(playerActorID, actorID);
+            return setappearance.buildPacket(actorID, playerActorID);
         }
 
         public SubPacket createStatePacket(uint playerActorID)
         {
-            return SetActorStatePacket.buildPacket(playerActorID, actorID, currentState);
+            return SetActorStatePacket.buildPacket(actorID, playerActorID,  currentState);
         }
 
         public SubPacket createSpeedPacket(uint playerActorID)
         {
-            return SetActorSpeedPacket.buildPacket(playerActorID, actorID);
+            return SetActorSpeedPacket.buildPacket(actorID, playerActorID);
         }
 
         public SubPacket createSpawnPositonPacket(uint playerActorID, uint spawnType)
         {
-            return SetActorPositionPacket.buildPacket(playerActorID, actorID, positionX, positionY, positionZ, rotation, spawnType);
+            return SetActorPositionPacket.buildPacket(actorID, playerActorID,  positionX, positionY, positionZ, rotation, spawnType);
         }
 
         public SubPacket createPositionUpdatePacket(uint playerActorID)
         {
-            return MoveActorToPositionPacket.buildPacket(playerActorID, actorID, positionX, positionY, positionZ, rotation, moveState);
+            return MoveActorToPositionPacket.buildPacket(actorID, playerActorID, positionX, positionY, positionZ, rotation, moveState);
         }        
 
         public SubPacket createScriptBindPacket(uint playerActorID)
@@ -145,15 +146,27 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public BasePacket createActorSpawnPackets(uint playerActorID)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(AddActorPacket.buildPacket(playerActorID, actorID));
+            subpackets.Add(AddActorPacket.buildPacket(actorID, playerActorID, 8));
             subpackets.Add(createSpeedPacket(playerActorID));
             subpackets.Add(createSpawnPositonPacket(playerActorID, 0));
             subpackets.Add(createAppearancePacket(playerActorID));
             subpackets.Add(createNamePacket(playerActorID));
             subpackets.Add(createStatePacket(playerActorID));
-            subpackets.Add(createScriptBindPacket(playerActorID));
+            //subpackets.Add(createScriptBindPacket(playerActorID));
+            subpackets.Add(new SubPacket(0xCC, actorID, playerActorID,  File.ReadAllBytes("./packets/playerscript")));
+            subpackets.Add(new SubPacket(0x137, actorID, playerActorID, File.ReadAllBytes("./packets/playerscript2")));
+            subpackets.Add(new SubPacket(0x137, actorID, playerActorID, File.ReadAllBytes("./packets/playerscript3")));
             return BasePacket.createPacket(subpackets, true, false);
-        }        
+        }
+
+        public override bool Equals(Object obj)
+        {
+            Actor actorObj = obj as Actor;
+            if (actorObj == null)
+                return false;
+            else
+                return actorID == actorObj.actorID;
+        }
 
     }
 }

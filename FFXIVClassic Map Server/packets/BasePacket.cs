@@ -166,6 +166,29 @@ namespace FFXIVClassic_Lobby_Server.packets
             }
         }
 
+        //Replaces all instances of the sniffed actorID with the given one
+        public void replaceActorID(uint fromActorID, uint actorID)
+        {
+            using (MemoryStream mem = new MemoryStream(data))
+            {
+                using (BinaryWriter binWriter = new BinaryWriter(mem))
+                {
+                    using (BinaryReader binreader = new BinaryReader(mem))
+                    {
+                        while (binreader.BaseStream.Position + 4 < data.Length)
+                        {
+                            uint read = binreader.ReadUInt32();
+                            if (read == fromActorID) //Original ID
+                            {
+                                binWriter.BaseStream.Seek(binreader.BaseStream.Position - 0x4, SeekOrigin.Begin);
+                                binWriter.Write(actorID);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         #region Utility Functions
         public static BasePacket createPacket(List<SubPacket> subpackets, bool isAuthed, bool isEncrypted)
         {

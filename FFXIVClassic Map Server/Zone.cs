@@ -1,4 +1,5 @@
-﻿using FFXIVClassic_Map_Server.dataobjects;
+﻿using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Map_Server.dataobjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +13,8 @@ namespace FFXIVClassic_Map_Server
         public uint mapId;
         public ushort weatherNormal, weatherCommon, weatherRare;
         public ushort bgmDay, bgmNight, bgmBattle;
-        public int boundingGridSize = 200;
-        public int minX = -1000, minY = -1000, maxX = 1000, maxY = 1000;
+        public int boundingGridSize = 50;
+        public int minX = -100, minY = -100, maxX = 100, maxY = 100;
         private int numXBlocks, numYBlocks;
         private int halfWidth, halfHeight;
         private List<Actor>[,] actorBlock;
@@ -25,6 +26,15 @@ namespace FFXIVClassic_Map_Server
             actorBlock = new List<Actor>[numXBlocks, numYBlocks];
             halfWidth = numXBlocks / 2;
             halfHeight = numYBlocks / 2;
+
+            for (int y = 0; y < numYBlocks; y++)
+            {
+                for (int x = 0; x < numXBlocks; x++ )
+                {
+                    actorBlock[x, y] = new List<Actor>();
+                }
+            }
+                
         }
 
         #region Actor Management
@@ -32,7 +42,7 @@ namespace FFXIVClassic_Map_Server
         public void addActorToZone(Actor actor)
         {
             int gridX = (int)actor.positionX / boundingGridSize;
-            int gridY = (int)actor.positionY / boundingGridSize;
+            int gridY = (int)actor.positionZ / boundingGridSize;
 
             gridX += halfWidth;
             gridY += halfHeight;
@@ -54,7 +64,7 @@ namespace FFXIVClassic_Map_Server
         public void removeActorToZone(Actor actor)
         {
             int gridX = (int)actor.positionX / boundingGridSize;
-            int gridY = (int)actor.positionY / boundingGridSize;
+            int gridY = (int)actor.positionZ / boundingGridSize;
 
             gridX += halfWidth;
             gridY += halfHeight;
@@ -76,7 +86,7 @@ namespace FFXIVClassic_Map_Server
         public void updateActorPosition(Actor actor)
         {
             int gridX = (int)actor.positionX / boundingGridSize;
-            int gridY = (int)actor.positionY / boundingGridSize;
+            int gridY = (int)actor.positionZ / boundingGridSize;
 
             gridX += halfWidth;
             gridY += halfHeight;
@@ -92,7 +102,7 @@ namespace FFXIVClassic_Map_Server
                 gridY = numYBlocks - 1;
 
             int gridOldX = (int)actor.oldPositionX / boundingGridSize;
-            int gridOldY = (int)actor.oldPositionY / boundingGridSize;
+            int gridOldY = (int)actor.oldPositionZ / boundingGridSize;
 
             gridOldX += halfWidth;
             gridOldY += halfHeight;
@@ -151,26 +161,18 @@ namespace FFXIVClassic_Map_Server
         public List<Actor> getActorsAroundActor(Actor actor, int checkDistance)
         {
             int gridX = (int)actor.positionX / boundingGridSize;
-            int gridY = (int)actor.positionY / boundingGridSize;
+            int gridY = (int)actor.positionZ / boundingGridSize;
 
             gridX += halfWidth;
             gridY += halfHeight;
 
-            //Boundries
-            if (gridX < 0)
-                gridX = 0;
-            if (gridX >= numXBlocks)
-                gridX = numXBlocks - 1;
-            if (gridY < 0)
-                gridY = 0;
-            if (gridY >= numYBlocks)
-                gridY = numYBlocks - 1;
+
 
             List<Actor> result = new List<Actor>();
 
-            for (int gx = gridX - checkDistance; gx <= gridX + checkDistance; gx++)
+            for (int gy = ((gridY - checkDistance) < 0 ? 0 : (gridY - checkDistance)); gy <= ((gridY + checkDistance) >= numYBlocks ? numYBlocks - 1 : (gridY + checkDistance)); gy++)
             {
-                for (int gy = gridY - checkDistance; gy <= gridY + checkDistance; gy++)
+                for (int gx = ((gridX - checkDistance) < 0 ? 0 : (gridX - checkDistance)); gx <= ((gridX + checkDistance) >= numXBlocks ? numXBlocks - 1 : (gridX + checkDistance)); gx++)
                 {
                     result.AddRange(actorBlock[gx, gy]);
                 }
