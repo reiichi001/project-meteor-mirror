@@ -9,6 +9,7 @@ using System.Threading;
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
+using System.IO;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -61,9 +62,6 @@ namespace FFXIVClassic_Lobby_Server
             Console.WriteLine("{0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
             Console.ForegroundColor = ConsoleColor.Gray;
 
-            mProcessor = new PacketProcessor(mConnectedPlayerList, mConnectionList);
-            mProcessorThread = new Thread(new ThreadStart(mProcessor.update));
-            mProcessorThread.Start();
             //mGameThread = new Thread(new ThreadStart(mProcessor.update));
             //mGameThread.Start();
             return true;
@@ -117,32 +115,10 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        private Player findPlayerBySocket(Socket s)
-        {
-            lock (mConnectedPlayerList)
-            {
-                foreach (KeyValuePair<uint,Player> p in mConnectedPlayerList)
-                {
-                    if ((p.Value.getConnection1().socket.RemoteEndPoint as IPEndPoint).Address.Equals((s.RemoteEndPoint as IPEndPoint).Address))
-                    {
-                        return p.Value;
-                    }
-
-                    if ((p.Value.getConnection2().socket.RemoteEndPoint as IPEndPoint).Address.Equals((s.RemoteEndPoint as IPEndPoint).Address))
-                    {
-                        return p.Value;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        private Player findPlayerByClientConnection(ClientConnection conn)
-        {
-            throw new NotImplementedException();
-        } 
-
+        /// <summary>
+        /// Receive Callback. Reads in incoming data, converting them to base packets. Base packets are sent to be parsed. If not enough data at the end to build a basepacket, move to the beginning and prepend.
+        /// </summary>
+        /// <param name="result"></param>
         private void receiveCallback(IAsyncResult result)
         {
             ClientConnection conn = (ClientConnection)result.AsyncState;            
@@ -152,10 +128,32 @@ namespace FFXIVClassic_Lobby_Server
                 int bytesRead = conn.socket.EndReceive(result);
                 if (bytesRead > 0)
                 {
-                    conn.processIncoming(bytesRead);
+                    int offset = 0;
 
-                    //Queue the next receive
-                    conn.socket.BeginReceive(conn.buffer, 0, conn.buffer.Length, SocketFlags.None, new AsyncCallback(receiveCallback), conn);
+                    //Build packets until can no longer or out of data
+                    while(true)
+                    {                        
+                        BasePacket basePacket = buildPacket(ref offset, conn.buffer);
+                        //If can't build packet, break, else process another
+                        if (basePacket == null)                        
+                            break;                        
+                        else                        
+                            mProcessor.processPacket(conn, basePacket);                        
+                    }
+                    
+                    //Not all bytes consumed, transfer leftover to beginning
+                    if (offset <= bytesRead)                    
+                        Array.Copy(conn.buffer, offset, conn.buffer, 0, bytesRead - offset);
+
+                    //Build any queued subpackets into basepackets and send
+                    conn.flushQueuedSendPackets();
+                    
+                    if (offset <= bytesRead)                    
+                        //Need offset since not all bytes consumed
+                        conn.socket.BeginReceive(conn.buffer, bytesRead - offset, conn.buffer.Length - (bytesRead - offset), SocketFlags.None, new AsyncCallback(receiveCallback), conn);
+                    else                        
+                        //All bytes consumed, full buffer available
+                        conn.socket.BeginReceive(conn.buffer, 0, conn.buffer.Length, SocketFlags.None, new AsyncCallback(receiveCallback), conn);
                 }
                 else
                 {
@@ -181,8 +179,32 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Builds a packet from the incoming buffer + offset. If a packet can be built, it is returned else null.
+        /// </summary>
+        /// <param name="offset">Current offset in buffer.</param>
+        /// <param name="buffer">Incoming buffer.</param>
+        /// <returns>Returns either a BasePacket or null if not enough data.</returns>
+        public BasePacket buildPacket(ref int offset, byte[] buffer)
+        {
+            BasePacket newPacket = null;
 
+            //Too small to even get length
+            if (buffer.Length <= offset + 1)
+                return null;
+
+            ushort packetSize = BitConverter.ToUInt16(buffer, offset);
+
+            //Too small to whole packet
+            if (buffer.Length <= offset + packetSize)
+                return null;
+
+            newPacket = new BasePacket(buffer, ref offset);
+
+            return newPacket;
+        }
+
+        #endregion
 
         public void sendPacket(string path, int conn)
         {

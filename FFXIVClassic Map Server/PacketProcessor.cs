@@ -25,7 +25,6 @@ namespace FFXIVClassic_Lobby_Server
     {
         Dictionary<uint, Player> mPlayers;
         List<ClientConnection> mConnections;
-        Boolean isAlive = true;
 
         Zone inn = new Zone();
 
@@ -33,54 +32,9 @@ namespace FFXIVClassic_Lobby_Server
         {
             mPlayers = playerList;
             mConnections = connectionList;
-        }
+        }     
 
-        public void update()
-        {
-            Console.WriteLine("Packet processing thread has started");
-            while (isAlive)
-            {
-                lock (mConnections)
-                {
-                    foreach (ClientConnection conn in mConnections)
-                    {
-                        //Receive conn1 packets
-                        while (true)
-                        {
-                            if (conn == null || conn.incomingStream.Size < BasePacket.BASEPACKET_SIZE)
-                                break;
-
-                            try {
-                                if (conn.incomingStream.Size < BasePacket.BASEPACKET_SIZE)
-                                    break;
-                                BasePacketHeader header = BasePacket.getHeader(conn.incomingStream.Peek(BasePacket.BASEPACKET_SIZE));
-
-                                if (conn.incomingStream.Size < header.packetSize)
-                                    break;
-
-                                BasePacket packet = new BasePacket(conn.incomingStream.Get(header.packetSize));
-                                processPacket(conn, packet);
-
-                            }
-                            catch(OverflowException)
-                            { break; }
-                        }
-                        
-                        //Send packets
-                        if (conn != null)
-                            conn.flushQueuedSendPackets();
-                    }
-                }
-
-                //Don't waste CPU if isn't needed
-                if (mConnections.Count == 0)
-                    Thread.Sleep(2000);
-                else
-                    Thread.Sleep(100);
-            }
-        }
-
-        private void processPacket(ClientConnection client, BasePacket packet)
+        public void processPacket(ClientConnection client, BasePacket packet)
         {
             Player player = null;
             if (client.owner != 0 && mPlayers.ContainsKey(client.owner))
@@ -149,8 +103,6 @@ namespace FFXIVClassic_Lobby_Server
                         }
                     }
 
-                    Log.debug(String.Format("Got actorID {0} for conn {1}.", actorID, client.getAddress()));
-
                     if (player == null)
                     {
                         player = new Player(actorID);
@@ -158,6 +110,7 @@ namespace FFXIVClassic_Lobby_Server
                         client.owner = actorID;
                         client.connType = 0;
                         player.setConnection1(client);
+                    Log.debug(String.Format("Got actorID {0} for conn {1}.", actorID, client.getAddress()));
                     }
                     else
                     {
