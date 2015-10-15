@@ -20,21 +20,11 @@ namespace FFXIVClassic_Lobby_Server
         public Blowfish blowfish;
         public Socket socket;
         public byte[] buffer = new byte[0xffff];
-        public CircularBuffer<byte> incomingStream = new CircularBuffer<byte>(1024);
-        private BlockingCollection<BasePacket> sendPacketQueue = new BlockingCollection<BasePacket>(100);
+        private BlockingCollection<BasePacket> sendPacketQueue = new BlockingCollection<BasePacket>(1000);
 
         //Instance Stuff
         public uint owner = 0;
         public uint connType = 0;
-
-
-        public void processIncoming(int bytesIn)
-        {
-            if (bytesIn == 0)
-                return;
-
-            incomingStream.Put(buffer, 0, bytesIn);
-        }
 
         public void queuePacket(BasePacket packet)
         {

@@ -93,6 +93,7 @@
     <Compile Include="packets\send\actor\inventory\EquipmentSetupPacket.cs" />
     <Compile Include="packets\send\actor\RemoveActorPacket.cs" />
     <Compile Include="packets\send\actor\SetActorNamePacket.cs" />
+    <Compile Include="packets\send\actor\SetActorPropetyPacket.cs" />
     <Compile Include="packets\send\actor\SetActorSpeedPacket.cs" />
     <Compile Include="packets\send\actor\SetActorStatePacket.cs" />
     <Compile Include="packets\send\actor\SetActorTargetAnimatedPacket.cs" />
