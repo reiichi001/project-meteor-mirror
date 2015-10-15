@@ -89,268 +89,276 @@ namespace FFXIVClassic_Lobby_Server
             if (packet.header.isEncrypted == 0x01)                       
                 BasePacket.decryptPacket(client.blowfish, ref packet);
 
+            packet.debugPrintPacket();
 
             List<SubPacket> subPackets = packet.getSubpackets();
             foreach (SubPacket subpacket in subPackets)
             {
-                //Console.WriteLine(client.getAddress());
-                switch (subpacket.header.opcode)
-                {             
-                    //Initial
-                    case 0x0000:
-                        BasePacket init = InitPacket.buildPacket(0, Utils.UnixTimeStampUTC());
-                        BasePacket reply2 = new BasePacket("./packets/login/login2.bin");                        
+                if (subpacket.header.type == 0x01)
+                {               
+                    BasePacket init = InitPacket.buildPacket(0, Utils.UnixTimeStampUTC());
+                    BasePacket reply2 = new BasePacket("./packets/login/login2.bin");
 
-                        //Already Handshaked
-                        if (client.owner != 0)
-                        {
-                            using (MemoryStream mem = new MemoryStream(reply2.data))
-                            {
-                                using (BinaryWriter binReader = new BinaryWriter(mem))
-                                {
-                                    binReader.BaseStream.Seek(0x10, SeekOrigin.Begin);
-                                    binReader.Write(player.actorID);
-                                }
-                            }
-
-                            client.queuePacket(init);
-                            client.queuePacket(reply2);
-                            break;
-                        }
-
-                        uint actorID = 0;
-                        using (MemoryStream mem = new MemoryStream(packet.data))
-                        {
-                            using (BinaryReader binReader = new BinaryReader(mem))
-                            {
-                                try
-                                {
-                                    byte[] readIn = new byte[12];
-                                    binReader.BaseStream.Seek(0x14, SeekOrigin.Begin);
-                                    binReader.Read(readIn, 0, 12);
-                                    actorID = UInt32.Parse(Encoding.ASCII.GetString(readIn));
-                                }
-                                catch (Exception)
-                                {}
-                            }
-                        }
-
-                        if (actorID == 0)
-                            break;                        
-
-                        //Second connection
-                        if (mPlayers.ContainsKey(actorID))
-                            player = mPlayers[actorID];
-
+                    //Already Handshaked
+                    if (client.owner != 0)
+                    {
                         using (MemoryStream mem = new MemoryStream(reply2.data))
                         {
                             using (BinaryWriter binReader = new BinaryWriter(mem))
                             {
                                 binReader.BaseStream.Seek(0x10, SeekOrigin.Begin);
-                                binReader.Write(actorID);
+                                binReader.Write(player.actorID);
                             }
                         }
 
-                        Log.debug(String.Format("Got actorID {0} for conn {1}.", actorID, client.getAddress()));
-
-                        if (player == null)
-                        {
-                            player = new Player(actorID);                            
-                            mPlayers[actorID] = player;
-                            client.owner = actorID;
-                            client.connType = 0;
-                            player.setConnection1(client);
-                        }
-                        else
-                        {
-                            client.owner = actorID;
-                            client.connType = 1;
-                            player.setConnection2(client);
-                        }
-
-                        //Get Character info
-                        //Create player actor
                         client.queuePacket(init);
                         client.queuePacket(reply2);
                         break;
-                    //Ping
-                    case 0x0001:
-                        //subpacket.debugPrintSubPacket();
-                        PingPacket pingPacket = new PingPacket(subpacket.data);
-                        client.queuePacket(BasePacket.createPacket(PongPacket.buildPacket(player.actorID, pingPacket.time), true, false));
+                    }
+
+                    uint actorID = 0;
+                    using (MemoryStream mem = new MemoryStream(packet.data))
+                    {
+                        using (BinaryReader binReader = new BinaryReader(mem))
+                        {
+                            try
+                            {
+                                byte[] readIn = new byte[12];
+                                binReader.BaseStream.Seek(0x14, SeekOrigin.Begin);
+                                binReader.Read(readIn, 0, 12);
+                                actorID = UInt32.Parse(Encoding.ASCII.GetString(readIn));
+                            }
+                            catch (Exception)
+                            { }
+                        }
+                    }
+
+                    if (actorID == 0)
                         break;
-                    //Unknown
-                    case 0x0002:
-                        subpacket.debugPrintSubPacket();
-             
-                        BasePacket reply5 = new BasePacket("./packets/login/login5.bin");
-                        BasePacket reply6 = new BasePacket("./packets/login/login6_data.bin");
-                        BasePacket reply7 = new BasePacket("./packets/login/login7_data.bin");
-                        BasePacket reply8 = new BasePacket("./packets/login/login8_data.bin");
-                        BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin");
-                        BasePacket reply10 = new BasePacket("./packets/login/login10.bin");
-                        BasePacket reply11 = new BasePacket("./packets/login/login11.bin");
-                        BasePacket reply12 = new BasePacket("./packets/login/login12.bin");
 
-                        BasePacket keyitems = new BasePacket("./packets/login/keyitems.bin");
-                        BasePacket currancy = new BasePacket("./packets/login/currancy.bin");
+                    //Second connection
+                    if (mPlayers.ContainsKey(actorID))
+                        player = mPlayers[actorID];
 
-#region replaceid
-                        currancy.replaceActorID(player.actorID);
-                        keyitems.replaceActorID(player.actorID);
+                    using (MemoryStream mem = new MemoryStream(reply2.data))
+                    {
+                        using (BinaryWriter binReader = new BinaryWriter(mem))
+                        {
+                            binReader.BaseStream.Seek(0x10, SeekOrigin.Begin);
+                            binReader.Write(actorID);
+                        }
+                    }
 
-                        reply5.replaceActorID(player.actorID);
-                        reply6.replaceActorID(player.actorID);
-                        reply7.replaceActorID(player.actorID);
-                        reply8.replaceActorID(player.actorID);
-                        reply9.replaceActorID(player.actorID);
-                        reply10.replaceActorID(player.actorID);
-                        reply11.replaceActorID(player.actorID);
-                        reply12.replaceActorID(player.actorID);
-#endregion
+                    Log.debug(String.Format("Got actorID {0} for conn {1}.", actorID, client.getAddress()));
 
-                        client.queuePacket(BasePacket.createPacket(SetMapPacket.buildPacket(player.actorID, 0xD1), true, false));
-                        client.queuePacket(BasePacket.createPacket(SetMusicPacket.buildPacket(player.actorID, 0x3D, 0x01), true, false));
-                        client.queuePacket(BasePacket.createPacket(_0x2Packet.buildPacket(player.actorID), true, false));
+                    if (player == null)
+                    {
+                        player = new Player(actorID);
+                        mPlayers[actorID] = player;
+                        client.owner = actorID;
+                        client.connType = 0;
+                        player.setConnection1(client);
+                    }
+                    else
+                    {
+                        client.owner = actorID;
+                        client.connType = 1;
+                        player.setConnection2(client);
+                    }
 
-                        client.queuePacket(reply5);
+                    //Get Character info
+                    //Create player actor
+                    client.queuePacket(init);
+                    client.queuePacket(reply2);
+                    break;
+                }
+                else if (subpacket.header.type == 0x08)
+                {
 
-                        client.queuePacket(BasePacket.createPacket(AddActorPacket.buildPacket(player.actorID, player.actorID, 0), true, false));
+                }
+                else if (subpacket.header.type == 0x03)
+                {
+                    switch (subpacket.gameMessage.opcode)
+                    {                        
+                        //Ping
+                        case 0x0001:
+                            //subpacket.debugPrintSubPacket();
+                            PingPacket pingPacket = new PingPacket(subpacket.data);
+                            client.queuePacket(BasePacket.createPacket(PongPacket.buildPacket(player.actorID, pingPacket.time), true, false));
+                            break;
+                        //Unknown
+                        case 0x0002:
+                            subpacket.debugPrintSubPacket();
 
-                        client.queuePacket(reply6);
+                            BasePacket reply5 = new BasePacket("./packets/login/login5.bin");
+                            BasePacket reply6 = new BasePacket("./packets/login/login6_data.bin");
+                            BasePacket reply7 = new BasePacket("./packets/login/login7_data.bin");
+                            BasePacket reply8 = new BasePacket("./packets/login/login8_data.bin");
+                            BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin");
+                            BasePacket reply10 = new BasePacket("./packets/login/login10.bin");
+                            BasePacket reply11 = new BasePacket("./packets/login/login11.bin");
+                            BasePacket reply12 = new BasePacket("./packets/login/login12.bin");
 
-                        client.queuePacket(BasePacket.createPacket(SetActorPositionPacket.buildPacket(player.actorID, player.actorID, SetActorPositionPacket.INNPOS_X, SetActorPositionPacket.INNPOS_Y, SetActorPositionPacket.INNPOS_Z, SetActorPositionPacket.INNPOS_ROT, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE), true, false));
-                        client.queuePacket(BasePacket.createPacket(player.getActor().createSpeedPacket(player.actorID), true, false));
-                        client.queuePacket(BasePacket.createPacket(player.getActor().createStatePacket(player.actorID), true, false));              
+                            BasePacket keyitems = new BasePacket("./packets/login/keyitems.bin");
+                            BasePacket currancy = new BasePacket("./packets/login/currancy.bin");
 
-                        client.queuePacket(BasePacket.createPacket(player.getActor().createNamePacket(player.actorID), true, false));
-                        client.queuePacket(BasePacket.createPacket(player.getActor().createAppearancePacket(player.actorID), true, false));
+                            #region replaceid
+                            currancy.replaceActorID(player.actorID);
+                            keyitems.replaceActorID(player.actorID);
 
-                        ////////ITEMS////////
-                        client.queuePacket(BasePacket.createPacket(InventoryBeginChangePacket.buildPacket(player.actorID), true, false));
+                            reply5.replaceActorID(player.actorID);
+                            reply6.replaceActorID(player.actorID);
+                            reply7.replaceActorID(player.actorID);
+                            reply8.replaceActorID(player.actorID);
+                            reply9.replaceActorID(player.actorID);
+                            reply10.replaceActorID(player.actorID);
+                            reply11.replaceActorID(player.actorID);
+                            reply12.replaceActorID(player.actorID);
+                            #endregion
 
-#region itemsetup
+                            client.queuePacket(BasePacket.createPacket(SetMapPacket.buildPacket(player.actorID, 0xD1), true, false));
+                            client.queuePacket(BasePacket.createPacket(_0x2Packet.buildPacket(player.actorID), true, false));
+                            client.queuePacket(BasePacket.createPacket(SetMusicPacket.buildPacket(player.actorID, 0x3D, 0x01), true, false));
 
-                        //TEST
-                        List<Item> items = new List<Item>();
-                        items.Add(new Item(1337, 8030920, 5)); //Leather Jacket
-                        items.Add(new Item(1338, 8013626, 1)); //Chocobo Mask
-                        items.Add(new Item(1339, 5030402, 2)); //Thyrus
-                        items.Add(new Item(1340, 8013635, 3)); //Dalamud Horn
-                        items.Add(new Item(1341, 10100132, 4)); //Savage Might 4
-                        items.Add(new Item(1342, 8032407, 6)); //Green Summer Halter (Female)
-                        items.Add(new Item(1343, 8051307, 7)); //Green Summer Tanga (Female)
-                        items.Add(new Item(1344, 8050766, 8)); //Flame Private's Saroul
+                            client.queuePacket(reply5);
 
-                        int count = 0;
-                        
-                        items[2].isHighQuality = true;
-                        items[0].durability = 9999;
-                        items[0].spiritbind = 10000;
-                        items[0].materia1 = 6;
-                        items[0].materia2 = 7;
-                        items[0].materia3 = 8;
-                        items[0].materia4 = 9;
-                        items[0].materia5 = 10;
-                        items[1].durability = 9999;
-                        items[2].durability = 0xFFFFFFF;
-                        items[3].durability = 9999;
-                        items[4].quantity = 99;
+                            client.queuePacket(BasePacket.createPacket(AddActorPacket.buildPacket(player.actorID, player.actorID, 0), true, false));
 
-                        //Reused
-                        SubPacket endInventory = InventorySetEndPacket.buildPacket(player.actorID);
-                        SubPacket beginInventory = InventorySetBeginPacket.buildPacket(player.actorID, 200, 00);
-                        SubPacket setInventory = InventoryItemPacket.buildPacket(player.actorID, items, ref count);
+                            client.queuePacket(reply6);
 
-                        List<SubPacket> setinvPackets = new List<SubPacket>();
-                        setinvPackets.Add(beginInventory);
-                        setinvPackets.Add(setInventory);
-                        setinvPackets.Add(endInventory);
-#endregion
+                            client.queuePacket(BasePacket.createPacket(SetActorPositionPacket.buildPacket(player.actorID, player.actorID, SetActorPositionPacket.INNPOS_X, SetActorPositionPacket.INNPOS_Y, SetActorPositionPacket.INNPOS_Z, SetActorPositionPacket.INNPOS_ROT, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE), true, false));
+                            client.queuePacket(BasePacket.createPacket(player.getActor().createSpeedPacket(player.actorID), true, false));
+                            client.queuePacket(BasePacket.createPacket(player.getActor().createStatePacket(player.actorID), true, false));
 
-                        client.queuePacket(BasePacket.createPacket(setinvPackets, true, false));
-                        
-                        //client.queuePacket(currancy);
-                        //client.queuePacket(keyitems);
+                            client.queuePacket(BasePacket.createPacket(player.getActor().createNamePacket(player.actorID), true, false));
+                            client.queuePacket(BasePacket.createPacket(player.getActor().createAppearancePacket(player.actorID), true, false));
 
-#region equipsetup
-                        EquipmentSetupPacket initialEqupmentPacket = new EquipmentSetupPacket();
-                        initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_BODY, 5);
-                        initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_HEAD, 3);
-                        initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_UNDERSHIRT, 6);
-                        initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_UNDERGARMENT, 7);
-                        initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_MAINHAND, 2);
-                        initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_LEGS, 8);
-#endregion
+                            ////////ITEMS////////
+                            client.queuePacket(BasePacket.createPacket(InventoryBeginChangePacket.buildPacket(player.actorID), true, false));
 
-                        //Equip Init
-                        client.queuePacket(BasePacket.createPacket(InventorySetBeginPacket.buildPacket(player.actorID, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false));
-                        client.queuePacket(BasePacket.createPacket(initialEqupmentPacket.buildPackets(player.actorID), true, false));
-                        client.queuePacket(BasePacket.createPacket(InventorySetEndPacket.buildPacket(player.actorID), true, false));
+                            #region itemsetup
 
-                        client.queuePacket(BasePacket.createPacket(InventoryEndChangePacket.buildPacket(player.actorID), true, false));
-                        ////////ITEMS////////
+                            //TEST
+                            List<Item> items = new List<Item>();
+                            items.Add(new Item(1337, 8030920, 5)); //Leather Jacket
+                            items.Add(new Item(1338, 8013626, 1)); //Chocobo Mask
+                            items.Add(new Item(1339, 5030402, 2)); //Thyrus
+                            items.Add(new Item(1340, 8013635, 3)); //Dalamud Horn
+                            items.Add(new Item(1341, 10100132, 4)); //Savage Might 4
+                            items.Add(new Item(1342, 8032407, 6)); //Green Summer Halter (Female)
+                            items.Add(new Item(1343, 8051307, 7)); //Green Summer Tanga (Female)
+                            items.Add(new Item(1344, 8050766, 8)); //Flame Private's Saroul
 
-                        //The rest of hardcode
-                        client.queuePacket(reply7);
-                        client.queuePacket(reply8);
-                        client.queuePacket(reply9);
-                        client.queuePacket(reply10);
-                        //client.queuePacket(reply11);
-                        client.queuePacket(reply12);
+                            int count = 0;
 
-                        inn.addActorToZone(player.getActor());
+                            items[2].isHighQuality = true;
+                            items[0].durability = 9999;
+                            items[0].spiritbind = 10000;
+                            items[0].materia1 = 6;
+                            items[0].materia2 = 7;
+                            items[0].materia3 = 8;
+                            items[0].materia4 = 9;
+                            items[0].materia5 = 10;
+                            items[1].durability = 9999;
+                            items[2].durability = 0xFFFFFFF;
+                            items[3].durability = 9999;
+                            items[4].quantity = 99;
 
-                        break;
-                    //Chat Received
-                    case 0x0003:                        
-                        subpacket.debugPrintSubPacket();
-                        break;
-                    //Update Position
-                    case 0x00CA:
+                            //Reused
+                            SubPacket endInventory = InventorySetEndPacket.buildPacket(player.actorID);
+                            SubPacket beginInventory = InventorySetBeginPacket.buildPacket(player.actorID, 200, 00);
+                            SubPacket setInventory = InventoryItemPacket.buildPacket(player.actorID, items, ref count);
+
+                            List<SubPacket> setinvPackets = new List<SubPacket>();
+                            setinvPackets.Add(beginInventory);
+                            setinvPackets.Add(setInventory);
+                            setinvPackets.Add(endInventory);
+                            #endregion
+
+                            client.queuePacket(BasePacket.createPacket(setinvPackets, true, false));
+
+                            //client.queuePacket(currancy);
+                            //client.queuePacket(keyitems);
+
+                            #region equipsetup
+                            EquipmentSetupPacket initialEqupmentPacket = new EquipmentSetupPacket();
+                            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_BODY, 5);
+                            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_HEAD, 3);
+                            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_UNDERSHIRT, 6);
+                            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_UNDERGARMENT, 7);
+                            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_MAINHAND, 2);
+                            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_LEGS, 8);
+                            #endregion
+
+                            //Equip Init
+                            client.queuePacket(BasePacket.createPacket(InventorySetBeginPacket.buildPacket(player.actorID, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false));
+                            client.queuePacket(BasePacket.createPacket(initialEqupmentPacket.buildPackets(player.actorID), true, false));
+                            client.queuePacket(BasePacket.createPacket(InventorySetEndPacket.buildPacket(player.actorID), true, false));
+
+                            client.queuePacket(BasePacket.createPacket(InventoryEndChangePacket.buildPacket(player.actorID), true, false));
+                            ////////ITEMS////////
+
+                            //The rest of hardcode
+                            client.queuePacket(reply7);
+                            client.queuePacket(reply8);
+                            client.queuePacket(reply9);
+                            client.queuePacket(reply10);
+                            //client.queuePacket(reply11);
+                            client.queuePacket(reply12);
+
+                            inn.addActorToZone(player.getActor());
+
+                            break;
+                        //Chat Received
+                        case 0x0003:
+                            subpacket.debugPrintSubPacket();
+                            break;
                         //Update Position
-                        UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
-                        player.updatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
+                        case 0x00CA:
+                            //Update Position
+                            UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
+                            player.updatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
 
-                        //Update Instance
-                        List<BasePacket> instanceUpdatePackets = player.updateInstance(inn.getActorsAroundActor(player.getActor(), 50));
-                        foreach (BasePacket bp in instanceUpdatePackets)
-                            client.queuePacket(bp);
+                            //Update Instance
+                            List<BasePacket> instanceUpdatePackets = player.updateInstance(inn.getActorsAroundActor(player.getActor(), 50));
+                            foreach (BasePacket bp in instanceUpdatePackets)
+                                client.queuePacket(bp);
 
-                        break;
-                    //Set Target 
-                    case 0x00CD:
-                        subpacket.debugPrintSubPacket();
+                            break;
+                        //Set Target 
+                        case 0x00CD:
+                            subpacket.debugPrintSubPacket();
 
-                        SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
-                        player.getActor().currentTarget = setTarget.actorID;
-                        client.queuePacket(BasePacket.createPacket(SetActorTargetAnimatedPacket.buildPacket(player.actorID, player.actorID, setTarget.actorID), true, false));
-				        break;
-                    //Lock Target
-                    case 0x00CC:
-                        LockTargetPacket lockTarget = new LockTargetPacket(subpacket.data);
-                        player.getActor().currentLockedTarget = lockTarget.actorID;
-                        break;
-                    //Start Script
-                    case 0x012D:
-                        subpacket.debugPrintSubPacket();
-                        //StartScriptPacket startScript = new StartScriptPacket(subpacket.data);
-                        //client.queuePacket(new BasePacket("./packets/script/bed.bin"));
-                        client.queuePacket(BasePacket.createPacket(ActorDoEmotePacket.buildPacket(player.actorID, player.getActor().currentTarget, 137), true, false));
-                        break;
-                    //Script Result
-                    case 0x012E:
-                        subpacket.debugPrintSubPacket();
-				        processScriptResult(subpacket);				    
-				        break;
-                    case 0x012F:
-                        subpacket.debugPrintSubPacket();
-                        
-                        break;
-                    default:
-                        Log.debug(String.Format("Unknown command 0x{0:X} received.", subpacket.header.opcode));
-                        subpacket.debugPrintSubPacket();
-                        break;
+                            SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
+                            player.getActor().currentTarget = setTarget.actorID;
+                            client.queuePacket(BasePacket.createPacket(SetActorTargetAnimatedPacket.buildPacket(player.actorID, player.actorID, setTarget.actorID), true, false));
+                            break;
+                        //Lock Target
+                        case 0x00CC:
+                            LockTargetPacket lockTarget = new LockTargetPacket(subpacket.data);
+                            player.getActor().currentLockedTarget = lockTarget.actorID;
+                            break;
+                        //Start Script
+                        case 0x012D:
+                            subpacket.debugPrintSubPacket();
+                            //StartScriptPacket startScript = new StartScriptPacket(subpacket.data);
+                            //client.queuePacket(new BasePacket("./packets/script/bed.bin"));
+                            client.queuePacket(BasePacket.createPacket(ActorDoEmotePacket.buildPacket(player.actorID, player.getActor().currentTarget, 137), true, false));
+                            break;
+                        //Script Result
+                        case 0x012E:
+                            subpacket.debugPrintSubPacket();
+                            processScriptResult(subpacket);
+                            break;
+                        case 0x012F:
+                            subpacket.debugPrintSubPacket();
+
+                            break;
+                        default:
+                            Log.debug(String.Format("Unknown command 0x{0:X} received.", subpacket.gameMessage.opcode));
+                            subpacket.debugPrintSubPacket();
+                            break;
+                    }
                 }
             }
         }

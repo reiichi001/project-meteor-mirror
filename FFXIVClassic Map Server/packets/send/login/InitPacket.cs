@@ -12,7 +12,7 @@ namespace FFXIVClassic_Map_Server.packets.send.login
     {
         public static BasePacket buildPacket(uint unknown, uint time)
         {
-            byte[] data = new byte[18];
+            byte[] data = new byte[0x18];
 
             using (MemoryStream mem = new MemoryStream(data))
             {
