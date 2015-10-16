@@ -71,7 +71,6 @@ namespace FFXIVClassic_Lobby_Server
 
         private void acceptCallback(IAsyncResult result)
         {
-             Log.conn("TEST.");
             ClientConnection conn = null;
             Socket socket = (System.Net.Sockets.Socket)result.AsyncState;
            

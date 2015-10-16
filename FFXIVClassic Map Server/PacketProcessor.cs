@@ -277,7 +277,7 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                         //Set Target 
                         case 0x00CD:
-                            subpacket.debugPrintSubPacket();
+                            //subpacket.debugPrintSubPacket();
 
                             SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
                             player.getActor().currentTarget = setTarget.actorID;
