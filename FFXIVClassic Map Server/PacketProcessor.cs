@@ -43,14 +43,11 @@ namespace FFXIVClassic_Lobby_Server
             if (packet.header.isEncrypted == 0x01)                       
                 BasePacket.decryptPacket(client.blowfish, ref packet);
 
-            packet.debugPrintPacket();
-
             List<SubPacket> subPackets = packet.getSubpackets();
             foreach (SubPacket subpacket in subPackets)
             {
                 if (subpacket.header.type == 0x01)
-                {               
-                    BasePacket init = InitPacket.buildPacket(0, Utils.UnixTimeStampUTC());
+                {                                   
                     BasePacket reply2 = new BasePacket("./packets/login/login2.bin");
 
                     //Already Handshaked
@@ -65,7 +62,7 @@ namespace FFXIVClassic_Lobby_Server
                             }
                         }
 
-                        client.queuePacket(init);
+                        
                         client.queuePacket(reply2);
                         break;
                     }
@@ -121,13 +118,13 @@ namespace FFXIVClassic_Lobby_Server
 
                     //Get Character info
                     //Create player actor
-                    client.queuePacket(init);
                     client.queuePacket(reply2);
                     break;
                 }
-                else if (subpacket.header.type == 0x08)
+                else if (subpacket.header.type == 0x07)
                 {
-
+                    BasePacket init = InitPacket.buildPacket(BitConverter.ToUInt32(packet.data, 0x10), Utils.UnixTimeStampUTC());
+                    client.queuePacket(init);
                 }
                 else if (subpacket.header.type == 0x03)
                 {

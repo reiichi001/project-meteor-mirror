@@ -62,6 +62,8 @@ namespace FFXIVClassic_Lobby_Server
             Console.WriteLine("{0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
             Console.ForegroundColor = ConsoleColor.Gray;
 
+            mProcessor = new PacketProcessor(mConnectedPlayerList, mConnectionList);
+
             //mGameThread = new Thread(new ThreadStart(mProcessor.update));
             //mGameThread.Start();
             return true;
@@ -69,6 +71,7 @@ namespace FFXIVClassic_Lobby_Server
 
         private void acceptCallback(IAsyncResult result)
         {
+             Log.conn("TEST.");
             ClientConnection conn = null;
             Socket socket = (System.Net.Sockets.Socket)result.AsyncState;
            
@@ -133,7 +136,7 @@ namespace FFXIVClassic_Lobby_Server
                     //Build packets until can no longer or out of data
                     while(true)
                     {                        
-                        BasePacket basePacket = buildPacket(ref offset, conn.buffer);
+                        BasePacket basePacket = buildPacket(ref offset, conn.buffer, bytesRead);
                         //If can't build packet, break, else process another
                         if (basePacket == null)                        
                             break;                        
@@ -142,13 +145,13 @@ namespace FFXIVClassic_Lobby_Server
                     }
                     
                     //Not all bytes consumed, transfer leftover to beginning
-                    if (offset <= bytesRead)                    
+                    if (offset < bytesRead)                    
                         Array.Copy(conn.buffer, offset, conn.buffer, 0, bytesRead - offset);
 
                     //Build any queued subpackets into basepackets and send
                     conn.flushQueuedSendPackets();
                     
-                    if (offset <= bytesRead)                    
+                    if (offset < bytesRead)                    
                         //Need offset since not all bytes consumed
                         conn.socket.BeginReceive(conn.buffer, bytesRead - offset, conn.buffer.Length - (bytesRead - offset), SocketFlags.None, new AsyncCallback(receiveCallback), conn);
                     else                        
@@ -185,18 +188,21 @@ namespace FFXIVClassic_Lobby_Server
         /// <param name="offset">Current offset in buffer.</param>
         /// <param name="buffer">Incoming buffer.</param>
         /// <returns>Returns either a BasePacket or null if not enough data.</returns>
-        public BasePacket buildPacket(ref int offset, byte[] buffer)
+        public BasePacket buildPacket(ref int offset, byte[] buffer, int bytesRead)
         {
             BasePacket newPacket = null;
 
             //Too small to even get length
-            if (buffer.Length <= offset + 1)
+            if (bytesRead <= offset)
                 return null;
 
             ushort packetSize = BitConverter.ToUInt16(buffer, offset);
 
             //Too small to whole packet
-            if (buffer.Length <= offset + packetSize)
+            if (bytesRead < offset + packetSize)
+                return null;
+
+            if (buffer.Length < offset + packetSize)
                 return null;
 
             newPacket = new BasePacket(buffer, ref offset);

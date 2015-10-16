@@ -127,7 +127,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             if (header.type == 0x3)
                 Array.Copy(getGameMessageBytes(), 0, outBytes, SUBPACKET_SIZE, GAMEMESSAGE_SIZE);
 
-            Array.Copy(data, 0, outBytes, SUBPACKET_SIZE + header.type == 0x3 ? GAMEMESSAGE_SIZE : 0, data.Length);
+            Array.Copy(data, 0, outBytes, SUBPACKET_SIZE + (header.type == 0x3 ? GAMEMESSAGE_SIZE : 0), data.Length);
             return outBytes;
         }
 
