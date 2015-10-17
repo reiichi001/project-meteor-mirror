@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.script
 {
-    class EndScriptPacket
+    class ScriptEndPacket
     {
     }
 }
