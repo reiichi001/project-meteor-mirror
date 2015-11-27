@@ -38,7 +38,8 @@ namespace FFXIVClassic_Lobby_Server
 
             while (sendPacketQueue.Count > 0)
             {
-                BasePacket packet = sendPacketQueue.Take();
+                BasePacket packet = sendPacketQueue.Take();                
+
                 byte[] packetBytes = packet.getPacketBytes();
                 byte[] buffer = new byte[0xffff];
                 Array.Copy(packetBytes, buffer, packetBytes.Length);

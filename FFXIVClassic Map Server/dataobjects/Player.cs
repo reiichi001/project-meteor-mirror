@@ -71,7 +71,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public ClientConnection getConnection2()
         {
-            return conn1;
+            return conn2;
         }
 
         public Actor getActor()
@@ -136,7 +136,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 }
             }
 
-            basePackets.Add(BasePacket.createPacket(posUpdateSubpackets, true, false));
+            if (posUpdateSubpackets.Count > 0)
+                basePackets.Add(BasePacket.createPacket(posUpdateSubpackets, true, false));
 
             return basePackets;
         }

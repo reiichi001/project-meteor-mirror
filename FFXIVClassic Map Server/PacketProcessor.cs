@@ -18,6 +18,7 @@ using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.Actor;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server;
+using FFXIVClassic_Map_Server.packets.send.script;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -263,6 +264,9 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x0003:
                             subpacket.debugPrintSubPacket();
                             break;
+                        //Unknown
+                        case 0x0007: 
+                            break;
                         //Update Position
                         case 0x00CA:
                             //Update Position
@@ -291,14 +295,14 @@ namespace FFXIVClassic_Lobby_Server
                         //Start Script
                         case 0x012D:
                             subpacket.debugPrintSubPacket();
-                            //StartScriptPacket startScript = new StartScriptPacket(subpacket.data);
-                            //client.queuePacket(new BasePacket("./packets/script/bed.bin"));
+                            CommandStartRequestPacket commandStart = new CommandStartRequestPacket(subpacket.data);
+                            
                             client.queuePacket(BasePacket.createPacket(ActorDoEmotePacket.buildPacket(player.actorID, player.getActor().currentTarget, 137), true, false));
                             break;
                         //Script Result
                         case 0x012E:
                             subpacket.debugPrintSubPacket();
-                            processScriptResult(subpacket);
+                            ScriptResultPacket scriptResult = new ScriptResultPacket(subpacket.data);
                             break;
                         case 0x012F:
                             subpacket.debugPrintSubPacket();
@@ -311,16 +315,12 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
             }
-        }
-
+        }        
 
         public void sendPacket(string path, int conn)
         {
-            if (mPlayers.Count == 0)
-                return;
-
             BasePacket packet = new BasePacket(path);
-               
+
             foreach (KeyValuePair<uint, Player> entry in mPlayers)
             {
                 packet.replaceActorID(entry.Value.actorID);

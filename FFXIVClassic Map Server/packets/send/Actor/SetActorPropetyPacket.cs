@@ -66,14 +66,12 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         private ushort runningByteTotal = 0;
         private byte[] data = new byte[PACKET_SIZE - 0x20];
-        private string script;
 
         private MemoryStream mem;
         private BinaryWriter binWriter;
 
-        public SetActorPropetyPacket(string script)
+        public SetActorPropetyPacket()
         {
-            this.script = script;
             mem = new MemoryStream(data);
             binWriter = new BinaryWriter(mem);
             binWriter.Seek(1, SeekOrigin.Begin);
@@ -87,7 +85,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         public bool addByte(uint id, byte value)
         {
-            if (runningByteTotal + 6 + Encoding.ASCII.GetByteCount(script) > MAXBYTES)
+            if (runningByteTotal + 6 > MAXBYTES)
                 return false;
 
             binWriter.Write((byte)1);
@@ -100,7 +98,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         public bool addShort(uint id, ushort value)
         {
-            if (runningByteTotal + 7 + Encoding.ASCII.GetByteCount(script) > MAXBYTES)
+            if (runningByteTotal + 7 > MAXBYTES)
                 return false;
 
             binWriter.Write((byte)2);
@@ -113,7 +111,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         public bool addInt(uint id, uint value)
         {
-            if (runningByteTotal + 9 + Encoding.ASCII.GetByteCount(script) > MAXBYTES)
+            if (runningByteTotal + 9 > MAXBYTES)
                 return false;
 
             binWriter.Write((byte)4);
@@ -124,11 +122,29 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             return true;
         }
 
+        public bool addBuffer(uint id, byte[] buffer)
+        {
+            if (runningByteTotal + 5 + buffer.Length  > MAXBYTES)
+                return false;
+
+            binWriter.Write((byte)buffer.Length);
+            binWriter.Write((UInt32)id);
+            binWriter.Write(buffer);
+            runningByteTotal += (ushort)(5 + buffer.Length);
+
+            return true;
+        }
+
+        public void setTarget(string target)
+        {
+            binWriter.Write((byte)(0x82 + target.Length));
+            binWriter.Write(target);
+            runningByteTotal += (ushort)(1 + target.Length);
+
+        }
+
         public SubPacket buildPacket(uint playerActorID, uint actorID)
         {
-            binWriter.Write((ushort)00);
-            binWriter.Write(Encoding.ASCII.GetBytes(script));
-
             binWriter.Seek(0, SeekOrigin.Begin);
             binWriter.Write((byte)runningByteTotal);
             

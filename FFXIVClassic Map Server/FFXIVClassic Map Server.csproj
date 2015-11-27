@@ -76,9 +76,10 @@
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\HandshakePacket.cs" />
+    <Compile Include="packets\receive\script\CommandStartRequestPacket.cs" />
+    <Compile Include="packets\receive\script\ScriptResultPacket.cs" />
     <Compile Include="packets\receive\SetTargetPacket.cs" />
     <Compile Include="packets\receive\LockTargetPacket.cs" />
-    <Compile Include="packets\receive\EndScriptPacket.cs" />
     <Compile Include="packets\receive\StartScriptPacket.cs" />
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\DeleteAllActorsPacket.cs" />
@@ -93,6 +94,7 @@
     <Compile Include="packets\send\actor\inventory\EquipmentSetupPacket.cs" />
     <Compile Include="packets\send\actor\RemoveActorPacket.cs" />
     <Compile Include="packets\send\actor\SetActorNamePacket.cs" />
+    <Compile Include="packets\send\actor\SetActorPropetyPacket.cs" />
     <Compile Include="packets\send\actor\SetActorSpeedPacket.cs" />
     <Compile Include="packets\send\actor\SetActorStatePacket.cs" />
     <Compile Include="packets\send\actor\SetActorTargetAnimatedPacket.cs" />
@@ -114,6 +116,8 @@
     <Compile Include="packets\send\player\SetPlayerTitlePacket.cs" />
     <Compile Include="packets\send\PongPacket.cs" />
     <Compile Include="packets\send\QuitPacket.cs" />
+    <Compile Include="packets\send\script\ScriptEndPacket.cs" />
+    <Compile Include="packets\send\script\ScriptStartPacket.cs" />
     <Compile Include="packets\send\SendMessagePacket.cs" />
     <Compile Include="packets\send\SetMapPacket.cs" />
     <Compile Include="packets\send\SetMusicPacket.cs" />
@@ -123,6 +127,7 @@
     <Compile Include="packets\receive\UpdatePlayerPositionPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ScriptParamReader.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="Zone.cs" />
   </ItemGroup>
@@ -130,9 +135,7 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="packets\send\script\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
