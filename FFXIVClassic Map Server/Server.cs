@@ -10,6 +10,7 @@ using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
 using System.IO;
+using FFXIVClassic_Map_Server.packets.send.actor;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -204,7 +205,14 @@ namespace FFXIVClassic_Lobby_Server
             if (buffer.Length < offset + packetSize)
                 return null;
 
-            newPacket = new BasePacket(buffer, ref offset);
+            try
+            {
+                newPacket = new BasePacket(buffer, ref offset);
+            }
+            catch (OverflowException)
+            {
+                return null;
+            }
 
             return newPacket;
         }
@@ -215,5 +223,22 @@ namespace FFXIVClassic_Lobby_Server
         {
             mProcessor.sendPacket(path, conn);
         }
+
+        public void testCodePacket(uint id, uint value, string target)
+        {
+            SetActorPropetyPacket changeProperty = new SetActorPropetyPacket();
+            changeProperty.addInt(id, value);
+            changeProperty.setTarget(target);
+
+            foreach (KeyValuePair<uint, Player> entry in mConnectedPlayerList)
+            {
+                SubPacket changePropertyPacket = changeProperty.buildPacket((entry.Value.actorID), (entry.Value.actorID));
+                BasePacket packet = BasePacket.createPacket(changePropertyPacket, true, false);
+                packet.debugPrintPacket();
+                entry.Value.getConnection1().queuePacket(packet);
+                entry.Value.getConnection2().queuePacket(packet);
+            }
+        }
+
     }
 }

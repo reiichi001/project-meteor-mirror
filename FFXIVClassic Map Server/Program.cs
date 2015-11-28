@@ -20,7 +20,6 @@ namespace FFXIVClassic_Lobby_Server
             TextWriterTraceListener myWriter = new TextWriterTraceListener(System.Console.Out);
             Debug.Listeners.Add(myWriter);
 #endif
-
             bool startServer = true;
 
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -87,8 +86,11 @@ namespace FFXIVClassic_Lobby_Server
                                 Log.error("Could not load packet");
                             }
                         }
-                    }
-                    Thread.Sleep(1000);
+                        else if (split[0].Equals("property"))
+                        {
+                            server.testCodePacket(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
+                        }
+                    }                    
                 }
             }
 

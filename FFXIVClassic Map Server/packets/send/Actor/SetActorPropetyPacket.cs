@@ -138,8 +138,8 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public void setTarget(string target)
         {
             binWriter.Write((byte)(0x82 + target.Length));
-            binWriter.Write(target);
-            runningByteTotal += (ushort)(1 + target.Length);
+            binWriter.Write(Encoding.ASCII.GetBytes(target));
+            runningByteTotal += (ushort)(1 + Encoding.ASCII.GetByteCount(target));
 
         }
 

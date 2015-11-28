@@ -96,15 +96,14 @@ namespace FFXIVClassic_Lobby_Server.common
 	        }
 
 	        // Handle the last few bytes of the input array
-
 	        switch (len)
 	        {
                 case 3: 
-                    h ^= (uint)data[2] << 16; goto case 2;
+                    h ^= (uint)data[0] << 16; goto case 2;
                 case 2: 
-                    h ^= (uint)data[0] << 8; goto case 1;
-	            case 1: 
-                    h ^= data[1];
+                    h ^= (uint)data[len-2] << 8; goto case 1;
+	            case 1:
+                    h ^= data[len-1];
 		            h *= m;
                     break;
 	        };
