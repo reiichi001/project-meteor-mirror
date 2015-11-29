@@ -16,7 +16,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
         {
             if (Encoding.Unicode.GetByteCount(name) >= 0x20)
                 name = "ERR: Too Long";
-            return new SubPacket(OPCODE, playerActorID, targetActorID, Encoding.Unicode.GetBytes(name));
+            return new SubPacket(OPCODE, playerActorID, targetActorID, Encoding.ASCII.GetBytes(name));
         }
     }
 }

@@ -60,9 +60,9 @@ namespace FFXIVClassic_Map_Server.packets.send.player
         public const int CATEGORY_FLAMES =     1872;        
 
         public const ushort OPCODE = 0x01A3;
-        public const uint PACKET_SIZE = 0150;
+        public const uint PACKET_SIZE = 0x150;
 
-        public bool[] cutsceneFlags = new bool[2688];
+        public bool[] cutsceneFlags = new bool[2432];
 
         public SubPacket buildPacket(uint playerActorID)
         {
