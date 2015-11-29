@@ -118,5 +118,23 @@ namespace FFXIVClassic_Lobby_Server.common
 	        return h;
         }
 
+        public static byte[] ConvertBoolArrayToBinaryStream(bool[] array)
+        {
+            byte[] data = new byte[(array.Length/8)+(array.Length%8 != 0 ? 1 : 0)];
+
+            int dataCounter = 0;
+            for (int i = 0; i < array.Length; i+=8)
+            {
+                for (int bitCount = 0; bitCount < 8; bitCount++)
+                {
+                    if (i + bitCount >= array.Length)
+                        break;
+                    data[dataCounter] = (byte)(((array[i + bitCount] ? 1 : 0) << 7-bitCount) | data[dataCounter]);
+                }
+                dataCounter++;
+            }
+
+            return data;
+        }
     }
 }

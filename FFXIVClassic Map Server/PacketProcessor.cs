@@ -19,6 +19,7 @@ using FFXIVClassic_Map_Server.packets.send.Actor;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server;
 using FFXIVClassic_Map_Server.packets.send.script;
+using FFXIVClassic_Map_Server.packets.send.player;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -250,11 +251,25 @@ namespace FFXIVClassic_Lobby_Server
                             ////////ITEMS////////
 
                             //The rest of hardcode
+                            //client.queuePacket(BasePacket.createPacket(SetGCInfoPacket.buildPacket(player.actorID), true, false));
+                            //client.queuePacket(BasePacket.createPacket(SetGCInfoPacket.buildPacket(player.actorID), true, false));
+                            client.queuePacket(BasePacket.createPacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false));
+                            client.queuePacket(BasePacket.createPacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false));
+                            //client.queuePacket(BasePacket.createPacket(SetCurrentJobPacket.buildPacket(player.actorID, player.actorID, 0x00), true, false)); //196
+                            client.queuePacket(BasePacket.createPacket(SetChocoboNamePacket.buildPacket(player.actorID, player.actorID, "Boco"), true, false));
+                            //client.queuePacket(BasePacket.createPacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false)); //199
+                            client.queuePacket(BasePacket.createPacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false));
+                            client.queuePacket(BasePacket.createPacket(new SetCompletedAchievementsPacket().buildPacket(player.actorID), true, false));
+                            client.queuePacket(BasePacket.createPacket(SetLatestAchievementsPacket.buildPacket(player.actorID, new uint[5]), true, false));
+                            client.queuePacket(BasePacket.createPacket(SetAchievementPointsPacket.buildPacket(player.actorID, 0x00), true, false));
+                            //client.queuePacket(BasePacket.createPacket(new SetCutsceneBookPacket().buildPacket(player.actorID), true, false));
+                            //client.queuePacket(BasePacket.createPacket(SetPlayerDreamPacket.buildPacket(player.actorID, player.actorID, 0x00), true, false));
+
                             client.queuePacket(reply7);
                             client.queuePacket(reply8);
                             client.queuePacket(reply9);
                             client.queuePacket(reply10);
-                            //client.queuePacket(reply11);
+                           // client.queuePacket(reply11);
                             client.queuePacket(reply12);
 
                             inn.addActorToZone(player.getActor());

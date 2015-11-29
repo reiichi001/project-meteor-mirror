@@ -106,8 +106,9 @@
     <Compile Include="packets\send\actor\SetActorPositionPacket.cs" />
     <Compile Include="packets\send\login\InitPacket.cs" />
     <Compile Include="packets\send\LogoutPacket.cs" />
+    <Compile Include="packets\send\player\SetCompletedAchievementsPacket.cs" />
     <Compile Include="packets\send\player\AchievementEarnedPacket.cs" />
-    <Compile Include="packets\send\player\CutsceneBookSetPacket.cs" />
+    <Compile Include="packets\send\player\SetCutsceneBookPacket.cs" />
     <Compile Include="packets\send\player\SetAchievementPointsPacket.cs" />
     <Compile Include="packets\send\player\SetChocoboNamePacket.cs" />
     <Compile Include="packets\send\player\SetGCInfoPacket.cs" />
