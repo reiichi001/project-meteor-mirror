@@ -11,23 +11,58 @@ namespace FFXIVClassic_Map_Server.packets.send.player
 {
     class SetCutsceneBookPacket
     {
-        public const int CATEGORY_BATTLE = 000;
-        public const int CATEGORY_CHARACTER = 050;
-        public const int CATEGORY_CURRENCY = 200;
-        public const int CATEGORY_ITEMS = 250;
-        public const int CATEGORY_SYNTHESIS = 300;
-        public const int CATEGORY_GATHERING = 400;
-        public const int CATEGORY_MATERIA = 550;
-        public const int CATEGORY_QUESTS = 600;
-        public const int CATEGORY_SEASONAL_EVENTS = 700;
-        public const int CATEGORY_DUNGEONS = 750;
-        public const int CATEGORY_EXPLORATION = 800;
-        public const int CATEGORY_GRAND_COMPANY = 820;
+        //Main Story
+        public const int CATEGORY_MAINSTORY =  072;
+        public const int CATEGORY_SIDEQUESTS1 = 672;
+        public const int CATEGORY_SIDEQUESTS2 = 892;
+        public const int CATEGORY_INSTANCED = 888;
+
+        //Other        
+        public const int OTHER_UGHAMARO =      005;
+        public const int OTHER_NATALAN =       006;
+        public const int OTHER_Z =             007;
+        public const int OTHER_CASTRUMNOVUM =  008;
+        public const int OTHER_NIGHTMARE =     014;
+
+        //Class Cutscenes
+        public const int CATEGORY_PUG_QUESTS = 128;
+        public const int CATEGORY_GLA_QUESTS = 148;
+        public const int CATEGORY_MRD_QUESTS = 168;
+        public const int CATEGORY_ARC_QUESTS = 188;
+        public const int CATEGORY_LNC_QUESTS = 208;
+        public const int CATEGORY_THM_QUESTS = 228;
+        public const int CATEGORY_CNJ_QUESTS = 248;
+
+        //DoH/DoL Cutscenes
+        public const int CATEGORY_CRP_QUESTS = 268;
+        public const int CATEGORY_BSM_QUESTS = 288;
+        public const int CATEGORY_GSM_QUESTS = 308;
+        public const int CATEGORY_LTW_QUESTS = 328;
+        public const int CATEGORY_WVR_QUESTS = 348;
+        public const int CATEGORY_ALC_QUESTS = 368;
+        public const int CATEGORY_CUL_QUESTS = 388;
+        public const int CATEGORY_MIN_QUESTS = 408;
+        public const int CATEGORY_BTN_QUESTS = 428;
+        public const int CATEGORY_FSH_QUESTS = 448;
+        
+        //Job Cutscenes
+        public const int CATEGORY_WAR_QUESTS = 1272;
+        public const int CATEGORY_MNK_QUESTS = 1292;
+        public const int CATEGORY_WHM_QUESTS = 1312;
+        public const int CATEGORY_BLM_QUESTS = 1332;
+        public const int CATEGORY_PLD_QUESTS = 1352;
+        public const int CATEGORY_BRD_QUESTS = 1372;
+        public const int CATEGORY_DRG_QUESTS = 1392;
+
+        //GC Cutscenes
+        public const int CATEGORY_MAELSTROM =  1472;
+        public const int CATEGORY_ADDERS =     1672;
+        public const int CATEGORY_FLAMES =     1872;        
 
         public const ushort OPCODE = 0x01A3;
         public const uint PACKET_SIZE = 0150;
 
-        public bool[] cutsceneFlags = new bool[2432];
+        public bool[] cutsceneFlags = new bool[2688];
 
         public SubPacket buildPacket(uint playerActorID)
         {
