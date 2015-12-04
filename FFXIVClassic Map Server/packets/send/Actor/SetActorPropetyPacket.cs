@@ -1,8 +1,10 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
+﻿using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Lobby_Server.packets;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,58 +16,11 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public const ushort OPCODE = 0x0137;
         public const uint PACKET_SIZE = 0xA8;
 
-        private const ushort MAXBYTES = 0x7D;
-
-        //These are known property IDs
-        public const uint NAMEPLATE_SHOWN = 0xFBFBCFB1;
-        public const uint TARGETABLE = 0x2138FD71;
-        public const uint LS_CREST = 0xBC98941D;
-
-        public const uint HP = 0x4232BCAA;
-        public const uint MP = 0x13F89710;
-        public const uint TP = 0;
-
-        public const uint HPMAX = 0x7BCDFB69;
-        public const uint MPMAX = 0x3C95D5C5;
-        public const uint TPMAX = 0;
-
-        public const uint JOB = 0x7532CE24;
-        public const uint LEVEL = 0x96063588;
-
-        public const uint STAT_STRENGTH = 0x647A29A8;
-        public const uint STAT_VITALITY = 0x939E884A;
-        public const uint STAT_DEXTERITY = 0x416571AC;
-        public const uint STAT_INTELLIGENCE = 0x2DFBC13A;
-        public const uint STAT_MIND = 0x0E704141;
-        public const uint STAT_PIETY = 0x6CCAF8B3;        
-
-        public const uint STAT_ACCURACY = 0x91CD44E7;
-        public const uint STAT_EVASION = 0x11B1B22D;
-        public const uint STAT_ATTACK = 0xBA51C4E1;
-        public const uint STAT_DEFENSE = 0x8CAE90DB;
-        public const uint STAT_ATTACK_MAGIC_POTENCY = 0x1F3DACC5;
-        public const uint STAT_HEALING_MAGIC_POTENCY = 0xA329599A;
-        public const uint STAT_ENCHANCEMENT_MAGIC_POTENCY = 0xBA51C4E1;
-        public const uint STAT_ENFEEBLING_MAGIC_POTENCY = 0xEB90BAAB;
-        public const uint STAT_MAGIC_ACCURACY = 0xD57DC284;
-        public const uint STAT_MAGIC_EVASION = 0x17AB37EF;
-
-        public const uint RESISTANCE_FIRE = 0x79C7ECFF;
-        public const uint RESISTANCE_ICE = 0xE17D8C7A;
-        public const uint RESISTANCE_WIND = 0x204CF942;
-        public const uint RESISTANCE_LIGHTNING = 0x1C2AEC73;
-        public const uint RESISTANCE_EARTH = 0x5FC56D16;
-        public const uint RESISTANCE_WATER = 0x64803E98;               
-
-        public const uint TRIBE = 0x774A02BF;
-        public const uint GUARDIAN = 0x5AB3D930;
-        public const uint BIRTHDAY = 0x822C9556;
-        public const uint BIRTHMONTH = 0x0EFB92D4;
-        public const uint ALLEGIANCE = 0xAAD96353;
-        //End of properties
+        private const ushort MAXBYTES = 0x7D;        
 
         private ushort runningByteTotal = 0;
         private byte[] data = new byte[PACKET_SIZE - 0x20];
+        private bool isMore = false;
 
         private MemoryStream mem;
         private BinaryWriter binWriter;
@@ -135,9 +90,80 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             return true;
         }
 
+        public void addProperty(FFXIVClassic_Map_Server.dataobjects.Actor actor, string name)
+        {
+            string[] split = name.Split('.');
+            int arrayIndex = 0;
+
+            if (!(split[0].Equals("work") || split[0].Equals("charaWork") || split[0].Equals("playerWork") || split[0].Equals("npcWork")))
+                return;
+
+            Object curObj = actor;
+            for (int i = 0; i < split.Length; i++)
+            {
+                //For arrays
+                if (split[i].Contains('['))
+                {
+                    if (split[i].LastIndexOf(']') - split[i].IndexOf('[') <= 0)
+                        return;
+
+                    arrayIndex = Convert.ToInt32(split[i].Substring(split[i].IndexOf('[') + 1, split[i].Length - split[i].LastIndexOf(']')));
+                    split[i] = split[i].Substring(0, split[i].IndexOf('['));
+                }
+
+                FieldInfo field = curObj.GetType().GetField(split[i]);
+                if (field == null)
+                    return;
+
+                curObj = field.GetValue(curObj);
+                if (curObj == null)
+                    return;
+            }
+
+            if (curObj == null)
+                return;
+            else
+            {
+                //Array, we actually care whats inside
+                if (curObj.GetType().IsArray)
+                {
+                    if (((Array)curObj).Length <= arrayIndex)
+                        return;
+                    curObj = ((Array)curObj).GetValue(arrayIndex);
+                }
+
+                if (curObj == null)
+                    return;
+
+                //Cast to the proper object and add to packet
+                uint id = Utils.MurmurHash2(name, 0);
+                if (curObj is bool)                
+                    addByte(id, (byte)(((bool)curObj) ? 1 : 0));
+                else if (curObj is byte)
+                    addByte(id, (byte)curObj);
+                else if (curObj is ushort)
+                    addShort(id, (ushort)curObj);
+                else if (curObj is short)                
+                    addShort(id, (ushort)(short)curObj);
+                else if (curObj is uint)
+                    addInt(id, (uint)curObj);
+                else if (curObj is int)                                    
+                    addInt(id, (uint)(int)curObj);
+                else if (curObj is float)
+                    addBuffer(id, BitConverter.GetBytes((float)curObj));
+                else
+                    return;
+            }
+        }
+
+        public void setIsMore(bool flag)
+        {
+            isMore = flag;
+        }
+
         public void setTarget(string target)
         {
-            binWriter.Write((byte)(0x82 + target.Length));
+            binWriter.Write((byte)(isMore ? 0x62 + target.Length : 0x82 + target.Length));
             binWriter.Write(Encoding.ASCII.GetBytes(target));
             runningByteTotal += (ushort)(1 + Encoding.ASCII.GetByteCount(target));
 

@@ -1,6 +1,7 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
 using System.Collections.Generic;
@@ -10,25 +11,21 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.dataobjects
 {
-    class Player
-    {        
-        Actor playerActor;
+    class ConnectedPlayer
+    {
+        public uint actorID = 0;
+        PlayerActor playerActor;
+        List<Actor> actorInstanceList = new List<Actor>();
 
         ClientConnection conn1;
         ClientConnection conn2;
 
-        public uint actorID = 0;
-
-        private uint currentZoneID = 0;
-
-        List<Actor> actorInstanceList = new List<Actor>();
-
         bool isDisconnected;
 
-        public Player(uint actorId)
+        public ConnectedPlayer(uint actorId)
         {
             this.actorID = actorId;
-            Character chara = Database.getCharacter(actorId);
+            DBCharacter chara = Database.getCharacter(actorId);
             createPlayerActor(actorId, chara);
         }
 
@@ -79,14 +76,13 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return playerActor;
         }
 
-        public void createPlayerActor(uint actorId, Character chara)
+        public void createPlayerActor(uint actorId, DBCharacter chara)
         {
-            playerActor = new Actor(actorId);
+            playerActor = new PlayerActor(actorId);
 
             playerActor.displayNameID = 0xFFFFFFFF;
             playerActor.customDisplayName = chara.name;
             playerActor.setPlayerAppearance();
-
             actorInstanceList.Add(playerActor);
         }
 
@@ -101,11 +97,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void sendMotd()
         {
-            World world = Database.getServer(ConfigConstants.DATABASE_WORLDID);
+            DBWorld world = Database.getServer(ConfigConstants.DATABASE_WORLDID);
             //sendChat(world.motd);
         }
 
-        public void sendChat(Player sender, string message, int mode)
+        public void sendChat(ConnectedPlayer sender, string message, int mode)
         {
 
         }

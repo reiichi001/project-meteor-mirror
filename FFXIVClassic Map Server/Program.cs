@@ -57,7 +57,7 @@ namespace FFXIVClassic_Lobby_Server
             }
 
             //Check World ID
-            World thisWorld = Database.getServer(ConfigConstants.DATABASE_WORLDID);
+            DBWorld thisWorld = Database.getServer(ConfigConstants.DATABASE_WORLDID);
             if (thisWorld != null)
                 Console.WriteLine("Successfully pulled world info from DB. Server name is {0}.", thisWorld.name);
             else
@@ -89,6 +89,10 @@ namespace FFXIVClassic_Lobby_Server
                         else if (split[0].Equals("property"))
                         {
                             server.testCodePacket(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
+                        }
+                        else if (split[0].Equals("test"))
+                        {
+                            server.testCodePacket2(split[1], split[2]);
                         }
                     }                    
                 }

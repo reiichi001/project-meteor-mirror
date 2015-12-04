@@ -137,7 +137,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
             return info;
         }
 
-        public String buildForCharaList(Character chara)
+        public String buildForCharaList(DBCharacter chara)
         {
             byte[] data;
 

@@ -8,7 +8,7 @@ using FFXIVClassic_Lobby_Server.dataobjects;
 
 namespace FFXIVClassic_Lobby_Server
 {
-    class Character
+    class DBCharacter
     {
         public uint id;
         public ushort slot;
@@ -18,9 +18,7 @@ namespace FFXIVClassic_Lobby_Server
         public string charaInfo;
         public bool isLegacy;
         public bool doRename;
-        public uint currentZoneId;
-        
-        
+        public uint currentZoneId;        
 
         public static CharaInfo EncodedToCharacter(String charaInfo)
         {

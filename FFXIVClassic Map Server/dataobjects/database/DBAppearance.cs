@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Lobby_Server.dataobjects
 {
-    class Appearance
+    class DBAppearance
     {
         ////////////
         //Chara Info

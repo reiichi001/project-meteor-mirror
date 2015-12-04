@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Map_Server.dataobjects.database;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -42,15 +43,15 @@ namespace FFXIVClassic_Lobby_Server
             return id;
         }
      
-        public static World getServer(uint serverId)
+        public static DBWorld getServer(uint serverId)
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                World world = null;
+                DBWorld world = null;
                 try
                 {
                     conn.Open();
-                    world = conn.Query<World>("SELECT * FROM servers WHERE id=@ServerId", new {ServerId = serverId}).SingleOrDefault();                  
+                    world = conn.Query<DBWorld>("SELECT * FROM servers WHERE id=@ServerId", new {ServerId = serverId}).SingleOrDefault();                  
                 }
                 catch (MySqlException e)
                 {                    
@@ -64,15 +65,15 @@ namespace FFXIVClassic_Lobby_Server
             }
         }    
 
-        public static Character getCharacter(uint charId)
+        public static DBCharacter getCharacter(uint charId)
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                Character chara = null;
+                DBCharacter chara = null;
                 try
                 {
                     conn.Open();
-                    chara = conn.Query<Character>("SELECT * FROM characters WHERE id=@CharaId", new { CharaId = charId }).SingleOrDefault();
+                    chara = conn.Query<DBCharacter>("SELECT * FROM characters WHERE id=@CharaId", new { CharaId = charId }).SingleOrDefault();
                 }
                 catch (MySqlException e)
                 {
@@ -86,15 +87,15 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static Appearance getAppearance(uint charaId)
+        public static DBAppearance getAppearance(uint charaId)
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                Appearance appearance = null;
+                DBAppearance appearance = null;
                 try
                 {
                     conn.Open();
-                    appearance = conn.Query<Appearance>("SELECT * FROM characters_appearance WHERE characterId=@CharaId", new { CharaId = charaId }).SingleOrDefault();
+                    appearance = conn.Query<DBAppearance>("SELECT * FROM characters_appearance WHERE characterId=@CharaId", new { CharaId = charaId }).SingleOrDefault();
                 }
                 catch (MySqlException e)
                 {
@@ -105,6 +106,28 @@ namespace FFXIVClassic_Lobby_Server
                 }
 
                 return appearance;
+            }
+        }
+
+        public static DBStats getCharacterStats(uint charaId)
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                DBStats stats = null;
+                try
+                {
+                    conn.Open();
+                    stats = conn.Query<DBStats>("SELECT * FROM characters_stats WHERE characterId=@CharaId", new { CharaId = charaId }).SingleOrDefault();
+                }
+                catch (MySqlException e)
+                {
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+
+                return stats;
             }
         }
 

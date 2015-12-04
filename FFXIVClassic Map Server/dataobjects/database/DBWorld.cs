@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Lobby_Server.dataobjects
 {
-    class World
+    class DBWorld
     {
         public ushort id;
         public string address;

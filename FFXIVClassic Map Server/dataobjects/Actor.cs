@@ -2,12 +2,15 @@
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.Actor;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace FFXIVClassic_Map_Server.dataobjects
@@ -42,12 +45,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public uint actorID;
 
-        public bool isNameplateVisible;
-        public bool isTargetable;
+        public CharaWork charaWork = new CharaWork();
+        public PlayerWork playerWork = new PlayerWork();
 
         public uint displayNameID = 0xFFFFFFFF;
         public string customDisplayName;
-        public uint nameplateIcon;
 
         public uint modelID;
         public uint[] appearanceIDs = new uint[0x1D];
@@ -61,50 +63,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public uint currentState = SetActorStatePacket.STATE_PASSIVE;
 
-        public uint currentZoneID;
-
-        //Properties
-        public ushort curHP, curMP, curTP;
-        public ushort maxHP, maxMP, maxTP;
-
-        public byte currentJob;
-        public ushort currentLevel;
-
-        public ushort statSTR, statVIT, statDEX, statINT, statMIN, statPIE;
-        public ushort statAttack, statDefense, statAccuracy, statAttackMgkPotency, statHealingMgkPotency, statEnchancementMgkPotency, statEnfeeblingMgkPotency, statMgkAccuracy, statMgkEvasion;
-        public ushort resistFire, resistIce, resistWind, resistEarth, resistLightning, resistWater;
-
-        public uint currentEXP;
-
-        public ushort linkshellcrest;
+        public uint currentZoneID;       
 
         public Actor(uint id)
         {
             actorID = id;
-        }
-
-        public void setPlayerAppearance()
-        {
-            Appearance appearance = Database.getAppearance(actorID);
-
-            modelID = Appearance.getTribeModel(appearance.tribe);
-            appearanceIDs[SIZE] = appearance.size;
-            appearanceIDs[COLORINFO] = (uint)(appearance.skinColor | (appearance.hairColor << 10) | (appearance.eyeColor << 20));
-            appearanceIDs[FACEINFO] = PrimitiveConversion.ToUInt32(appearance.getFaceInfo());
-            appearanceIDs[HIGHLIGHT_HAIR] = (uint)(appearance.hairHighlightColor | appearance.hairStyle << 10);
-            appearanceIDs[VOICE] = appearance.voice;
-            appearanceIDs[WEAPON1] = appearance.mainHand;
-            appearanceIDs[WEAPON2] = appearance.offHand;
-            appearanceIDs[HEADGEAR] = appearance.head;
-            appearanceIDs[BODYGEAR] = appearance.body;
-            appearanceIDs[LEGSGEAR] = appearance.legs;
-            appearanceIDs[HANDSGEAR] = appearance.hands;
-            appearanceIDs[FEETGEAR] = appearance.feet;
-            appearanceIDs[WAISTGEAR] = appearance.waist;
-            appearanceIDs[R_EAR] = appearance.rightEar;
-            appearanceIDs[L_EAR] = appearance.leftEar;
-            appearanceIDs[R_FINGER] = appearance.rightFinger;
-            appearanceIDs[L_FINGER] = appearance.leftFinger;
         }
 
         public SubPacket createNamePacket(uint playerActorID)
@@ -130,7 +93,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public SubPacket createSpawnPositonPacket(uint playerActorID, uint spawnType)
         {
-            return SetActorPositionPacket.buildPacket(actorID, playerActorID,  positionX, positionY, positionZ, rotation, spawnType);
+            return SetActorPositionPacket.buildPacket(actorID, playerActorID, SetActorPositionPacket.INNPOS_X, SetActorPositionPacket.INNPOS_Y, SetActorPositionPacket.INNPOS_Z, SetActorPositionPacket.INNPOS_ROT, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
         }
 
         public SubPacket createPositionUpdatePacket(uint playerActorID)
@@ -146,17 +109,42 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public BasePacket createActorSpawnPackets(uint playerActorID)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(AddActorPacket.buildPacket(actorID, playerActorID, 8));
             subpackets.Add(createSpeedPacket(playerActorID));
-            subpackets.Add(createSpawnPositonPacket(playerActorID, 0));
+            subpackets.Add(createSpawnPositonPacket(playerActorID, 0xFF));
             subpackets.Add(createAppearancePacket(playerActorID));
             subpackets.Add(createNamePacket(playerActorID));
             subpackets.Add(createStatePacket(playerActorID));
-            //subpackets.Add(createScriptBindPacket(playerActorID));
-            subpackets.Add(new SubPacket(0xCC, actorID, playerActorID,  File.ReadAllBytes("./packets/playerscript")));
-            subpackets.Add(new SubPacket(0x137, actorID, playerActorID, File.ReadAllBytes("./packets/playerscript2")));
-            subpackets.Add(new SubPacket(0x137, actorID, playerActorID, File.ReadAllBytes("./packets/playerscript3")));
+            //subpackets.Add(createScriptBindPacket(playerActorID));                        
             return BasePacket.createPacket(subpackets, true, false);
+        }
+
+        public List<SubPacket> createInitSubpackets(uint playerActorID)
+        {
+            List<SubPacket> subpacketList = new List<SubPacket>();
+            SetActorPropetyPacket setProperty = new SetActorPropetyPacket();
+
+            setProperty.addByte(0x0DB5A5BF, 5);
+            setProperty.addProperty(this, "charaWork.battleSave.potencial");
+            setProperty.addProperty(this, "charaWork.property[0]");
+            setProperty.addProperty(this, "charaWork.property[1]");
+            setProperty.addProperty(this, "charaWork.property[2]");
+            setProperty.addProperty(this, "charaWork.property[4]");
+            setProperty.addProperty(this, "charaWork.parameterSave.hp[0]");
+            setProperty.addProperty(this, "charaWork.parameterSave.hpMax[0]");
+            setProperty.addProperty(this, "charaWork.parameterSave.mp");
+            setProperty.addProperty(this, "charaWork.parameterSave.mpMax");
+            setProperty.addProperty(this, "charaWork.parameterTemp.tp");
+            
+            setProperty.addProperty(this, "charaWork.parameterSave.state_mainSkill[0]");
+            setProperty.addProperty(this, "charaWork.parameterSave.state_mainSkillLevel");
+            setProperty.addProperty(this, "charaWork.depictionJudge");
+            setProperty.addProperty(this, "charaWork.statusShownTime[0]");
+
+            setProperty.setTarget("/_init");
+
+            subpacketList.Add(setProperty.buildPacket(actorID, playerActorID));
+
+            return subpacketList;
         }
 
         public override bool Equals(Object obj)

@@ -22,7 +22,7 @@ namespace FFXIVClassic_Lobby_Server
 
         private Socket mServerSocket;
 
-        private Dictionary<uint,Player> mConnectedPlayerList = new Dictionary<uint,Player>();
+        private Dictionary<uint,ConnectedPlayer> mConnectedPlayerList = new Dictionary<uint,ConnectedPlayer>();
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private PacketProcessor mProcessor;
         private Thread mProcessorThread;
@@ -230,8 +230,25 @@ namespace FFXIVClassic_Lobby_Server
             changeProperty.addInt(id, value);
             changeProperty.setTarget(target);
 
-            foreach (KeyValuePair<uint, Player> entry in mConnectedPlayerList)
+            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
             {
+                SubPacket changePropertyPacket = changeProperty.buildPacket((entry.Value.actorID), (entry.Value.actorID));
+                BasePacket packet = BasePacket.createPacket(changePropertyPacket, true, false);
+                packet.debugPrintPacket();
+                entry.Value.getConnection1().queuePacket(packet);
+                entry.Value.getConnection2().queuePacket(packet);
+            }
+        }
+
+        public void testCodePacket2(string name, string target)
+        {
+            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+            {
+                SetActorPropetyPacket changeProperty = new SetActorPropetyPacket();
+                changeProperty.addProperty(entry.Value.getActor(), name);
+                changeProperty.addProperty(entry.Value.getActor(), "charaWork.parameterSave.hpMax[0]");
+                changeProperty.setTarget(target);
+
                 SubPacket changePropertyPacket = changeProperty.buildPacket((entry.Value.actorID), (entry.Value.actorID));
                 BasePacket packet = BasePacket.createPacket(changePropertyPacket, true, false);
                 packet.debugPrintPacket();

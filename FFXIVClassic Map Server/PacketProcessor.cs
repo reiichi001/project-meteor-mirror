@@ -20,17 +20,18 @@ using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server;
 using FFXIVClassic_Map_Server.packets.send.script;
 using FFXIVClassic_Map_Server.packets.send.player;
+using FFXIVClassic_Map_Server.dataobjects.chara;
 
 namespace FFXIVClassic_Lobby_Server
 {
     class PacketProcessor
     {
-        Dictionary<uint, Player> mPlayers;
+        Dictionary<uint, ConnectedPlayer> mPlayers;
         List<ClientConnection> mConnections;
 
         Zone inn = new Zone();
 
-        public PacketProcessor(Dictionary<uint, Player> playerList, List<ClientConnection> connectionList)
+        public PacketProcessor(Dictionary<uint, ConnectedPlayer> playerList, List<ClientConnection> connectionList)
         {
             mPlayers = playerList;
             mConnections = connectionList;
@@ -38,7 +39,7 @@ namespace FFXIVClassic_Lobby_Server
 
         public void processPacket(ClientConnection client, BasePacket packet)
         {
-            Player player = null;
+            ConnectedPlayer player = null;
             if (client.owner != 0 && mPlayers.ContainsKey(client.owner))
                 player = mPlayers[client.owner];
             
@@ -104,7 +105,7 @@ namespace FFXIVClassic_Lobby_Server
 
                     if (player == null)
                     {
-                        player = new Player(actorID);
+                        player = new ConnectedPlayer(actorID);
                         mPlayers[actorID] = player;
                         client.owner = actorID;
                         client.connType = 0;
@@ -151,12 +152,12 @@ namespace FFXIVClassic_Lobby_Server
                             BasePacket reply11 = new BasePacket("./packets/login/login11.bin");
                             BasePacket reply12 = new BasePacket("./packets/login/login12.bin");
 
-                            BasePacket keyitems = new BasePacket("./packets/login/keyitems.bin");
-                            BasePacket currancy = new BasePacket("./packets/login/currancy.bin");
+                          //  BasePacket keyitems = new BasePacket("./packets/login/keyitems.bin");
+                          //  BasePacket currancy = new BasePacket("./packets/login/currancy.bin");
 
                             #region replaceid
-                            currancy.replaceActorID(player.actorID);
-                            keyitems.replaceActorID(player.actorID);
+                            //currancy.replaceActorID(player.actorID);
+                            //keyitems.replaceActorID(player.actorID);
 
                             reply5.replaceActorID(player.actorID);
                             reply6.replaceActorID(player.actorID);
@@ -176,14 +177,21 @@ namespace FFXIVClassic_Lobby_Server
 
                             client.queuePacket(BasePacket.createPacket(AddActorPacket.buildPacket(player.actorID, player.actorID, 0), true, false));
 
+                            BasePacket actorPacket = player.getActor().createActorSpawnPackets(player.actorID);
+                            actorPacket.debugPrintPacket();
+                            client.queuePacket(actorPacket);
                             client.queuePacket(reply6);
+                            client.queuePacket(BasePacket.createPacket(new SubPacket(0xCC, player.actorID, player.actorID,  File.ReadAllBytes("./packets/playerscript")),true, false));
+                            client.queuePacket(BasePacket.createPacket(player.getActor().createInitSubpackets(player.actorID), true, false));
 
+                            /*
                             client.queuePacket(BasePacket.createPacket(SetActorPositionPacket.buildPacket(player.actorID, player.actorID, SetActorPositionPacket.INNPOS_X, SetActorPositionPacket.INNPOS_Y, SetActorPositionPacket.INNPOS_Z, SetActorPositionPacket.INNPOS_ROT, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE), true, false));
                             client.queuePacket(BasePacket.createPacket(player.getActor().createSpeedPacket(player.actorID), true, false));
                             client.queuePacket(BasePacket.createPacket(player.getActor().createStatePacket(player.actorID), true, false));
 
                             client.queuePacket(BasePacket.createPacket(player.getActor().createNamePacket(player.actorID), true, false));
                             client.queuePacket(BasePacket.createPacket(player.getActor().createAppearancePacket(player.actorID), true, false));
+                            */
 
                             ////////ITEMS////////
                             client.queuePacket(BasePacket.createPacket(InventoryBeginChangePacket.buildPacket(player.actorID), true, false));
@@ -262,10 +270,15 @@ namespace FFXIVClassic_Lobby_Server
                             client.queuePacket(BasePacket.createPacket(new SetCompletedAchievementsPacket().buildPacket(player.actorID), true, false));
                             client.queuePacket(BasePacket.createPacket(SetLatestAchievementsPacket.buildPacket(player.actorID, new uint[5]), true, false));
                             client.queuePacket(BasePacket.createPacket(SetAchievementPointsPacket.buildPacket(player.actorID, 0x00), true, false));
-                            //client.queuePacket(BasePacket.createPacket(new SetCutsceneBookPacket().buildPacket(player.actorID), true, false));
-                            //client.queuePacket(BasePacket.createPacket(SetPlayerDreamPacket.buildPacket(player.actorID, player.actorID, 0x00), true, false));
+                            SetCutsceneBookPacket book = new SetCutsceneBookPacket();
+                            client.queuePacket(BasePacket.createPacket(book.buildPacket(player.actorID), true, false));
+                            //client.queuePacket(BasePacket.createPacket(SetPlayerDreamPacket.buildPacket(player.actorID, player.actorID, 0x00), true, false));                            
 
-                            client.queuePacket(reply7);
+                            client.queuePacket(BasePacket.createPacket(SetStatusPacket.buildPacket(player.actorID, player.actorID, new ushort[] { 23263, 23264 }), true, false));
+                            BasePacket tpacket = BasePacket.createPacket(player.getActor().createInitSubpackets(player.actorID), true, false);
+                            client.queuePacket(tpacket);
+                            
+
                             client.queuePacket(reply8);
                             client.queuePacket(reply9);
                             client.queuePacket(reply10);
@@ -336,7 +349,7 @@ namespace FFXIVClassic_Lobby_Server
         {
             BasePacket packet = new BasePacket(path);
 
-            foreach (KeyValuePair<uint, Player> entry in mPlayers)
+            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mPlayers)
             {
                 packet.replaceActorID(entry.Value.actorID);
                 if (conn == 1 || conn == 3)
