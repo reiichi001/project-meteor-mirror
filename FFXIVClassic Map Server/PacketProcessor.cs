@@ -22,6 +22,8 @@ using FFXIVClassic_Map_Server.packets.send.script;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.packets.send.supportdesk;
+using FFXIVClassic_Map_Server.packets.receive.social;
+using FFXIVClassic_Map_Server.packets.send.social;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -335,6 +337,26 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                         case 0x012F:
                             subpacket.debugPrintSubPacket();
+                            break;
+                        /* SOCIAL STUFF */
+                        case 0x01C9:
+                            AddRemoveSocialPacket addBlackList = new AddRemoveSocialPacket(subpacket.data);
+                            client.queuePacket(BasePacket.createPacket(BlacklistAddedPacket.buildPacket(player.actorID, true, addBlackList.name), true, false));
+                            break;
+                        case 0x01CA:
+                            AddRemoveSocialPacket removeBlackList = new AddRemoveSocialPacket(subpacket.data);
+                            client.queuePacket(BasePacket.createPacket(BlacklistRemovedPacket.buildPacket(player.actorID, true, removeBlackList.name), true, false));
+                            break;
+                        case 0x01CC:
+                            AddRemoveSocialPacket addFriendList = new AddRemoveSocialPacket(subpacket.data);
+                            client.queuePacket(BasePacket.createPacket(FriendlistAddedPacket.buildPacket(player.actorID, true, (uint)10, true, addFriendList.name), true, false));
+                            break;
+                        case 0x01CD:
+                            AddRemoveSocialPacket removeFriendList = new AddRemoveSocialPacket(subpacket.data);
+                            client.queuePacket(BasePacket.createPacket(FriendlistRemovedPacket.buildPacket(player.actorID, true, removeFriendList.name), true, false));
+                            break;
+                        case 0x01CF:
+                            client.queuePacket(BasePacket.createPacket(FriendStatusPacket.buildPacket(player.actorID, null), true, false));
                             break;
                         /* SUPPORT DESK STUFF */
                         //Request for FAQ/Info List

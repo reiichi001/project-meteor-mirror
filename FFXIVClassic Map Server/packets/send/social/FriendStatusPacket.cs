@@ -24,10 +24,15 @@ namespace FFXIVClassic_Map_Server.packets.send.social
                     binWriter.Write((UInt32)0);
                     int max;
 
-                    if (friendStatus.Length <= 200)
-                        max = friendStatus.Length;
+                    if (friendStatus != null)
+                    {
+                        if (friendStatus.Length <= 200)
+                            max = friendStatus.Length;
+                        else
+                            max = 200;
+                    }
                     else
-                        max = 200;
+                        max = 0;
 
                     binWriter.Write((UInt32)max);
 

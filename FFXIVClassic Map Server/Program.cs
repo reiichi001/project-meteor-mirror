@@ -83,7 +83,7 @@ namespace FFXIVClassic_Lobby_Server
                             }
                             catch (Exception e)
                             {
-                                Log.error("Could not load packet");
+                                Log.error("Could not load packet: " + e);
                             }
                         }
                         else if (split[0].Equals("property"))
