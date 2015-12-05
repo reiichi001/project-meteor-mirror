@@ -93,6 +93,10 @@
     <Compile Include="packets\receive\script\ScriptResultPacket.cs" />
     <Compile Include="packets\receive\SetTargetPacket.cs" />
     <Compile Include="packets\receive\LockTargetPacket.cs" />
+    <Compile Include="packets\receive\social\AddBlacklistPacket.cs" />
+    <Compile Include="packets\receive\social\AddFriendRequestPacket.cs" />
+    <Compile Include="packets\receive\social\RemoveBlacklistPacket.cs" />
+    <Compile Include="packets\receive\social\RemoveFriendRequestPacket.cs" />
     <Compile Include="packets\receive\StartScriptPacket.cs" />
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\DeleteAllActorsPacket.cs" />
@@ -137,6 +141,10 @@
     <Compile Include="packets\send\SetMapPacket.cs" />
     <Compile Include="packets\send\SetMusicPacket.cs" />
     <Compile Include="packets\send\SetWeatherPacket.cs" />
+    <Compile Include="packets\send\social\BlacklistAddedPacket.cs" />
+    <Compile Include="packets\send\social\BlacklistRemovedPacket.cs" />
+    <Compile Include="packets\send\social\FriendlistAddedPacket.cs" />
+    <Compile Include="packets\send\social\FriendlistRemovedPacket.cs" />
     <Compile Include="packets\send\supportdesk\IssueListResponsePacket.cs" />
     <Compile Include="packets\send\supportdesk\StartGMTicketPacket.cs" />
     <Compile Include="packets\send\supportdesk\EndGMTicketPacket.cs" />
