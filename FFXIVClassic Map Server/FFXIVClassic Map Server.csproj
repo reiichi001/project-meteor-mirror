@@ -137,6 +137,13 @@
     <Compile Include="packets\send\SetMapPacket.cs" />
     <Compile Include="packets\send\SetMusicPacket.cs" />
     <Compile Include="packets\send\SetWeatherPacket.cs" />
+    <Compile Include="packets\send\supportdesk\IssueListResponsePacket.cs" />
+    <Compile Include="packets\send\supportdesk\StartGMTicketPacket.cs" />
+    <Compile Include="packets\send\supportdesk\EndGMTicketPacket.cs" />
+    <Compile Include="packets\send\supportdesk\FaqBodyResponsePacket.cs" />
+    <Compile Include="packets\send\supportdesk\FaqListResponsePacket.cs" />
+    <Compile Include="packets\send\supportdesk\GMTicketPacket.cs" />
+    <Compile Include="packets\send\supportdesk\GMTicketSentResponsePacket.cs" />
     <Compile Include="packets\SubPacket.cs" />
     <Compile Include="packets\receive\PingPacket.cs" />
     <Compile Include="packets\receive\UpdatePlayerPositionPacket.cs" />
