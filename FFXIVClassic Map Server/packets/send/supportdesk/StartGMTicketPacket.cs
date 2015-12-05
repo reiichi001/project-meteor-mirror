@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.supportdesk
 {
-    class EndGMTicketPacket
+    class StartGMTicketPacket
     {
-        public const ushort OPCODE = 0x01D6;
+        public const ushort OPCODE = 0x01D3;
         public const uint PACKET_SIZE = 0x28;
 
         public static SubPacket buildPacket(uint playerActorID)
