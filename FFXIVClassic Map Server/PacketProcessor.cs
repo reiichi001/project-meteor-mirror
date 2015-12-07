@@ -24,6 +24,9 @@ using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.packets.send.supportdesk;
 using FFXIVClassic_Map_Server.packets.receive.social;
 using FFXIVClassic_Map_Server.packets.send.social;
+using FFXIVClassic_Map_Server.packets.receive.supportdesk;
+using FFXIVClassic_Map_Server.packets.receive.recruitment;
+using FFXIVClassic_Map_Server.packets.send.recruitment;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -338,6 +341,35 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x012F:
                             subpacket.debugPrintSubPacket();
                             break;
+                        /* RECRUITMENT */     
+                        //Start Recruiting
+                        case 0x01C3:
+                            StartRecruitingRequestPacket recruitRequestPacket = new StartRecruitingRequestPacket(subpacket.data);
+                            client.queuePacket(BasePacket.createPacket(StartRecruitingResponse.buildPacket(player.actorID, true), true, false));    
+                            break;
+                        case 0x01C7:
+                            subpacket.debugPrintSubPacket();
+                            RecruitmentSearchRequestPacket recruitSearchPacket = new RecruitmentSearchRequestPacket(subpacket.data);                            
+                            break;
+                        //Current Recruitment Details
+                        case 0x01C8:
+                            subpacket.debugPrintSubPacket();
+                            //CurrentRecruitmentDetailsPacket currentRecruitDetailsPacket = new CurrentRecruitmentDetailsPacket(subpacket.data);
+                            RecruitmentDetails details = new RecruitmentDetails();
+                            details.recruiterName = "Localhost Character";
+                            details.purposeId = 2;
+                            details.locationId = 1;
+                            details.subTaskId = 1;
+                            details.comment = "This is a test details packet sent by the server. No implementation has been created yet...";
+                            details.num[0] = 1;
+                            client.queuePacket(BasePacket.createPacket(CurrentRecruitmentDetailsPacket.buildPacket(player.actorID, details), true, false));    
+                            break;
+                        //Party Window Opened, Request State
+                        case 0x01C5:
+                        case 0x01C4:                        
+                        case 0x01C6:
+                            subpacket.debugPrintSubPacket();
+                            break;
                         /* SOCIAL STUFF */
                         case 0x01C9:
                             AddRemoveSocialPacket addBlackList = new AddRemoveSocialPacket(subpacket.data);
@@ -349,7 +381,7 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                         case 0x01CC:
                             AddRemoveSocialPacket addFriendList = new AddRemoveSocialPacket(subpacket.data);
-                            client.queuePacket(BasePacket.createPacket(FriendlistAddedPacket.buildPacket(player.actorID, true, (uint)10, true, addFriendList.name), true, false));
+                            client.queuePacket(BasePacket.createPacket(FriendlistAddedPacket.buildPacket(player.actorID, true, (uint)addFriendList.name.GetHashCode(), true, addFriendList.name), true, false));
                             break;
                         case 0x01CD:
                             AddRemoveSocialPacket removeFriendList = new AddRemoveSocialPacket(subpacket.data);
@@ -360,29 +392,27 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                         /* SUPPORT DESK STUFF */
                         //Request for FAQ/Info List
-                        case 0x01D0: 
-                            subpacket.debugPrintSubPacket();
+                        case 0x01D0:
+                            FaqListRequestPacket faqRequest = new FaqListRequestPacket(subpacket.data);
                             client.queuePacket(BasePacket.createPacket(FaqListResponsePacket.buildPacket(player.actorID, new string[]{"Testing FAQ1", "Coded style!"}), true, false));
                             break;
                         //Request for body of a faq/info selection
                         case 0x01D1:
-                            client.queuePacket(BasePacket.createPacket(FaqBodyResponsePacket.buildPacket(player.actorID, "HERE IS A GIANT BODY. Nothing else to say!"), true, false));
-                            subpacket.debugPrintSubPacket();
+                            FaqBodyRequestPacket faqBodyRequest = new FaqBodyRequestPacket(subpacket.data);
+                            client.queuePacket(BasePacket.createPacket(FaqBodyResponsePacket.buildPacket(player.actorID, "HERE IS A GIANT BODY. Nothing else to say!"), true, false));                            
                             break;
                         //Request issue list
                         case 0x01D2:
-                            client.queuePacket(BasePacket.createPacket(IssueListResponsePacket.buildPacket(player.actorID, new string[] { "Test1", "Test2", "Test3", "Test4", "Test5"}), true, false));
-                            subpacket.debugPrintSubPacket();
+                            GMTicketIssuesRequestPacket issuesRequest = new GMTicketIssuesRequestPacket(subpacket.data);
+                            client.queuePacket(BasePacket.createPacket(IssueListResponsePacket.buildPacket(player.actorID, new string[] { "Test1", "Test2", "Test3", "Test4", "Test5"}), true, false));                            
                             break;
                         //Request for GM response message
                         case 0x01D4:
                             client.queuePacket(BasePacket.createPacket(GMTicketPacket.buildPacket(player.actorID, "This is a GM Ticket Title", "This is a GM Ticket Body."), true, false));
-                            subpacket.debugPrintSubPacket();
                             break;
                         //Request to end ticket
                         case 0x01D6:
                             client.queuePacket(BasePacket.createPacket(EndGMTicketPacket.buildPacket(player.actorID), true, false));
-                            subpacket.debugPrintSubPacket();
                             break;
                         default:
                             Log.debug(String.Format("Unknown command 0x{0:X} received.", subpacket.gameMessage.opcode));

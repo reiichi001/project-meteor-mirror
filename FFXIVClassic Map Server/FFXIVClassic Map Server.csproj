@@ -86,9 +86,13 @@
     <Compile Include="dataobjects\Item.cs" />
     <Compile Include="dataobjects\ConnectedPlayer.cs" />
     <Compile Include="dataobjects\database\DBWorld.cs" />
+    <Compile Include="dataobjects\RecruitmentDetails.cs" />
+    <Compile Include="dataobjects\SearchEntry.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\HandshakePacket.cs" />
+    <Compile Include="packets\receive\recruitment\RecruitmentSearchRequestPacket.cs" />
+    <Compile Include="packets\receive\recruitment\StartRecruitingRequestPacket.cs" />
     <Compile Include="packets\receive\script\CommandStartRequestPacket.cs" />
     <Compile Include="packets\receive\script\ScriptResultPacket.cs" />
     <Compile Include="packets\receive\SetTargetPacket.cs" />
@@ -96,6 +100,9 @@
     <Compile Include="packets\receive\social\AddRemoveSocialPacket.cs" />
     <Compile Include="packets\receive\social\FriendlistRequestPacket.cs" />
     <Compile Include="packets\receive\StartScriptPacket.cs" />
+    <Compile Include="packets\receive\supportdesk\FaqBodyRequestPacket.cs" />
+    <Compile Include="packets\receive\supportdesk\FaqListRequestPacket.cs" />
+    <Compile Include="packets\receive\supportdesk\GMTicketIssuesRequestPacket.cs" />
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\DeleteAllActorsPacket.cs" />
     <Compile Include="packets\send\actor\DoBattleActionPacket.cs" />
@@ -133,6 +140,8 @@
     <Compile Include="packets\send\player\SetPlayerTitlePacket.cs" />
     <Compile Include="packets\send\PongPacket.cs" />
     <Compile Include="packets\send\QuitPacket.cs" />
+    <Compile Include="packets\send\recruitment\CurrentRecruitmentDetailsPacket.cs" />
+    <Compile Include="packets\send\recruitment\StartRecruitingResponse.cs" />
     <Compile Include="packets\send\script\ScriptEndPacket.cs" />
     <Compile Include="packets\send\script\ScriptStartPacket.cs" />
     <Compile Include="packets\send\SendMessagePacket.cs" />
