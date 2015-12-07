@@ -347,14 +347,21 @@ namespace FFXIVClassic_Lobby_Server
                             StartRecruitingRequestPacket recruitRequestPacket = new StartRecruitingRequestPacket(subpacket.data);
                             client.queuePacket(BasePacket.createPacket(StartRecruitingResponse.buildPacket(player.actorID, true), true, false));    
                             break;
+                        //End Recruiting
+                        case 0x01C4:
+                            client.queuePacket(BasePacket.createPacket(EndRecruitmentPacket.buildPacket(player.actorID), true, false));
+                            break;
+                        //Party Window Opened, Request State
+                        case 0x01C5:
+                            client.queuePacket(BasePacket.createPacket(RecruiterStatePacket.buildPacket(player.actorID, true, true, 1), true, false));
+                            break;
+                        //Search Recruiting
                         case 0x01C7:
-                            subpacket.debugPrintSubPacket();
                             RecruitmentSearchRequestPacket recruitSearchPacket = new RecruitmentSearchRequestPacket(subpacket.data);                            
                             break;
-                        //Current Recruitment Details
+                        //Get Recruitment Details
                         case 0x01C8:
-                            subpacket.debugPrintSubPacket();
-                            //CurrentRecruitmentDetailsPacket currentRecruitDetailsPacket = new CurrentRecruitmentDetailsPacket(subpacket.data);
+                            RecruitmentDetailsRequestPacket currentRecruitDetailsPacket = new RecruitmentDetailsRequestPacket(subpacket.data);
                             RecruitmentDetails details = new RecruitmentDetails();
                             details.recruiterName = "Localhost Character";
                             details.purposeId = 2;
@@ -364,12 +371,10 @@ namespace FFXIVClassic_Lobby_Server
                             details.num[0] = 1;
                             client.queuePacket(BasePacket.createPacket(CurrentRecruitmentDetailsPacket.buildPacket(player.actorID, details), true, false));    
                             break;
-                        //Party Window Opened, Request State
-                        case 0x01C5:
-                        case 0x01C4:                        
+                        //Accepted Recruiting
                         case 0x01C6:
                             subpacket.debugPrintSubPacket();
-                            break;
+                            break;                        
                         /* SOCIAL STUFF */
                         case 0x01C9:
                             AddRemoveSocialPacket addBlackList = new AddRemoveSocialPacket(subpacket.data);

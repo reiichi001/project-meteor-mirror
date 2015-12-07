@@ -91,6 +91,7 @@
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\HandshakePacket.cs" />
+    <Compile Include="packets\receive\recruitment\RecruitmentDetailsRequestPacket.cs" />
     <Compile Include="packets\receive\recruitment\RecruitmentSearchRequestPacket.cs" />
     <Compile Include="packets\receive\recruitment\StartRecruitingRequestPacket.cs" />
     <Compile Include="packets\receive\script\CommandStartRequestPacket.cs" />
@@ -141,6 +142,8 @@
     <Compile Include="packets\send\PongPacket.cs" />
     <Compile Include="packets\send\QuitPacket.cs" />
     <Compile Include="packets\send\recruitment\CurrentRecruitmentDetailsPacket.cs" />
+    <Compile Include="packets\send\recruitment\EndRecruitmentPacket.cs" />
+    <Compile Include="packets\send\recruitment\RecruiterStatePacket.cs" />
     <Compile Include="packets\send\recruitment\StartRecruitingResponse.cs" />
     <Compile Include="packets\send\script\ScriptEndPacket.cs" />
     <Compile Include="packets\send\script\ScriptStartPacket.cs" />
