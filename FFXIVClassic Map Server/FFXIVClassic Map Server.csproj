@@ -116,6 +116,12 @@
     <Compile Include="packets\send\actor\inventory\InventorySetEndPacket.cs" />
     <Compile Include="packets\send\actor\inventory\EquipmentSetupPacket.cs" />
     <Compile Include="packets\send\actor\RemoveActorPacket.cs" />
+    <Compile Include="packets\send\list\SetListPropertyPacket.cs" />
+    <Compile Include="packets\send\list\ListBeginPacket.cs" />
+    <Compile Include="packets\send\list\ListEndPacket.cs" />
+    <Compile Include="packets\send\list\ListEntriesEndPacket.cs" />
+    <Compile Include="packets\send\list\ListStartPacket.cs" />
+    <Compile Include="packets\send\player\SetGrandCompanyPacket.cs" />
     <Compile Include="packets\send\actor\SetActorNamePacket.cs" />
     <Compile Include="packets\send\actor\SetActorPropetyPacket.cs" />
     <Compile Include="packets\send\actor\SetActorSpeedPacket.cs" />
@@ -135,7 +141,8 @@
     <Compile Include="packets\send\player\SetCutsceneBookPacket.cs" />
     <Compile Include="packets\send\player\SetAchievementPointsPacket.cs" />
     <Compile Include="packets\send\player\SetChocoboNamePacket.cs" />
-    <Compile Include="packets\send\player\SetGCInfoPacket.cs" />
+    <Compile Include="packets\send\player\SetHasGoobbuePacket.cs" />
+    <Compile Include="packets\send\player\SetHasChocoboPacket.cs" />
     <Compile Include="packets\send\player\SetLatestAchievementsPacket.cs" />
     <Compile Include="packets\send\player\SetPlayerDreamPacket.cs" />
     <Compile Include="packets\send\player\SetPlayerTitlePacket.cs" />

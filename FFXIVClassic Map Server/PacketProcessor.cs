@@ -147,6 +147,7 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                         //Unknown
                         case 0x0002:
+                            
                             subpacket.debugPrintSubPacket();
 
                             BasePacket reply5 = new BasePacket("./packets/login/login5.bin");
@@ -175,8 +176,9 @@ namespace FFXIVClassic_Lobby_Server
                             reply12.replaceActorID(player.actorID);
                             #endregion
 
-                            client.queuePacket(BasePacket.createPacket(SetMapPacket.buildPacket(player.actorID, 0xD1), true, false));
-                            client.queuePacket(BasePacket.createPacket(_0x2Packet.buildPacket(player.actorID), true, false));
+                            client.queuePacket(BasePacket.createPacket(_0x2Packet.buildPacket(player.actorID), true, false));                           
+                          //  return;
+                            client.queuePacket(BasePacket.createPacket(SetMapPacket.buildPacket(player.actorID, 0xD1, 0xF4), true, false));
                             client.queuePacket(BasePacket.createPacket(SetMusicPacket.buildPacket(player.actorID, 0x3D, 0x01), true, false));
 
                             client.queuePacket(reply5);
@@ -184,7 +186,7 @@ namespace FFXIVClassic_Lobby_Server
                             client.queuePacket(BasePacket.createPacket(AddActorPacket.buildPacket(player.actorID, player.actorID, 0), true, false));
 
                             BasePacket actorPacket = player.getActor().createActorSpawnPackets(player.actorID);
-                            actorPacket.debugPrintPacket();
+                            //actorPacket.debugPrintPacket();
                             client.queuePacket(actorPacket);
                             client.queuePacket(reply6);
                             client.queuePacket(BasePacket.createPacket(new SubPacket(0xCC, player.actorID, player.actorID,  File.ReadAllBytes("./packets/playerscript")),true, false));
@@ -265,15 +267,18 @@ namespace FFXIVClassic_Lobby_Server
                             ////////ITEMS////////
 
                             //The rest of hardcode
-                            //client.queuePacket(BasePacket.createPacket(SetGCInfoPacket.buildPacket(player.actorID), true, false));
-                            //client.queuePacket(BasePacket.createPacket(SetGCInfoPacket.buildPacket(player.actorID), true, false));
+                            client.queuePacket(BasePacket.createPacket(SetGrandCompanyPacket.buildPacket(player.actorID, player.actorID, 0x01, 0x1B, 0x1B, 0x1B), true, false));                  
                             client.queuePacket(BasePacket.createPacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false));
+                            client.queuePacket(BasePacket.createPacket(SetHasChocoboPacket.buildPacket(player.actorID, true), true, false));
+                            client.queuePacket(BasePacket.createPacket(SetChocoboNamePacket.buildPacket(player.actorID, player.actorID, "Boco"), true, false));                            
                             client.queuePacket(BasePacket.createPacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false));
-                            //client.queuePacket(BasePacket.createPacket(SetCurrentJobPacket.buildPacket(player.actorID, player.actorID, 0x00), true, false)); //196
-                            client.queuePacket(BasePacket.createPacket(SetChocoboNamePacket.buildPacket(player.actorID, player.actorID, "Boco"), true, false));
-                            //client.queuePacket(BasePacket.createPacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false)); //199
-                            client.queuePacket(BasePacket.createPacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false));
-                            client.queuePacket(BasePacket.createPacket(new SetCompletedAchievementsPacket().buildPacket(player.actorID), true, false));
+
+                            SetCompletedAchievementsPacket cheevos = new SetCompletedAchievementsPacket();
+
+                            for (int i = 0; i < cheevos.achievementFlags.Length; i++)
+                                cheevos.achievementFlags[i] = true;
+
+                            client.queuePacket(BasePacket.createPacket(cheevos.buildPacket(player.actorID), true, false));
                             client.queuePacket(BasePacket.createPacket(SetLatestAchievementsPacket.buildPacket(player.actorID, new uint[5]), true, false));
                             client.queuePacket(BasePacket.createPacket(SetAchievementPointsPacket.buildPacket(player.actorID, 0x00), true, false));
                             SetCutsceneBookPacket book = new SetCutsceneBookPacket();
@@ -384,6 +389,10 @@ namespace FFXIVClassic_Lobby_Server
                             AddRemoveSocialPacket removeBlackList = new AddRemoveSocialPacket(subpacket.data);
                             client.queuePacket(BasePacket.createPacket(BlacklistRemovedPacket.buildPacket(player.actorID, true, removeBlackList.name), true, false));
                             break;
+                        case 0x01CB:
+                            int offset1 = 0;
+                            client.queuePacket(BasePacket.createPacket(SendBlacklistPacket.buildPacket(player.actorID, new String[] { "Test" }, ref offset1), true, false));
+                            break;
                         case 0x01CC:
                             AddRemoveSocialPacket addFriendList = new AddRemoveSocialPacket(subpacket.data);
                             client.queuePacket(BasePacket.createPacket(FriendlistAddedPacket.buildPacket(player.actorID, true, (uint)addFriendList.name.GetHashCode(), true, addFriendList.name), true, false));
@@ -391,6 +400,10 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x01CD:
                             AddRemoveSocialPacket removeFriendList = new AddRemoveSocialPacket(subpacket.data);
                             client.queuePacket(BasePacket.createPacket(FriendlistRemovedPacket.buildPacket(player.actorID, true, removeFriendList.name), true, false));
+                            break;
+                        case 0x01CE:
+                            int offset2 = 0;
+                            client.queuePacket(BasePacket.createPacket(SendFriendlistPacket.buildPacket(player.actorID, new Tuple<long, string>[] { new Tuple<long, string>(01, "Test2") }, ref offset2), true, false));
                             break;
                         case 0x01CF:
                             client.queuePacket(BasePacket.createPacket(FriendStatusPacket.buildPacket(player.actorID, null), true, false));
@@ -410,6 +423,10 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x01D2:
                             GMTicketIssuesRequestPacket issuesRequest = new GMTicketIssuesRequestPacket(subpacket.data);
                             client.queuePacket(BasePacket.createPacket(IssueListResponsePacket.buildPacket(player.actorID, new string[] { "Test1", "Test2", "Test3", "Test4", "Test5"}), true, false));                            
+                            break;
+                        //Request if GM ticket exists
+                        case 0x01D3:
+                            client.queuePacket(BasePacket.createPacket(StartGMTicketPacket.buildPacket(player.actorID, false), true, false));
                             break;
                         //Request for GM response message
                         case 0x01D4:
@@ -433,7 +450,7 @@ namespace FFXIVClassic_Lobby_Server
             BasePacket packet = new BasePacket(path);
 
             foreach (KeyValuePair<uint, ConnectedPlayer> entry in mPlayers)
-            {
+            {                
                 packet.replaceActorID(entry.Value.actorID);
                 if (conn == 1 || conn == 3)
                     entry.Value.getConnection1().queuePacket(packet);

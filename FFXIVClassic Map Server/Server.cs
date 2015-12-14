@@ -235,8 +235,14 @@ namespace FFXIVClassic_Lobby_Server
                 SubPacket changePropertyPacket = changeProperty.buildPacket((entry.Value.actorID), (entry.Value.actorID));
                 BasePacket packet = BasePacket.createPacket(changePropertyPacket, true, false);
                 packet.debugPrintPacket();
-                entry.Value.getConnection1().queuePacket(packet);
-                entry.Value.getConnection2().queuePacket(packet);
+                if (entry.Value.getConnection1() != null)
+                    entry.Value.getConnection1().queuePacket(packet);
+                else
+                    Log.error("Connection was null");
+                if (entry.Value.getConnection2() != null)
+                    entry.Value.getConnection2().queuePacket(packet);
+                else
+                    Log.error("Connection was null");
             }
         }
 
