@@ -13,7 +13,7 @@ namespace FFXIVClassic_Map_Server.packets.send
         public const ushort OPCODE = 0x0005;
         public const uint PACKET_SIZE = 0x30;
 
-        public static SubPacket buildPacket(uint playerActorID, uint mapID)
+        public static SubPacket buildPacket(uint playerActorID, uint mapID, uint regionID)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -22,7 +22,7 @@ namespace FFXIVClassic_Map_Server.packets.send
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
                     binWriter.Write((uint)mapID);
-                    binWriter.Write((uint)0x9B);
+                    binWriter.Write((uint)regionID);
                     binWriter.Write((uint)0x28);
                 }
             }
