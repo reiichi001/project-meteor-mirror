@@ -18,8 +18,7 @@ namespace FFXIVClassic_Lobby_Server.packets
         public ushort       reserved;
         public ushort       packetSize;
         public ushort       numSubpackets;
-        public uint         unknown1; //Id?
-        public uint         unknown2; //Usually 0x13B       
+        public ulong        timestamp; //Miliseconds
     }
 
     public class BasePacket{
@@ -46,8 +45,13 @@ namespace FFXIVClassic_Lobby_Server.packets
 
             int packetSize = header.packetSize;
 
-            data = new byte[packetSize - BASEPACKET_SIZE];
-            Array.Copy(bytes, BASEPACKET_SIZE, data, 0, packetSize - BASEPACKET_SIZE);
+            if (packetSize - BASEPACKET_SIZE != 0)
+            {
+                data = new byte[packetSize - BASEPACKET_SIZE];
+                Array.Copy(bytes, BASEPACKET_SIZE, data, 0, packetSize - BASEPACKET_SIZE);
+            }
+            else
+                data = new byte[0];
         }
 
         //Loads a sniffed packet from a byte array
@@ -155,7 +159,7 @@ namespace FFXIVClassic_Lobby_Server.packets
                         while (binreader.BaseStream.Position + 4 < data.Length)
                         {
                             uint read = binreader.ReadUInt32();
-                            if (read == 0x029B2941) //Original ID
+                            if (read == 0x029B2941 || read == 0x02977DC7 || read == 0x0297D2C8 || read == 0x0230d573 || read == 0x23317df || read == 0x23344a3) //Original ID
                             {
                                 binWriter.BaseStream.Seek(binreader.BaseStream.Position - 0x4, SeekOrigin.Begin);
                                 binWriter.Write(actorID);
@@ -200,6 +204,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             header.isEncrypted = isEncrypted?(byte)1:(byte)0;
             header.numSubpackets = (ushort)subpackets.Count;
             header.packetSize = BASEPACKET_SIZE;
+            header.timestamp = Utils.MilisUnixTimeStampUTC();
 
             //Get packet size
             foreach (SubPacket subpacket in subpackets)
@@ -232,6 +237,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             header.isEncrypted = isEncrypted ? (byte)1 : (byte)0;
             header.numSubpackets = (ushort)1;
             header.packetSize = BASEPACKET_SIZE;
+            header.timestamp = Utils.MilisUnixTimeStampUTC();
 
             //Get packet size
             header.packetSize += subpacket.header.subpacketSize;
@@ -260,6 +266,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             header.isEncrypted = isEncrypted ? (byte)1 : (byte)0;
             header.numSubpackets = (ushort)1;
             header.packetSize = BASEPACKET_SIZE;
+            header.timestamp = Utils.MilisUnixTimeStampUTC();
 
             //Get packet size
             header.packetSize += (ushort)data.Length;          

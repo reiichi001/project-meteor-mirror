@@ -6,14 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server.packets.send.list
+namespace FFXIVClassic_Map_Server.packets.send.player
 {
-    class ListEndPacket
+    class SendAchievementRatePacket
     {
-        public const ushort OPCODE = 0x017E;
-        public const uint PACKET_SIZE = 0x38;
+        public const ushort OPCODE = 0x019F;
+        public const uint PACKET_SIZE = 0x30;
 
-        public static SubPacket buildPacket(uint playerActorID, uint locationCode, ulong sequenceId, ulong listId)
+        public static SubPacket buildPacket(uint playerActorID, uint achievementId, uint progressCount, uint progressFlags)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -21,16 +21,13 @@ namespace FFXIVClassic_Map_Server.packets.send.list
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    //Write List Header
-                    binWriter.Write((UInt64)locationCode);
-                    binWriter.Write((UInt64)sequenceId);
-                    //Write List Info
-                    binWriter.Write((UInt64)listId);
+                    binWriter.Write((UInt32)achievementId);
+                    binWriter.Write((UInt32)progressCount);
+                    binWriter.Write((UInt32)progressFlags);
                 }
             }
 
             return new SubPacket(OPCODE, playerActorID, playerActorID, data);
         }
-
     }
 }

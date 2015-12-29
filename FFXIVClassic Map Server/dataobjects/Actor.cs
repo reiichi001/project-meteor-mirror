@@ -94,6 +94,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public SubPacket createSpawnPositonPacket(uint playerActorID, uint spawnType)
         {
             return SetActorPositionPacket.buildPacket(actorID, playerActorID, SetActorPositionPacket.INNPOS_X, SetActorPositionPacket.INNPOS_Y, SetActorPositionPacket.INNPOS_Z, SetActorPositionPacket.INNPOS_ROT, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
+            //return SetActorPositionPacket.buildPacket(actorID, playerActorID, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
         }
 
         public SubPacket createPositionUpdatePacket(uint playerActorID)
@@ -113,6 +114,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             subpackets.Add(createSpawnPositonPacket(playerActorID, 0xFF));
             subpackets.Add(createAppearancePacket(playerActorID));
             subpackets.Add(createNamePacket(playerActorID));
+            subpackets.Add(_0xFPacket.buildPacket(playerActorID, playerActorID));
             subpackets.Add(createStatePacket(playerActorID));
             //subpackets.Add(createScriptBindPacket(playerActorID));                        
             return BasePacket.createPacket(subpackets, true, false);

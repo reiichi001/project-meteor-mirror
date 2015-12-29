@@ -31,6 +31,11 @@ namespace FFXIVClassic_Lobby_Server
             sendPacketQueue.Add(packet);
         }
 
+        public void queuePacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)
+        {
+            sendPacketQueue.Add(BasePacket.createPacket(subpacket, isAuthed, isEncrypted));
+        }
+
         public void flushQueuedSendPackets()
         {
             if (!socket.Connected)

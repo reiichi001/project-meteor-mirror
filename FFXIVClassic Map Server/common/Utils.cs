@@ -52,9 +52,19 @@ namespace FFXIVClassic_Lobby_Server.common
             DateTime zuluTime = currentTime.ToUniversalTime();
             DateTime unixEpoch = new DateTime(1970, 1, 1);
             unixTimeStamp = (UInt32)(zuluTime.Subtract(unixEpoch)).TotalSeconds;
+            
+            return unixTimeStamp;
+        }
 
-            return 0x55555555;
-            //return unixTimeStamp;
+        public static UInt64 MilisUnixTimeStampUTC()
+        {
+            UInt64 unixTimeStamp;
+            DateTime currentTime = DateTime.Now;
+            DateTime zuluTime = currentTime.ToUniversalTime();
+            DateTime unixEpoch = new DateTime(1970, 1, 1);
+            unixTimeStamp = (UInt64)(zuluTime.Subtract(unixEpoch)).TotalMilliseconds;
+            
+            return unixTimeStamp;
         }
 
         public static uint MurmurHash2(string key, uint seed)

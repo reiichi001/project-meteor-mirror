@@ -17,7 +17,7 @@ namespace FFXIVClassic_Map_Server.packets.send.list
         public const ushort OPCODE = 0x017C;
         public const uint PACKET_SIZE = 0x98;
 
-        public static SubPacket buildPacket(uint playerActorID, uint locationCode, ulong id, ulong listId, uint numEntries)
+        public static SubPacket buildPacket(uint playerActorID, uint locationCode, ulong sequenceId, ulong listId, uint listTypeId, int numEntries)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -27,11 +27,10 @@ namespace FFXIVClassic_Map_Server.packets.send.list
                 {
                     //Temp stuff
                     string name = "";
-                    uint listTypeId = 0x4E22;
 
                     //Write list header
                     binWriter.Write((UInt64)locationCode);
-                    binWriter.Write((UInt64)id);
+                    binWriter.Write((UInt64)sequenceId);
 
                     //Write list id
                     binWriter.Write((UInt64)3);
@@ -46,6 +45,8 @@ namespace FFXIVClassic_Map_Server.packets.send.list
                     //This is for Linkshell
                     binWriter.Write((UInt32)0xFFFFFFFF);
                     binWriter.Write(Encoding.ASCII.GetBytes(name), 0, Encoding.ASCII.GetByteCount(name) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(name));
+
+                    binWriter.Seek(0x64, SeekOrigin.Begin);
 
                     binWriter.Write((UInt32)0x6D);
                     binWriter.Write((UInt32)0x6D);

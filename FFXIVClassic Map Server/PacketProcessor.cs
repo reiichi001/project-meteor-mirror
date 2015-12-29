@@ -27,6 +27,7 @@ using FFXIVClassic_Map_Server.packets.send.social;
 using FFXIVClassic_Map_Server.packets.receive.supportdesk;
 using FFXIVClassic_Map_Server.packets.receive.recruitment;
 using FFXIVClassic_Map_Server.packets.send.recruitment;
+using FFXIVClassic_Map_Server.packets.send.list;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -52,12 +53,31 @@ namespace FFXIVClassic_Lobby_Server
             if (packet.header.isEncrypted == 0x01)                       
                 BasePacket.decryptPacket(client.blowfish, ref packet);
 
+          // packet.debugPrintPacket();
+
             List<SubPacket> subPackets = packet.getSubpackets();
             foreach (SubPacket subpacket in subPackets)
             {
                 if (subpacket.header.type == 0x01)
-                {                                   
+                {                 
+                    packet.debugPrintPacket();
+                    byte[] reply1Data = {
+                                            0x01, 0x00, 0x00, 0x00, 0x28, 0x0, 0x01, 0x0, 0x0, 0x0, 0x0, 0x0, 0x00, 0x00, 0x00, 0x00,
+                                            0x18, 0x00, 0x07, 0x00, 0x00, 0x0, 0x00, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7F, 0xFD, 0xFF, 0xFF,
+                                            0x43, 0xEC, 0x00, 0xE0, 0x00, 0x0, 0x00, 0x0
+                                        };
+
+                    BasePacket reply1 = new BasePacket(reply1Data);
                     BasePacket reply2 = new BasePacket("./packets/login/login2.bin");
+
+                    using (MemoryStream mem = new MemoryStream(reply1.data))
+                    {
+                        using (BinaryWriter binReader = new BinaryWriter(mem))
+                        {
+                            binReader.BaseStream.Seek(0x14, SeekOrigin.Begin);
+                            binReader.Write((UInt32)Utils.UnixTimeStampUTC());
+                        }
+                    }
 
                     //Already Handshaked
                     if (client.owner != 0)
@@ -69,9 +89,9 @@ namespace FFXIVClassic_Lobby_Server
                                 binReader.BaseStream.Seek(0x10, SeekOrigin.Begin);
                                 binReader.Write(player.actorID);
                             }
-                        }
+                        }                        
 
-                        
+                        client.queuePacket(reply1);
                         client.queuePacket(reply2);
                         break;
                     }
@@ -116,7 +136,7 @@ namespace FFXIVClassic_Lobby_Server
                         client.owner = actorID;
                         client.connType = 0;
                         player.setConnection1(client);
-                    Log.debug(String.Format("Got actorID {0} for conn {1}.", actorID, client.getAddress()));
+                        Log.debug(String.Format("Got actorID {0} for conn {1}.", actorID, client.getAddress()));
                     }
                     else
                     {
@@ -127,18 +147,28 @@ namespace FFXIVClassic_Lobby_Server
 
                     //Get Character info
                     //Create player actor
+                    reply1.debugPrintPacket();
+                    client.queuePacket(reply1);
                     client.queuePacket(reply2);
                     break;
                 }
                 else if (subpacket.header.type == 0x07)
                 {
-                    BasePacket init = InitPacket.buildPacket(BitConverter.ToUInt32(packet.data, 0x10), Utils.UnixTimeStampUTC());
-                    client.queuePacket(init);
+                    //Ping?
+                    //packet.debugPrintPacket();
+                    BasePacket init = Login0x7ResponsePacket.buildPacket(BitConverter.ToUInt32(packet.data, 0x10), Utils.UnixTimeStampUTC());
+                    //client.queuePacket(init);
+                }
+                else if (subpacket.header.type == 0x08)
+                {
+                    //Response, client's current [actorID][time]
+                    packet.debugPrintPacket();
                 }
                 else if (subpacket.header.type == 0x03)
                 {
+                    //Normal Game Opcode
                     switch (subpacket.gameMessage.opcode)
-                    {                        
+                    {
                         //Ping
                         case 0x0001:
                             //subpacket.debugPrintSubPacket();
@@ -147,10 +177,9 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                         //Unknown
                         case 0x0002:
-                            
-                            subpacket.debugPrintSubPacket();
+                            BasePacket block132 = new BasePacket("./packets/tt2/4");
+                            BasePacket packet196 = new BasePacket("./packets/196");
 
-                            BasePacket reply5 = new BasePacket("./packets/login/login5.bin");
                             BasePacket reply6 = new BasePacket("./packets/login/login6_data.bin");
                             BasePacket reply7 = new BasePacket("./packets/login/login7_data.bin");
                             BasePacket reply8 = new BasePacket("./packets/login/login8_data.bin");
@@ -159,14 +188,15 @@ namespace FFXIVClassic_Lobby_Server
                             BasePacket reply11 = new BasePacket("./packets/login/login11.bin");
                             BasePacket reply12 = new BasePacket("./packets/login/login12.bin");
 
-                          //  BasePacket keyitems = new BasePacket("./packets/login/keyitems.bin");
-                          //  BasePacket currancy = new BasePacket("./packets/login/currancy.bin");
+                            //  BasePacket keyitems = new BasePacket("./packets/login/keyitems.bin");
+                            //  BasePacket currancy = new BasePacket("./packets/login/currancy.bin");
 
                             #region replaceid
                             //currancy.replaceActorID(player.actorID);
                             //keyitems.replaceActorID(player.actorID);
 
-                            reply5.replaceActorID(player.actorID);
+                            block132.replaceActorID(player.actorID);
+                            packet196.replaceActorID(player.actorID);
                             reply6.replaceActorID(player.actorID);
                             reply7.replaceActorID(player.actorID);
                             reply8.replaceActorID(player.actorID);
@@ -176,33 +206,44 @@ namespace FFXIVClassic_Lobby_Server
                             reply12.replaceActorID(player.actorID);
                             #endregion
 
-                            client.queuePacket(BasePacket.createPacket(_0x2Packet.buildPacket(player.actorID), true, false));                           
-                          //  return;
-                            client.queuePacket(BasePacket.createPacket(SetMapPacket.buildPacket(player.actorID, 0xD1, 0xF4), true, false));
-                            client.queuePacket(BasePacket.createPacket(SetMusicPacket.buildPacket(player.actorID, 0x3D, 0x01), true, false));
+                           client.queuePacket(SetMapPacket.buildPacket(player.actorID, 0xD1, 0xF4), true, false);                            
+                           // client.queuePacket(SetMapPacket.buildPacket(player.actorID, 0x68, 0xF4), true, false);
+                            client.queuePacket(_0x2Packet.buildPacket(player.actorID), true, false);
+                            client.queuePacket(SetMusicPacket.buildPacket(player.actorID, 0x3D, 0x01), true, false);
+                            client.queuePacket(SetWeatherPacket.buildPacket(player.actorID, SetWeatherPacket.WEATHER_CLEAR), true, false);                            
 
-                            client.queuePacket(reply5);
+                            client.queuePacket(AddActorPacket.buildPacket(player.actorID, player.actorID, 0), true, false);
 
-                            client.queuePacket(BasePacket.createPacket(AddActorPacket.buildPacket(player.actorID, player.actorID, 0), true, false));
+                           // client.queuePacket(reply6);
 
+                            client.queuePacket(block132);
                             BasePacket actorPacket = player.getActor().createActorSpawnPackets(player.actorID);
-                            //actorPacket.debugPrintPacket();
+                            actorPacket.debugPrintPacket();
                             client.queuePacket(actorPacket);
-                            client.queuePacket(reply6);
-                            client.queuePacket(BasePacket.createPacket(new SubPacket(0xCC, player.actorID, player.actorID,  File.ReadAllBytes("./packets/playerscript")),true, false));
-                            client.queuePacket(BasePacket.createPacket(player.getActor().createInitSubpackets(player.actorID), true, false));
+                
+                            //Retainers
+                            List<ListEntry> retainerListEntries = new List<ListEntry>();
+                            retainerListEntries.Add(new ListEntry(player.actorID, 0xFFFFFFFF, 0x139E, false, true, player.getActor().customDisplayName));
+                            retainerListEntries.Add(new ListEntry(0x23, 0x0, 0xFFFFFFFF, false, false, "TEST1"));
+                            retainerListEntries.Add(new ListEntry(0x24, 0x0, 0xFFFFFFFF, false, false, "TEST2"));
+                            retainerListEntries.Add(new ListEntry(0x25, 0x0, 0xFFFFFFFF, false, false, "TEST3"));
+                            BasePacket retainerListPacket = BasePacket.createPacket(ListUtils.createRetainerList(player.actorID, 0xF4, 1, 0x800000000004e639, retainerListEntries), true, false);
+                            client.queuePacket(retainerListPacket);
 
-                            /*
-                            client.queuePacket(BasePacket.createPacket(SetActorPositionPacket.buildPacket(player.actorID, player.actorID, SetActorPositionPacket.INNPOS_X, SetActorPositionPacket.INNPOS_Y, SetActorPositionPacket.INNPOS_Z, SetActorPositionPacket.INNPOS_ROT, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE), true, false));
-                            client.queuePacket(BasePacket.createPacket(player.getActor().createSpeedPacket(player.actorID), true, false));
-                            client.queuePacket(BasePacket.createPacket(player.getActor().createStatePacket(player.actorID), true, false));
-
-                            client.queuePacket(BasePacket.createPacket(player.getActor().createNamePacket(player.actorID), true, false));
-                            client.queuePacket(BasePacket.createPacket(player.getActor().createAppearancePacket(player.actorID), true, false));
-                            */
-
+                            //Party
+                            List<ListEntry> partyListEntries = new List<ListEntry>();
+                            partyListEntries.Add(new ListEntry(player.actorID, 0xFFFFFFFF, 0xFFFFFFFF, false, true, player.getActor().customDisplayName));
+                            partyListEntries.Add(new ListEntry(0x029B27D3, 0xFFFFFFFF, 0x195, false, true, "Valentine Bluefeather"));
+                            BasePacket partyListPacket = BasePacket.createPacket(ListUtils.createPartyList(player.actorID, 0xF4, 1, 0x8000000000696df2, partyListEntries), true, false);
+                            client.queuePacket(partyListPacket);                          
+                            
+                            //0x144 happens
+                            client.queuePacket(SetActorStatusAllPacket.buildPacket(player.actorID, player.actorID, new ushort[] { 23263, 23264 }), true, false);                            
+                            client.queuePacket(SetActorIconPacket.buildPacket(player.actorID, player.actorID, 0), true, false);                            
+                            client.queuePacket(SetActorIsZoningPacket.buildPacket(player.actorID, player.actorID, false), true, false);    
+               
                             ////////ITEMS////////
-                            client.queuePacket(BasePacket.createPacket(InventoryBeginChangePacket.buildPacket(player.actorID), true, false));
+                            client.queuePacket(InventoryBeginChangePacket.buildPacket(player.actorID), true, false);
 
                             #region itemsetup
 
@@ -259,41 +300,57 @@ namespace FFXIVClassic_Lobby_Server
                             #endregion
 
                             //Equip Init
-                            client.queuePacket(BasePacket.createPacket(InventorySetBeginPacket.buildPacket(player.actorID, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false));
+                            client.queuePacket(InventorySetBeginPacket.buildPacket(player.actorID, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false);
                             client.queuePacket(BasePacket.createPacket(initialEqupmentPacket.buildPackets(player.actorID), true, false));
-                            client.queuePacket(BasePacket.createPacket(InventorySetEndPacket.buildPacket(player.actorID), true, false));
+                            client.queuePacket(InventorySetEndPacket.buildPacket(player.actorID), true, false);
 
-                            client.queuePacket(BasePacket.createPacket(InventoryEndChangePacket.buildPacket(player.actorID), true, false));
-                            ////////ITEMS////////
+                            client.queuePacket(InventoryEndChangePacket.buildPacket(player.actorID), true, false);
+                            ////////ITEMS////////                                                       
 
-                            //The rest of hardcode
-                            client.queuePacket(BasePacket.createPacket(SetGrandCompanyPacket.buildPacket(player.actorID, player.actorID, 0x01, 0x1B, 0x1B, 0x1B), true, false));                  
-                            client.queuePacket(BasePacket.createPacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false));
-                            client.queuePacket(BasePacket.createPacket(SetHasChocoboPacket.buildPacket(player.actorID, true), true, false));
-                            client.queuePacket(BasePacket.createPacket(SetChocoboNamePacket.buildPacket(player.actorID, player.actorID, "Boco"), true, false));                            
-                            client.queuePacket(BasePacket.createPacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false));
+                            client.queuePacket(SetGrandCompanyPacket.buildPacket(player.actorID, player.actorID, 0x01, 0x1B, 0x1B, 0x1B), true, false);
+                            client.queuePacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false);
+                            client.queuePacket(SetCurrentJobPacket.buildPacket(player.actorID, player.actorID, 0x13), true, false);                            
+                            client.queuePacket(packet196);//client.queuePacket(_0x196Packet.buildPacket(player.actorID, player.actorID), true, false);
+                            client.queuePacket(SetChocoboNamePacket.buildPacket(player.actorID, player.actorID, "Boco"), true, false);
+                            client.queuePacket(SetHasChocoboPacket.buildPacket(player.actorID, true), true, false);
+                            client.queuePacket(SetHasGoobbuePacket.buildPacket(player.actorID, true), true, false);                                               
 
                             SetCompletedAchievementsPacket cheevos = new SetCompletedAchievementsPacket();
+                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_BATTLE] = true;
+                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_CHARACTER] = true;
+                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_CURRENCY] = true;
+                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_DUNGEONS] = true;
+                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_EXPLORATION] = true;
+                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_GATHERING] = true;
+                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_GRAND_COMPANY] = true;
+                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_ITEMS] = true;
+                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_MATERIA] = true;
+                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_QUESTS] = true;
+                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_SEASONAL_EVENTS] = true;
+                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_SYNTHESIS] = true;
+                            client.queuePacket(cheevos.buildPacket(player.actorID), true, false);
 
-                            for (int i = 0; i < cheevos.achievementFlags.Length; i++)
-                                cheevos.achievementFlags[i] = true;
+                            client.queuePacket(SetLatestAchievementsPacket.buildPacket(player.actorID, new uint[5]), true, false);
+                            client.queuePacket(SetAchievementPointsPacket.buildPacket(player.actorID, 0x00), true, false);                                                        
 
-                            client.queuePacket(BasePacket.createPacket(cheevos.buildPacket(player.actorID), true, false));
-                            client.queuePacket(BasePacket.createPacket(SetLatestAchievementsPacket.buildPacket(player.actorID, new uint[5]), true, false));
-                            client.queuePacket(BasePacket.createPacket(SetAchievementPointsPacket.buildPacket(player.actorID, 0x00), true, false));
                             SetCutsceneBookPacket book = new SetCutsceneBookPacket();
-                            client.queuePacket(BasePacket.createPacket(book.buildPacket(player.actorID), true, false));
-                            //client.queuePacket(BasePacket.createPacket(SetPlayerDreamPacket.buildPacket(player.actorID, player.actorID, 0x00), true, false));                            
+                            for (int i = 0; i < book.cutsceneFlags.Length; i++)
+                                book.cutsceneFlags[i] = true;
+                            client.queuePacket(book.buildPacket(player.actorID), true, false);
 
-                            client.queuePacket(BasePacket.createPacket(SetStatusPacket.buildPacket(player.actorID, player.actorID, new ushort[] { 23263, 23264 }), true, false));
+                            //client.queuePacket(SetPlayerDreamPacket.buildPacket(player.actorID, 0x0A), true, false);                            
+                            
+                           // loadTest(client, player);
+                          //  return;
+
                             BasePacket tpacket = BasePacket.createPacket(player.getActor().createInitSubpackets(player.actorID), true, false);
                             client.queuePacket(tpacket);
-                            
 
+                            client.queuePacket(reply7);
                             client.queuePacket(reply8);
                             client.queuePacket(reply9);
                             client.queuePacket(reply10);
-                           // client.queuePacket(reply11);
+                            // client.queuePacket(reply11);
                             client.queuePacket(reply12);
 
                             inn.addActorToZone(player.getActor());
@@ -301,10 +358,12 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                         //Chat Received
                         case 0x0003:
+                            ChatMessagePacket chatMessage = new ChatMessagePacket(subpacket.data);
+                            Log.info(String.Format("Got type-{5} message: {0} @ {1}, {2}, {3}, Rot: {4}", chatMessage.message, chatMessage.posX, chatMessage.posY, chatMessage.posZ, chatMessage.posRot, chatMessage.logType));
                             subpacket.debugPrintSubPacket();
                             break;
                         //Unknown
-                        case 0x0007: 
+                        case 0x0007:
                             break;
                         //Update Position
                         case 0x00CA:
@@ -335,7 +394,7 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x012D:
                             subpacket.debugPrintSubPacket();
                             CommandStartRequestPacket commandStart = new CommandStartRequestPacket(subpacket.data);
-                            
+
                             client.queuePacket(BasePacket.createPacket(ActorDoEmotePacket.buildPacket(player.actorID, player.getActor().currentTarget, 137), true, false));
                             break;
                         //Script Result
@@ -346,11 +405,11 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x012F:
                             subpacket.debugPrintSubPacket();
                             break;
-                        /* RECRUITMENT */     
+                        /* RECRUITMENT */
                         //Start Recruiting
                         case 0x01C3:
                             StartRecruitingRequestPacket recruitRequestPacket = new StartRecruitingRequestPacket(subpacket.data);
-                            client.queuePacket(BasePacket.createPacket(StartRecruitingResponse.buildPacket(player.actorID, true), true, false));    
+                            client.queuePacket(BasePacket.createPacket(StartRecruitingResponse.buildPacket(player.actorID, true), true, false));
                             break;
                         //End Recruiting
                         case 0x01C4:
@@ -362,7 +421,7 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                         //Search Recruiting
                         case 0x01C7:
-                            RecruitmentSearchRequestPacket recruitSearchPacket = new RecruitmentSearchRequestPacket(subpacket.data);                            
+                            RecruitmentSearchRequestPacket recruitSearchPacket = new RecruitmentSearchRequestPacket(subpacket.data);
                             break;
                         //Get Recruitment Details
                         case 0x01C8:
@@ -374,12 +433,12 @@ namespace FFXIVClassic_Lobby_Server
                             details.subTaskId = 1;
                             details.comment = "This is a test details packet sent by the server. No implementation has been created yet...";
                             details.num[0] = 1;
-                            client.queuePacket(BasePacket.createPacket(CurrentRecruitmentDetailsPacket.buildPacket(player.actorID, details), true, false));    
+                            client.queuePacket(BasePacket.createPacket(CurrentRecruitmentDetailsPacket.buildPacket(player.actorID, details), true, false));
                             break;
                         //Accepted Recruiting
                         case 0x01C6:
                             subpacket.debugPrintSubPacket();
-                            break;                        
+                            break;
                         /* SOCIAL STUFF */
                         case 0x01C9:
                             AddRemoveSocialPacket addBlackList = new AddRemoveSocialPacket(subpacket.data);
@@ -412,17 +471,17 @@ namespace FFXIVClassic_Lobby_Server
                         //Request for FAQ/Info List
                         case 0x01D0:
                             FaqListRequestPacket faqRequest = new FaqListRequestPacket(subpacket.data);
-                            client.queuePacket(BasePacket.createPacket(FaqListResponsePacket.buildPacket(player.actorID, new string[]{"Testing FAQ1", "Coded style!"}), true, false));
+                            client.queuePacket(BasePacket.createPacket(FaqListResponsePacket.buildPacket(player.actorID, new string[] { "Testing FAQ1", "Coded style!" }), true, false));
                             break;
                         //Request for body of a faq/info selection
                         case 0x01D1:
                             FaqBodyRequestPacket faqBodyRequest = new FaqBodyRequestPacket(subpacket.data);
-                            client.queuePacket(BasePacket.createPacket(FaqBodyResponsePacket.buildPacket(player.actorID, "HERE IS A GIANT BODY. Nothing else to say!"), true, false));                            
+                            client.queuePacket(BasePacket.createPacket(FaqBodyResponsePacket.buildPacket(player.actorID, "HERE IS A GIANT BODY. Nothing else to say!"), true, false));
                             break;
                         //Request issue list
                         case 0x01D2:
                             GMTicketIssuesRequestPacket issuesRequest = new GMTicketIssuesRequestPacket(subpacket.data);
-                            client.queuePacket(BasePacket.createPacket(IssueListResponsePacket.buildPacket(player.actorID, new string[] { "Test1", "Test2", "Test3", "Test4", "Test5"}), true, false));                            
+                            client.queuePacket(BasePacket.createPacket(IssueListResponsePacket.buildPacket(player.actorID, new string[] { "Test1", "Test2", "Test3", "Test4", "Test5" }), true, false));
                             break;
                         //Request if GM ticket exists
                         case 0x01D3:
@@ -442,6 +501,8 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                     }
                 }
+                else
+                    packet.debugPrintPacket();
             }
         }        
 
@@ -481,143 +542,19 @@ namespace FFXIVClassic_Lobby_Server
 	        
         }
 
-        /*
-        public void sendTeleportSequence(ClientConnection client, uint levelId, float x, float y, float z, float angle)
+        private void loadTest(ClientConnection client, ConnectedPlayer player)
         {
-	        BasePacket reply1 = new BasePacket("./packets/move/move1.bin");
-            BasePacket reply2 = new BasePacket("./packets/move/move2.bin");
-            BasePacket reply3 = new BasePacket("./packets/move/move3.bin");
-            BasePacket reply4 = new BasePacket("./packets/move/move4.bin");
-            BasePacket reply5 = new BasePacket("./packets/move/move5.bin");
-            BasePacket reply6 = new BasePacket("./packets/move/move6.bin");
-            BasePacket reply7 = new BasePacket("./packets/move/move7.bin");
-            BasePacket reply8 = new BasePacket("./packets/move/move8.bin");
-            BasePacket reply9 = new BasePacket("./packets/move/move9.bin");
+            string sequence = "6789abcdefghijklmnopqrsuvwxy";
+            //10 for just login
+            for (int i = 7; i < sequence.Length; i++)
+            {
 
-            client.queuePacket(reply1);
-            client.queuePacket(reply2);
-            client.queuePacket(reply3);
-            client.queuePacket(reply4);
-            client.queuePacket(reply5);
-            client.queuePacket(reply6);
-            client.queuePacket(reply7);
-            client.queuePacket(reply8);
-            client.queuePacket(reply9);
+                    BasePacket packet = new BasePacket("./packets/tt2/" + sequence[i]);
+                    packet.replaceActorID(player.actorID);
+                    client.queuePacket(packet);
+                
+            }
+        }
         
-	        
-	        {
-		        CCompositePacket result;
-
-		        {
-			        CSetMusicPacket packet;
-			        packet.SetSourceId(PLAYER_ID);
-			        packet.SetTargetId(PLAYER_ID);
-			        packet.SetMusicId(zone->backgroundMusicId);
-			        result.AddPacket(packet.ToPacketData());
-		        }
-
-		        {
-			        CSetWeatherPacket packet;
-			        packet.SetSourceId(PLAYER_ID);
-			        packet.SetTargetId(PLAYER_ID);
-			        packet.SetWeatherId(CSetWeatherPacket::WEATHER_CLEAR);
-			        result.AddPacket(packet.ToPacketData());
-		        }
-
-		        {
-			        CSetMapPacket packet;
-			        packet.SetSourceId(PLAYER_ID);
-			        packet.SetTargetId(PLAYER_ID);
-			        packet.SetMapId(levelId);
-			        result.AddPacket(packet.ToPacketData());
-		        }
-
-		        QueuePacket(0, result.ToPacketData());
-	        }
-
-	        QueuePacket(0, PacketData(std::begin(g_client0_moor11), std::end(g_client0_moor11)));
-	        QueuePacket(0, PacketData(std::begin(g_client0_moor12), std::end(g_client0_moor12)));
-
-	        {
-		        PacketData outgoingPacket(std::begin(g_client0_moor13), std::end(g_client0_moor13));
-
-		        {
-			        const uint32 setInitialPositionBase = 0x360;
-
-			        CSetInitialPositionPacket setInitialPosition;
-			        setInitialPosition.SetSourceId(PLAYER_ID);
-			        setInitialPosition.SetTargetId(PLAYER_ID);
-			        setInitialPosition.SetX(x);
-			        setInitialPosition.SetY(y);
-			        setInitialPosition.SetZ(z);
-			        setInitialPosition.SetAngle(angle);
-			        auto setInitialPositionPacket = setInitialPosition.ToPacketData();
-
-			        memcpy(outgoingPacket.data() + setInitialPositionBase, setInitialPositionPacket.data(), setInitialPositionPacket.size());
-		        }
-
-		        QueuePacket(0, outgoingPacket);
-	        }
-
-	        QueuePacket(0, GetInventoryInfo());
-	        QueuePacket(0, PacketData(std::begin(g_client0_moor21), std::end(g_client0_moor21)));
-	        //QueuePacket(0, PacketData(std::begin(g_client0_moor22), std::end(g_client0_moor22)));
-	
-	        if(!m_zoneMasterCreated)
-	        {
-		        //Zone Master
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor23), std::end(g_client0_moor23)));
-
-	        /*
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor24), std::end(g_client0_moor24)));
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor25), std::end(g_client0_moor25)));
-
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor26), std::end(g_client0_moor26)));
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor27), std::end(g_client0_moor27)));
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor28), std::end(g_client0_moor28)));
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor29), std::end(g_client0_moor29)));
-
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor30), std::end(g_client0_moor30)));
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor31), std::end(g_client0_moor31)));
-
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor32), std::end(g_client0_moor32)));
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor33), std::end(g_client0_moor33)));
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor34), std::end(g_client0_moor34)));
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor35), std::end(g_client0_moor35)));
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor36), std::end(g_client0_moor36)));
-		        QueuePacket(0, PacketData(std::begin(g_client0_moor37), std::end(g_client0_moor37)));
-	        */
-		        //Enables chat?
-	        //	QueuePacket(0, PacketData(std::begin(g_client0_moor38), std::end(g_client0_moor38)));
-        /*
-		        {
-			        CCompositePacket packet;
-			        packet.AddPacket(PacketData(std::begin(g_client0_moor38), std::end(g_client0_moor38)));
-			        QueuePacket(0, packet.ToPacketData());
-		        }
-
-	        //	QueuePacket(0, PacketData(std::begin(g_client0_moor39), std::end(g_client0_moor39)));
-
-	        //	QueuePacket(0, PacketData(std::begin(g_client0_moor40), std::end(g_client0_moor40)));
-
-		
-
-		        m_zoneMasterCreated = true;
-	        }
-
-	        if(zone != nullptr)
-	        {
-		        for(const auto& actorInfo : zone->actors)
-		        {
-			        SpawnNpc(actorInfo.id, actorInfo.baseModelId, actorInfo.nameStringId, 
-				        std::get<0>(actorInfo.pos), std::get<1>(actorInfo.pos), std::get<2>(actorInfo.pos), 0);
-		        }
-	        }
-
-	        m_curMap = levelId;
-	        m_posX = x;
-	        m_posY = y;
-	        m_posZ = z;
-        }*/
     }
 }

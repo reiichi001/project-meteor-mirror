@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.actor
 {
-    class SetStatusPacket
+    class SetActorStatusAllPacket
     {
         public const ushort OPCODE = 0x0179;
         public const uint PACKET_SIZE = 0x48;

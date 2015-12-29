@@ -36,7 +36,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
                     binWriter.Write((Int32)0);
-                    binWriter.Write((Int32)sourceActorID);
+                    binWriter.Write((Int32)0);
                     binWriter.Write((Single)x);
                     binWriter.Write((Single)y);
                     binWriter.Write((Single)z);
