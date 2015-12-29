@@ -209,6 +209,7 @@ namespace FFXIVClassic_Lobby_Server
                            client.queuePacket(SetMapPacket.buildPacket(player.actorID, 0xD1, 0xF4), true, false);                            
                            // client.queuePacket(SetMapPacket.buildPacket(player.actorID, 0x68, 0xF4), true, false);
                             client.queuePacket(_0x2Packet.buildPacket(player.actorID), true, false);
+                            client.queuePacket(SendMessagePacket.buildPacket(player.actorID, player.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "-------- Login Message --------\nWelcome to the 1.0 Dev Server"), true, false);
                             client.queuePacket(SetMusicPacket.buildPacket(player.actorID, 0x3D, 0x01), true, false);
                             client.queuePacket(SetWeatherPacket.buildPacket(player.actorID, SetWeatherPacket.WEATHER_CLEAR), true, false);                            
 
