@@ -14,6 +14,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
 
         public static SubPacket buildPacket(uint playerActorID, uint dreamID)
         {
+            dreamID += 0x20E;
             return new SubPacket(OPCODE, playerActorID, playerActorID, BitConverter.GetBytes((uint)dreamID));
         }
     }

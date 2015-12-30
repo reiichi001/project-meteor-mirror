@@ -46,15 +46,10 @@ namespace FFXIVClassic_Map_Server.packets.send
                 {
                     using (BinaryWriter binWriter = new BinaryWriter(mem))
                     {
-                        if (Encoding.Unicode.GetByteCount(sender) >= 0x20)
-                            sender = "ERR: Too Big";
-                        if (Encoding.Unicode.GetByteCount(message) >= 0x200)
-                            message = "ERR: Too Big";
-
-                        binWriter.Write(Encoding.Unicode.GetBytes(sender));
+                        binWriter.Write(Encoding.ASCII.GetBytes(sender), 0, Encoding.ASCII.GetByteCount(sender) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(sender));
                         binWriter.BaseStream.Seek(0x20, SeekOrigin.Begin);
                         binWriter.Write((UInt32)messageType);
-                        binWriter.Write(Encoding.Unicode.GetBytes(sender));
+                        binWriter.Write(Encoding.ASCII.GetBytes(message), 0, Encoding.ASCII.GetByteCount(message) >= 0x200 ? 0x200 : Encoding.ASCII.GetByteCount(message));
                     }
                 }
 
