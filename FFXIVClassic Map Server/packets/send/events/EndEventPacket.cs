@@ -6,25 +6,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server.packets.send.script
+namespace FFXIVClassic_Map_Server.packets.send.events
 {
-    class ScriptEndPacket
+    class EndEventPacket
     {
         public const ushort OPCODE = 0x0131;
         public const uint PACKET_SIZE = 0x50;
 
-        public static SubPacket buildPacket(uint playerActorID, string startName)
+        public static SubPacket buildPacket(uint playerActorID, uint eventOwnerActorID, string eventStarter)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
+            int maxBodySize = data.Length - 0x80;
 
             using (MemoryStream mem = new MemoryStream(data))
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    binWriter.Write((uint)playerActorID);
-                    binWriter.Write((uint)0);
-                    binWriter.Write((byte)0);
-                    binWriter.Write(Encoding.Unicode.GetBytes(startName));
+                    binWriter.Write((UInt32)playerActorID);
+                    binWriter.Write((UInt32)eventOwnerActorID);
+                    binWriter.Write((Byte)0);
+                    binWriter.Write(Encoding.ASCII.GetBytes(eventStarter), 0, Encoding.ASCII.GetByteCount(eventStarter) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(eventStarter));
                 }
             }
 

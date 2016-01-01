@@ -1,13 +1,14 @@
-﻿using System;
+﻿using FFXIVClassic_Map_Server.lua;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server.packets.send.script
+namespace FFXIVClassic_Map_Server.packets.receive.events
 {
-    class CommandStartRequestPacket
+    class EventUpdatePacket
     {
         public const ushort OPCODE = 0x012E;
         public const uint PACKET_SIZE = 0x78;
@@ -18,9 +19,10 @@ namespace FFXIVClassic_Map_Server.packets.send.script
         public uint scriptOwnerActorID;
         public uint val1;
         public uint val2;
-        public ScriptParamReader reader;
+        public byte step;
+        public List<LuaParam> luaParams;
 
-        public CommandStartRequestPacket(byte[] data)
+        public EventUpdatePacket(byte[] data)
         {
             using (MemoryStream mem = new MemoryStream(data))
             {
@@ -31,10 +33,8 @@ namespace FFXIVClassic_Map_Server.packets.send.script
                         scriptOwnerActorID = binReader.ReadUInt32();
                         val1 = binReader.ReadUInt32();
                         val2 = binReader.ReadUInt32();
-                        binReader.ReadByte();
-
-                        binReader.BaseStream.Seek(0x31, SeekOrigin.Begin);
-                        reader = new ScriptParamReader(binReader);                      
+                        step = binReader.ReadByte();
+                        luaParams = LuaUtils.readLuaParams(binReader);
                     }
                     catch (Exception){
                         invalidPacket = true;
