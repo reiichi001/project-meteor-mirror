@@ -18,7 +18,6 @@ using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.Actor;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server;
-using FFXIVClassic_Map_Server.packets.send.script;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.packets.send.supportdesk;
@@ -28,20 +27,29 @@ using FFXIVClassic_Map_Server.packets.receive.supportdesk;
 using FFXIVClassic_Map_Server.packets.receive.recruitment;
 using FFXIVClassic_Map_Server.packets.send.recruitment;
 using FFXIVClassic_Map_Server.packets.send.list;
+using FFXIVClassic_Map_Server.packets.receive.events;
+using FFXIVClassic_Map_Server.packets.send.events;
+using FFXIVClassic_Map_Server.lua;
+using FFXIVClassic_Map_Server.dataobjects.actors;
+using FFXIVClassic_Map_Server.dataobjects.chara.npc;
+using FFXIVClassic_Map_Server.actors;
 
 namespace FFXIVClassic_Lobby_Server
 {
     class PacketProcessor
     {
+        LuaEngine luaEngine = new LuaEngine();
         Dictionary<uint, ConnectedPlayer> mPlayers;
         List<ClientConnection> mConnections;
 
+        StaticActors mStaticActors = new StaticActors();
         Zone inn = new Zone();
 
         public PacketProcessor(Dictionary<uint, ConnectedPlayer> playerList, List<ClientConnection> connectionList)
         {
             mPlayers = playerList;
             mConnections = connectionList;
+            initNpcs();
         }     
 
         public void processPacket(ClientConnection client, BasePacket packet)
@@ -311,7 +319,7 @@ namespace FFXIVClassic_Lobby_Server
                             client.queuePacket(SetGrandCompanyPacket.buildPacket(player.actorID, player.actorID, 0x01, 0x1B, 0x1B, 0x1B), true, false);
                             client.queuePacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false);
                             client.queuePacket(SetCurrentJobPacket.buildPacket(player.actorID, player.actorID, 0x13), true, false);                            
-                            client.queuePacket(packet196);//client.queuePacket(_0x196Packet.buildPacket(player.actorID, player.actorID), true, false);
+                            //client.queuePacket(packet196);//client.queuePacket(_0x196Packet.buildPacket(player.actorID, player.actorID), true, false);
                             client.queuePacket(SetChocoboNamePacket.buildPacket(player.actorID, player.actorID, "Boco"), true, false);
                             client.queuePacket(SetHasChocoboPacket.buildPacket(player.actorID, true), true, false);
                             client.queuePacket(SetHasGoobbuePacket.buildPacket(player.actorID, true), true, false);                                               
@@ -339,13 +347,18 @@ namespace FFXIVClassic_Lobby_Server
                                 book.cutsceneFlags[i] = true;
                             client.queuePacket(book.buildPacket(player.actorID), true, false);
 
-                            //client.queuePacket(SetPlayerDreamPacket.buildPacket(player.actorID, 0x0A), true, false);                            
+                            client.queuePacket(SetPlayerDreamPacket.buildPacket(player.actorID, 11), true, false);                            
                             
-                           // loadTest(client, player);
-                          //  return;
+                            //BasePacket packet1a5 = new BasePacket("./packets/1ax/1a5");
+                            //packet1a5.replaceActorID(player.actorID);
+                            //client.queuePacket(packet1a5);
+                            
 
-                            BasePacket tpacket = BasePacket.createPacket(player.getActor().createInitSubpackets(player.actorID), true, false);
-                            client.queuePacket(tpacket);
+                            //loadTest(client, player);
+                            //return;
+                            inn.addActorToZone(player.getActor());
+                           // BasePacket tpacket = BasePacket.createPacket(player.getActor().createInitSubpackets(player.actorID), true, false);
+                           // client.queuePacket(tpacket);
 
                             client.queuePacket(reply7);
                             client.queuePacket(reply8);
@@ -354,7 +367,6 @@ namespace FFXIVClassic_Lobby_Server
                             // client.queuePacket(reply11);
                             client.queuePacket(reply12);
 
-                            inn.addActorToZone(player.getActor());
 
                             break;
                         //Chat Received
@@ -391,17 +403,35 @@ namespace FFXIVClassic_Lobby_Server
                             LockTargetPacket lockTarget = new LockTargetPacket(subpacket.data);
                             player.getActor().currentLockedTarget = lockTarget.actorID;
                             break;
-                        //Start Script
-                        case 0x012D:
+                        //Start Event
+                        case 0x012D:                            
                             subpacket.debugPrintSubPacket();
-                            CommandStartRequestPacket commandStart = new CommandStartRequestPacket(subpacket.data);
+                            EventStartPacket eventStart = new EventStartPacket(subpacket.data);
+                            player.eventCurrentOwner = eventStart.scriptOwnerActorID;
+                            player.eventCurrentStarter = eventStart.eventStarter;
 
-                            client.queuePacket(BasePacket.createPacket(ActorDoEmotePacket.buildPacket(player.actorID, player.getActor().currentTarget, 137), true, false));
+                            //Is it a static actor? If not look in the player's instance
+                            //Actor ownerActor = findActor(player, player.eventCurrentOwner);
+
+                            //if (ownerActor == null)
+                              //  break;
+
+                            //luaEngine.doEventStart(player, ownerActor, eventStart);
+
+                            //Log.debug(String.Format("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.val1, eventStart.val2, eventStart.eventStarter, LuaParamReader.dumpParams(eventStart.luaParams)));
                             break;
-                        //Script Result
+                        //Event Result
                         case 0x012E:
                             subpacket.debugPrintSubPacket();
-                            ScriptResultPacket scriptResult = new ScriptResultPacket(subpacket.data);
+                            EventUpdatePacket eventUpdate = new EventUpdatePacket(subpacket.data);
+                            Log.debug(String.Format("\n===Event UPDATE===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nFunction ID: 0x{4:X}\nParams: {5}", eventUpdate.actorID, eventUpdate.scriptOwnerActorID, eventUpdate.val1, eventUpdate.val2, eventUpdate.step, LuaUtils.dumpParams(eventUpdate.luaParams)));
+
+                            /*Actor updateOwnerActor = findActor(player, player.eventCurrentOwner);
+                            if (updateOwnerActor == null)
+                                break;
+
+                            luaEngine.doEventUpdated(player, updateOwnerActor, eventUpdate);
+                            */
                             break;
                         case 0x012F:
                             subpacket.debugPrintSubPacket();
@@ -519,28 +549,35 @@ namespace FFXIVClassic_Lobby_Server
                 if (conn == 2 || conn == 3)
                     entry.Value.getConnection2().queuePacket(packet);
             }
-        }
+        }        
 
-        public void processScriptResult(SubPacket subpacket)
+        /*
+        public Actor findActor(ConnectedPlayer player, uint id)
         {
-            uint someId1 = 0;
-	        uint someId2 = 0;
-	        uint someId3 = 0;
-
-            using (MemoryStream mem = new MemoryStream(subpacket.data))
+            Actor ownerActor = mStaticActors[id];
+            if (ownerActor == null)
             {
-                using (BinaryReader binReader = new BinaryReader(mem))
+                foreach (Actor a in player.actorInstanceList)
                 {
-                    binReader.BaseStream.Seek(0x2C, SeekOrigin.Begin);
-                    someId1 = binReader.ReadUInt32();
-                    someId2 = binReader.ReadUInt32();
-                    someId3 = binReader.ReadUInt32();
+                    if (a.actorID == player.eventCurrentOwner)
+                    {
+                        ownerActor = a;
+                        break;
+                    }
                 }
+
+                if (ownerActor == null)
+                    return null;
             }
-
-	        Log.info(String.Format("ProcessScriptResult: Id1 = {0}, Id2 = {1}, Id3 = {2}", someId1, someId2, someId3));
-
-	        
+            return ownerActor;
+        }
+        */
+        private void initNpcs()
+        {
+            List<Npc> npcList = Database.getNpcList();
+            foreach (Npc npc in npcList)
+                inn.addActorToZone(npc);
+            Log.info(String.Format("Loaded {0} npcs...", npcList.Count));
         }
 
         private void loadTest(ClientConnection client, ConnectedPlayer player)

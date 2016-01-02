@@ -41,6 +41,9 @@
       <HintPath>..\packages\Dapper.1.42\lib\net45\Dapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="KeraLua">
+      <HintPath>..\packages\NLua.1.3.2.1\lib\net45\KeraLua.dll</HintPath>
+    </Reference>
     <Reference Include="MySql.Data, Version=6.9.7.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.6.9.7\lib\net45\MySql.Data.dll</HintPath>
       <Private>True</Private>
@@ -48,6 +51,9 @@
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
+    </Reference>
+    <Reference Include="NLua">
+      <HintPath>..\packages\NLua.1.3.2.1\lib\net45\NLua.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -58,6 +64,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="actors\judge\Judge.cs" />
+    <Compile Include="actors\StaticActors.cs" />
     <Compile Include="ClientConnection.cs" />
     <Compile Include="common\Bitfield.cs" />
     <Compile Include="common\Blowfish.cs" />
@@ -66,46 +74,53 @@
     <Compile Include="common\Utils.cs" />
     <Compile Include="ConfigConstants.cs" />
     <Compile Include="Database.cs" />
-    <Compile Include="dataobjects\Actor.cs" />
-    <Compile Include="dataobjects\chara\BattleSave.cs" />
-    <Compile Include="dataobjects\chara\BattleTemp.cs" />
-    <Compile Include="dataobjects\chara\EventSave.cs" />
-    <Compile Include="dataobjects\chara\EventTemp.cs" />
-    <Compile Include="dataobjects\chara\ParameterTemp.cs" />
-    <Compile Include="dataobjects\chara\PlayerActor.cs" />
+    <Compile Include="actors\Actor.cs" />
+    <Compile Include="actors\chara\BattleSave.cs" />
+    <Compile Include="actors\chara\BattleTemp.cs" />
+    <Compile Include="actors\chara\Character.cs" />
+    <Compile Include="actors\chara\EventSave.cs" />
+    <Compile Include="actors\chara\EventTemp.cs" />
+    <Compile Include="actors\chara\npc\Npc.cs" />
+    <Compile Include="actors\chara\ParameterTemp.cs" />
+    <Compile Include="actors\chara\player\Player.cs" />
+    <Compile Include="actors\command\Command.cs" />
+    <Compile Include="dataobjects\CharaInfo.cs" />
+    <Compile Include="actors\chara\CharaWork.cs" />
+    <Compile Include="actors\chara\ParameterSave.cs" />
+    <Compile Include="actors\chara\player\PlayerWork.cs" />
     <Compile Include="dataobjects\database\DBAppearance.cs" />
     <Compile Include="dataobjects\database\DBCharacter.cs" />
-    <Compile Include="dataobjects\CharaInfo.cs" />
-    <Compile Include="dataobjects\chara\CharaWork.cs" />
-    <Compile Include="dataobjects\chara\ParameterSave.cs" />
-    <Compile Include="dataobjects\chara\PlayerWork.cs" />
     <Compile Include="dataobjects\database\DBCommands.cs" />
     <Compile Include="dataobjects\database\DBJournal.cs" />
     <Compile Include="dataobjects\database\DBPlayerData.cs" />
     <Compile Include="dataobjects\database\DBStats.cs" />
+    <Compile Include="dataobjects\database\DBWorld.cs" />
     <Compile Include="dataobjects\Item.cs" />
     <Compile Include="dataobjects\ConnectedPlayer.cs" />
-    <Compile Include="dataobjects\database\DBWorld.cs" />
     <Compile Include="dataobjects\RecruitmentDetails.cs" />
     <Compile Include="dataobjects\SearchEntry.cs" />
+    <Compile Include="lua\LuaEngine.cs" />
+    <Compile Include="lua\LuaEvent.cs" />
+    <Compile Include="lua\LuaParam.cs" />
+    <Compile Include="lua\LuaPlayer.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\ChatMessagePacket.cs" />
+    <Compile Include="packets\receive\events\EventUpdatePacket.cs" />
+    <Compile Include="packets\receive\events\EventStartPacket.cs" />
     <Compile Include="packets\receive\HandshakePacket.cs" />
     <Compile Include="packets\receive\recruitment\RecruitmentDetailsRequestPacket.cs" />
     <Compile Include="packets\receive\recruitment\RecruitmentSearchRequestPacket.cs" />
     <Compile Include="packets\receive\recruitment\StartRecruitingRequestPacket.cs" />
-    <Compile Include="packets\receive\script\CommandStartRequestPacket.cs" />
-    <Compile Include="packets\receive\script\ScriptResultPacket.cs" />
     <Compile Include="packets\receive\SetTargetPacket.cs" />
     <Compile Include="packets\receive\LockTargetPacket.cs" />
     <Compile Include="packets\receive\social\AddRemoveSocialPacket.cs" />
     <Compile Include="packets\receive\social\FriendlistRequestPacket.cs" />
-    <Compile Include="packets\receive\StartScriptPacket.cs" />
     <Compile Include="packets\receive\supportdesk\FaqBodyRequestPacket.cs" />
     <Compile Include="packets\receive\supportdesk\FaqListRequestPacket.cs" />
     <Compile Include="packets\receive\supportdesk\GMTicketIssuesRequestPacket.cs" />
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
+    <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />
     <Compile Include="packets\send\actor\DeleteAllActorsPacket.cs" />
     <Compile Include="packets\send\actor\SetActorIsZoningPacket.cs" />
     <Compile Include="packets\send\actor\DoBattleActionPacket.cs" />
@@ -121,6 +136,8 @@
     <Compile Include="packets\send\actor\SetActorIconPacket.cs" />
     <Compile Include="packets\send\actor\SetActorStatusPacket.cs" />
     <Compile Include="packets\send\actor\_0xFPacket.cs" />
+    <Compile Include="packets\send\events\EndEventPacket.cs" />
+    <Compile Include="packets\send\events\RunEventFunctionPacket.cs" />
     <Compile Include="packets\send\list\ListEntry.cs" />
     <Compile Include="packets\send\list\ListUtils.cs" />
     <Compile Include="packets\send\list\SetListPropertyPacket.cs" />
@@ -162,8 +179,6 @@
     <Compile Include="packets\send\recruitment\EndRecruitmentPacket.cs" />
     <Compile Include="packets\send\recruitment\RecruiterStatePacket.cs" />
     <Compile Include="packets\send\recruitment\StartRecruitingResponse.cs" />
-    <Compile Include="packets\send\script\ScriptEndPacket.cs" />
-    <Compile Include="packets\send\script\ScriptStartPacket.cs" />
     <Compile Include="packets\send\SendMessagePacket.cs" />
     <Compile Include="packets\send\SetMapPacket.cs" />
     <Compile Include="packets\send\SetMusicPacket.cs" />
@@ -187,7 +202,7 @@
     <Compile Include="packets\receive\UpdatePlayerPositionPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScriptParamReader.cs" />
+    <Compile Include="lua\LuaUtils.cs" />
     <Compile Include="Server.cs" />
     <Compile Include="Zone.cs" />
   </ItemGroup>
@@ -195,8 +210,15 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="actors\area\" />
+    <Folder Include="actors\director\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+xcopy /s /y "D:\Coding\FFXIV Related\ffxiv-classic-map-server\packages\NLua.1.3.2.1\lib\native\*.*" "$(TargetDir)"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -1,50 +1,42 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.dataobjects;
-using FFXIVClassic_Map_Server.dataobjects.database;
+using FFXIVClassic_Map_Server.lua;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server.dataobjects.chara
+namespace FFXIVClassic_Map_Server.dataobjects.chara.npc
 {
-    class PlayerActor : Actor
+    class Npc : Character
     {
-        public PlayerActor(uint actorID) : base(actorID)
+        public Npc(uint id, string actorName, uint displayNameId, string customDisplayName, float positionX, float positionY, float positionZ, float rotation, uint animationId, string className, byte[] initParams)
+            : base(id)
         {
-            DBStats stats = Database.getCharacterStats(actorID);
+            this.actorName = actorName;
+            this.displayNameId = displayNameId;
+            this.customDisplayName = customDisplayName;
+            this.positionX = positionX;
+            this.positionY = positionY;
+            this.positionZ = positionZ;
+            this.rotation = rotation;
+            this.animationId = animationId;
+            this.className = className;
 
-            charaWork.property[0] = 1;
-            charaWork.property[1] = 1;
-            charaWork.property[2] = 1;
-            charaWork.property[4] = 1;            
+            if (initParams.Length != 0)
+                this.classParams = LuaUtils.readLuaParams(initParams);
 
-            charaWork.parameterSave.hp[0] = stats.hp;
-            charaWork.parameterSave.hpMax[0] = stats.hpMax;
-            charaWork.parameterSave.mp = stats.mp;
-            charaWork.parameterSave.mpMax = stats.mpMax;
-
-            charaWork.parameterSave.state_mainSkill[0] = 3;
-            charaWork.parameterSave.state_mainSkillLevel = 1;
-
-            charaWork.battleSave.skillLevel = 1;
-            charaWork.battleSave.skillLevelCap = 2;
-            charaWork.battleSave.potencial = 0.5f;
-            charaWork.battleSave.physicalExp = 1;
-            charaWork.battleSave.negotiationFlag[0] = false;
-            charaWork.battleSave.negotiationFlag[1] = false;
-
-            for (int i = 0; i < 20; i++)
-                charaWork.statusShownTime[i] = 0xFFFFFFFF;
-            
             setPlayerAppearance();
         }
 
         public void setPlayerAppearance()
         {
-            DBAppearance appearance = Database.getAppearance(actorID);
+            DBAppearance appearance = Database.getAppearance(false, actorId);
+
+            if (appearance == null)
+                return;
 
             modelID = DBAppearance.getTribeModel(appearance.tribe);
             appearanceIDs[SIZE] = appearance.size;
