@@ -1,7 +1,10 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.dataobjects;
+using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.dataobjects.database;
+using FFXIVClassic_Map_Server.lua;
+using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +15,8 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 {
     class Player : Character
     {
+        PlayerWork playerWork = new PlayerWork();
+
         public Player(uint actorID) : base(actorID)
         {
             actorName = String.Format("_player{0:00000000}", actorID);
@@ -66,7 +71,59 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             appearanceIDs[L_EAR] = appearance.leftEar;
             appearanceIDs[R_FINGER] = appearance.rightFinger;
             appearanceIDs[L_FINGER] = appearance.leftFinger;
-
         }
+
+        public List<SubPacket> create0x132Packets(uint playerActorId)
+        {
+            List<SubPacket> packets = new List<SubPacket>();
+            packets.Add(_0x132Packet.buildPacket(playerActorId, 0xB, "commandForced"));
+            packets.Add(_0x132Packet.buildPacket(playerActorId, 0xA, "commandDefault"));
+            packets.Add(_0x132Packet.buildPacket(playerActorId, 0x6, "commandWeak"));
+            packets.Add(_0x132Packet.buildPacket(playerActorId, 0x4, "commandContent"));
+            packets.Add(_0x132Packet.buildPacket(playerActorId, 0x6, "commandJudgeMode"));
+            packets.Add(_0x132Packet.buildPacket(playerActorId, 0x100, "commandRequest"));
+            packets.Add(_0x132Packet.buildPacket(playerActorId, 0x100, "widgetCreate"));
+            packets.Add(_0x132Packet.buildPacket(playerActorId, 0x100, "macroRequest"));
+            return packets;
+        }
+
+        public override SubPacket createScriptBindPacket(uint playerActorId)
+        {
+            List<LuaParam> lParams;
+            if (isMyPlayer(playerActorId))
+            {
+
+                lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
+            }
+            else
+                lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
+
+            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
+        }        
+
+        public override BasePacket getInitPackets(uint playerActorId)
+        {
+            List<SubPacket> subpackets = new List<SubPacket>();
+            subpackets.Add(createAddActorPacket(playerActorId));
+            if (isMyPlayer(playerActorId))
+                subpackets.AddRange(create0x132Packets(playerActorId));
+            subpackets.Add(createSpeedPacket(playerActorId));
+            subpackets.Add(createSpawnPositonPacket(playerActorId, 0xFF));
+            subpackets.Add(createAppearancePacket(playerActorId));
+            subpackets.Add(createNamePacket(playerActorId));
+            subpackets.Add(_0xFPacket.buildPacket(playerActorId, playerActorId));
+            subpackets.Add(createStatePacket(playerActorId));
+            subpackets.Add(createIdleAnimationPacket(playerActorId));
+            subpackets.Add(createInitStatusPacket(playerActorId));
+            subpackets.Add(createSetActorIconPacket(playerActorId));
+            subpackets.Add(createIsZoneingPacket(playerActorId));
+            //subpackets.Add(createScriptBindPacket(playerActorId));
+            return BasePacket.createPacket(subpackets, true, false);
+        }
+
+        public bool isMyPlayer(uint otherActorId)
+        {
+            return actorId == otherActorId;
+        }        
     }
 }

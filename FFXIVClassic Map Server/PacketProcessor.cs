@@ -214,19 +214,17 @@ namespace FFXIVClassic_Lobby_Server
                             reply12.replaceActorID(player.actorID);
                             #endregion
 
-                           client.queuePacket(SetMapPacket.buildPacket(player.actorID, 0xD1, 0xF4), true, false);                            
+                            client.queuePacket(SetMapPacket.buildPacket(player.actorID, 0xD1, 0xF4), true, false);                            
                            // client.queuePacket(SetMapPacket.buildPacket(player.actorID, 0x68, 0xF4), true, false);
                             client.queuePacket(_0x2Packet.buildPacket(player.actorID), true, false);
                             client.queuePacket(SendMessagePacket.buildPacket(player.actorID, player.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "-------- Login Message --------\nWelcome to the 1.0 Dev Server"), true, false);
                             client.queuePacket(SetMusicPacket.buildPacket(player.actorID, 0x3D, 0x01), true, false);
                             client.queuePacket(SetWeatherPacket.buildPacket(player.actorID, SetWeatherPacket.WEATHER_CLEAR), true, false);                            
 
-                            client.queuePacket(AddActorPacket.buildPacket(player.actorID, player.actorID, 0), true, false);
-
                            // client.queuePacket(reply6);
 
-                            client.queuePacket(block132);
-                            BasePacket actorPacket = player.getActor().createActorSpawnPackets(player.actorID);
+                            //client.queuePacket(block132);
+                            BasePacket actorPacket = player.getActor().getInitPackets(player.actorID);
                             actorPacket.debugPrintPacket();
                             client.queuePacket(actorPacket);
                 
@@ -245,12 +243,7 @@ namespace FFXIVClassic_Lobby_Server
                             partyListEntries.Add(new ListEntry(0x029B27D3, 0xFFFFFFFF, 0x195, false, true, "Valentine Bluefeather"));
                             BasePacket partyListPacket = BasePacket.createPacket(ListUtils.createPartyList(player.actorID, 0xF4, 1, 0x8000000000696df2, partyListEntries), true, false);
                             client.queuePacket(partyListPacket);                          
-                            
-                            //0x144 happens
-                            client.queuePacket(SetActorStatusAllPacket.buildPacket(player.actorID, player.actorID, new ushort[] { 23263, 23264 }), true, false);                            
-                            client.queuePacket(SetActorIconPacket.buildPacket(player.actorID, player.actorID, 0), true, false);                            
-                            client.queuePacket(SetActorIsZoningPacket.buildPacket(player.actorID, player.actorID, false), true, false);    
-               
+                                           
                             ////////ITEMS////////
                             client.queuePacket(InventoryBeginChangePacket.buildPacket(player.actorID), true, false);
 

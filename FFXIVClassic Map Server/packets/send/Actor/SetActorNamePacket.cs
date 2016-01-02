@@ -25,10 +25,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor
 
                     if (displayNameID == 0xFFFFFFFF)
                     {
-                        if (customName.Length <= 0x20)
-                            binWriter.Write(Encoding.ASCII.GetBytes(customName));
-                        else
-                            binWriter.Write(Encoding.ASCII.GetBytes("ERROR: NAME TO BIG"));
+                        binWriter.Write(Encoding.ASCII.GetBytes(customName), 0, Encoding.ASCII.GetByteCount(customName) >= 0x20 ? 0x19 : Encoding.ASCII.GetByteCount(customName));
                     }
 
                 }

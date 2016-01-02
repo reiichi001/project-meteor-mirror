@@ -25,6 +25,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public const int MAIN_STATE_UNKNOWN4 = 0x20;
 
         //What is this for?
+        public const int SUB_STATE_NONE = 0x00;
         public const int SUB_STATE_PLAYER = 0xBF;
         public const int SUB_STATE_MONSTER = 0x03;
 

@@ -24,13 +24,16 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public uint displayNameId = 0xFFFFFFFF;
         public string customDisplayName;
 
-        public uint animationId;
+        public uint currentMainState = SetActorStatePacket.MAIN_STATE_PASSIVE;
+        public uint currentSubState = SetActorStatePacket.SUB_STATE_NONE;
 
         public float positionX, positionY, positionZ, rotation;
         public float oldPositionX, oldPositionY, oldPositionZ, oldRotation;
         public ushort moveState, oldMoveState;
 
         public uint currentZoneId;
+
+        public bool isZoning = false;
 
         public string className;
         public List<LuaParam> classParams;
@@ -39,6 +42,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
         {
             actorId = Id;
         }
+
+        public SubPacket createAddActorPacket(uint playerActorId)
+        {
+            return AddActorPacket.buildPacket(actorId, playerActorId, 0);
+        } 
 
         public SubPacket createNamePacket(uint playerActorId)
         {            
@@ -59,19 +67,33 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public SubPacket createPositionUpdatePacket(uint playerActorId)
         {
             return MoveActorToPositionPacket.buildPacket(actorId, playerActorId, positionX, positionY, positionZ, rotation, moveState);
-        }        
+        }
 
-        public SubPacket createScriptBindPacket(uint playerActorId)
+        public SubPacket createStatePacket(uint playerActorID)
+        {
+            return SetActorStatePacket.buildPacket(actorId, playerActorID, currentMainState, currentSubState);
+        }
+
+        public SubPacket createIsZoneingPacket(uint playerActorId)
+        {
+            return SetActorIsZoningPacket.buildPacket(actorId, playerActorId, false);
+        }
+
+        public virtual SubPacket createScriptBindPacket(uint playerActorId)
         {
             return null;
         }
 
-        public BasePacket createActorSpawnPackets(uint playerActorId)
+        public virtual BasePacket getInitPackets(uint playerActorId)
         {
-            if (this is Character)
-                return ((Character)this).createActorSpawnPackets(playerActorId);
-            else
-                return null;
+            List<SubPacket> subpackets = new List<SubPacket>();
+            subpackets.Add(createAddActorPacket(playerActorId));
+            subpackets.Add(createSpeedPacket(playerActorId));
+            subpackets.Add(createSpawnPositonPacket(playerActorId, 0xFF));            
+            subpackets.Add(createNamePacket(playerActorId));
+            subpackets.Add(createStatePacket(playerActorId));
+            subpackets.Add(createIsZoneingPacket(playerActorId));
+            return BasePacket.createPacket(subpackets, true, false);
         }
         
         public override bool Equals(Object obj)

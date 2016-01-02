@@ -39,12 +39,13 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public uint modelID;
         public uint[] appearanceIDs = new uint[0x1D];
 
+        public uint animationId = 0;
+
         public uint currentTarget = 0xC0000000;
         public uint currentLockedTarget = 0xC0000000;
 
-        public uint currentMainState = SetActorStatePacket.MAIN_STATE_PASSIVE;
-        public uint currentSubState = SetActorStatePacket.SUB_STATE_PLAYER;
-
+        public uint currentActorIcon = 0;
+        
         public CharaWork charaWork = new CharaWork();
         public PlayerWork playerWork = new PlayerWork();
 
@@ -52,27 +53,25 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         {
         }
 
-        public SubPacket createAppearancePacket(uint playerActorID)
+        public SubPacket createAppearancePacket(uint playerActorId)
         {
             SetActorAppearancePacket setappearance = new SetActorAppearancePacket(modelID, appearanceIDs);
-            return setappearance.buildPacket(actorId, playerActorID);
+            return setappearance.buildPacket(actorId, playerActorId);
         }
 
-        public SubPacket createStatePacket(uint playerActorID)
+        public SubPacket createInitStatusPacket(uint playerActorId)
         {
-            return SetActorStatePacket.buildPacket(actorId, playerActorID, currentMainState, currentSubState);
+            return (SetActorStatusAllPacket.buildPacket(actorId, playerActorId, charaWork.status));                      
         }
 
-        public BasePacket createActorSpawnPackets(uint playerActorID)
+        public SubPacket createSetActorIconPacket(uint playerActorId)
         {
-            List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(createSpeedPacket(playerActorID));
-            subpackets.Add(createSpawnPositonPacket(playerActorID, 0xFF));
-            subpackets.Add(createAppearancePacket(playerActorID));
-            subpackets.Add(createNamePacket(playerActorID));
-            subpackets.Add(_0xFPacket.buildPacket(playerActorID, playerActorID));
-            subpackets.Add(createStatePacket(playerActorID));            
-            return BasePacket.createPacket(subpackets, true, false);
+            return SetActorIconPacket.buildPacket(actorId, playerActorId, currentActorIcon);
+        }
+
+        public SubPacket createIdleAnimationPacket(uint playerActorId)
+        {
+            return SetActorIdleAnimationPacket.buildPacket(actorId, playerActorId, animationId);
         }
 
     }

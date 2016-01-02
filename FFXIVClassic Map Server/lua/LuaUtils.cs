@@ -186,7 +186,7 @@ namespace FFXIVClassic_Map_Server
             return luaParams;
         }
 
-        public static List<LuaParam> createLuaParamList(object[] list)
+        public static List<LuaParam> createLuaParamList(params object[] list)
         {
             List<LuaParam> luaParams = new List<LuaParam>();
 
@@ -218,7 +218,7 @@ namespace FFXIVClassic_Map_Server
             }
 
             return luaParams;
-        }
+        }        
 
         public static object[] createLuaParamObjectList(List <LuaParam> luaParams)
         {

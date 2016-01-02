@@ -8,6 +8,9 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 {
     class CharaWork
     {
+        public uint PROPERTY_NAMEPLATE_VISIBLE = 1;
+        public uint PROPERTY_NAMEPLATE_VISIBLE2 = 5;
+
         public ParameterSave    parameterSave = new ParameterSave();
         public ParameterTemp    parameterTemp = new ParameterTemp();
         public BattleSave       battleSave = new BattleSave();
@@ -15,8 +18,9 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public EventSave        eventSave = new EventSave();
         public EventTemp        eventTemp = new EventTemp();
 
-        public byte[] property = new byte[32];
+        public byte[]   property = new byte[32];
 
+        public ushort[] status = new ushort[20];
         public uint[]   statusShownTime = new uint[20];
 
         public int[]    command = new int[64];

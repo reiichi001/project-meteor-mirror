@@ -137,7 +137,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 }
                 else
                 {
-                    BasePacket p = actor.createActorSpawnPackets(playerActor.actorId);
+                    BasePacket p = actor.getInitPackets(playerActor.actorId);
                     p.replaceActorID(playerActor.actorId);
                     basePackets.Add(p);
                     actorInstanceList.Add(actor);
