@@ -42,7 +42,8 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public uint currentTarget = 0xC0000000;
         public uint currentLockedTarget = 0xC0000000;
 
-        public uint currentState = SetActorStatePacket.STATE_PASSIVE;
+        public uint currentMainState = SetActorStatePacket.MAIN_STATE_PASSIVE;
+        public uint currentSubState = SetActorStatePacket.SUB_STATE_PLAYER;
 
         public CharaWork charaWork = new CharaWork();
         public PlayerWork playerWork = new PlayerWork();
@@ -59,7 +60,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 
         public SubPacket createStatePacket(uint playerActorID)
         {
-            return SetActorStatePacket.buildPacket(actorId, playerActorID, currentState);
+            return SetActorStatePacket.buildPacket(actorId, playerActorID, currentMainState, currentSubState);
         }
 
         public BasePacket createActorSpawnPackets(uint playerActorID)

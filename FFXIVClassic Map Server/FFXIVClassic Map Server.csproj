@@ -147,6 +147,8 @@
     <Compile Include="packets\send\list\ListStartPacket.cs" />
     <Compile Include="packets\send\player\SendAchievementRatePacket.cs" />
     <Compile Include="packets\send\player\SetCurrentJobPacket.cs" />
+    <Compile Include="packets\send\player\SetCurrentMountGoobbuePacket.cs" />
+    <Compile Include="packets\send\player\SetCurrentMountChocoboPacket.cs" />
     <Compile Include="packets\send\player\SetGrandCompanyPacket.cs" />
     <Compile Include="packets\send\actor\SetActorNamePacket.cs" />
     <Compile Include="packets\send\actor\SetActorPropetyPacket.cs" />

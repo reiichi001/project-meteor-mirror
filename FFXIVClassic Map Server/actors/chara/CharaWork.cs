@@ -8,12 +8,12 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 {
     class CharaWork
     {
-        public ParameterSave   parameterSave = new ParameterSave();
-        public ParameterTemp parameterTemp = new ParameterTemp();
-        public BattleSave battleSave = new BattleSave();
-        public BattleTemp battleTemp = new BattleTemp();
-        public EventSave eventSave = new EventSave();
-        public EventTemp eventTemp = new EventTemp();
+        public ParameterSave    parameterSave = new ParameterSave();
+        public ParameterTemp    parameterTemp = new ParameterTemp();
+        public BattleSave       battleSave = new BattleSave();
+        public BattleTemp       battleTemp = new BattleTemp();
+        public EventSave        eventSave = new EventSave();
+        public EventTemp        eventTemp = new EventTemp();
 
         public byte[] property = new byte[32];
 
