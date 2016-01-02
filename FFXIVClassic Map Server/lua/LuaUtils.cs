@@ -77,6 +77,45 @@ namespace FFXIVClassic_Map_Server
             return luaParams;
         }
 
+        public static void writeLuaParams(BinaryWriter writer, List<LuaParam> luaParams)
+        {
+            foreach (LuaParam l in luaParams)
+            {           
+                writer.Write((Byte)l.typeID);
+                switch (l.typeID)
+                {
+                    case 0x0: //Int32
+                        writer.Write((UInt32)l.value);
+                        break;
+                    case 0x1: //Int32
+                        writer.Write((UInt32)l.value);
+                        break;
+                    case 0x2: //Null Termed String
+                        string sv = (string)l.value;
+                        writer.Write(Encoding.ASCII.GetBytes(sv), 0, Encoding.ASCII.GetByteCount(sv));
+                        writer.Write((Byte)0);
+                        break;
+                    case 0x3: //Boolean True                        
+                        break;
+                    case 0x4: //Boolean False                        
+                        break;
+                    case 0x5: //Nil                        
+                        break;
+                    case 0x6: //Actor (By Id)
+                        writer.Write((UInt32)l.value);
+                        break;
+                    case 0x10: //Byte?                        
+                        break;
+                    case 0x1B: //Short?                        
+                        break;
+                    case 0xF: //End                        
+                        continue;
+                }
+            }
+
+            writer.Write((Byte)0xF);
+        }
+
         public static List<LuaParam> readLuaParams(byte[] bytesIn)
         {
             List<LuaParam> luaParams = new List<LuaParam>();            
@@ -174,7 +213,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 else if (o is Actor)
                 {
-                    luaParams.Add(new LuaParam(0x6, ((Actor)o).actorID));
+                    luaParams.Add(new LuaParam(0x6, ((Actor)o).actorId));
                 }
             }
 
