@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Map_Server.dataobjects.database;
+using FFXIVClassic_Map_Server.dataobjects.chara.npc;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -87,7 +88,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static DBAppearance getAppearance(uint charaId)
+        public static DBAppearance getAppearance(bool loadFromPlayerTable, uint charaId)
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -95,7 +96,11 @@ namespace FFXIVClassic_Lobby_Server
                 try
                 {
                     conn.Open();
-                    appearance = conn.Query<DBAppearance>("SELECT * FROM characters_appearance WHERE characterId=@CharaId", new { CharaId = charaId }).SingleOrDefault();
+
+                    if (loadFromPlayerTable)
+                        appearance = conn.Query<DBAppearance>("SELECT * FROM characters_appearance WHERE characterId=@CharaId", new { CharaId = charaId }).SingleOrDefault();
+                    else
+                        appearance = conn.Query<DBAppearance>("SELECT * FROM npc_appearance WHERE npcId=@CharaId", new { CharaId = charaId }).SingleOrDefault();
                 }
                 catch (MySqlException e)
                 {
@@ -128,6 +133,28 @@ namespace FFXIVClassic_Lobby_Server
                 }
 
                 return stats;
+            }
+        }
+
+        public static List<Npc> getNpcList()
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                List<Npc> npcList = null;
+                try
+                {
+                    conn.Open();
+                    npcList = conn.Query<Npc>("SELECT * FROM npc_list").ToList();
+                }
+                catch (MySqlException e)
+                {
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+
+                return npcList;
             }
         }
 
