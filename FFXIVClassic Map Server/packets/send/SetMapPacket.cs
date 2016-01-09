@@ -23,7 +23,7 @@ namespace FFXIVClassic_Map_Server.packets.send
                 {
                     binWriter.Write((uint)mapID);
                     binWriter.Write((uint)regionID);
-                    binWriter.Write((uint)0x0);
+                    binWriter.Write((uint)0x28);
                 }
             }
 
