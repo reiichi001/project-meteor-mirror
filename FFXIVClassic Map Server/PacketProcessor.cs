@@ -218,7 +218,6 @@ namespace FFXIVClassic_Lobby_Server
                             client.queuePacket(SetWeatherPacket.buildPacket(player.actorID, SetWeatherPacket.WEATHER_CLEAR), true, false);                            
 
                             BasePacket actorPacket = player.getActor().getInitPackets(player.actorID);
-                            actorPacket.debugPrintPacket();
                             client.queuePacket(actorPacket);
                 
                             //Retainers
@@ -603,7 +602,6 @@ namespace FFXIVClassic_Lobby_Server
                 actorPacket.replaceActorID(entry.Value.actorID);
 
                 entry.Value.getConnection2().queuePacket(packet);
-                actorPacket.debugPrintPacket();
                 entry.Value.getConnection2().queuePacket(actorPacket);
 
 

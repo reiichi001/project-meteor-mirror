@@ -42,11 +42,11 @@ namespace FFXIVClassic_Map_Server
                         }
                         value = Encoding.ASCII.GetString(list.ToArray());
                         break;
-                    case 0x3: //Boolean False
-                        value = false;
-                        break;
-                    case 0x4: //Boolean True
+                    case 0x3: //Boolean True
                         value = true;
+                        break;
+                    case 0x4: //Boolean False
+                        value = false;
                         break;
                     case 0x5: //Nil
                         wasNil = true;
@@ -85,10 +85,13 @@ namespace FFXIVClassic_Map_Server
                 switch (l.typeID)
                 {
                     case 0x0: //Int32
-                        writer.Write((UInt32)l.value);
+                        if (l.value is uint)
+                            writer.Write((UInt32)Utils.swapEndian((UInt32)l.value));
+                        else
+                            writer.Write((UInt32)Utils.swapEndian((UInt32)(Int32)l.value));
                         break;
-                    case 0x1: //Int32
-                        writer.Write((UInt32)l.value);
+                    case 0x1: //Int32                        
+                        writer.Write((UInt32)Utils.swapEndian((UInt32)l.value));
                         break;
                     case 0x2: //Null Termed String
                         string sv = (string)l.value;
@@ -102,7 +105,7 @@ namespace FFXIVClassic_Map_Server
                     case 0x5: //Nil                        
                         break;
                     case 0x6: //Actor (By Id)
-                        writer.Write((UInt32)l.value);
+                        writer.Write((UInt32)Utils.swapEndian((UInt32)l.value));
                         break;
                     case 0x10: //Byte?                        
                         break;
@@ -150,11 +153,11 @@ namespace FFXIVClassic_Map_Server
                                 }
                                 value = Encoding.ASCII.GetString(list.ToArray());
                                 break;
-                            case 0x3: //Boolean False
-                                value = false;
-                                break;
-                            case 0x4: //Boolean True
+                            case 0x3: //Boolean True
                                 value = true;
+                                break;
+                            case 0x4: //Boolean False
+                                value = false;
                                 break;
                             case 0x5: //Nil
                                 wasNil = true;
@@ -192,33 +195,49 @@ namespace FFXIVClassic_Map_Server
 
             foreach (object o in list)
             {
-                if (o is uint)
+                if (o.GetType().IsArray)
                 {
-                    luaParams.Add(new LuaParam(0x0, (uint)o));
+                    Array arrayO = (Array)o;
+                    foreach (object o2 in arrayO)
+                        addToList(o2, luaParams);
                 }
-                else if (o is string)
-                {
-                    luaParams.Add(new LuaParam(0x2, (string)o));
-                }
-                else if (o is bool)
-                {
-                    if (((bool)o))
-                        luaParams.Add(new LuaParam(0x4, null));
-                    else
-                        luaParams.Add(new LuaParam(0x3, null));
-                }
-                else if (o == null)
-                {
-                    luaParams.Add(new LuaParam(0x5, null));
-                }
-                else if (o is Actor)
-                {
-                    luaParams.Add(new LuaParam(0x6, ((Actor)o).actorId));
-                }
+                else
+                    addToList(o, luaParams);                     
             }
 
             return luaParams;
-        }        
+        }
+
+        private static void addToList(object o, List<LuaParam> luaParams)
+        {
+            if (o is uint)
+            {
+                luaParams.Add(new LuaParam(0x0, (uint)o));
+            }
+            else if (o is int)
+            {
+                luaParams.Add(new LuaParam(0x0, (int)o));
+            }
+            else if (o is string)
+            {
+                luaParams.Add(new LuaParam(0x2, (string)o));
+            }
+            else if (o is bool)
+            {
+                if (((bool)o))
+                    luaParams.Add(new LuaParam(0x3, null));
+                else
+                    luaParams.Add(new LuaParam(0x4, null));
+            }
+            else if (o == null)
+            {
+                luaParams.Add(new LuaParam(0x5, null));
+            }
+            else if (o is Actor)
+            {
+                luaParams.Add(new LuaParam(0x6, ((Actor)o).actorId));
+            }
+        }
 
         public static object[] createLuaParamObjectList(List <LuaParam> luaParams)
         {
@@ -247,11 +266,11 @@ namespace FFXIVClassic_Map_Server
                     case 0x2: //Null Termed String                        
                         dumpString += String.Format("\"{0}\"", (string)lParams[i].value);
                         break;
-                    case 0x3: //Boolean False
-                        dumpString += "false";
-                        break;
-                    case 0x4: //Boolean True
+                    case 0x3: //Boolean True
                         dumpString += "true";
+                        break;
+                    case 0x4: //Boolean False
+                        dumpString += "false";
                         break;
                     case 0x5: //NULL???                        
                         dumpString += "nil";

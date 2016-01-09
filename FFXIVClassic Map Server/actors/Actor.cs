@@ -61,10 +61,17 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public SubPacket createSpawnPositonPacket(uint playerActorId, uint spawnType)
         {
-            return SetActorPositionPacket.buildPacket(actorId, playerActorId, SetActorPositionPacket.INNPOS_X, SetActorPositionPacket.INNPOS_Y, SetActorPositionPacket.INNPOS_Z, SetActorPositionPacket.INNPOS_ROT, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
+            SubPacket spawnPacket;
+            if (!spawnedFirstTime && playerActorId == actorId)
+                spawnPacket = SetActorPositionPacket.buildPacket(actorId, playerActorId, 0, positionX, positionY, positionZ, rotation, spawnType, false);
+            else if (playerActorId == actorId)
+                spawnPacket = SetActorPositionPacket.buildPacket(actorId, playerActorId, 0xFFFFFFFF, positionX, positionY, positionZ, rotation, spawnType, true);
+            else
+                spawnPacket = SetActorPositionPacket.buildPacket(actorId, playerActorId, actorId, positionX, positionY, positionZ, rotation, spawnType, false);
+
             //return SetActorPositionPacket.buildPacket(actorId, playerActorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
-            //spawnedFirstTime = true;
-            //return spawnPacket;
+            spawnedFirstTime = true;
+            return spawnPacket;
         }
 
         public SubPacket createPositionUpdatePacket(uint playerActorId)
@@ -92,7 +99,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(createAddActorPacket(playerActorId));
             subpackets.Add(createSpeedPacket(playerActorId));
-            subpackets.Add(createSpawnPositonPacket(playerActorId, 0xFF));            
+            subpackets.Add(createSpawnPositonPacket(playerActorId, 0x1));            
             subpackets.Add(createNamePacket(playerActorId));
             subpackets.Add(createStatePacket(playerActorId));
             subpackets.Add(createIsZoneingPacket(playerActorId));

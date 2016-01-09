@@ -265,7 +265,10 @@ namespace FFXIVClassic_Lobby_Server
 
         public void doWarp(String map, String x, String y, String z)
         {
-            mProcessor.doWarp(Convert.ToUInt32(map), Single.Parse(x), Single.Parse(y), Single.Parse(z));
+            if (map.ToLower().StartsWith("0x"))
+                mProcessor.doWarp(Convert.ToUInt32(map, 16), Single.Parse(x), Single.Parse(y), Single.Parse(z));
+            else
+                mProcessor.doWarp(Convert.ToUInt32(map), Single.Parse(x), Single.Parse(y), Single.Parse(z));
         }
 
     }

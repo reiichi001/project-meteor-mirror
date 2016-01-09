@@ -43,8 +43,8 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 
         public Player(uint actorID) : base(actorID)
         {
-            actorName = String.Format("_player{0:00000000}", actorID);
-
+            actorName = String.Format("_pc{0:00000000}", actorID);
+            className = "Player";
             currentSubState = SetActorStatePacket.SUB_STATE_PLAYER;
 
             DBStats stats = Database.getCharacterStats(actorID);
@@ -118,8 +118,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             List<LuaParam> lParams;
             if (isMyPlayer(playerActorId))
             {
-
-                lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
+                lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, false, true, 0, false, timers, true);
             }
             else
                 lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
@@ -134,7 +133,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             if (isMyPlayer(playerActorId))
                 subpackets.AddRange(create0x132Packets(playerActorId));
             subpackets.Add(createSpeedPacket(playerActorId));
-            subpackets.Add(createSpawnPositonPacket(playerActorId, 0xFF));
+            subpackets.Add(createSpawnPositonPacket(playerActorId, 0x1));
             subpackets.Add(createAppearancePacket(playerActorId));
             subpackets.Add(createNamePacket(playerActorId));
             subpackets.Add(_0xFPacket.buildPacket(playerActorId, playerActorId));
@@ -143,7 +142,8 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             subpackets.Add(createInitStatusPacket(playerActorId));
             subpackets.Add(createSetActorIconPacket(playerActorId));
             subpackets.Add(createIsZoneingPacket(playerActorId));
-            //subpackets.Add(createScriptBindPacket(playerActorId));
+            subpackets.Add(createScriptBindPacket(playerActorId));
+
             return BasePacket.createPacket(subpackets, true, false);
         }
 
