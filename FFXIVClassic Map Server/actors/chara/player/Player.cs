@@ -45,6 +45,8 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         {
             actorName = String.Format("_player{0:00000000}", actorID);
 
+            currentSubState = SetActorStatePacket.SUB_STATE_PLAYER;
+
             DBStats stats = Database.getCharacterStats(actorID);
 
             charaWork.property[0] = 1;

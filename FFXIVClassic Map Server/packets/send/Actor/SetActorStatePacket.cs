@@ -34,7 +34,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         public static SubPacket buildPacket(uint playerActorID, uint targetID, uint mainState, uint subState)
         {            
-            uint combined = (mainState & 0xFF) | ((subState & 0xFF) << 8);
+            ulong combined = (mainState & 0xFF) | ((subState & 0xFF) << 8);
             return new SubPacket(OPCODE, playerActorID, targetID, BitConverter.GetBytes(combined));
         }
     }
