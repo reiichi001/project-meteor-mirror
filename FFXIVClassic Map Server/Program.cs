@@ -16,14 +16,7 @@ namespace FFXIVClassic_Lobby_Server
 
         static void Main(string[] args)
         {
-            Console.WriteLine("{0:x}", Utils.MurmurHash2("playerWork.questScenario[0]", 0));
-            Console.WriteLine("{0:x}", Utils.MurmurHash2("work.dispPlayer[0]", 0));
-            Console.WriteLine("{0:x}", Utils.MurmurHash2("work.dispTarget[0]", 0));
-            Console.WriteLine("{0:x}", Utils.MurmurHash2("work.dispName[0]", 0));
-            Console.WriteLine("{0:x}", Utils.MurmurHash2("work.dispHead[0]", 0));
-            Console.WriteLine("{0:x}", Utils.MurmurHash2("work.server", 0));
-
-
+            
 #if DEBUG
             TextWriterTraceListener myWriter = new TextWriterTraceListener(System.Console.Out);
             Debug.Listeners.Add(myWriter);
