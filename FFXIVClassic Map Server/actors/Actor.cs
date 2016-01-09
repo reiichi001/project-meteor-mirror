@@ -26,14 +26,15 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public uint currentMainState = SetActorStatePacket.MAIN_STATE_PASSIVE;
         public uint currentSubState = SetActorStatePacket.SUB_STATE_NONE;
-
-        public float positionX, positionY, positionZ, rotation;
+        public float positionX = SetActorPositionPacket.INNPOS_X, positionY = SetActorPositionPacket.INNPOS_Y, positionZ = SetActorPositionPacket.INNPOS_Z, rotation = SetActorPositionPacket.INNPOS_ROT;
         public float oldPositionX, oldPositionY, oldPositionZ, oldRotation;
         public ushort moveState, oldMoveState;
 
         public uint currentZoneId;
 
         public bool isZoning = false;
+
+        public bool spawnedFirstTime = false;
 
         public string className;
         public List<LuaParam> classParams;
@@ -62,6 +63,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         {
             return SetActorPositionPacket.buildPacket(actorId, playerActorId, SetActorPositionPacket.INNPOS_X, SetActorPositionPacket.INNPOS_Y, SetActorPositionPacket.INNPOS_Z, SetActorPositionPacket.INNPOS_ROT, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
             //return SetActorPositionPacket.buildPacket(actorId, playerActorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
+            //spawnedFirstTime = true;
+            //return spawnPacket;
         }
 
         public SubPacket createPositionUpdatePacket(uint playerActorId)
@@ -122,3 +125,4 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
     }
 }
+

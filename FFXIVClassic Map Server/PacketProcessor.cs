@@ -184,11 +184,9 @@ namespace FFXIVClassic_Lobby_Server
                             client.queuePacket(BasePacket.createPacket(PongPacket.buildPacket(player.actorID, pingPacket.time), true, false));
                             break;
                         //Unknown
-                        case 0x0002:
-                            BasePacket block132 = new BasePacket("./packets/tt2/4");
+                        case 0x0002:                          
                             BasePacket packet196 = new BasePacket("./packets/196");
 
-                            BasePacket reply6 = new BasePacket("./packets/login/login6_data.bin");
                             BasePacket reply7 = new BasePacket("./packets/login/login7_data.bin");
                             BasePacket reply8 = new BasePacket("./packets/login/login8_data.bin");
                             BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin");
@@ -203,9 +201,7 @@ namespace FFXIVClassic_Lobby_Server
                             //currancy.replaceActorID(player.actorID);
                             //keyitems.replaceActorID(player.actorID);
 
-                            block132.replaceActorID(player.actorID);
                             packet196.replaceActorID(player.actorID);
-                            reply6.replaceActorID(player.actorID);
                             reply7.replaceActorID(player.actorID);
                             reply8.replaceActorID(player.actorID);
                             reply9.replaceActorID(player.actorID);
@@ -221,9 +217,6 @@ namespace FFXIVClassic_Lobby_Server
                             client.queuePacket(SetMusicPacket.buildPacket(player.actorID, 0x3D, 0x01), true, false);
                             client.queuePacket(SetWeatherPacket.buildPacket(player.actorID, SetWeatherPacket.WEATHER_CLEAR), true, false);                            
 
-                           // client.queuePacket(reply6);
-
-                            //client.queuePacket(block132);
                             BasePacket actorPacket = player.getActor().getInitPackets(player.actorID);
                             actorPacket.debugPrintPacket();
                             client.queuePacket(actorPacket);
@@ -340,7 +333,7 @@ namespace FFXIVClassic_Lobby_Server
                                 book.cutsceneFlags[i] = true;
                             client.queuePacket(book.buildPacket(player.actorID), true, false);
 
-                            client.queuePacket(SetPlayerDreamPacket.buildPacket(player.actorID, 11), true, false);                            
+                            //client.queuePacket(SetPlayerDreamPacket.buildPacket(player.actorID, 11), true, false);                            
                             
                             //BasePacket packet1a5 = new BasePacket("./packets/1ax/1a5");
                             //packet1a5.replaceActorID(player.actorID);
@@ -584,6 +577,36 @@ namespace FFXIVClassic_Lobby_Server
                     packet.replaceActorID(player.actorID);
                     client.queuePacket(packet);
                 
+            }
+        }
+
+        public void doWarp(uint mapID, float x, float y, float z)
+        {
+            List<SubPacket> pList = new List<SubPacket>();
+
+
+            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mPlayers)
+            {
+                pList.Clear();
+
+                entry.Value.getActor().positionX = x;
+                entry.Value.getActor().positionY = y;
+                entry.Value.getActor().positionZ = z;
+
+                pList.Add(_0xE2Packet.buildPacket(0x6c, 0xF));
+                pList.Add(SetMapPacket.buildPacket(0x6c, mapID, 0));
+                BasePacket packet = BasePacket.createPacket(pList, true, false);
+                
+                BasePacket actorPacket = entry.Value.getActor().getInitPackets(entry.Value.actorID);
+
+                packet.replaceActorID(entry.Value.actorID);
+                actorPacket.replaceActorID(entry.Value.actorID);
+
+                entry.Value.getConnection2().queuePacket(packet);
+                actorPacket.debugPrintPacket();
+                entry.Value.getConnection2().queuePacket(actorPacket);
+
+
             }
         }
         

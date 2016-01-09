@@ -201,6 +201,7 @@
     <Compile Include="packets\send\supportdesk\FaqListResponsePacket.cs" />
     <Compile Include="packets\send\supportdesk\GMTicketPacket.cs" />
     <Compile Include="packets\send\supportdesk\GMTicketSentResponsePacket.cs" />
+    <Compile Include="packets\send\_0xE2Packet.cs" />
     <Compile Include="packets\SubPacket.cs" />
     <Compile Include="packets\receive\PingPacket.cs" />
     <Compile Include="packets\receive\UpdatePlayerPositionPacket.cs" />

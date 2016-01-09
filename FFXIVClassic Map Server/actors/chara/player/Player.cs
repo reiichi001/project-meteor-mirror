@@ -15,6 +15,30 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 {
     class Player : Character
     {
+
+        public const int TIMER_TOTORAK = 0;
+        public const int TIMER_DZEMAEL = 1;        
+        public const int TIMER_BOWL_OF_EMBERS_HARD = 2;
+        public const int TIMER_BOWL_OF_EMBERS = 3;
+        public const int TIMER_THORNMARCH = 4;
+        public const int TIMER_AURUMVALE = 5;
+        public const int TIMER_CUTTERSCRY = 6;
+        public const int TIMER_BATTLE_ALEPORT = 7;
+        public const int TIMER_BATTLE_HYRSTMILL = 8;
+        public const int TIMER_BATTLE_GOLDENBAZAAR = 9;
+        public const int TIMER_HOWLING_EYE_HARD = 10;
+        public const int TIMER_HOWLING_EYE = 11;
+        public const int TIMER_CASTRUM_TOWER = 12;
+        public const int TIMER_BOWL_OF_EMBERS_EXTREME = 13;
+        public const int TIMER_RIVENROAD = 14;
+        public const int TIMER_RIVENROAD_HARD = 15;
+        public const int TIMER_BEHEST = 16;
+        public const int TIMER_COMPANYBEHEST = 17;
+        public const int TIMER_RETURN = 18;
+        public const int TIMER_SKIRMISH = 19;
+
+        public uint[] timers = new uint[20];
+
         PlayerWork playerWork = new PlayerWork();
 
         public Player(uint actorID) : base(actorID)

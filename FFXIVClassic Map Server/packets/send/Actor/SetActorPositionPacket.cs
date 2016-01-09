@@ -27,7 +27,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public const float INNPOS_Z     = 165.050003f;
         public const float INNPOS_ROT   =  -1.530000f;
 
-        public static SubPacket buildPacket(uint sourceActorID, uint targetActorID, float x, float y, float z, float rotation, uint spawnType)
+        public static SubPacket buildPacket(uint sourceActorID, uint targetActorID,float x, float y, float z, float rotation, uint spawnType)
         {
             byte[] data = new byte[PACKET_SIZE-0x20];
 
@@ -44,7 +44,8 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
                     binWriter.BaseStream.Seek(0x24, SeekOrigin.Begin);
 
-                    binWriter.Write((UInt32)spawnType);
+                    binWriter.Write((UInt16)spawnType);
+                    binWriter.Write((UInt16)(0));
                 }
             }
 

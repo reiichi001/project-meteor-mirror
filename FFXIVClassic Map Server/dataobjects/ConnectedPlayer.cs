@@ -101,11 +101,13 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void updatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
         {
+            /*
             playerActor.positionX = x;
             playerActor.positionY = y;
             playerActor.positionZ = z;
             playerActor.rotation = rot;
             playerActor.moveState = moveState;
+             */
         }            
 
         public void sendMotd()
