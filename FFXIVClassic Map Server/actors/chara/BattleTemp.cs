@@ -45,7 +45,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public const uint STAT_HARVEST_LIMIT = 34;
         public const uint STAT_HARVEST_RATE = 35;
 
-        public int[]    castGauge_speed = new int[2];
+        public float[] castGauge_speed = { 1.0f, 0.25f};
         public bool[]   timingCommandFlag = new bool[4];
         public ushort[] generalParameter = new ushort[32];
     }

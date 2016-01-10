@@ -33,6 +33,7 @@ using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.dataobjects.actors;
 using FFXIVClassic_Map_Server.dataobjects.chara.npc;
 using FFXIVClassic_Map_Server.actors;
+using System.Net;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -123,11 +124,7 @@ namespace FFXIVClassic_Lobby_Server
 
                     if (actorID == 0)
                         break;
-
-                    //Second connection
-                    if (mPlayers.ContainsKey(actorID))
-                        player = mPlayers[actorID];
-
+                  
                     using (MemoryStream mem = new MemoryStream(reply2.data))
                     {
                         using (BinaryWriter binReader = new BinaryWriter(mem))
@@ -137,7 +134,7 @@ namespace FFXIVClassic_Lobby_Server
                         }
                     }
 
-                    if (player == null)
+                    if (((IPEndPoint)client.socket.LocalEndPoint).Port == 54992)
                     {
                         player = new ConnectedPlayer(actorID);
                         mPlayers[actorID] = player;

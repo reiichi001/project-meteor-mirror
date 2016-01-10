@@ -14,8 +14,8 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 
         public int[] maxCommandRecastTime = new int[40];
 
-        public float[] forceControl_float_forClientSelf = new float[4];
-        public short[] forceControl_int16_forClientSelf = new short[2];
+        public float[] forceControl_float_forClientSelf = { 1.0f, 1.0f};
+        public short[] forceControl_int16_forClientSelf = { -1, -1 };
 
         public int[] otherClassAbilityCount = new int[2];
         public int[] giftCount = new int[2];

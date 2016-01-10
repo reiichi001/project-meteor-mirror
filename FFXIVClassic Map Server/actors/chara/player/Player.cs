@@ -5,6 +5,7 @@ using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.dataobjects.database;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.utils;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -101,7 +102,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
         }        
 
-        public override BasePacket getInitPackets(uint playerActorId)
+        public override BasePacket getSpawnPackets(uint playerActorId)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(createAddActorPacket(playerActorId));
@@ -117,9 +118,125 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             subpackets.Add(createInitStatusPacket(playerActorId));
             subpackets.Add(createSetActorIconPacket(playerActorId));
             subpackets.Add(createIsZoneingPacket(playerActorId));
-            subpackets.Add(createScriptBindPacket(playerActorId));
-
+            subpackets.Add(createScriptBindPacket(playerActorId));            
             return BasePacket.createPacket(subpackets, true, false);
+        }
+
+        public override BasePacket getInitPackets(uint playerActorId)
+        {
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this, playerActorId);
+
+            //Properties
+            for (int i = 0; i < charaWork.property.Length; i++)
+            {
+                if (charaWork.property[i] != 0)                
+                    propPacketUtil.addProperty(String.Format("charaWork.property[{0}]", i));
+            }
+
+            //Parameters
+            propPacketUtil.addProperty("charaWork.parameterSave.hp[0]");
+            propPacketUtil.addProperty("charaWork.parameterSave.hpMax[0]");
+            propPacketUtil.addProperty("charaWork.parameterSave.mp");
+            propPacketUtil.addProperty("charaWork.parameterSave.mpMax");
+            propPacketUtil.addProperty("charaWork.parameterSave.mpMax");
+            propPacketUtil.addProperty("charaWork.parameterTemp.tp");
+            propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[0]");
+            propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkillLevel");
+
+            //Status Times
+            for (int i = 0; i < charaWork.statusShownTime.Length; i++)
+            {
+                if (charaWork.statusShownTime[i] != 0)
+                    propPacketUtil.addProperty(String.Format("charaWork.statusShownTime[{0}]", i));
+            }
+
+            //General Parameters
+            for (int i = 0; i < 36; i++)
+            {
+                propPacketUtil.addProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
+            }
+
+            propPacketUtil.addProperty("charaWork.battleTemp.castGauge_speed[0]");
+            propPacketUtil.addProperty("charaWork.battleTemp.castGauge_speed[1]");
+
+            //Battle Save Skillpoint
+
+            //Commands
+            for (int i = 0; i < charaWork.command.Length; i++)
+            {
+                if (charaWork.command[i] != 0)
+                    propPacketUtil.addProperty(String.Format("charaWork.command[{0}]", i));
+            }
+            for (int i = 0; i < charaWork.commandCategory.Length; i++)
+            {
+                if (charaWork.commandCategory[i] != 0)
+                    propPacketUtil.addProperty(String.Format("charaWork.commandCategory[{0}]", i));
+            }
+
+            propPacketUtil.addProperty("charaWork.commandBorder");
+
+            for (int i = 0; i < charaWork.parameterSave.commandSlot_compatibility.Length; i++)
+            {
+                if (charaWork.parameterSave.commandSlot_compatibility[i] != 0)
+                    propPacketUtil.addProperty(String.Format("charaWork.parameterSave.commandSlot_compatibility[{0}]", i));
+            }
+            for (int i = 0; i < charaWork.parameterSave.commandSlot_recastTime.Length; i++)
+            {
+                if (charaWork.parameterSave.commandSlot_recastTime[i] != 0)
+                    propPacketUtil.addProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i));
+            }            
+            
+            //System
+            propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[0]");
+            propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[1]");
+            propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_int16_forClientSelf[0]");
+            propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_int16_forClientSelf[1]");
+
+            propPacketUtil.addProperty("charaWork.depictionJudge");
+            propPacketUtil.addProperty("playerWork.restBonusExpRate");
+
+            //Scenario
+            for (int i = 0; i < playerWork.questScenario.Length; i++)
+            {
+                if (playerWork.questScenario[i] != 0)
+                    propPacketUtil.addProperty(String.Format("playerWork.questScenario[{0}]", i));
+            }
+
+            //Guildleve - Local
+            for (int i = 0; i < playerWork.questGuildLeve.Length; i++)
+            {
+                if (playerWork.questGuildLeve[i] != 0)
+                    propPacketUtil.addProperty(String.Format("playerWork.questGuildLeve[{0}]", i));
+            }
+
+            //NPC Linkshell
+            for (int i = 0; i < playerWork.npcLinkshellChatCalling.Length; i++)
+            {
+                if (playerWork.npcLinkshellChatCalling[i] != false)
+                    propPacketUtil.addProperty(String.Format("playerWork.npcLinkshellChatCalling[{0}]", i));
+                if (playerWork.npcLinkshellChatExtra[i] != false)
+                    propPacketUtil.addProperty(String.Format("playerWork.npcLinkshellChatExtra[{0}]", i));
+            }
+
+            //Guildleve - Regional
+            for (int i = 0; i < work.guildleveId.Length; i++)
+            {
+                if (work.guildleveId[i] != 0)
+                    propPacketUtil.addProperty(String.Format("work.guildleveId[{0}]", i));
+                if (work.guildleveDone[i] != false)
+                    propPacketUtil.addProperty(String.Format("work.guildleveDone[{0}]", i));
+                if (work.guildleveChecked[i] != false)
+                    propPacketUtil.addProperty(String.Format("work.guildleveChecked[{0}]", i));
+            }
+
+            //Profile
+            propPacketUtil.addProperty("playerWork.tribe");
+            propPacketUtil.addProperty("playerWork.guardian");
+            propPacketUtil.addProperty("playerWork.birthdayMonth");
+            propPacketUtil.addProperty("playerWork.birthdayDay");
+            propPacketUtil.addProperty("playerWork.initialTown");
+
+            return propPacketUtil.done();
         }
 
         public bool isMyPlayer(uint otherActorId)

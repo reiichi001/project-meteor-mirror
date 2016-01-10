@@ -5,7 +5,6 @@ using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using FFXIVClassic_Map_Server.packets.send.Actor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -94,7 +93,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return null;
         }
 
-        public virtual BasePacket getInitPackets(uint playerActorId)
+        public virtual BasePacket getSpawnPackets(uint playerActorId)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(createAddActorPacket(playerActorId));
@@ -105,7 +104,14 @@ namespace FFXIVClassic_Map_Server.dataobjects
             subpackets.Add(createIsZoneingPacket(playerActorId));
             return BasePacket.createPacket(subpackets, true, false);
         }
-        
+
+        public virtual BasePacket getInitPackets(uint playerActorId)
+        {
+            SetActorPropetyPacket initProperties = new SetActorPropetyPacket("/_init");
+            initProperties.addTarget();
+            return BasePacket.createPacket(initProperties.buildPacket(playerActorId, actorId), true, false);
+        }
+
         public override bool Equals(Object obj)
         {
             Actor actorObj = obj as Actor;
