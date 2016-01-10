@@ -18,7 +18,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 
         public int[] state_boostPointForSkill;
 
-        public int[] commandSlot_compatibility;
+        public uint[] commandSlot_compatibility = new uint[40];
         public uint[] commandSlot_recastTime = new uint[40];
 
         public int[] giftCommandSlot_commandId;

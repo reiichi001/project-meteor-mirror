@@ -171,14 +171,14 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         public void addTarget()
         {
-            binWriter.Write((byte)(isMore ? 0x62 + currentTarget.Length : 0x82 + currentTarget.Length));
+            binWriter.Write((byte)(isMore ? 0x60 + currentTarget.Length : 0x82 + currentTarget.Length));
             binWriter.Write(Encoding.ASCII.GetBytes(currentTarget));
             runningByteTotal += (ushort)(1 + Encoding.ASCII.GetByteCount(currentTarget));
         }
 
         public void addTarget(string newTarget)
         {
-            binWriter.Write((byte)(isMore ? 0x62 + currentTarget.Length : 0x82 + currentTarget.Length));
+            binWriter.Write((byte)(isMore ? 0x60 + currentTarget.Length : 0x82 + currentTarget.Length));
             binWriter.Write(Encoding.ASCII.GetBytes(currentTarget));
             runningByteTotal += (ushort)(1 + Encoding.ASCII.GetByteCount(currentTarget));
             currentTarget = newTarget;
