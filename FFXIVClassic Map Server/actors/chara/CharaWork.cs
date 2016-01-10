@@ -23,7 +23,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public ushort[] status = new ushort[20];
         public uint[]   statusShownTime = new uint[20];
 
-        public int[]    command = new int[64];
+        public uint[]    command = new uint[64];
         public int[]    commandCategory = new int[64];
         public int      commandBorder = 0x20;
         public bool     commandAcquired = false;

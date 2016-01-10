@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.actors.chara;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
 using System.Collections.Generic;
@@ -45,7 +46,8 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public uint currentLockedTarget = 0xC0000000;
 
         public uint currentActorIcon = 0;
-        
+
+        public Work work = new Work();
         public CharaWork charaWork = new CharaWork();
         public PlayerWork playerWork = new PlayerWork();
 

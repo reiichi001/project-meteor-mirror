@@ -5,6 +5,7 @@ using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.dataobjects.database;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +39,20 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public const int TIMER_SKIRMISH = 19;
 
         public uint[] timers = new uint[20];
+
+        public uint currentTitle;
+
+        public byte gcCurrent;
+        public byte gcRankLimsa;
+        public byte gcRankGridania;
+        public byte gcRankUldah;
+
+        public bool hasChocobo;
+        public bool hasGoobbue;
+        public byte chocoboAppearance;
+        public string chocoboName;
+
+        public uint achievementPoints;
 
         PlayerWork playerWork = new PlayerWork();
 
@@ -150,6 +165,9 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public bool isMyPlayer(uint otherActorId)
         {
             return actorId == otherActorId;
-        }        
+        }
+
+        
+
     }
 }
