@@ -8,7 +8,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 {
     class BattleSave
     {
-        public float potencial;
+        public float potencial = 6.6f;
         public int skillLevel;
         public int skillLevelCap;
         public int[] skillPoint;

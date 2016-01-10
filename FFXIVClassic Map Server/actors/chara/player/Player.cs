@@ -67,10 +67,29 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             charaWork.property[0] = 1;
             charaWork.property[1] = 1;
             charaWork.property[2] = 1;
-            charaWork.property[4] = 1;            
+            charaWork.property[4] = 1;
 
-            charaWork.parameterSave.state_mainSkill[0] = 3;
-            charaWork.parameterSave.state_mainSkillLevel = 1;
+            charaWork.command[0] =  0xA0F00000 | 21001;
+            charaWork.command[1] =  0xA0F00000 | 21002;
+            charaWork.command[2] =  0xA0F00000 | 12003;
+            charaWork.command[3] =  0xA0F00000 | 11828;
+            charaWork.command[4] =  0xA0F00000 | 21005;
+            charaWork.command[5] =  0xA0F00000 | 21006;
+            charaWork.command[6] =  0xA0F00000 | 21007;
+            charaWork.command[7] =  0xA0F00000 | 12009;
+            charaWork.command[8] =  0xA0F00000 | 12010;
+            charaWork.command[9] =  0xA0F00000 | 12005;
+            charaWork.command[10] = 0xA0F00000 | 12007;
+            charaWork.command[11] = 0xA0F00000 | 12011;
+            charaWork.command[12] = 0xA0F00000 | 22012;
+            charaWork.command[13] = 0xA0F00000 | 22013;
+            charaWork.command[14] = 0xA0F00000 | 29497;
+            charaWork.command[15] = 0xA0F00000 | 22015;
+
+            for (int i = 0; i < 16; i++)
+                charaWork.commandCategory[i] = 1;
+
+            charaWork.commandBorder = 32;
 
             Database.loadPlayerCharacter(this);
         }
