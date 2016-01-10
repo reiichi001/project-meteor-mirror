@@ -1,8 +1,6 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
-using FFXIVClassic_Map_Server.dataobjects.database;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.utils;

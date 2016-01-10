@@ -1,5 +1,4 @@
-﻿using FFXIVClassic_Lobby_Server.dataobjects;
-using MySql.Data.MySqlClient;
+﻿using MySql.Data.MySqlClient;
 using Dapper;
 using Newtonsoft.Json;
 using System;
@@ -8,12 +7,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Map_Server.dataobjects.database;
 using FFXIVClassic_Map_Server.dataobjects.chara.npc;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.utils;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.packets.send.player;
+using FFXIVClassic_Lobby_Server.dataobjects;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -69,76 +68,6 @@ namespace FFXIVClassic_Lobby_Server
                 return world;
             }
         }    
-
-        public static DBCharacter getCharacter(uint charId)
-        {
-            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                DBCharacter chara = null;
-                try
-                {
-                    conn.Open();
-                    chara = conn.Query<DBCharacter>("SELECT * FROM characters WHERE id=@CharaId", new { CharaId = charId }).SingleOrDefault();
-                }
-                catch (MySqlException e)
-                {
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-
-                return chara;
-            }
-        }
-
-        public static DBAppearance getAppearance(bool loadFromPlayerTable, uint charaId)
-        {
-            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                DBAppearance appearance = null;
-                try
-                {
-                    conn.Open();
-
-                    if (loadFromPlayerTable)
-                        appearance = conn.Query<DBAppearance>("SELECT * FROM characters_appearance WHERE characterId=@CharaId", new { CharaId = charaId }).SingleOrDefault();
-                    else
-                        appearance = conn.Query<DBAppearance>("SELECT * FROM npc_appearance WHERE npcId=@CharaId", new { CharaId = charaId }).SingleOrDefault();
-                }
-                catch (MySqlException e)
-                {
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-
-                return appearance;
-            }
-        }
-
-        public static DBStats getCharacterStats(uint charaId)
-        {
-            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                DBStats stats = null;
-                try
-                {
-                    conn.Open();
-                    stats = conn.Query<DBStats>("SELECT * FROM characters_stats WHERE characterId=@CharaId", new { CharaId = charaId }).SingleOrDefault();
-                }
-                catch (MySqlException e)
-                {
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-
-                return stats;
-            }
-        }
 
         public static List<Npc> getNpcList()
         {

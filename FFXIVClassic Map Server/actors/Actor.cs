@@ -1,6 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;

@@ -6,8 +6,8 @@ using FFXIVClassic_Lobby_Server.common;
 using System.Runtime.InteropServices;
 using MySql.Data.MySqlClient;
 using System.Reflection;
-using FFXIVClassic_Lobby_Server.dataobjects;
 using System.IO;
+using FFXIVClassic_Lobby_Server.dataobjects;
 
 namespace FFXIVClassic_Lobby_Server
 {

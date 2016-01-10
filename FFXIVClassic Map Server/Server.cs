@@ -226,7 +226,7 @@ namespace FFXIVClassic_Lobby_Server
 
         public void testCodePacket(uint id, uint value, string target)
         {
-            SetActorPropetyPacket changeProperty = new SetActorPropetyPacket();
+            SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(target);
             changeProperty.addInt(id, value);
             changeProperty.setTarget(target);
 
@@ -250,7 +250,7 @@ namespace FFXIVClassic_Lobby_Server
         {
             foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
             {
-                SetActorPropetyPacket changeProperty = new SetActorPropetyPacket();
+                SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(target);
                 changeProperty.addProperty(entry.Value.getActor(), name);
                 changeProperty.addProperty(entry.Value.getActor(), "charaWork.parameterSave.hpMax[0]");
                 changeProperty.setTarget(target);

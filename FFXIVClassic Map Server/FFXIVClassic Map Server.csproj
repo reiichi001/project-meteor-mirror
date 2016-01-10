@@ -85,17 +85,10 @@
     <Compile Include="actors\chara\ParameterTemp.cs" />
     <Compile Include="actors\chara\player\Player.cs" />
     <Compile Include="actors\command\Command.cs" />
-    <Compile Include="dataobjects\CharaInfo.cs" />
     <Compile Include="actors\chara\CharaWork.cs" />
     <Compile Include="actors\chara\ParameterSave.cs" />
     <Compile Include="actors\chara\player\PlayerWork.cs" />
-    <Compile Include="dataobjects\database\DBAppearance.cs" />
-    <Compile Include="dataobjects\database\DBCharacter.cs" />
-    <Compile Include="dataobjects\database\DBCommands.cs" />
-    <Compile Include="dataobjects\database\DBJournal.cs" />
-    <Compile Include="dataobjects\database\DBPlayerData.cs" />
-    <Compile Include="dataobjects\database\DBStats.cs" />
-    <Compile Include="dataobjects\database\DBWorld.cs" />
+    <Compile Include="dataobjects\DBWorld.cs" />
     <Compile Include="dataobjects\Item.cs" />
     <Compile Include="dataobjects\ConnectedPlayer.cs" />
     <Compile Include="dataobjects\RecruitmentDetails.cs" />
@@ -210,6 +203,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="lua\LuaUtils.cs" />
     <Compile Include="Server.cs" />
+    <Compile Include="utils\ActorPropertyPacketUtil.cs" />
     <Compile Include="utils\CharacterUtils.cs" />
     <Compile Include="Zone.cs" />
   </ItemGroup>
