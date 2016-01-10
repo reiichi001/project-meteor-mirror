@@ -49,8 +49,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 
         public Work work = new Work();
         public CharaWork charaWork = new CharaWork();
-        public PlayerWork playerWork = new PlayerWork();
-
+        
         public Character(uint actorID) : base(actorID)
         {
         }

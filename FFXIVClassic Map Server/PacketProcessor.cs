@@ -49,7 +49,7 @@ namespace FFXIVClassic_Lobby_Server
         {
             mPlayers = playerList;
             mConnections = connectionList;
-            initNpcs();
+           // initNpcs();
         }     
 
         public void processPacket(ClientConnection client, BasePacket packet)
