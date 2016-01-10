@@ -330,7 +330,11 @@ namespace FFXIVClassic_Lobby_Server
                             client.queuePacket(book.buildPacket(player.actorID), true, false);
 
                             //client.queuePacket(SetPlayerDreamPacket.buildPacket(player.actorID, 11), true, false);                            
-                            
+
+                            BasePacket tpacket = player.getActor().getInitPackets(player.actorID);
+                            tpacket.debugPrintPacket();
+                            client.queuePacket(tpacket);
+
                             //BasePacket packet1a5 = new BasePacket("./packets/1ax/1a5");
                             //packet1a5.replaceActorID(player.actorID);
                             //client.queuePacket(packet1a5);
@@ -339,8 +343,6 @@ namespace FFXIVClassic_Lobby_Server
                             //loadTest(client, player);
                             //return;
                             inn.addActorToZone(player.getActor());
-                           // BasePacket tpacket = BasePacket.createPacket(player.getActor().createInitSubpackets(player.actorID), true, false);
-                           // client.queuePacket(tpacket);
 
                             client.queuePacket(reply7);
                             client.queuePacket(reply8);
