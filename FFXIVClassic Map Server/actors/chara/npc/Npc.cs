@@ -40,50 +40,43 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara.npc
             if (appearance == null)
                 return;
 
-            modelID = DBAppearance.getTribeModel(appearance.tribe);
-            appearanceIDs[SIZE] = appearance.size;
-            appearanceIDs[COLORINFO] = (uint)(appearance.skinColor | (appearance.hairColor << 10) | (appearance.eyeColor << 20));
-            appearanceIDs[FACEINFO] = PrimitiveConversion.ToUInt32(appearance.getFaceInfo());
-            appearanceIDs[HIGHLIGHT_HAIR] = (uint)(appearance.hairHighlightColor | appearance.hairStyle << 10);
-            appearanceIDs[VOICE] = appearance.voice;
-            appearanceIDs[WEAPON1] = appearance.mainHand;
-            appearanceIDs[WEAPON2] = appearance.offHand;
-            appearanceIDs[HEADGEAR] = appearance.head;
-            appearanceIDs[BODYGEAR] = appearance.body;
-            appearanceIDs[LEGSGEAR] = appearance.legs;
-            appearanceIDs[HANDSGEAR] = appearance.hands;
-            appearanceIDs[FEETGEAR] = appearance.feet;
-            appearanceIDs[WAISTGEAR] = appearance.waist;
-            appearanceIDs[R_EAR] = appearance.rightEar;
-            appearanceIDs[L_EAR] = appearance.leftEar;
-            appearanceIDs[R_FINGER] = appearance.rightFinger;
-            appearanceIDs[L_FINGER] = appearance.leftFinger;
+            modelId = DBAppearance.getTribeModel(appearance.tribe);
+            appearanceIds[SIZE] = appearance.size;
+            appearanceIds[COLORINFO] = (uint)(appearance.skinColor | (appearance.hairColor << 10) | (appearance.eyeColor << 20));
+            appearanceIds[FACEINFO] = PrimitiveConversion.ToUInt32(appearance.getFaceInfo());
+            appearanceIds[HIGHLIGHT_HAIR] = (uint)(appearance.hairHighlightColor | appearance.hairStyle << 10);
+            appearanceIds[VOICE] = appearance.voice;
+            appearanceIds[WEAPON1] = appearance.mainHand;
+            appearanceIds[WEAPON2] = appearance.offHand;
+            appearanceIds[HEADGEAR] = appearance.head;
+            appearanceIds[BODYGEAR] = appearance.body;
+            appearanceIds[LEGSGEAR] = appearance.legs;
+            appearanceIds[HANDSGEAR] = appearance.hands;
+            appearanceIds[FEETGEAR] = appearance.feet;
+            appearanceIds[WAISTGEAR] = appearance.waist;
+            appearanceIds[R_EAR] = appearance.rightEar;
+            appearanceIds[L_EAR] = appearance.leftEar;
+            appearanceIds[R_FINGER] = appearance.rightFinger;
+            appearanceIds[L_FINGER] = appearance.leftFinger;
 
-        }
-
-        public override SubPacket createScriptBindPacket(uint playerActorId)
-        {
-            List<LuaParam> lParams;
-         
-            lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
-
-            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
         }
 
         public override BasePacket getInitPackets(uint playerActorId)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(createAddActorPacket(playerActorId));            
+            subpackets.Add(createAddActorPacket(playerActorId));
             subpackets.Add(createSpeedPacket(playerActorId));
-            subpackets.Add(createSpawnPositonPacket(playerActorId, 0xFF));
+            subpackets.Add(createSpawnPositonPacket(playerActorId, 0x1));
             subpackets.Add(createAppearancePacket(playerActorId));
             subpackets.Add(createNamePacket(playerActorId));
+            subpackets.Add(_0xFPacket.buildPacket(playerActorId, playerActorId));
             subpackets.Add(createStatePacket(playerActorId));
             subpackets.Add(createIdleAnimationPacket(playerActorId));
             subpackets.Add(createInitStatusPacket(playerActorId));
             subpackets.Add(createSetActorIconPacket(playerActorId));
             subpackets.Add(createIsZoneingPacket(playerActorId));
-            //subpackets.Add(createScriptBindPacket(playerActorId));
+            subpackets.Add(createScriptBindPacket(playerActorId));
+
             return BasePacket.createPacket(subpackets, true, false);
         }
 

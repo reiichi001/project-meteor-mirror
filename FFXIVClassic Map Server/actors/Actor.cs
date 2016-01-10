@@ -39,9 +39,17 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public string className;
         public List<LuaParam> classParams;
 
-        public Actor(uint Id)
+        public Actor(uint actorId)
         {
-            actorId = Id;
+            this.actorId = actorId;
+        }
+
+        public Actor(uint actorId, string actorName, string className, List<LuaParam> classParams)
+        {
+            this.actorId = actorId;
+            this.actorName = actorName;
+            this.className = className;
+            this.classParams = classParams;
         }
 
         public SubPacket createAddActorPacket(uint playerActorId)
@@ -91,7 +99,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public virtual SubPacket createScriptBindPacket(uint playerActorId)
         {
-            return null;
+            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, classParams);
         }
 
         public virtual BasePacket getInitPackets(uint playerActorId)
@@ -103,6 +111,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             subpackets.Add(createNamePacket(playerActorId));
             subpackets.Add(createStatePacket(playerActorId));
             subpackets.Add(createIsZoneingPacket(playerActorId));
+            subpackets.Add(createScriptBindPacket(playerActorId));
             return BasePacket.createPacket(subpackets, true, false);
         }
         

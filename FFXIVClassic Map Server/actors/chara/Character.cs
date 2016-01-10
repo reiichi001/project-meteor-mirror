@@ -36,8 +36,8 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public const int R_FINGER = 23;
         public const int L_FINGER = 24;
 
-        public uint modelID;
-        public uint[] appearanceIDs = new uint[0x1D];
+        public uint modelId;
+        public uint[] appearanceIds = new uint[0x1D];
 
         public uint animationId = 0;
 
@@ -49,13 +49,13 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public CharaWork charaWork = new CharaWork();
         public PlayerWork playerWork = new PlayerWork();
 
-        public Character(uint actorID) : base(actorID)
+        public Character(uint actorId) : base(actorId)
         {
         }
 
         public SubPacket createAppearancePacket(uint playerActorId)
         {
-            SetActorAppearancePacket setappearance = new SetActorAppearancePacket(modelID, appearanceIDs);
+            SetActorAppearancePacket setappearance = new SetActorAppearancePacket(modelId, appearanceIds);
             return setappearance.buildPacket(actorId, playerActorId);
         }
 
