@@ -283,7 +283,7 @@ namespace FFXIVClassic_Lobby_Server
                         leftEars,
                         rightEars
                         FROM characters_appearance WHERE characterId = @charId";
-                    (byte characteristics, byte characteristicsColor, byte faceType, byte ears, byte faceMouth, byte faceFeatures, byte faceNose, byte faceEyeShape, byte faceIrisSize, byte faceEyebrows)
+
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     using (MySqlDataReader reader = cmd.ExecuteReader())
