@@ -17,7 +17,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public int restBonusExpRate;
 
         public uint[] questScenario = new uint[16];
-        public uint[] questGuildLeve = new uint[8];
+        public uint[] questGuildleve = new uint[8];
 
         public int questScenarioComplete;
         public int questGuildleveComplete;

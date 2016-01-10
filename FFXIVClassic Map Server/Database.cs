@@ -355,7 +355,7 @@ namespace FFXIVClassic_Lobby_Server
                         FROM characters_hotbar WHERE characterId = @charId AND classId = @classId";
 
                     cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@charId", player);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {                        
@@ -375,33 +375,53 @@ namespace FFXIVClassic_Lobby_Server
                         FROM characters_quest_scenario WHERE characterId = @charId";
                    
                     cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@charId", player);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             int index = reader.GetUInt16(0);
-                            player.playerWork.questScenario[index] = reader.GetUInt32(1);
+                            player.playerWork.questScenario[index] = 0xA0F00000 | reader.GetUInt32(1);
                         }
                     }
 
-                    //Load Guildleve Quests
+                    //Load Local Guildleves
                     query = @"
                         SELECT 
                         slot,
                         questId,
                         abandoned,
                         completed  
-                        FROM characters_quest_scenario WHERE characterId = @charId";
+                        FROM characters_quest_guildleve_local WHERE characterId = @charId";
 
                     cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@charId", player);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             int index = reader.GetUInt16(0);
-                            player.playerWork.questGuildLeve[index] = reader.GetUInt32(1);
+                            player.playerWork.questGuildleve[index] = 0xA0F00000 | reader.GetUInt32(1);
+                        }
+                    }
+
+                    //Load Regional Guildleve Quests
+                    query = @"
+                        SELECT 
+                        slot,
+                        guildleveId,
+                        abandoned,
+                        completed  
+                        FROM characters_quest_guildleve_regional WHERE characterId = @charId";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int index = reader.GetUInt16(0);
+                            player.work.guildleveId[index] = reader.GetUInt16(1);
                             player.work.guildleveDone[index] = reader.GetBoolean(2);
                             player.work.guildleveChecked[index] = reader.GetBoolean(3);
                         }
@@ -416,7 +436,7 @@ namespace FFXIVClassic_Lobby_Server
                         FROM characters_npclinkshell WHERE characterId = @charId";
 
                     cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@charId", player);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())

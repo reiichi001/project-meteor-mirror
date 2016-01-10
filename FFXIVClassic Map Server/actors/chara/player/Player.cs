@@ -84,12 +84,9 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             charaWork.command[14] = 0xA0F00000 | 29497;
             charaWork.command[15] = 0xA0F00000 | 22015;
 
-            charaWork.command[32] = 0xA0F00000 | 27150;
-
             for (int i = 0; i < 16; i++)
                 charaWork.commandCategory[i] = 1;
 
-            charaWork.commandCategory[32] = 1;
             charaWork.commandBorder = 32;
 
             Database.loadPlayerCharacter(this);
@@ -228,19 +225,10 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             }
 
             //Guildleve - Local
-            for (int i = 0; i < playerWork.questGuildLeve.Length; i++)
+            for (int i = 0; i < playerWork.questGuildleve.Length; i++)
             {
-                if (playerWork.questGuildLeve[i] != 0)
-                    propPacketUtil.addProperty(String.Format("playerWork.questGuildLeve[{0}]", i));
-            }
-
-            //NPC Linkshell
-            for (int i = 0; i < playerWork.npcLinkshellChatCalling.Length; i++)
-            {
-                if (playerWork.npcLinkshellChatCalling[i] != false)
-                    propPacketUtil.addProperty(String.Format("playerWork.npcLinkshellChatCalling[{0}]", i));
-                if (playerWork.npcLinkshellChatExtra[i] != false)
-                    propPacketUtil.addProperty(String.Format("playerWork.npcLinkshellChatExtra[{0}]", i));
+                if (playerWork.questGuildleve[i] != 0)
+                    propPacketUtil.addProperty(String.Format("playerWork.questGuildleve[{0}]", i));
             }
 
             //Guildleve - Regional
@@ -252,6 +240,15 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
                     propPacketUtil.addProperty(String.Format("work.guildleveDone[{0}]", i));
                 if (work.guildleveChecked[i] != false)
                     propPacketUtil.addProperty(String.Format("work.guildleveChecked[{0}]", i));
+            }
+
+            //NPC Linkshell
+            for (int i = 0; i < playerWork.npcLinkshellChatCalling.Length; i++)
+            {
+                if (playerWork.npcLinkshellChatCalling[i] != false)
+                    propPacketUtil.addProperty(String.Format("playerWork.npcLinkshellChatCalling[{0}]", i));
+                if (playerWork.npcLinkshellChatExtra[i] != false)
+                    propPacketUtil.addProperty(String.Format("playerWork.npcLinkshellChatExtra[{0}]", i));
             }
 
             //Profile
