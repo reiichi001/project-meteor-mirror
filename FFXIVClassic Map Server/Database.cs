@@ -11,6 +11,7 @@ using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Map_Server.dataobjects.database;
 using FFXIVClassic_Map_Server.dataobjects.chara.npc;
 using FFXIVClassic_Map_Server.dataobjects.chara;
+using FFXIVClassic_Map_Server.utils;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -229,7 +230,7 @@ namespace FFXIVClassic_Lobby_Server
                         player.oldRotation = player.rotation = reader.GetFloat(4);
                         player.currentMainState = reader.GetUInt16(5);
                         player.currentZoneId = reader.GetUInt32(6);
-                        reader.GetByte(7);
+                        player.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte(7);
                         player.gcCurrent = reader.GetByte(8);
                         player.gcRankLimsa = reader.GetByte(9);
                         player.gcRankGridania = reader.GetByte(10);
@@ -259,16 +260,16 @@ namespace FFXIVClassic_Lobby_Server
                         hairColor,
                         hairHighlightColor,
                         eyeColor,
-                        faceType,
-                        faceEyebrows,
-                        faceEyeShape,
-                        faceIrisSize,
-                        faceNose,
-                        faceMouth,
-                        faceFeatures,
-                        ears,
                         characteristics,
                         characteristicsColor,
+                        faceType,
+                        ears,
+                        faceMouth,
+                        faceFeatures,
+                        faceNose,
+                        faceEyeShape,
+                        faceIrisSize,
+                        faceEyebrows,
                         mainHand,
                         offHand,
                         head,
@@ -282,22 +283,37 @@ namespace FFXIVClassic_Lobby_Server
                         leftEars,
                         rightEars
                         FROM characters_appearance WHERE characterId = @charId";
-
-
+                    (byte characteristics, byte characteristicsColor, byte faceType, byte ears, byte faceMouth, byte faceFeatures, byte faceNose, byte faceEyeShape, byte faceIrisSize, byte faceEyebrows)
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
-                        reader.GetUInt32(0);
+                        player.modelID = DBAppearance.getTribeModel(reader.GetByte(1));
+                        player.appearanceIDs[Character.SIZE] = reader.GetByte(2);
+                        player.appearanceIDs[Character.COLORINFO] = (uint)(reader.GetUInt16(4) | (reader.GetUInt16(6) << 10) | (reader.GetUInt16(8) << 20));
+                        player.appearanceIDs[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.getFaceInfo(reader.GetByte(9), reader.GetByte(10), reader.GetByte(11), reader.GetByte(12), reader.GetByte(13), reader.GetByte(14), reader.GetByte(15), reader.GetByte(16), reader.GetByte(17), reader.GetByte(18)));
+                        player.appearanceIDs[Character.HIGHLIGHT_HAIR] = (uint)(reader.GetUInt16(7) | reader.GetUInt16(5) << 10);
+                        player.appearanceIDs[Character.VOICE] = reader.GetByte(3);
+                        player.appearanceIDs[Character.WEAPON1] = reader.GetUInt32(19);
+                        player.appearanceIDs[Character.WEAPON2] = reader.GetUInt32(20);
+                        player.appearanceIDs[Character.HEADGEAR] = reader.GetUInt32(21);
+                        player.appearanceIDs[Character.BODYGEAR] = reader.GetUInt32(22);
+                        player.appearanceIDs[Character.LEGSGEAR] = reader.GetUInt32(23);
+                        player.appearanceIDs[Character.HANDSGEAR] = reader.GetUInt32(24);
+                        player.appearanceIDs[Character.FEETGEAR] = reader.GetUInt32(25);
+                        player.appearanceIDs[Character.WAISTGEAR] = reader.GetUInt32(26);
+                        player.appearanceIDs[Character.R_EAR] = reader.GetUInt32(27);
+                        player.appearanceIDs[Character.L_EAR] = reader.GetUInt32(28);
+                        player.appearanceIDs[Character.R_FINGER] = reader.GetUInt32(29);
+                        player.appearanceIDs[Character.L_FINGER] = reader.GetUInt32(30);
                     }
-
 
                     //Load Status Effects
                     query = @"
                         SELECT 
                         statusId,
                         expireTime                     
-                        FROM characters_statuseffect WHERE characterId = %u";
+                        FROM characters_statuseffect WHERE characterId = @charId";
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
@@ -334,13 +350,13 @@ namespace FFXIVClassic_Lobby_Server
                     query = @"
                         SELECT 
                         achievementId                                          
-                        FROM characters_achievements WHERE characterId = %u AND timeDone NOT NULL";
+                        FROM characters_achievements WHERE characterId = @charId AND timeDone NOT NULL";
 
                     //Load Last 5 Completed
                     query = @"
                         SELECT 
                         achievementId                                     
-                        FROM characters_achievements WHERE characterId = %u ORDER BY timeDone DESC LIMIT 5";
+                        FROM characters_achievements WHERE characterId = @charId ORDER BY timeDone DESC LIMIT 5";
 
                     //Load Timers
                     query = @"
@@ -381,7 +397,7 @@ namespace FFXIVClassic_Lobby_Server
                         hotbarIndex,
                         commandId,
                         recastTime                
-                        FROM characters_hotbar WHERE characterId = @charId AND classId = @classId ORDER BY hotbarIndex DESC";
+                        FROM characters_hotbar WHERE characterId = @charId AND classId = @classId";
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
@@ -401,7 +417,7 @@ namespace FFXIVClassic_Lobby_Server
                         SELECT 
                         index,
                         questId                
-                        FROM characters_quest_scenario WHERE characterId = %u";
+                        FROM characters_quest_scenario WHERE characterId = @charId";
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
@@ -419,7 +435,7 @@ namespace FFXIVClassic_Lobby_Server
                         questId,
                         abandoned,
                         completed  
-                        FROM characters_quest_scenario WHERE characterId = %u";
+                        FROM characters_quest_scenario WHERE characterId = @charId";
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
@@ -438,7 +454,7 @@ namespace FFXIVClassic_Lobby_Server
                         npcLinkshellId,
                         isCalling,
                         isExtra  
-                        FROM characters_quest_scenario WHERE characterId = %u ORDER BY npcLinkshellId DESC";
+                        FROM characters_quest_scenario WHERE characterId = @charId";
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
