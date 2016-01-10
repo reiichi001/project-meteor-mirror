@@ -84,9 +84,12 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             charaWork.command[14] = 0xA0F00000 | 29497;
             charaWork.command[15] = 0xA0F00000 | 22015;
 
+            charaWork.command[32] = 0xA0F00000 | 27150;
+
             for (int i = 0; i < 16; i++)
                 charaWork.commandCategory[i] = 1;
 
+            charaWork.commandCategory[32] = 1;
             charaWork.commandBorder = 32;
 
             Database.loadPlayerCharacter(this);
@@ -142,61 +145,66 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public override BasePacket getInitPackets(uint playerActorId)
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this, playerActorId);
-
+                        
             //Properties
             for (int i = 0; i < charaWork.property.Length; i++)
             {
                 if (charaWork.property[i] != 0)                
                     propPacketUtil.addProperty(String.Format("charaWork.property[{0}]", i));
             }
-
+            
             //Parameters
             propPacketUtil.addProperty("charaWork.parameterSave.hp[0]");
             propPacketUtil.addProperty("charaWork.parameterSave.hpMax[0]");
             propPacketUtil.addProperty("charaWork.parameterSave.mp");
             propPacketUtil.addProperty("charaWork.parameterSave.mpMax");
-            propPacketUtil.addProperty("charaWork.parameterSave.mpMax");
             propPacketUtil.addProperty("charaWork.parameterTemp.tp");
             propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[0]");
             propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkillLevel");
 
+            
             //Status Times
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
             {
-                if (charaWork.statusShownTime[i] != 0)
+                if (charaWork.statusShownTime[i] != 0xFFFFFFFF)
                     propPacketUtil.addProperty(String.Format("charaWork.statusShownTime[{0}]", i));
             }
 
             //General Parameters
-            for (int i = 0; i < 36; i++)
+            for (int i = 0; i < charaWork.battleTemp.generalParameter.Length; i++)
             {
-                propPacketUtil.addProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
+                if (charaWork.battleTemp.generalParameter[i] != 0)
+                    propPacketUtil.addProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
             }
 
+            
             propPacketUtil.addProperty("charaWork.battleTemp.castGauge_speed[0]");
             propPacketUtil.addProperty("charaWork.battleTemp.castGauge_speed[1]");
 
             //Battle Save Skillpoint
-
+            
             //Commands
+            
             for (int i = 0; i < charaWork.command.Length; i++)
             {
                 if (charaWork.command[i] != 0)
                     propPacketUtil.addProperty(String.Format("charaWork.command[{0}]", i));
             }
+
             for (int i = 0; i < charaWork.commandCategory.Length; i++)
             {
                 if (charaWork.commandCategory[i] != 0)
                     propPacketUtil.addProperty(String.Format("charaWork.commandCategory[{0}]", i));
             }
-
+             
             propPacketUtil.addProperty("charaWork.commandBorder");
-
+            
             for (int i = 0; i < charaWork.parameterSave.commandSlot_compatibility.Length; i++)
             {
-                if (charaWork.parameterSave.commandSlot_compatibility[i] != 0)
+                if (charaWork.parameterSave.commandSlot_compatibility[i])
                     propPacketUtil.addProperty(String.Format("charaWork.parameterSave.commandSlot_compatibility[{0}]", i));
             }
+
             for (int i = 0; i < charaWork.parameterSave.commandSlot_recastTime.Length; i++)
             {
                 if (charaWork.parameterSave.commandSlot_recastTime[i] != 0)
@@ -211,7 +219,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 
             propPacketUtil.addProperty("charaWork.depictionJudge");
             propPacketUtil.addProperty("playerWork.restBonusExpRate");
-
+            
             //Scenario
             for (int i = 0; i < playerWork.questScenario.Length; i++)
             {
@@ -252,7 +260,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             propPacketUtil.addProperty("playerWork.birthdayMonth");
             propPacketUtil.addProperty("playerWork.birthdayDay");
             propPacketUtil.addProperty("playerWork.initialTown");
-
+            
             return propPacketUtil.done();
         }
 

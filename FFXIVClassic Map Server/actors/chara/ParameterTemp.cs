@@ -8,7 +8,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 {
     class ParameterTemp
     {
-        public int tp = 0;
+        public short tp = 0;
 
         public int targetInformation = 0;
 

@@ -51,7 +51,10 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public CharaWork charaWork = new CharaWork();
         
         public Character(uint actorID) : base(actorID)
-        {
+        {            
+            //Init timer array to "notimer"
+            for (int i = 0; i < charaWork.statusShownTime.Length; i++)
+                charaWork.statusShownTime[i] = 0xFFFFFFFF;
         }
 
         public SubPacket createAppearancePacket(uint playerActorId)

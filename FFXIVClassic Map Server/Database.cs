@@ -158,6 +158,51 @@ namespace FFXIVClassic_Lobby_Server
                         }
                     }
 
+                    player.charaWork.parameterSave.state_mainSkillLevel = 1;
+
+                    /*
+                    //Get level of our classjob
+                    //Load appearance
+                    query = @"
+                        SELECT 
+                        baseId
+                        FROM characters_appearance WHERE characterId = @charId";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            
+                        }
+
+                    }
+                    */
+                   
+                    //Get level of our classjob
+                    //Load appearance
+                    query = @"
+                        SELECT 
+                        hp,
+                        hpMax,
+                        mp,
+                        mpMax                        
+                        FROM characters_parametersave WHERE characterId = @charId";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            player.charaWork.parameterSave.hp[0] = reader.GetInt16(0);
+                            player.charaWork.parameterSave.hpMax[0] = reader.GetInt16(1);
+                            player.charaWork.parameterSave.mp = reader.GetInt16(2);
+                            player.charaWork.parameterSave.mpMax = reader.GetInt16(3);                            
+                        }
+                    }
+                    
                     //Load appearance
                     query = @"
                         SELECT 

@@ -214,7 +214,7 @@ namespace FFXIVClassic_Lobby_Server
                             client.queuePacket(SetMusicPacket.buildPacket(player.actorID, 0x3D, 0x01), true, false);
                             client.queuePacket(SetWeatherPacket.buildPacket(player.actorID, SetWeatherPacket.WEATHER_CLEAR), true, false);                            
 
-                            BasePacket actorPacket = player.getActor().getInitPackets(player.actorID);
+                            BasePacket actorPacket = player.getActor().getSpawnPackets(player.actorID);
                             client.queuePacket(actorPacket);
                 
                             //Retainers
@@ -344,7 +344,7 @@ namespace FFXIVClassic_Lobby_Server
                             //return;
                             inn.addActorToZone(player.getActor());
 
-                            client.queuePacket(reply7);
+                            //client.queuePacket(reply7);
                             client.queuePacket(reply8);
                             client.queuePacket(reply9);
                             client.queuePacket(reply10);
