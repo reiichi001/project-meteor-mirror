@@ -215,7 +215,6 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_int16_forClientSelf[1]");
 
             propPacketUtil.addProperty("charaWork.depictionJudge");
-            propPacketUtil.addProperty("playerWork.restBonusExpRate");
             
             //Scenario
             for (int i = 0; i < playerWork.questScenario.Length; i++)
@@ -250,6 +249,8 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
                 if (playerWork.npcLinkshellChatExtra[i] != false)
                     propPacketUtil.addProperty(String.Format("playerWork.npcLinkshellChatExtra[{0}]", i));
             }
+
+            propPacketUtil.addProperty("playerWork.restBonusExpRate");
 
             //Profile
             propPacketUtil.addProperty("playerWork.tribe");

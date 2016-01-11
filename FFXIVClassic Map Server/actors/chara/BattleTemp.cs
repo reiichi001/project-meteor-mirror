@@ -8,8 +8,10 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 {
     class BattleTemp
     {
-        public const uint NAMEPLATE_SHOWN = 0xFBFBCFB1;
-        public const uint TARGETABLE = 0x2138FD71;
+        public const uint NAMEPLATE_SHOWN = 0;
+        public const uint TARGETABLE = 1;
+        //public const uint NAMEPLATE_SHOWN2 = 2;
+        public const uint NAMEPLATE_SHOWN2 = 3;
 
         public const uint STAT_STRENGTH = 4;
         public const uint STAT_VITALITY = 5;
@@ -21,7 +23,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public const uint STAT_RESISTANCE_FIRE = 10;
         public const uint STAT_RESISTANCE_ICE = 11;
         public const uint STAT_RESISTANCE_WIND = 12;
-        public const uint STAT_RESISTANCE_LIGHTNING = 3;
+        public const uint STAT_RESISTANCE_LIGHTNING = 13;
         public const uint STAT_RESISTANCE_EARTH = 14;
         public const uint STAT_RESISTANCE_WATER = 15;
 
