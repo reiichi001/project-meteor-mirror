@@ -110,7 +110,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
                     if (split[i].LastIndexOf(']') - split[i].IndexOf('[') <= 0)
                         return false;
 
-                    arrayIndex = Convert.ToInt32(split[i].Substring(split[i].IndexOf('[') + 1, split[i].Length - split[i].LastIndexOf(']')));
+                    arrayIndex = Convert.ToInt32(split[i].Substring(split[i].IndexOf('[') + 1, split[i].LastIndexOf(']') - split[i].LastIndexOf('[')-1));
                     split[i] = split[i].Substring(0, split[i].IndexOf('['));
                 }
 

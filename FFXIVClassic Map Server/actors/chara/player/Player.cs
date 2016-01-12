@@ -85,7 +85,15 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             charaWork.command[15] = 0xA0F00000 | 22015;
 
             charaWork.command[32] = 0xA0F00000 | 27155;
+            charaWork.command[33] = 0xA0F00000 | 27150;
+            charaWork.command[34] = 0xA0F00000 | 27300;
+            charaWork.command[61] = 0xA0F00000 | 27300;
+            charaWork.command[36] = 0xA0F00000 | 27300;
 
+            //charaWork.command[35] = 0xA0F00000 | 27300;
+            //charaWork.command[35] = 0xA0F00000 | 27300;
+
+            /*
             charaWork.additionalCommandAcquired[0] = true;
             charaWork.additionalCommandAcquired[12] = true;
             charaWork.additionalCommandAcquired[22] = true;
@@ -95,24 +103,13 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 
             charaWork.commandCategory[0] = 1;
             charaWork.commandCategory[1] = 1;
+            */
 
             charaWork.battleTemp.generalParameter[3] = 1;
 
             charaWork.eventSave.bazaarTax = 5;
             charaWork.battleSave.potencial = 6.6f;
             
-            for (int i = 32; i < 49; i++)
-                charaWork.commandCategory[i] = 1;
-            charaWork.commandCategory[0] = 1;
-            charaWork.commandCategory[1] = 1;
-            charaWork.commandCategory[51] = 1;
-
-            for (int i = 0; i <= 12; i++)
-                charaWork.parameterSave.commandSlot_compatibility[i] = true;
-
-            for (int i = 0; i < 30; i++)
-                charaWork.parameterSave.commandSlot_recastTime[i] = 0x50E0230C;
-
             charaWork.commandBorder = 0x20;
 
             Database.loadPlayerCharacter(this);
@@ -242,6 +239,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
                     propPacketUtil.addProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i));
             }            
             */
+
             //System
             propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[0]");
             propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[1]");
