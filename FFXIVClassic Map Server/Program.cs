@@ -16,7 +16,6 @@ namespace FFXIVClassic_Lobby_Server
 
         static void Main(string[] args)
         {
-            
 #if DEBUG
             TextWriterTraceListener myWriter = new TextWriterTraceListener(System.Console.Out);
             Debug.Listeners.Add(myWriter);

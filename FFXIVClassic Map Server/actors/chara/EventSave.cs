@@ -9,7 +9,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
     class EventSave
     {
         public bool bazaar;
-        public float bazaarTax;
+        public byte bazaarTax;
         public int repairType;
     }
 }

@@ -27,7 +27,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public byte[]   commandCategory = new byte[64];
         public byte     commandBorder = 0x20;
         public bool     commandAcquired = false;
-        public bool[]   additionalCommandAcquired = new bool[1];
+        public bool[]   additionalCommandAcquired = new bool[32];
 
         public uint depictionJudge = 0xa0f50911;
     }

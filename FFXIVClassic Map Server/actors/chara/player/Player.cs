@@ -70,7 +70,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             charaWork.command[0] =  0xA0F00000 | 21001;
             charaWork.command[1] =  0xA0F00000 | 21002;
             charaWork.command[2] =  0xA0F00000 | 12003;
-            charaWork.command[3] =  0xA0F00000 | 11828;
+            charaWork.command[3] =  0xA0F00000 | 12004;
             charaWork.command[4] =  0xA0F00000 | 21005;
             charaWork.command[5] =  0xA0F00000 | 21006;
             charaWork.command[6] =  0xA0F00000 | 21007;
@@ -84,10 +84,36 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             charaWork.command[14] = 0xA0F00000 | 29497;
             charaWork.command[15] = 0xA0F00000 | 22015;
 
-            for (int i = 0; i < 16; i++)
-                charaWork.commandCategory[i] = 1;
+            charaWork.command[32] = 0xA0F00000 | 27155;
 
-            charaWork.commandBorder = 32;
+            charaWork.additionalCommandAcquired[0] = true;
+            charaWork.additionalCommandAcquired[12] = true;
+            charaWork.additionalCommandAcquired[22] = true;
+            charaWork.additionalCommandAcquired[25] = true;
+            charaWork.additionalCommandAcquired[28] = true;
+            charaWork.additionalCommandAcquired[30] = true;
+
+            charaWork.commandCategory[0] = 1;
+            charaWork.commandCategory[1] = 1;
+
+            charaWork.battleTemp.generalParameter[3] = 1;
+
+            charaWork.eventSave.bazaarTax = 5;
+            charaWork.battleSave.potencial = 6.6f;
+            
+            for (int i = 32; i < 49; i++)
+                charaWork.commandCategory[i] = 1;
+            charaWork.commandCategory[0] = 1;
+            charaWork.commandCategory[1] = 1;
+            charaWork.commandCategory[51] = 1;
+
+            for (int i = 0; i <= 12; i++)
+                charaWork.parameterSave.commandSlot_compatibility[i] = true;
+
+            for (int i = 0; i < 30; i++)
+                charaWork.parameterSave.commandSlot_recastTime[i] = 0x50E0230C;
+
+            charaWork.commandBorder = 0x20;
 
             Database.loadPlayerCharacter(this);
         }
@@ -143,6 +169,9 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this, playerActorId);
                         
+            propPacketUtil.addProperty("charaWork.eventSave.bazaarTax");
+            propPacketUtil.addProperty("charaWork.battleSave.potencial");
+
             //Properties
             for (int i = 0; i < charaWork.property.Length; i++)
             {
@@ -158,7 +187,6 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             propPacketUtil.addProperty("charaWork.parameterTemp.tp");
             propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[0]");
             propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkillLevel");
-
             
             //Status Times
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
@@ -167,34 +195,40 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
                     propPacketUtil.addProperty(String.Format("charaWork.statusShownTime[{0}]", i));
             }
 
+            for (int i = 0; i < charaWork.additionalCommandAcquired.Length; i++)
+            {
+                if (charaWork.additionalCommandAcquired[i] != false)
+                    propPacketUtil.addProperty(String.Format("charaWork.additionalCommandAcquired[{0}]", i));
+            }
+
             //General Parameters
-            for (int i = 0; i < charaWork.battleTemp.generalParameter.Length; i++)
+            for (int i = 3; i < charaWork.battleTemp.generalParameter.Length; i++)
             {
                 if (charaWork.battleTemp.generalParameter[i] != 0)
                     propPacketUtil.addProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
             }
-
             
             propPacketUtil.addProperty("charaWork.battleTemp.castGauge_speed[0]");
             propPacketUtil.addProperty("charaWork.battleTemp.castGauge_speed[1]");
-
+            
             //Battle Save Skillpoint
             
             //Commands
-            
+            propPacketUtil.addProperty("charaWork.commandBorder");
+
             for (int i = 0; i < charaWork.command.Length; i++)
             {
                 if (charaWork.command[i] != 0)
                     propPacketUtil.addProperty(String.Format("charaWork.command[{0}]", i));
             }
-
+            /*
             for (int i = 0; i < charaWork.commandCategory.Length; i++)
             {
                 if (charaWork.commandCategory[i] != 0)
                     propPacketUtil.addProperty(String.Format("charaWork.commandCategory[{0}]", i));
             }
              
-            propPacketUtil.addProperty("charaWork.commandBorder");
+            
             
             for (int i = 0; i < charaWork.parameterSave.commandSlot_compatibility.Length; i++)
             {
@@ -207,12 +241,20 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
                 if (charaWork.parameterSave.commandSlot_recastTime[i] != 0)
                     propPacketUtil.addProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i));
             }            
-            
+            */
             //System
             propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[0]");
             propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[1]");
             propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_int16_forClientSelf[0]");
             propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_int16_forClientSelf[1]");
+
+            charaWork.parameterTemp.otherClassAbilityCount[0] = 4;
+            charaWork.parameterTemp.otherClassAbilityCount[1] = 5;
+            charaWork.parameterTemp.giftCount[1] = 5;
+
+            propPacketUtil.addProperty("charaWork.parameterTemp.otherClassAbilityCount[0]");
+            propPacketUtil.addProperty("charaWork.parameterTemp.otherClassAbilityCount[1]");
+            propPacketUtil.addProperty("charaWork.parameterTemp.giftCount[1]");
 
             propPacketUtil.addProperty("charaWork.depictionJudge");
             
