@@ -207,6 +207,7 @@
     <Compile Include="Server.cs" />
     <Compile Include="utils\ActorPropertyPacketUtil.cs" />
     <Compile Include="utils\CharacterUtils.cs" />
+    <Compile Include="utils\SQLGeneration.cs" />
     <Compile Include="Zone.cs" />
   </ItemGroup>
   <ItemGroup>

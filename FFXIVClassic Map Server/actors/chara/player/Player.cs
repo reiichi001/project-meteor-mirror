@@ -55,7 +55,6 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public string chocoboName;
 
         public uint achievementPoints;
-        public uint[] latestAchievements = new uint[5];
 
         public PlayerWork playerWork = new PlayerWork();
 
@@ -110,8 +109,6 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             charaWork.commandBorder = 0x20;
             
             Database.loadPlayerCharacter(this);
-
-            Database.getLatestAchievements(this);
         }
         
         public List<SubPacket> create0x132Packets(uint playerActorId)
@@ -189,12 +186,8 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
                     subpackets.Add(SetHasGoobbuePacket.buildPacket(playerActorId, hasGoobbue));
 
                 subpackets.Add(SetAchievementPointsPacket.buildPacket(playerActorId, achievementPoints));
-                subpackets.Add(SetLatestAchievementsPacket.buildPacket(playerActorId, latestAchievements));
-
-                SetCompletedAchievementsPacket cheevos = new SetCompletedAchievementsPacket();
-                for (int i = 0; i < cheevos.achievementFlags.Length; i++)
-                    cheevos.achievementFlags[i] = true;
-                subpackets.Add(cheevos.buildPacket(playerActorId));
+                subpackets.Add(Database.getLatestAchievements(this));
+                subpackets.Add(Database.getAchievementsPacket(this));
 
                 /*
                 if (isInn)

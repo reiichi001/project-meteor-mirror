@@ -182,23 +182,19 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                         //Unknown
                         case 0x0002:                          
-                            BasePacket reply8 = new BasePacket("./packets/login/login8_data.bin");
-                            BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin");
-                            BasePacket reply10 = new BasePacket("./packets/login/login10.bin");
-                            BasePacket reply11 = new BasePacket("./packets/login/login11.bin");
-                            BasePacket reply12 = new BasePacket("./packets/login/login12.bin");
+                            BasePacket reply8 = new BasePacket("./packets/login/login8_data.bin"); //Debug, World Master, Director created
+                            BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin"); //Area Master, Bed, Book created
+                            BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door created
+                            BasePacket reply11 = new BasePacket("./packets/login/login11.bin"); //NPC Create ??? Final init
 
                             #region replaceid
                             //currancy.replaceActorID(player.actorID);
                             //keyitems.replaceActorID(player.actorID);
 
-                            packet196.replaceActorID(player.actorID);
-                            reply7.replaceActorID(player.actorID);
                             reply8.replaceActorID(player.actorID);
                             reply9.replaceActorID(player.actorID);
                             reply10.replaceActorID(player.actorID);
                             reply11.replaceActorID(player.actorID);
-                            reply12.replaceActorID(player.actorID);
                             #endregion
 
                             client.queuePacket(SetMapPacket.buildPacket(player.actorID, 0xD1, 0xF4), true, false);                            
@@ -302,9 +298,7 @@ namespace FFXIVClassic_Lobby_Server
                             client.queuePacket(reply8);
                             client.queuePacket(reply9);
                             client.queuePacket(reply10);
-                            // client.queuePacket(reply11);
-                            client.queuePacket(reply12);
-
+                            client.queuePacket(reply11);
 
                             break;
                         //Chat Received
@@ -554,8 +548,8 @@ namespace FFXIVClassic_Lobby_Server
                 packet.replaceActorID(entry.Value.actorID);
                 actorPacket.replaceActorID(entry.Value.actorID);
 
-                entry.Value.getConnection2().queuePacket(packet);
-                entry.Value.getConnection2().queuePacket(actorPacket);
+                entry.Value.getConnection1().queuePacket(packet);
+                entry.Value.getConnection1().queuePacket(actorPacket);
 
 
             }

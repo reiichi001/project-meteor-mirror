@@ -457,45 +457,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static void getLatestAchievements(Player player)
-        {
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                try
-                {
-                    conn.Open();
-                 
-                    //Load Last 5 Completed
-                    string query = @"
-                                    SELECT 
-                                    achievementId
-                                    FROM characters_achievements WHERE characterId = @charId ORDER BY timeDone LIMIT 5";
-
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@charId", player.actorId);
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        int count = 0;
-                        while (reader.Read())
-                        { 
-                            player.latestAchievements[count++] = reader.GetUInt32(0);
-                        }
-
-                      for (; count < player.latestAchievements.Length; count++)
-                        player.latestAchievements[count] = 0;
-                    }
-                }
-                catch (MySqlException e)
-                { Console.WriteLine(e); }
-                finally
-                {
-                    conn.Dispose();
-                }
-            }
-
-        }
-
-        public static SubPacket getAchievements(Player player)
+        public static SubPacket getLatestAchievements(Player player)
         {
             uint[] latestAchievements = new uint[5];
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -506,9 +468,10 @@ namespace FFXIVClassic_Lobby_Server
                  
                     //Load Last 5 Completed
                     string query = @"
-                                SELECT 
-                                achievementId                                          
-                                FROM characters_achievements WHERE characterId = @charId AND timeDone NOT NULL";
+                                    SELECT 
+                                    characters_achievements.achievementId FROM characters_achievements 
+                                    INNER JOIN gamedata_achievements ON characters_achievements.achievementId = gamedata_achievements.achievementId
+                                    WHERE characterId = @charId AND rewardPoints <> 0 ORDER BY timeDone LIMIT 5";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
@@ -516,7 +479,10 @@ namespace FFXIVClassic_Lobby_Server
                     {
                         int count = 0;
                         while (reader.Read())
-                            latestAchievements[count] = reader.GetUInt32(0);
+                        {
+                            uint id = reader.GetUInt32(0);                           
+                            latestAchievements[count++] = id;
+                        }
                     }
                 }
                 catch (MySqlException e)
@@ -527,8 +493,51 @@ namespace FFXIVClassic_Lobby_Server
                 }
             }
 
+            return SetLatestAchievementsPacket.buildPacket(player.actorId, latestAchievements);
+        }
 
-            return SetLatestAchievementsPacket.buildPacket(player.actorId, latestAchievements);  
+        public static SubPacket getAchievementsPacket(Player player)
+        {
+            SetCompletedAchievementsPacket cheevosPacket = new SetCompletedAchievementsPacket();
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                 
+                    string query = @"
+                                    SELECT packetOffsetId 
+                                    FROM characters_achievements 
+                                    INNER JOIN gamedata_achievements ON characters_achievements.achievementId = gamedata_achievements.achievementId
+                                    WHERE characterId = @charId AND timeDone IS NOT NULL";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {                            
+                            uint offset = reader.GetUInt32(0);
+
+                            if (offset < 0 || offset >= cheevosPacket.achievementFlags.Length)
+                            {
+                                Log.error("SQL Error; achievement flag offset id out of range: " + offset);
+                                continue;
+                            }
+                            cheevosPacket.achievementFlags[offset] = true;                             
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            return cheevosPacket.buildPacket(player.actorId);
         }
 
     }

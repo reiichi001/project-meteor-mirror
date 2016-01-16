@@ -24,7 +24,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
         public const int CATEGORY_DUNGEONS =           750;
         public const int CATEGORY_EXPLORATION =        800;
         public const int CATEGORY_GRAND_COMPANY =      820;
-
+        
         public const ushort OPCODE = 0x019A;
         public const uint PACKET_SIZE = 0xA0;
 
@@ -48,6 +48,6 @@ namespace FFXIVClassic_Map_Server.packets.send.player
 
             return new SubPacket(OPCODE, playerActorID, playerActorID, data);            
         }
-
+        
     }
 }
