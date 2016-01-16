@@ -227,12 +227,15 @@ namespace FFXIVClassic_Lobby_Server
         public void testCodePacket(uint id, uint value, string target)
         {
             SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(target);
-            changeProperty.addInt(id, value);
+
             changeProperty.setTarget(target);
+            changeProperty.addInt(id, value);
+            changeProperty.addTarget();
 
             foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
             {
                 SubPacket changePropertyPacket = changeProperty.buildPacket((entry.Value.actorID), (entry.Value.actorID));
+                
                 BasePacket packet = BasePacket.createPacket(changePropertyPacket, true, false);
                 packet.debugPrintPacket();
                 if (entry.Value.getConnection1() != null)

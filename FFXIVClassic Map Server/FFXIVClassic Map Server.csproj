@@ -64,6 +64,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="actors\chara\npc\NpcWork.cs" />
+    <Compile Include="actors\chara\AetheryteWork.cs" />
     <Compile Include="actors\chara\Work.cs" />
     <Compile Include="actors\judge\Judge.cs" />
     <Compile Include="actors\StaticActors.cs" />

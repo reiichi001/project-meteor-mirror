@@ -9,10 +9,11 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
     class BattleSave
     {
         public float potencial = 6.6f;
-        public int skillLevel;
-        public int skillLevelCap;
-        public int[] skillPoint;
+        public short[] skillLevel = new short[52];
+        public short[] skillLevelCap = new short[52];
+        public short[] skillPoint = new short[52];
 
+        public short physicalLevel;
         public int physicalExp;
 
         public bool[] negotiationFlag= new bool[2];

@@ -3,6 +3,7 @@ using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.utils;
 using MySql.Data.MySqlClient;
 using System;
@@ -39,6 +40,8 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 
         public uint[] timers = new uint[20];
 
+        public ushort currentJob;
+
         public uint currentTitle;
 
         public byte gcCurrent;
@@ -52,7 +55,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         public string chocoboName;
 
         public uint achievementPoints;
-        public ushort[] latestAchievements = new ushort[5];
+        public uint[] latestAchievements = new uint[5];
 
         public PlayerWork playerWork = new PlayerWork();
 
@@ -85,25 +88,19 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             charaWork.command[15] = 0xA0F00000 | 22015;
 
             charaWork.command[32] = 0xA0F00000 | 27155;
-            charaWork.command[33] = 0xA0F00000 | 27150;
+            //charaWork.command[33] = 0xA0F00000 | 27150;
             charaWork.command[34] = 0xA0F00000 | 27300;
-            charaWork.command[61] = 0xA0F00000 | 27300;
-            charaWork.command[36] = 0xA0F00000 | 27300;
 
-            //charaWork.command[35] = 0xA0F00000 | 27300;
-            //charaWork.command[35] = 0xA0F00000 | 27300;
+            charaWork.commandAcquired[27150 - 26000] = true;
 
-            /*
-            charaWork.additionalCommandAcquired[0] = true;
-            charaWork.additionalCommandAcquired[12] = true;
-            charaWork.additionalCommandAcquired[22] = true;
-            charaWork.additionalCommandAcquired[25] = true;
-            charaWork.additionalCommandAcquired[28] = true;
-            charaWork.additionalCommandAcquired[30] = true;
+            playerWork.questScenarioComplete[110001 - 110001] = true;
+            playerWork.questGuildleveComplete[120050 - 120001] = true;
 
-            charaWork.commandCategory[0] = 1;
-            charaWork.commandCategory[1] = 1;
-            */
+            for (int i = 0; i < charaWork.additionalCommandAcquired.Length; i++ )
+                charaWork.additionalCommandAcquired[i] = true;
+            
+            for (int i = 0; i < charaWork.commandCategory.Length; i++)
+                charaWork.commandCategory[i] = 1;
 
             charaWork.battleTemp.generalParameter[3] = 1;
 
@@ -111,8 +108,10 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             charaWork.battleSave.potencial = 6.6f;
             
             charaWork.commandBorder = 0x20;
-
+            
             Database.loadPlayerCharacter(this);
+
+            Database.getLatestAchievements(this);
         }
         
         public List<SubPacket> create0x132Packets(uint playerActorId)
@@ -158,8 +157,60 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             subpackets.Add(createInitStatusPacket(playerActorId));
             subpackets.Add(createSetActorIconPacket(playerActorId));
             subpackets.Add(createIsZoneingPacket(playerActorId));
+            subpackets.AddRange(createPlayerRelatedPackets(playerActorId));
             subpackets.Add(createScriptBindPacket(playerActorId));            
             return BasePacket.createPacket(subpackets, true, false);
+        }
+
+        public List<SubPacket> createPlayerRelatedPackets(uint playerActorId)
+        {
+            List<SubPacket> subpackets = new List<SubPacket>();
+
+            if (gcCurrent != 0)
+                subpackets.Add(SetGrandCompanyPacket.buildPacket(actorId, playerActorId, gcCurrent, gcRankLimsa, gcRankGridania, gcRankUldah));
+
+            if (currentTitle != 0)
+                subpackets.Add(SetPlayerTitlePacket.buildPacket(actorId, playerActorId, currentTitle));
+
+            if (currentJob != 0)
+                subpackets.Add(SetCurrentJobPacket.buildPacket(actorId, playerActorId, currentJob));
+
+            if (isMyPlayer(playerActorId))
+            {
+                subpackets.Add(_0x196Packet.buildPacket(playerActorId, playerActorId));
+
+                if (hasChocobo && chocoboName != null && !chocoboName.Equals(""))
+                {
+                    subpackets.Add(SetChocoboNamePacket.buildPacket(actorId, playerActorId, chocoboName));
+                    subpackets.Add(SetHasChocoboPacket.buildPacket(playerActorId, hasChocobo));
+                }
+
+                if (hasGoobbue)
+                    subpackets.Add(SetHasGoobbuePacket.buildPacket(playerActorId, hasGoobbue));
+
+                subpackets.Add(SetAchievementPointsPacket.buildPacket(playerActorId, achievementPoints));
+                subpackets.Add(SetLatestAchievementsPacket.buildPacket(playerActorId, latestAchievements));
+
+                SetCompletedAchievementsPacket cheevos = new SetCompletedAchievementsPacket();
+                for (int i = 0; i < cheevos.achievementFlags.Length; i++)
+                    cheevos.achievementFlags[i] = true;
+                subpackets.Add(cheevos.buildPacket(playerActorId));
+
+                /*
+                if (isInn)
+                {
+                    SetCutsceneBookPacket book = new SetCutsceneBookPacket();
+                    for (int i = 0; i < book.cutsceneFlags.Length; i++)
+                        book.cutsceneFlags[i] = true;
+                    client.queuePacket(book.buildPacket(player.actorID), true, false); 
+                 
+                    //
+                    //subpackets.Add(SetPlayerDreamPacket.buildPacket(playerActorId, );
+                }
+                 */
+            }
+
+            return subpackets;
         }
 
         public override BasePacket getInitPackets(uint playerActorId)
@@ -191,13 +242,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
                 if (charaWork.statusShownTime[i] != 0xFFFFFFFF)
                     propPacketUtil.addProperty(String.Format("charaWork.statusShownTime[{0}]", i));
             }
-
-            for (int i = 0; i < charaWork.additionalCommandAcquired.Length; i++)
-            {
-                if (charaWork.additionalCommandAcquired[i] != false)
-                    propPacketUtil.addProperty(String.Format("charaWork.additionalCommandAcquired[{0}]", i));
-            }
-
+        
             //General Parameters
             for (int i = 3; i < charaWork.battleTemp.generalParameter.Length; i++)
             {
@@ -213,32 +258,48 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             //Commands
             propPacketUtil.addProperty("charaWork.commandBorder");
 
+
             for (int i = 0; i < charaWork.command.Length; i++)
             {
                 if (charaWork.command[i] != 0)
                     propPacketUtil.addProperty(String.Format("charaWork.command[{0}]", i));
             }
+         
             /*
             for (int i = 0; i < charaWork.commandCategory.Length; i++)
             {
+                charaWork.commandCategory[i] = 1;
                 if (charaWork.commandCategory[i] != 0)
                     propPacketUtil.addProperty(String.Format("charaWork.commandCategory[{0}]", i));
             }
-             
-            
+
+            for (int i = 0; i < charaWork.commandAcquired.Length; i++)
+            {
+                if (charaWork.commandAcquired[i] != false)
+                    propPacketUtil.addProperty(String.Format("charaWork.commandAcquired[{0}]", i));
+            }
+            */
+
+            for (int i = 0; i < charaWork.additionalCommandAcquired.Length; i++)
+            {
+                if (charaWork.additionalCommandAcquired[i] != false)
+                    propPacketUtil.addProperty(String.Format("charaWork.additionalCommandAcquired[{0}]", i));
+            }
             
             for (int i = 0; i < charaWork.parameterSave.commandSlot_compatibility.Length; i++)
             {
+                charaWork.parameterSave.commandSlot_compatibility[i] = true;
                 if (charaWork.parameterSave.commandSlot_compatibility[i])
                     propPacketUtil.addProperty(String.Format("charaWork.parameterSave.commandSlot_compatibility[{0}]", i));
             }
 
-            for (int i = 0; i < charaWork.parameterSave.commandSlot_recastTime.Length; i++)
-            {
-                if (charaWork.parameterSave.commandSlot_recastTime[i] != 0)
-                    propPacketUtil.addProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i));
-            }            
-            */
+         /*
+      for (int i = 0; i < charaWork.parameterSave.commandSlot_recastTime.Length; i++)
+      {
+          if (charaWork.parameterSave.commandSlot_recastTime[i] != 0)
+              propPacketUtil.addProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i));
+      }            
+      */
 
             //System
             propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[0]");

@@ -158,7 +158,7 @@ namespace FFXIVClassic_Lobby_Server
                         }
                     }
 
-                    player.charaWork.parameterSave.state_mainSkillLevel = 1;
+                    player.charaWork.parameterSave.state_mainSkillLevel = 49;
 
                     /*
                     //Get level of our classjob
@@ -457,9 +457,8 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static SubPacket getLatestAchievements(Player player)
+        public static void getLatestAchievements(Player player)
         {
-            uint[] latestAchievements = new uint[5];
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
@@ -469,8 +468,8 @@ namespace FFXIVClassic_Lobby_Server
                     //Load Last 5 Completed
                     string query = @"
                                     SELECT 
-                                    achievementId                                     
-                                    FROM characters_achievements WHERE characterId = @charId ORDER BY timeDone DESC LIMIT 5";
+                                    achievementId
+                                    FROM characters_achievements WHERE characterId = @charId ORDER BY timeDone LIMIT 5";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
@@ -478,7 +477,12 @@ namespace FFXIVClassic_Lobby_Server
                     {
                         int count = 0;
                         while (reader.Read())
-                            latestAchievements[count] = reader.GetUInt32(0);
+                        { 
+                            player.latestAchievements[count++] = reader.GetUInt32(0);
+                        }
+
+                      for (; count < player.latestAchievements.Length; count++)
+                        player.latestAchievements[count] = 0;
                     }
                 }
                 catch (MySqlException e)
@@ -489,7 +493,6 @@ namespace FFXIVClassic_Lobby_Server
                 }
             }
 
-            return SetLatestAchievementsPacket.buildPacket(player.actorId, latestAchievements);
         }
 
         public static SubPacket getAchievements(Player player)

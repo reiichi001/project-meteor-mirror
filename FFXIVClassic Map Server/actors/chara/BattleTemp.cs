@@ -49,6 +49,6 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 
         public float[] castGauge_speed = { 1.0f, 0.25f};
         public bool[]   timingCommandFlag = new bool[4];
-        public ushort[] generalParameter = new ushort[32];
+        public ushort[] generalParameter = new ushort[35];
     }
 }

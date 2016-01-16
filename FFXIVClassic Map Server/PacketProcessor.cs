@@ -182,17 +182,11 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                         //Unknown
                         case 0x0002:                          
-                            BasePacket packet196 = new BasePacket("./packets/196");
-
-                            BasePacket reply7 = new BasePacket("./packets/login/login7_data.bin");
                             BasePacket reply8 = new BasePacket("./packets/login/login8_data.bin");
                             BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin");
                             BasePacket reply10 = new BasePacket("./packets/login/login10.bin");
                             BasePacket reply11 = new BasePacket("./packets/login/login11.bin");
                             BasePacket reply12 = new BasePacket("./packets/login/login12.bin");
-
-                            //  BasePacket keyitems = new BasePacket("./packets/login/keyitems.bin");
-                            //  BasePacket currancy = new BasePacket("./packets/login/currancy.bin");
 
                             #region replaceid
                             //currancy.replaceActorID(player.actorID);
@@ -233,10 +227,10 @@ namespace FFXIVClassic_Lobby_Server
                             BasePacket partyListPacket = BasePacket.createPacket(ListUtils.createPartyList(player.actorID, 0xF4, 1, 0x8000000000696df2, partyListEntries), true, false);
                             client.queuePacket(partyListPacket);                          
                                            
+                            #region itemsetup
                             ////////ITEMS////////
                             client.queuePacket(InventoryBeginChangePacket.buildPacket(player.actorID), true, false);
 
-                            #region itemsetup
 
                             //TEST
                             List<Item> items = new List<Item>();
@@ -273,14 +267,14 @@ namespace FFXIVClassic_Lobby_Server
                             setinvPackets.Add(beginInventory);
                             setinvPackets.Add(setInventory);
                             setinvPackets.Add(endInventory);
-                            #endregion
-
-                            client.queuePacket(BasePacket.createPacket(setinvPackets, true, false));
 
                             //client.queuePacket(currancy);
                             //client.queuePacket(keyitems);
 
+                            #endregion
+
                             #region equipsetup
+                            client.queuePacket(BasePacket.createPacket(setinvPackets, true, false));
                             EquipmentSetupPacket initialEqupmentPacket = new EquipmentSetupPacket();
                             initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_BODY, 5);
                             initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_HEAD, 3);
@@ -288,7 +282,6 @@ namespace FFXIVClassic_Lobby_Server
                             initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_UNDERGARMENT, 7);
                             initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_MAINHAND, 2);
                             initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_LEGS, 8);
-                            #endregion
 
                             //Equip Init
                             client.queuePacket(InventorySetBeginPacket.buildPacket(player.actorID, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false);
@@ -296,55 +289,16 @@ namespace FFXIVClassic_Lobby_Server
                             client.queuePacket(InventorySetEndPacket.buildPacket(player.actorID), true, false);
 
                             client.queuePacket(InventoryEndChangePacket.buildPacket(player.actorID), true, false);
-                            ////////ITEMS////////                                                       
+                            ////////ITEMS//////// 
 
-                            client.queuePacket(SetGrandCompanyPacket.buildPacket(player.actorID, player.actorID, 0x01, 0x1B, 0x1B, 0x1B), true, false);
-                            client.queuePacket(SetPlayerTitlePacket.buildPacket(player.actorID, player.actorID, 0x00), true, false);
-                            client.queuePacket(SetCurrentJobPacket.buildPacket(player.actorID, player.actorID, 0x13), true, false);                            
-                            //client.queuePacket(packet196);//client.queuePacket(_0x196Packet.buildPacket(player.actorID, player.actorID), true, false);
-                            client.queuePacket(SetChocoboNamePacket.buildPacket(player.actorID, player.actorID, "Boco"), true, false);
-                            client.queuePacket(SetHasChocoboPacket.buildPacket(player.actorID, true), true, false);
-                            client.queuePacket(SetHasGoobbuePacket.buildPacket(player.actorID, true), true, false);                                               
-
-                            SetCompletedAchievementsPacket cheevos = new SetCompletedAchievementsPacket();
-                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_BATTLE] = true;
-                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_CHARACTER] = true;
-                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_CURRENCY] = true;
-                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_DUNGEONS] = true;
-                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_EXPLORATION] = true;
-                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_GATHERING] = true;
-                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_GRAND_COMPANY] = true;
-                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_ITEMS] = true;
-                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_MATERIA] = true;
-                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_QUESTS] = true;
-                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_SEASONAL_EVENTS] = true;
-                            cheevos.achievementFlags[SetCompletedAchievementsPacket.CATEGORY_SYNTHESIS] = true;
-                            client.queuePacket(cheevos.buildPacket(player.actorID), true, false);
-
-                            client.queuePacket(SetLatestAchievementsPacket.buildPacket(player.actorID, new uint[5]), true, false);
-                            client.queuePacket(SetAchievementPointsPacket.buildPacket(player.actorID, 0x00), true, false);                                                        
-
-                            SetCutsceneBookPacket book = new SetCutsceneBookPacket();
-                            for (int i = 0; i < book.cutsceneFlags.Length; i++)
-                                book.cutsceneFlags[i] = true;
-                            client.queuePacket(book.buildPacket(player.actorID), true, false);
-
-                            //client.queuePacket(SetPlayerDreamPacket.buildPacket(player.actorID, 11), true, false);                            
+                            #endregion
 
                             BasePacket tpacket = player.getActor().getInitPackets(player.actorID);
                             tpacket.debugPrintPacket();
                             client.queuePacket(tpacket);
-
-                            //BasePacket packet1a5 = new BasePacket("./packets/1ax/1a5");
-                            //packet1a5.replaceActorID(player.actorID);
-                            //client.queuePacket(packet1a5);
                             
-
-                            //loadTest(client, player);
-                            //return;
                             inn.addActorToZone(player.getActor());
 
-                            //client.queuePacket(reply7);
                             client.queuePacket(reply8);
                             client.queuePacket(reply9);
                             client.queuePacket(reply10);

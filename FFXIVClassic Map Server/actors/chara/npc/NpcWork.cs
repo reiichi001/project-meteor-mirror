@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.dataobjects.chara
 {
-    class EventSave
+    class NpcWork
     {
-        public bool bazaar;
-        public byte bazaarTax;
-        public byte repairType;
+        public short pushCommand;
+        public int pushCommandSub;
+        public byte pushCommandPriority;
+        public byte hateType;                
     }
 }
