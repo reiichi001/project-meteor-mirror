@@ -1,11 +1,9 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using FFXIVClassic_Map_Server.packets.send.Actor;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -24,14 +22,14 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public uint displayNameId = 0xFFFFFFFF;
         public string customDisplayName;
 
-        public uint currentMainState = SetActorStatePacket.MAIN_STATE_PASSIVE;
-        public uint currentSubState = SetActorStatePacket.SUB_STATE_NONE;
-        public float positionX = SetActorPositionPacket.INNPOS_X, positionY = SetActorPositionPacket.INNPOS_Y, positionZ = SetActorPositionPacket.INNPOS_Z, rotation = SetActorPositionPacket.INNPOS_ROT;
+        public ushort currentMainState = SetActorStatePacket.MAIN_STATE_PASSIVE;
+        public ushort currentSubState = SetActorStatePacket.SUB_STATE_NONE;
+        public float positionX, positionY, positionZ, rotation;
         public float oldPositionX, oldPositionY, oldPositionZ, oldRotation;
         public ushort moveState, oldMoveState;
 
-        public uint currentZoneId;
-
+        public uint zoneId;
+        public Zone zone = null;
         public bool isZoning = false;
 
         public bool spawnedFirstTime = false;
@@ -102,7 +100,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, classParams);
         }
 
-        public virtual BasePacket getInitPackets(uint playerActorId)
+        public virtual BasePacket getSpawnPackets(uint playerActorId)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(createAddActorPacket(playerActorId));
@@ -114,7 +112,14 @@ namespace FFXIVClassic_Map_Server.dataobjects
             subpackets.Add(createScriptBindPacket(playerActorId));
             return BasePacket.createPacket(subpackets, true, false);
         }
-        
+
+        public virtual BasePacket getInitPackets(uint playerActorId)
+        {
+            SetActorPropetyPacket initProperties = new SetActorPropetyPacket("/_init");
+            initProperties.addTarget();
+            return BasePacket.createPacket(initProperties.buildPacket(playerActorId, actorId), true, false);
+        }
+
         public override bool Equals(Object obj)
         {
             Actor actorObj = obj as Actor;

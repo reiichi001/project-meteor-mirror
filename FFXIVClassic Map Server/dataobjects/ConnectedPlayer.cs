@@ -1,5 +1,4 @@
 ﻿using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.packets.send.actor;
@@ -28,8 +27,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public ConnectedPlayer(uint actorId)
         {
             this.actorID = actorId;
-            DBCharacter chara = Database.getCharacter(actorId);
-            createPlayerActor(actorId, chara);
+            playerActor = new Player(actorId);
+            actorInstanceList.Add(playerActor);
         }
 
         public void addConnection(ClientConnection conn)
@@ -89,16 +88,6 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return playerActor;
         }
 
-        public void createPlayerActor(uint actorId, DBCharacter chara)
-        {
-            playerActor = new Player(actorId);
-
-            playerActor.displayNameId = 0xFFFFFFFF;
-            playerActor.customDisplayName = chara.name;
-            playerActor.setPlayerAppearance();
-            actorInstanceList.Add(playerActor);
-        }
-
         public void updatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
         {
             /*
@@ -112,8 +101,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void sendMotd()
         {
-            DBWorld world = Database.getServer(ConfigConstants.DATABASE_WORLDID);
-            //sendChat(world.motd);
+            
         }
 
         public void sendChat(ConnectedPlayer sender, string message, int mode)

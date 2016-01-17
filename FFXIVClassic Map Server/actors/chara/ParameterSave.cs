@@ -8,19 +8,30 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 {
     class ParameterSave
     {
-        public int[] hp = new int[1];
-        public int[] hpMax = new int[1];
-        public int mp;
-        public int mpMax;
+        public short[] hp = new short[8];
+        public short[] hpMax = new short[8];
+        public short mp;
+        public short mpMax;
 
-        public int[] state_mainSkill = new int[4];
-        public int state_mainSkillLevel;
+        public byte[] state_mainSkill = new byte[4];
+        public ushort state_mainSkillLevel;
 
-        public int[] state_boostPointForSkill;
+        public byte[] state_boostPointForSkill = new byte[4];
+         
+        public uint[] commandSlot_recastTime = new uint[40];
+        public bool[] commandSlot_compatibility = new bool[40];
 
-        public int[] commandSlot_compatibility;
-        public int[] commandSlot_recastTime;
+        public ushort[] giftCommandSlot_commandId = new ushort[10];
 
-        public int[] giftCommandSlot_commandId;
+        public ushort[] constanceCommandSlot_commandId = new ushort[10];
+
+        public byte abilityCostPoint_used;
+        public byte abilityCostPoint_max;
+
+        public byte giftCostPoint_used;
+        public byte giftCostPoint_max;
+
+        public byte constanceCostPoint_used;
+        public byte constanceCostPoint_max;
     }
 }

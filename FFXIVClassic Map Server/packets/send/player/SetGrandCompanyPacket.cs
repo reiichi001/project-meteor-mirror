@@ -20,11 +20,11 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             using (MemoryStream mem = new MemoryStream(data))
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
-                {                    
-                    binWriter.Write((UInt16)currentAllegiance);
-                    binWriter.Write((UInt16)rankLimsa);
-                    binWriter.Write((UInt16)rankGridania);
-                    binWriter.Write((UInt16)rankUldah);
+                {
+                    binWriter.Write((Byte)currentAllegiance);
+                    binWriter.Write((Byte)rankLimsa);
+                    binWriter.Write((Byte)rankGridania);
+                    binWriter.Write((Byte)rankUldah);
                 }
             }
 

@@ -1,6 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
@@ -29,35 +28,6 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara.npc
 
             if (initParams.Length != 0)
                 this.classParams = LuaUtils.readLuaParams(initParams);
-
-            setPlayerAppearance();
-        }
-
-        public void setPlayerAppearance()
-        {
-            DBAppearance appearance = Database.getAppearance(false, actorId);
-
-            if (appearance == null)
-                return;
-
-            modelId = DBAppearance.getTribeModel(appearance.tribe);
-            appearanceIds[SIZE] = appearance.size;
-            appearanceIds[COLORINFO] = (uint)(appearance.skinColor | (appearance.hairColor << 10) | (appearance.eyeColor << 20));
-            appearanceIds[FACEINFO] = PrimitiveConversion.ToUInt32(appearance.getFaceInfo());
-            appearanceIds[HIGHLIGHT_HAIR] = (uint)(appearance.hairHighlightColor | appearance.hairStyle << 10);
-            appearanceIds[VOICE] = appearance.voice;
-            appearanceIds[WEAPON1] = appearance.mainHand;
-            appearanceIds[WEAPON2] = appearance.offHand;
-            appearanceIds[HEADGEAR] = appearance.head;
-            appearanceIds[BODYGEAR] = appearance.body;
-            appearanceIds[LEGSGEAR] = appearance.legs;
-            appearanceIds[HANDSGEAR] = appearance.hands;
-            appearanceIds[FEETGEAR] = appearance.feet;
-            appearanceIds[WAISTGEAR] = appearance.waist;
-            appearanceIds[R_EAR] = appearance.rightEar;
-            appearanceIds[L_EAR] = appearance.leftEar;
-            appearanceIds[R_FINGER] = appearance.rightFinger;
-            appearanceIds[L_FINGER] = appearance.leftFinger;
 
         }
 

@@ -195,7 +195,7 @@ namespace FFXIVClassic_Map_Server
 
             foreach (object o in list)
             {
-                if (o.GetType().IsArray)
+                if (o != null && o.GetType().IsArray)
                 {
                     Array arrayO = (Array)o;
                     foreach (object o2 in arrayO)

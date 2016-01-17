@@ -8,16 +8,16 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 {
     class ParameterTemp
     {
-        public int tp = 0;
+        public short tp = 0;
 
         public int targetInformation = 0;
 
-        public int[] maxCommandRecastTime = new int[40];
+        public ushort[] maxCommandRecastTime = new ushort[40];
 
-        public float[] forceControl_float_forClientSelf = new float[4];
-        public short[] forceControl_int16_forClientSelf = new short[2];
+        public float[] forceControl_float_forClientSelf = { 1.0f, 1.0f, 0.0f, 0.0f};
+        public short[] forceControl_int16_forClientSelf = { -1, -1 };
 
-        public int[] otherClassAbilityCount = new int[2];
-        public int[] giftCount = new int[2];
+        public byte[] otherClassAbilityCount = new byte[2];
+        public byte[] giftCount = new byte[2];
     }
 }

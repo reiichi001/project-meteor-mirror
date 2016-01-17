@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server.packets.send.Actor
+namespace FFXIVClassic_Map_Server.packets.send.actor
 {
     class SetActorNamePacket
     {
@@ -23,7 +23,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor
                 {
                     binWriter.Write((UInt32)displayNameID);
 
-                    if (displayNameID == 0xFFFFFFFF)
+                    if (displayNameID == 0 || displayNameID == 0xFFFFFFFF)
                     {
                         binWriter.Write(Encoding.ASCII.GetBytes(customName), 0, Encoding.ASCII.GetByteCount(customName) >= 0x20 ? 0x19 : Encoding.ASCII.GetByteCount(customName));
                     }
