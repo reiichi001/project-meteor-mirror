@@ -24,7 +24,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public ushort currentMainState = SetActorStatePacket.MAIN_STATE_PASSIVE;
         public ushort currentSubState = SetActorStatePacket.SUB_STATE_NONE;
-        public float positionX = SetActorPositionPacket.INNPOS_X, positionY = SetActorPositionPacket.INNPOS_Y, positionZ = SetActorPositionPacket.INNPOS_Z, rotation = SetActorPositionPacket.INNPOS_ROT;
+        public float positionX, positionY, positionZ, rotation;
         public float oldPositionX, oldPositionY, oldPositionZ, oldRotation;
         public ushort moveState, oldMoveState;
 

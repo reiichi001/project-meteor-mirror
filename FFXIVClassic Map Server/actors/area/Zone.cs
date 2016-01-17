@@ -1,5 +1,8 @@
 ﻿using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.dataobjects;
+using FFXIVClassic_Map_Server.lua;
+using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,19 +11,36 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server
 {
-    class Zone
+    class Zone : Actor
     {
-        public uint mapId;
+        public string zoneName;        
+        public ushort regionId;
+        public bool canStealth, isInn, canRideChocobo, isInstanceRaid;
         public ushort weatherNormal, weatherCommon, weatherRare;
         public ushort bgmDay, bgmNight, bgmBattle;
+        
         public int boundingGridSize = 50;
         public int minX = -100, minY = -100, maxX = 100, maxY = 100;
         private int numXBlocks, numYBlocks;
         private int halfWidth, halfHeight;
         private List<Actor>[,] actorBlock;
 
-        public Zone()
+        public Zone(uint id, string zoneName, ushort regionId, bool canStealth, bool isInn, bool canRideChocobo, bool isInstanceRaid) : base(id)
         {
+
+            this.zoneName = zoneName;
+            this.regionId = regionId;
+            this.canStealth = canStealth;
+            this.isInn = isInn;
+            this.canRideChocobo = canRideChocobo;
+            this.isInstanceRaid = isInstanceRaid;
+
+            this.displayNameId = 0;
+            this.customDisplayName = "_areaMaster";
+            this.actorName = String.Format("_areaMaster@{0:X5}",id<<8);
+
+            this.className = "ZoneMasterPrvI0";
+
             numXBlocks = (maxX - minX) / boundingGridSize;
             numYBlocks = (maxY - minY) / boundingGridSize;
             actorBlock = new List<Actor>[numXBlocks, numYBlocks];
@@ -35,6 +55,26 @@ namespace FFXIVClassic_Map_Server
                 }
             }
                 
+        }
+
+        public override SubPacket createScriptBindPacket(uint playerActorId)
+        {
+            List<LuaParam> lParams;
+            lParams = LuaUtils.createLuaParamList("/Area/Zone/ZoneMasterPrvI0", false, true, zoneName, "", 0xFFFFFFFF, false, false, canStealth, isInn, false, false, false, false, false, false);
+            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
+        }
+
+        public override BasePacket getSpawnPackets(uint playerActorId)
+        {
+            List<SubPacket> subpackets = new List<SubPacket>();
+            subpackets.Add(createAddActorPacket(playerActorId));            
+            subpackets.Add(createSpeedPacket(playerActorId));
+            subpackets.Add(createSpawnPositonPacket(playerActorId, 0x1));
+            subpackets.Add(createNamePacket(playerActorId));
+            subpackets.Add(createStatePacket(playerActorId));
+            subpackets.Add(createIsZoneingPacket(playerActorId));
+            subpackets.Add(createScriptBindPacket(playerActorId));
+            return BasePacket.createPacket(subpackets, true, false);
         }
 
         #region Actor Management

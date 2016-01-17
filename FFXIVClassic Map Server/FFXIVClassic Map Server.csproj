@@ -67,8 +67,11 @@
     <Compile Include="actors\chara\npc\NpcWork.cs" />
     <Compile Include="actors\chara\AetheryteWork.cs" />
     <Compile Include="actors\chara\Work.cs" />
+    <Compile Include="actors\debug\Debug.cs" />
+    <Compile Include="actors\director\WeatherDirector.cs" />
     <Compile Include="actors\judge\Judge.cs" />
     <Compile Include="actors\StaticActors.cs" />
+    <Compile Include="actors\world\WorldMaster.cs" />
     <Compile Include="ClientConnection.cs" />
     <Compile Include="common\Bitfield.cs" />
     <Compile Include="common\Blowfish.cs" />
@@ -208,16 +211,13 @@
     <Compile Include="utils\ActorPropertyPacketUtil.cs" />
     <Compile Include="utils\CharacterUtils.cs" />
     <Compile Include="utils\SQLGeneration.cs" />
-    <Compile Include="Zone.cs" />
+    <Compile Include="actors\area\Zone.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="actors\area\" />
-    <Folder Include="actors\director\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

@@ -34,6 +34,8 @@ using FFXIVClassic_Map_Server.dataobjects.actors;
 using FFXIVClassic_Map_Server.dataobjects.chara.npc;
 using FFXIVClassic_Map_Server.actors;
 using System.Net;
+using FFXIVClassic_Map_Server.actors.debug;
+using FFXIVClassic_Map_Server.actors.world;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -44,7 +46,10 @@ namespace FFXIVClassic_Lobby_Server
         List<ClientConnection> mConnections;
 
         StaticActors mStaticActors = new StaticActors();
-        Zone inn = new Zone();
+
+        DebugProg debug = new DebugProg();
+        WorldMaster worldMaster = new WorldMaster();
+        Zone inn = new Zone(0xF4, "prv0Inn01", 0xD1, false, false, false, false);
 
         public PacketProcessor(Dictionary<uint, ConnectedPlayer> playerList, List<ClientConnection> connectionList)
         {
@@ -182,16 +187,14 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                         //Unknown
                         case 0x0002:                          
-                            BasePacket reply8 = new BasePacket("./packets/login/login8_data.bin"); //Debug, World Master, Director created
-                            BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin"); //Area Master, Bed, Book created
+                            BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin"); //Bed, Book created
                             BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door created
                             BasePacket reply11 = new BasePacket("./packets/login/login11.bin"); //NPC Create ??? Final init
 
                             #region replaceid
                             //currancy.replaceActorID(player.actorID);
                             //keyitems.replaceActorID(player.actorID);
-
-                            reply8.replaceActorID(player.actorID);
+                            
                             reply9.replaceActorID(player.actorID);
                             reply10.replaceActorID(player.actorID);
                             reply11.replaceActorID(player.actorID);
@@ -290,12 +293,20 @@ namespace FFXIVClassic_Lobby_Server
                             #endregion
 
                             BasePacket tpacket = player.getActor().getInitPackets(player.actorID);
-                            tpacket.debugPrintPacket();
+                            //tpacket.debugPrintPacket();
                             client.queuePacket(tpacket);
                             
                             inn.addActorToZone(player.getActor());
 
-                            client.queuePacket(reply8);
+                            BasePacket innSpawn = inn.getSpawnPackets(player.actorID);
+                            BasePacket debugSpawn = debug.getSpawnPackets(player.actorID);
+                            BasePacket worldMasterSpawn = worldMaster.getSpawnPackets(player.actorID);
+                            innSpawn.debugPrintPacket();
+
+                            client.queuePacket(innSpawn);
+                            client.queuePacket(debugSpawn);
+                            client.queuePacket(worldMasterSpawn);
+
                             client.queuePacket(reply9);
                             client.queuePacket(reply10);
                             client.queuePacket(reply11);
