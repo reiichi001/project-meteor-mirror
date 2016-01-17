@@ -14,6 +14,7 @@ using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Map_Server;
+using FFXIVClassic_Map_Server.common.EfficientHashTables;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -143,7 +144,7 @@ namespace FFXIVClassic_Lobby_Server
                             player.oldPositionZ = player.positionZ = reader.GetFloat(3);
                             player.oldRotation = player.rotation = reader.GetFloat(4);
                             player.currentMainState = reader.GetUInt16(5);
-                            player.currentZoneId = reader.GetUInt32(6);
+                            player.zoneId = reader.GetUInt32(6);
                             player.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte(7);
                             player.gcCurrent = reader.GetByte(8);
                             player.gcRankLimsa = reader.GetByte(9);
@@ -542,16 +543,15 @@ namespace FFXIVClassic_Lobby_Server
             return cheevosPacket.buildPacket(player.actorId);
         }
 
-        public static List<Zone> loadZones()
+        public static void loadZones(Efficient32bitHashTable<Zone> zoneList)
         {
-            List<Zone> zones = new List<Zone>();
+            int count = 0;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
                 {
                     conn.Open();
 
-                    //Load Last 5 Completed
                     string query = @"
                                     SELECT 
                                     id,
@@ -563,7 +563,7 @@ namespace FFXIVClassic_Lobby_Server
                                     isInn,
                                     canRideChocobo,
                                     canStealth,
-                                    isInstanceRaid,
+                                    isInstanceRaid
                                     FROM server_zones 
                                     WHERE zoneName IS NOT NULL";
 
@@ -573,7 +573,8 @@ namespace FFXIVClassic_Lobby_Server
                     {                        
                         while (reader.Read()) {
                             Zone zone = new Zone(reader.GetUInt32(0), reader.GetString(2), reader.GetUInt16(1), reader.GetUInt16(3), reader.GetUInt16(4), reader.GetUInt16(5), reader.GetBoolean(6), reader.GetBoolean(7), reader.GetBoolean(8), reader.GetBoolean(9));
-                            zones.Add(zone);
+                            zoneList.Add(zone.actorId, zone);
+                            count++;
                         }
                     }
                 }
@@ -585,7 +586,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
             }
 
-            return zones;
+            Log.info(String.Format("Loaded {0} zones.", count));
         }
 
     }

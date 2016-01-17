@@ -20,9 +20,9 @@ namespace FFXIVClassic_Map_Server.actors.director
             this.weatherId = weatherId;
 
             this.displayNameId = 0;
-            this.customDisplayName = String.Format("weatherDire_{0}", zone.zoneName, zone.currentZoneId);
+            this.customDisplayName = String.Format("weatherDire_{0}", zone.zoneName, zone.actorId);
 
-            this.actorName = String.Format("weatherDire_{0}@{0:04x}", zone.zoneName, zone.currentZoneId);
+            this.actorName = String.Format("weatherDire_{0}@{0:04x}", zone.zoneName, zone.actorId);
             this.className = "Debug";
         }
 

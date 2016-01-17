@@ -75,6 +75,7 @@
     <Compile Include="ClientConnection.cs" />
     <Compile Include="common\Bitfield.cs" />
     <Compile Include="common\Blowfish.cs" />
+    <Compile Include="common\EfficientHashTables.cs" />
     <Compile Include="common\Log.cs" />
     <Compile Include="common\STA_INIFile.cs" />
     <Compile Include="common\Utils.cs" />

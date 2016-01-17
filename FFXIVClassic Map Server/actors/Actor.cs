@@ -28,8 +28,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public float oldPositionX, oldPositionY, oldPositionZ, oldRotation;
         public ushort moveState, oldMoveState;
 
-        public uint currentZoneId;
-
+        public uint zoneId;
+        public Zone zone = null;
         public bool isZoning = false;
 
         public bool spawnedFirstTime = false;

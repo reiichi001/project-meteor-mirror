@@ -36,6 +36,7 @@ using FFXIVClassic_Map_Server.actors;
 using System.Net;
 using FFXIVClassic_Map_Server.actors.debug;
 using FFXIVClassic_Map_Server.actors.world;
+using FFXIVClassic_Map_Server.common.EfficientHashTables;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -50,14 +51,14 @@ namespace FFXIVClassic_Lobby_Server
         DebugProg debug = new DebugProg();
         WorldMaster worldMaster = new WorldMaster();
 
-        List<Zone> zoneList;
+        Efficient32bitHashTable<Zone> zoneList = new Efficient32bitHashTable<Zone>();
 
         public PacketProcessor(Dictionary<uint, ConnectedPlayer> playerList, List<ClientConnection> connectionList)
         {
             mPlayers = playerList;
             mConnections = connectionList;
 
-            zoneList = Database.loadZones();
+            Database.loadZones(zoneList);
         }     
 
         public void processPacket(ClientConnection client, BasePacket packet)
@@ -188,7 +189,10 @@ namespace FFXIVClassic_Lobby_Server
                             client.queuePacket(BasePacket.createPacket(PongPacket.buildPacket(player.actorID, pingPacket.time), true, false));
                             break;
                         //Unknown
-                        case 0x0002:                          
+                        case 0x0002:
+
+                            player.getActor().zone = zoneList.Get(player.getActor().zoneId);
+
                             BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin"); //Bed, Book created
                             BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door created
                             BasePacket reply11 = new BasePacket("./packets/login/login11.bin"); //NPC Create ??? Final init
@@ -297,10 +301,10 @@ namespace FFXIVClassic_Lobby_Server
                             BasePacket tpacket = player.getActor().getInitPackets(player.actorID);
                             //tpacket.debugPrintPacket();
                             client.queuePacket(tpacket);
-                            
-                            inn.addActorToZone(player.getActor());
 
-                            BasePacket innSpawn = inn.getSpawnPackets(player.actorID);
+                            player.getActor().zone.addActorToZone(player.getActor());
+
+                            BasePacket innSpawn = player.getActor().zone.getSpawnPackets(player.actorID);
                             BasePacket debugSpawn = debug.getSpawnPackets(player.actorID);
                             BasePacket worldMasterSpawn = worldMaster.getSpawnPackets(player.actorID);
                             innSpawn.debugPrintPacket();
@@ -328,9 +332,9 @@ namespace FFXIVClassic_Lobby_Server
                             //Update Position
                             UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
                             player.updatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
-
+                            
                             //Update Instance
-                            List<BasePacket> instanceUpdatePackets = player.updateInstance(inn.getActorsAroundActor(player.getActor(), 50));
+                            List<BasePacket> instanceUpdatePackets = player.updateInstance(player.getActor().zone.getActorsAroundActor(player.getActor(), 50));
                             foreach (BasePacket bp in instanceUpdatePackets)
                                 client.queuePacket(bp);
 
@@ -519,10 +523,12 @@ namespace FFXIVClassic_Lobby_Server
         */
         private void initNpcs()
         {
+            /*
             List<Npc> npcList = Database.getNpcList();
             foreach (Npc npc in npcList)
                 inn.addActorToZone(npc);
             Log.info(String.Format("Loaded {0} npcs...", npcList.Count));
+             * */
         }
 
         private void loadTest(ClientConnection client, ConnectedPlayer player)
