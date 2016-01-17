@@ -25,7 +25,8 @@ namespace FFXIVClassic_Map_Server
         private int halfWidth, halfHeight;
         private List<Actor>[,] actorBlock;
 
-        public Zone(uint id, string zoneName, ushort regionId, bool canStealth, bool isInn, bool canRideChocobo, bool isInstanceRaid) : base(id)
+        public Zone(uint id, string zoneName, ushort regionId, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool canStealth, bool isInn, bool canRideChocobo, bool isInstanceRaid)
+            : base(id)
         {
 
             this.zoneName = zoneName;
@@ -34,6 +35,10 @@ namespace FFXIVClassic_Map_Server
             this.isInn = isInn;
             this.canRideChocobo = canRideChocobo;
             this.isInstanceRaid = isInstanceRaid;
+
+            this.bgmDay = bgmDay;
+            this.bgmNight = bgmNight;
+            this.bgmBattle = bgmBattle;
 
             this.displayNameId = 0;
             this.customDisplayName = "_areaMaster";

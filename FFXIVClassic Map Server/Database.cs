@@ -13,12 +13,14 @@ using FFXIVClassic_Map_Server.utils;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Lobby_Server.dataobjects;
+using FFXIVClassic_Map_Server;
 
 namespace FFXIVClassic_Lobby_Server
 {
 
     class Database
     {
+
         public static uint getUserIdFromSession(String sessionId)
         {
             uint id = 0;
@@ -538,6 +540,52 @@ namespace FFXIVClassic_Lobby_Server
             }
 
             return cheevosPacket.buildPacket(player.actorId);
+        }
+
+        public static List<Zone> loadZones()
+        {
+            List<Zone> zones = new List<Zone>();
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    //Load Last 5 Completed
+                    string query = @"
+                                    SELECT 
+                                    id,
+                                    regionId,
+                                    zoneName,
+                                    dayMusic,
+                                    nightMusic,
+                                    battleMusic,
+                                    isInn,
+                                    canRideChocobo,
+                                    canStealth,
+                                    isInstanceRaid,
+                                    FROM server_zones 
+                                    WHERE zoneName IS NOT NULL";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {                        
+                        while (reader.Read()) {
+                            Zone zone = new Zone(reader.GetUInt32(0), reader.GetString(2), reader.GetUInt16(1), reader.GetUInt16(3), reader.GetUInt16(4), reader.GetUInt16(5), reader.GetBoolean(6), reader.GetBoolean(7), reader.GetBoolean(8), reader.GetBoolean(9));
+                            zones.Add(zone);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            return zones;
         }
 
     }

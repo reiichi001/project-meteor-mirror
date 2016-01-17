@@ -49,13 +49,15 @@ namespace FFXIVClassic_Lobby_Server
 
         DebugProg debug = new DebugProg();
         WorldMaster worldMaster = new WorldMaster();
-        Zone inn = new Zone(0xF4, "prv0Inn01", 0xD1, false, false, false, false);
+
+        List<Zone> zoneList;
 
         public PacketProcessor(Dictionary<uint, ConnectedPlayer> playerList, List<ClientConnection> connectionList)
         {
             mPlayers = playerList;
             mConnections = connectionList;
-           // initNpcs();
+
+            zoneList = Database.loadZones();
         }     
 
         public void processPacket(ClientConnection client, BasePacket packet)
