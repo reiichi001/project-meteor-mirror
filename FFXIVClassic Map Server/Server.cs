@@ -226,13 +226,16 @@ namespace FFXIVClassic_Lobby_Server
 
         public void testCodePacket(uint id, uint value, string target)
         {
-            SetActorPropetyPacket changeProperty = new SetActorPropetyPacket();
-            changeProperty.addInt(id, value);
+            SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(target);
+
             changeProperty.setTarget(target);
+            changeProperty.addInt(id, value);
+            changeProperty.addTarget();
 
             foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
             {
                 SubPacket changePropertyPacket = changeProperty.buildPacket((entry.Value.actorID), (entry.Value.actorID));
+                
                 BasePacket packet = BasePacket.createPacket(changePropertyPacket, true, false);
                 packet.debugPrintPacket();
                 if (entry.Value.getConnection1() != null)
@@ -250,7 +253,7 @@ namespace FFXIVClassic_Lobby_Server
         {
             foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
             {
-                SetActorPropetyPacket changeProperty = new SetActorPropetyPacket();
+                SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(target);
                 changeProperty.addProperty(entry.Value.getActor(), name);
                 changeProperty.addProperty(entry.Value.getActor(), "charaWork.parameterSave.hpMax[0]");
                 changeProperty.setTarget(target);
@@ -261,6 +264,14 @@ namespace FFXIVClassic_Lobby_Server
                 entry.Value.getConnection1().queuePacket(packet);
                 entry.Value.getConnection2().queuePacket(packet);
             }
+        }
+
+        public void doWarp(String map, String x, String y, String z)
+        {
+            if (map.ToLower().StartsWith("0x"))
+                mProcessor.doWarp(Convert.ToUInt32(map, 16), Single.Parse(x), Single.Parse(y), Single.Parse(z));
+            else
+                mProcessor.doWarp(Convert.ToUInt32(map), Single.Parse(x), Single.Parse(y), Single.Parse(z));
         }
 
     }

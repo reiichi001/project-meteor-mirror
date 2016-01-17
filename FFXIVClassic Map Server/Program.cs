@@ -6,8 +6,8 @@ using FFXIVClassic_Lobby_Server.common;
 using System.Runtime.InteropServices;
 using MySql.Data.MySqlClient;
 using System.Reflection;
-using FFXIVClassic_Lobby_Server.dataobjects;
 using System.IO;
+using FFXIVClassic_Lobby_Server.dataobjects;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -85,6 +85,10 @@ namespace FFXIVClassic_Lobby_Server
                             {
                                 Log.error("Could not load packet: " + e);
                             }
+                        }
+                        else if (split[0].Equals("warp"))
+                        {
+                            server.doWarp(split[1], split[2], split[3], split[4]);
                         }
                         else if (split[0].Equals("property"))
                         {

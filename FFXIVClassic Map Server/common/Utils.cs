@@ -67,6 +67,14 @@ namespace FFXIVClassic_Lobby_Server.common
             return unixTimeStamp;
         }
 
+        public static uint swapEndian(uint input)
+        {
+            return ((input >> 24) & 0xff) | 
+                    ((input << 8) & 0xff0000) | 
+                    ((input >> 8) & 0xff00) | 
+                    ((input << 24) & 0xff000000); 
+        }
+
         public static uint MurmurHash2(string key, uint seed)
         {
 	        // 'm' and 'r' are mixing constants generated offline.

@@ -22,14 +22,17 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         private byte[] data = new byte[PACKET_SIZE - 0x20];
         private bool isMore = false;
 
+        string currentTarget;
+
         private MemoryStream mem;
         private BinaryWriter binWriter;
 
-        public SetActorPropetyPacket()
+        public SetActorPropetyPacket(string startingTarget)
         {
             mem = new MemoryStream(data);
             binWriter = new BinaryWriter(mem);
             binWriter.Seek(1, SeekOrigin.Begin);
+            currentTarget = startingTarget;
         }
 
         public void closeStreams()
@@ -40,7 +43,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         public bool addByte(uint id, byte value)
         {
-            if (runningByteTotal + 6 > MAXBYTES)
+            if (runningByteTotal + 6 + (1 + Encoding.ASCII.GetByteCount(currentTarget)) > MAXBYTES)
                 return false;
 
             binWriter.Write((byte)1);
@@ -53,7 +56,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         public bool addShort(uint id, ushort value)
         {
-            if (runningByteTotal + 7 > MAXBYTES)
+            if (runningByteTotal + 7 + (1 + Encoding.ASCII.GetByteCount(currentTarget)) > MAXBYTES)
                 return false;
 
             binWriter.Write((byte)2);
@@ -66,7 +69,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         public bool addInt(uint id, uint value)
         {
-            if (runningByteTotal + 9 > MAXBYTES)
+            if (runningByteTotal + 9 + (1 + Encoding.ASCII.GetByteCount(currentTarget)) > MAXBYTES)
                 return false;
 
             binWriter.Write((byte)4);
@@ -79,7 +82,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         public bool addBuffer(uint id, byte[] buffer)
         {
-            if (runningByteTotal + 5 + buffer.Length  > MAXBYTES)
+            if (runningByteTotal + 5 + buffer.Length + (1 + Encoding.ASCII.GetByteCount(currentTarget)) > MAXBYTES)
                 return false;
 
             binWriter.Write((byte)buffer.Length);
@@ -90,13 +93,13 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             return true;
         }
 
-        public void addProperty(FFXIVClassic_Map_Server.dataobjects.Actor actor, string name)
+        public bool addProperty(FFXIVClassic_Map_Server.dataobjects.Actor actor, string name)
         {
             string[] split = name.Split('.');
             int arrayIndex = 0;
 
             if (!(split[0].Equals("work") || split[0].Equals("charaWork") || split[0].Equals("playerWork") || split[0].Equals("npcWork")))
-                return;
+                return false;
 
             Object curObj = actor;
             for (int i = 0; i < split.Length; i++)
@@ -105,54 +108,54 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
                 if (split[i].Contains('['))
                 {
                     if (split[i].LastIndexOf(']') - split[i].IndexOf('[') <= 0)
-                        return;
+                        return false;
 
-                    arrayIndex = Convert.ToInt32(split[i].Substring(split[i].IndexOf('[') + 1, split[i].Length - split[i].LastIndexOf(']')));
+                    arrayIndex = Convert.ToInt32(split[i].Substring(split[i].IndexOf('[') + 1, split[i].LastIndexOf(']') - split[i].LastIndexOf('[')-1));
                     split[i] = split[i].Substring(0, split[i].IndexOf('['));
                 }
 
                 FieldInfo field = curObj.GetType().GetField(split[i]);
                 if (field == null)
-                    return;
+                    return false;
 
                 curObj = field.GetValue(curObj);
                 if (curObj == null)
-                    return;
+                    return false;
             }
 
             if (curObj == null)
-                return;
+                return false;
             else
             {
                 //Array, we actually care whats inside
                 if (curObj.GetType().IsArray)
                 {
                     if (((Array)curObj).Length <= arrayIndex)
-                        return;
+                        return false;
                     curObj = ((Array)curObj).GetValue(arrayIndex);
                 }
 
                 if (curObj == null)
-                    return;
+                    return false;
 
                 //Cast to the proper object and add to packet
                 uint id = Utils.MurmurHash2(name, 0);
                 if (curObj is bool)                
-                    addByte(id, (byte)(((bool)curObj) ? 1 : 0));
+                    return addByte(id, (byte)(((bool)curObj) ? 1 : 0));
                 else if (curObj is byte)
-                    addByte(id, (byte)curObj);
+                    return addByte(id, (byte)curObj);
                 else if (curObj is ushort)
-                    addShort(id, (ushort)curObj);
-                else if (curObj is short)                
-                    addShort(id, (ushort)(short)curObj);
+                    return addShort(id, (ushort)curObj);
+                else if (curObj is short)
+                    return addShort(id, (ushort)(short)curObj);
                 else if (curObj is uint)
-                    addInt(id, (uint)curObj);
-                else if (curObj is int)                                    
-                    addInt(id, (uint)(int)curObj);
+                    return addInt(id, (uint)curObj);
+                else if (curObj is int)
+                    return addInt(id, (uint)(int)curObj);
                 else if (curObj is float)
-                    addBuffer(id, BitConverter.GetBytes((float)curObj));
+                    return addBuffer(id, BitConverter.GetBytes((float)curObj));
                 else
-                    return;
+                    return false;
             }
         }
 
@@ -163,10 +166,22 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         public void setTarget(string target)
         {
-            binWriter.Write((byte)(isMore ? 0x62 + target.Length : 0x82 + target.Length));
-            binWriter.Write(Encoding.ASCII.GetBytes(target));
-            runningByteTotal += (ushort)(1 + Encoding.ASCII.GetByteCount(target));
+            currentTarget = target;
+        }
 
+        public void addTarget()
+        {
+            binWriter.Write((byte)(isMore ? 0x60 + currentTarget.Length : 0x82 + currentTarget.Length));
+            binWriter.Write(Encoding.ASCII.GetBytes(currentTarget));
+            runningByteTotal += (ushort)(1 + Encoding.ASCII.GetByteCount(currentTarget));
+        }
+
+        public void addTarget(string newTarget)
+        {
+            binWriter.Write((byte)(isMore ? 0x60 + currentTarget.Length : 0x82 + currentTarget.Length));
+            binWriter.Write(Encoding.ASCII.GetBytes(currentTarget));
+            runningByteTotal += (ushort)(1 + Encoding.ASCII.GetByteCount(currentTarget));
+            currentTarget = newTarget;
         }
 
         public SubPacket buildPacket(uint playerActorID, uint actorID)
@@ -176,7 +191,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             
             closeStreams();
 
-            SubPacket packet = new SubPacket(OPCODE, playerActorID, actorID, data);
+            SubPacket packet = new SubPacket(OPCODE, actorID, playerActorID, data);
             return packet;
         }       
     

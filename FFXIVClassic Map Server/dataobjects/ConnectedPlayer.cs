@@ -1,5 +1,4 @@
 ﻿using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.packets.send.actor;
@@ -14,8 +13,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
     class ConnectedPlayer
     {
         public uint actorID = 0;
-        PlayerActor playerActor;
-        List<Actor> actorInstanceList = new List<Actor>();
+        Player playerActor;
+        public List<Actor> actorInstanceList = new List<Actor>();
+
+        public uint eventCurrentOwner = 0;
+        public string eventCurrentStarter = "";
 
         ClientConnection conn1;
         ClientConnection conn2;
@@ -25,8 +27,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public ConnectedPlayer(uint actorId)
         {
             this.actorID = actorId;
-            DBCharacter chara = Database.getCharacter(actorId);
-            createPlayerActor(actorId, chara);
+            playerActor = new Player(actorId);
+            actorInstanceList.Add(playerActor);
         }
 
         public void addConnection(ClientConnection conn)
@@ -71,41 +73,41 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return conn2;
         }
 
-        public Actor getActor()
+        public void queuePacket(BasePacket basePacket)
+        {
+            conn1.queuePacket(basePacket);
+        }
+
+        public void queuePacket(SubPacket subPacket, bool isAuthed, bool isEncrypted)
+        {
+            conn1.queuePacket(subPacket, isAuthed, isEncrypted);
+        }
+
+        public Player getActor()
         {
             return playerActor;
         }
 
-        public void createPlayerActor(uint actorId, DBCharacter chara)
-        {
-            playerActor = new PlayerActor(actorId);
-
-            playerActor.displayNameID = 0xFFFFFFFF;
-            playerActor.customDisplayName = chara.name;
-            playerActor.setPlayerAppearance();
-            actorInstanceList.Add(playerActor);
-        }
-
         public void updatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
         {
+            /*
             playerActor.positionX = x;
             playerActor.positionY = y;
             playerActor.positionZ = z;
             playerActor.rotation = rot;
             playerActor.moveState = moveState;
+             */
         }            
 
         public void sendMotd()
         {
-            DBWorld world = Database.getServer(ConfigConstants.DATABASE_WORLDID);
-            //sendChat(world.motd);
+            
         }
 
         public void sendChat(ConnectedPlayer sender, string message, int mode)
         {
 
         }
-
 
         public List<BasePacket> updateInstance(List<Actor> list)
         {            
@@ -116,17 +118,17 @@ namespace FFXIVClassic_Map_Server.dataobjects
             {
                 Actor actor = list[i];
 
-                if (actor.actorID == playerActor.actorID)
+                if (actor.actorId == playerActor.actorId)
                     continue;
 
                 if (actorInstanceList.Contains(actor))
                 {
-                    posUpdateSubpackets.Add(actor.createPositionUpdatePacket(playerActor.actorID));
+                    posUpdateSubpackets.Add(actor.createPositionUpdatePacket(playerActor.actorId));
                 }
                 else
                 {
-                    BasePacket p = actor.createActorSpawnPackets(playerActor.actorID);
-                    p.replaceActorID(0x29b27d3, playerActor.actorID);
+                    BasePacket p = actor.getInitPackets(playerActor.actorId);
+                    p.replaceActorID(playerActor.actorId);
                     basePackets.Add(p);
                     actorInstanceList.Add(actor);
                 }
@@ -137,5 +139,6 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
             return basePackets;
         }
+
     }
 }
