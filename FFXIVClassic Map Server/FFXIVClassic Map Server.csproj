@@ -213,6 +213,7 @@
     <Compile Include="utils\CharacterUtils.cs" />
     <Compile Include="utils\SQLGeneration.cs" />
     <Compile Include="actors\area\Zone.cs" />
+    <Compile Include="WorldManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

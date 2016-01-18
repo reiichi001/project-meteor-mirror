@@ -2,6 +2,7 @@
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.lua;
+using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.utils;
@@ -354,6 +355,27 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             propPacketUtil.addProperty("playerWork.initialTown");
             
             return propPacketUtil.done();
+        }
+
+        public void sendZoneInPackets(WorldManager world)
+        {
+            ClientConnection client;
+            client.queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId), true, false);
+            //client.queuePacket(_0x2Packet.buildPacket(player.actorID), true, false);
+            client.queuePacket(SetMusicPacket.buildPacket(actorId, 0x3D, 0x01), true, false);
+            client.queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR), true, false);
+
+            client.queuePacket(getSpawnPackets(actorId));
+            client.queuePacket(getInitPackets(actorId));
+
+
+
+            BasePacket innSpawn = zone.getSpawnPackets(actorId);
+            BasePacket debugSpawn = world.GetDebugActor().getSpawnPackets(actorId);
+            BasePacket worldMasterSpawn = world.GetActor().getSpawnPackets(actorId);           
+            client.queuePacket(innSpawn);
+            client.queuePacket(debugSpawn);
+            client.queuePacket(worldMasterSpawn);
         }
 
         public bool isMyPlayer(uint otherActorId)

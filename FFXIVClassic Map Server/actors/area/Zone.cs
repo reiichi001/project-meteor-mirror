@@ -1,6 +1,7 @@
 ﻿using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.dataobjects;
+using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
@@ -23,7 +24,9 @@ namespace FFXIVClassic_Map_Server
         public int minX = -100, minY = -100, maxX = 100, maxY = 100;
         private int numXBlocks, numYBlocks;
         private int halfWidth, halfHeight;
-        private List<Actor>[,] actorBlock;
+
+        private Dictionary<uint, Actor> mActorList = new Dictionary<uint,Actor>();
+        private List<Actor>[,] mActorBlock;
 
         public Zone(uint id, string zoneName, ushort regionId, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool canStealth, bool isInn, bool canRideChocobo, bool isInstanceRaid)
             : base(id)
@@ -48,7 +51,7 @@ namespace FFXIVClassic_Map_Server
 
             numXBlocks = (maxX - minX) / boundingGridSize;
             numYBlocks = (maxY - minY) / boundingGridSize;
-            actorBlock = new List<Actor>[numXBlocks, numYBlocks];
+            mActorBlock = new List<Actor>[numXBlocks, numYBlocks];
             halfWidth = numXBlocks / 2;
             halfHeight = numYBlocks / 2;
 
@@ -56,7 +59,7 @@ namespace FFXIVClassic_Map_Server
             {
                 for (int x = 0; x < numXBlocks; x++ )
                 {
-                    actorBlock[x, y] = new List<Actor>();
+                    mActorBlock[x, y] = new List<Actor>();
                 }
             }
                 
@@ -86,6 +89,8 @@ namespace FFXIVClassic_Map_Server
 
         public void addActorToZone(Actor actor)
         {
+            mActorList.Add(actor.actorId, actor);
+
             int gridX = (int)actor.positionX / boundingGridSize;
             int gridY = (int)actor.positionZ / boundingGridSize;
 
@@ -102,12 +107,14 @@ namespace FFXIVClassic_Map_Server
             if (gridY >= numYBlocks)
                 gridY = numYBlocks - 1;
 
-            lock (actorBlock)
-                actorBlock[gridX, gridY].Add(actor);
+            lock (mActorBlock)
+                mActorBlock[gridX, gridY].Add(actor);
         }
 
         public void removeActorToZone(Actor actor)
         {
+            mActorList.Remove(actor.actorId);
+
             int gridX = (int)actor.positionX / boundingGridSize;
             int gridY = (int)actor.positionZ / boundingGridSize;
 
@@ -124,8 +131,8 @@ namespace FFXIVClassic_Map_Server
             if (gridY >= numYBlocks)
                 gridY = numYBlocks - 1;
 
-            lock (actorBlock)
-                actorBlock[gridX, gridY].Remove(actor);
+            lock (mActorBlock)
+                mActorBlock[gridX, gridY].Remove(actor);
         }
 
         public void updateActorPosition(Actor actor)
@@ -166,10 +173,10 @@ namespace FFXIVClassic_Map_Server
             if (gridX == gridOldX && gridY == gridOldY)
                 return;
 
-            lock (actorBlock)
-                actorBlock[gridOldX, gridOldY].Remove(actor);
-            lock (actorBlock)
-                actorBlock[gridX, gridY].Add(actor);
+            lock (mActorBlock)
+                mActorBlock[gridOldX, gridOldY].Remove(actor);
+            lock (mActorBlock)
+                mActorBlock[gridX, gridY].Add(actor);
         }
 
         public List<Actor> getActorsAroundPoint(float x, float y, int checkDistance)
@@ -196,7 +203,7 @@ namespace FFXIVClassic_Map_Server
             {
                 for (int gy = gridY - checkDistance; gy <= gridY + checkDistance; gy++)
                 {
-                    result.AddRange(actorBlock[gx, gy]);
+                    result.AddRange(mActorBlock[gx, gy]);
                 }
             }
 
@@ -219,7 +226,7 @@ namespace FFXIVClassic_Map_Server
             {
                 for (int gx = ((gridX - checkDistance) < 0 ? 0 : (gridX - checkDistance)); gx <= ((gridX + checkDistance) >= numXBlocks ? numXBlocks - 1 : (gridX + checkDistance)); gx++)
                 {
-                    result.AddRange(actorBlock[gx, gy]);
+                    result.AddRange(mActorBlock[gx, gy]);
                 }
             }
 
@@ -227,5 +234,26 @@ namespace FFXIVClassic_Map_Server
         }
 
         #endregion
+
+        public Player FindPCInZone(string name)
+        {
+            foreach (Actor a in mActorList.Values)
+            {
+                if (a is Player)
+                {
+                    if (((Player)a).customDisplayName.Equals(name))
+                        return (Player)a;
+                }
+            }
+            return null;
+        }
+
+        public Player FindPCInZone(uint id)
+        {
+            if (!mActorList.ContainsKey(id))
+                return null;
+            return (Player)mActorList[id];
+        }
+
     }
 }

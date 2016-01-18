@@ -11,6 +11,8 @@ using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
 using System.IO;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server;
+using FFXIVClassic_Map_Server.actors;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -24,6 +26,8 @@ namespace FFXIVClassic_Lobby_Server
 
         private Dictionary<uint,ConnectedPlayer> mConnectedPlayerList = new Dictionary<uint,ConnectedPlayer>();
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
+        private WorldManager mWorldManager;
+        private StaticActors mStaticActors = new StaticActors();
         private PacketProcessor mProcessor;
         private Thread mProcessorThread;
         private Thread mGameThread;
@@ -31,6 +35,9 @@ namespace FFXIVClassic_Lobby_Server
         #region Socket Handling
         public bool startServer()
         {
+            mWorldManager = new WorldManager();
+            mWorldManager.LoadZoneList();
+
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), FFXIV_MAP_PORT);
 
             try{
@@ -63,7 +70,7 @@ namespace FFXIVClassic_Lobby_Server
             Console.WriteLine("{0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
             Console.ForegroundColor = ConsoleColor.Gray;
 
-            mProcessor = new PacketProcessor(mConnectedPlayerList, mConnectionList);
+            mProcessor = new PacketProcessor(this, mConnectedPlayerList, mConnectionList);
 
             //mGameThread = new Thread(new ThreadStart(mProcessor.update));
             //mGameThread.Start();
@@ -274,5 +281,11 @@ namespace FFXIVClassic_Lobby_Server
                 mProcessor.doWarp(Convert.ToUInt32(map), Single.Parse(x), Single.Parse(y), Single.Parse(z));
         }
 
+        public WorldManager GetWorldManager()
+        {
+            return mWorldManager;
+        }
+
     }
+
 }

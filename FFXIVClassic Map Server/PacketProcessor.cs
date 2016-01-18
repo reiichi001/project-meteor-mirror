@@ -42,23 +42,16 @@ namespace FFXIVClassic_Lobby_Server
 {
     class PacketProcessor
     {
+        Server mServer;
         LuaEngine luaEngine = new LuaEngine();
         Dictionary<uint, ConnectedPlayer> mPlayers;
         List<ClientConnection> mConnections;
 
-        StaticActors mStaticActors = new StaticActors();
-
-        DebugProg debug = new DebugProg();
-        WorldMaster worldMaster = new WorldMaster();
-
-        Efficient32bitHashTable<Zone> zoneList = new Efficient32bitHashTable<Zone>();
-
-        public PacketProcessor(Dictionary<uint, ConnectedPlayer> playerList, List<ClientConnection> connectionList)
+        public PacketProcessor(Server server, Dictionary<uint, ConnectedPlayer> playerList, List<ClientConnection> connectionList)
         {
             mPlayers = playerList;
             mConnections = connectionList;
-
-            Database.loadZones(zoneList);
+            mServer = server;
         }     
 
         public void processPacket(ClientConnection client, BasePacket packet)
@@ -191,7 +184,7 @@ namespace FFXIVClassic_Lobby_Server
                         //Unknown
                         case 0x0002:
 
-                            player.getActor().zone = zoneList.Get(player.getActor().zoneId);
+                            player.getActor().zone = mServer.GetWorldManager().GetZone(player.getActor().zoneId);
 
                             BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin"); //Bed, Book created
                             BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door created
@@ -305,8 +298,8 @@ namespace FFXIVClassic_Lobby_Server
                             player.getActor().zone.addActorToZone(player.getActor());
 
                             BasePacket innSpawn = player.getActor().zone.getSpawnPackets(player.actorID);
-                            BasePacket debugSpawn = debug.getSpawnPackets(player.actorID);
-                            BasePacket worldMasterSpawn = worldMaster.getSpawnPackets(player.actorID);
+                            BasePacket debugSpawn = mServer.GetWorldManager().GetDebugActor().getSpawnPackets(player.actorID);
+                            BasePacket worldMasterSpawn = mServer.GetWorldManager().GetActor().getSpawnPackets(player.actorID);
                             innSpawn.debugPrintPacket();
 
                             client.queuePacket(innSpawn);
