@@ -23,6 +23,13 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<uint, Zone> zoneList;
         private Dictionary<uint, ZoneEntrance> zoneEntranceList;
 
+        private Server mServer;
+
+        public WorldManager(Server server)
+        {
+            mServer = server;
+        }
+
         public void LoadZoneList()
         {
             zoneList = new Dictionary<uint, Zone>();
@@ -138,7 +145,7 @@ namespace FFXIVClassic_Map_Server
         }
 
         //Moves actor to new zone, and sends packets to spawn at the given zone entrance
-        public void DoTeleportZoneChange(Player player, uint destinationZoneId, uint zoneEntrance)
+        public void DoZoneChange(Player player, uint destinationZoneId, uint zoneEntrance)
         {
             if (!zoneEntranceList.ContainsKey(zoneEntrance))
             {
@@ -147,11 +154,11 @@ namespace FFXIVClassic_Map_Server
             }
 
             ZoneEntrance ze = zoneEntranceList[zoneEntrance];
-            DoTeleportZoneChange(player, destinationZoneId, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
+            DoZoneChange(player, destinationZoneId, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
         }
 
         //Moves actor to new zone, and sends packets to spawn at the given coords.
-        public void DoTeleportZoneChange(Player player, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
+        public void DoZoneChange(Player player, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
         {
             Zone oldZone;
 
@@ -181,6 +188,24 @@ namespace FFXIVClassic_Map_Server
 
             //Send packets
             player.sendZoneInPackets(this);               
+        }
+
+        //Login Zone In
+        public void DoLogin(Player player)
+        {
+            //Add player to new zone and update
+            Zone zone = GetZone(player.zoneId);
+
+            //This server does not contain that zoneId
+            if (zone == null)
+                return;
+
+            //Set the current zone and add player
+            player.zone = zone;
+            zone.addActorToZone(player);
+
+            //Send packets
+            player.sendZoneInPackets(this);  
         }
 
         public Player GetPCInWorld(string name)

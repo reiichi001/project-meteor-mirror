@@ -4,6 +4,8 @@ using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
+using FFXIVClassic_Map_Server.packets.send.list;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.utils;
 using MySql.Data.MySqlClient;
@@ -363,12 +365,94 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             client.queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId), true, false);
             //client.queuePacket(_0x2Packet.buildPacket(player.actorID), true, false);
             client.queuePacket(SetMusicPacket.buildPacket(actorId, 0x3D, 0x01), true, false);
-            client.queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR), true, false);
+            client.queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR), true, false);       
 
             client.queuePacket(getSpawnPackets(actorId));
+
+            #region grouptest
+            //Retainers
+            List<ListEntry> retainerListEntries = new List<ListEntry>();
+            retainerListEntries.Add(new ListEntry(actorId, 0xFFFFFFFF, 0x139E, false, true, customDisplayName));
+            retainerListEntries.Add(new ListEntry(0x23, 0x0, 0xFFFFFFFF, false, false, "TEST1"));
+            retainerListEntries.Add(new ListEntry(0x24, 0x0, 0xFFFFFFFF, false, false, "TEST2"));
+            retainerListEntries.Add(new ListEntry(0x25, 0x0, 0xFFFFFFFF, false, false, "TEST3"));
+            BasePacket retainerListPacket = BasePacket.createPacket(ListUtils.createRetainerList(actorId, 0xF4, 1, 0x800000000004e639, retainerListEntries), true, false);
+            client.queuePacket(retainerListPacket);
+
+            //Party
+            List<ListEntry> partyListEntries = new List<ListEntry>();
+            partyListEntries.Add(new ListEntry(actorId, 0xFFFFFFFF, 0xFFFFFFFF, false, true, customDisplayName));
+            partyListEntries.Add(new ListEntry(0x029B27D3, 0xFFFFFFFF, 0x195, false, true, "Valentine Bluefeather"));
+            BasePacket partyListPacket = BasePacket.createPacket(ListUtils.createPartyList(actorId, 0xF4, 1, 0x8000000000696df2, partyListEntries), true, false);
+            client.queuePacket(partyListPacket);
+            #endregion
+
+            #region itemsetup
+            ////////ITEMS////////
+            client.queuePacket(InventoryBeginChangePacket.buildPacket(actorId), true, false);
+
+
+            //TEST
+            List<Item> items = new List<Item>();
+            items.Add(new Item(1337, 8030920, 5)); //Leather Jacket
+            items.Add(new Item(1338, 8013626, 1)); //Chocobo Mask
+            items.Add(new Item(1339, 5030402, 2)); //Thyrus
+            items.Add(new Item(1340, 8013635, 3)); //Dalamud Horn
+            items.Add(new Item(1341, 10100132, 4)); //Savage Might 4
+            items.Add(new Item(1342, 8032407, 6)); //Green Summer Halter (Female)
+            items.Add(new Item(1343, 8051307, 7)); //Green Summer Tanga (Female)
+            items.Add(new Item(1344, 8050766, 8)); //Flame Private's Saroul
+
+            int count = 0;
+
+            items[2].isHighQuality = true;
+            items[0].durability = 9999;
+            items[0].spiritbind = 10000;
+            items[0].materia1 = 6;
+            items[0].materia2 = 7;
+            items[0].materia3 = 8;
+            items[0].materia4 = 9;
+            items[0].materia5 = 10;
+            items[1].durability = 9999;
+            items[2].durability = 0xFFFFFFF;
+            items[3].durability = 9999;
+            items[4].quantity = 99;
+
+            //Reused
+            SubPacket endInventory = InventorySetEndPacket.buildPacket(actorId);
+            SubPacket beginInventory = InventorySetBeginPacket.buildPacket(actorId, 200, 00);
+            SubPacket setInventory = InventoryItemPacket.buildPacket(actorId, items, ref count);
+
+            List<SubPacket> setinvPackets = new List<SubPacket>();
+            setinvPackets.Add(beginInventory);
+            setinvPackets.Add(setInventory);
+            setinvPackets.Add(endInventory);
+
+            //client.queuePacket(currancy);
+            //client.queuePacket(keyitems);
+
+            #endregion
+            #region equipsetup
+            client.queuePacket(BasePacket.createPacket(setinvPackets, true, false));
+            EquipmentSetupPacket initialEqupmentPacket = new EquipmentSetupPacket();
+            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_BODY, 5);
+            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_HEAD, 3);
+            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_UNDERSHIRT, 6);
+            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_UNDERGARMENT, 7);
+            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_MAINHAND, 2);
+            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_LEGS, 8);
+
+            //Equip Init
+            client.queuePacket(InventorySetBeginPacket.buildPacket(actorId, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false);
+            client.queuePacket(BasePacket.createPacket(initialEqupmentPacket.buildPackets(actorId), true, false));
+            client.queuePacket(InventorySetEndPacket.buildPacket(actorId), true, false);
+
+            client.queuePacket(InventoryEndChangePacket.buildPacket(actorId), true, false);
+            ////////ITEMS//////// 
+
+            #endregion
+
             client.queuePacket(getInitPackets(actorId));
-
-
 
             BasePacket innSpawn = zone.getSpawnPackets(actorId);
             BasePacket debugSpawn = world.GetDebugActor().getSpawnPackets(actorId);
@@ -376,6 +460,19 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             client.queuePacket(innSpawn);
             client.queuePacket(debugSpawn);
             client.queuePacket(worldMasterSpawn);
+
+            #region hardcode
+            BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin"); //Bed, Book created
+            BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door created
+            BasePacket reply11 = new BasePacket("./packets/login/login11.bin"); //NPC Create ??? Final init
+            reply9.replaceActorID(actorId);
+            reply10.replaceActorID(actorId);
+            reply11.replaceActorID(actorId);
+            client.queuePacket(reply9);
+            client.queuePacket(reply10);
+            client.queuePacket(reply11);
+            #endregion
+            
         }
 
         public bool isMyPlayer(uint otherActorId)
