@@ -60,7 +60,7 @@ namespace FFXIVClassic_Lobby_Server
             if (client.owner != 0 && mPlayers.ContainsKey(client.owner))
                 player = mPlayers[client.owner];
             
-            if (packet.header.isEncrypted == 0x01)                       
+            if (packet.header.isCompressed == 0x01)                       
                 BasePacket.decryptPacket(client.blowfish, ref packet);
 
           // packet.debugPrintPacket();
