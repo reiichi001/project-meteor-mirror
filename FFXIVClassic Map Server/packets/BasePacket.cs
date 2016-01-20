@@ -10,18 +10,22 @@ using System.IO;
 
 namespace FFXIVClassic_Lobby_Server.packets
 {    
+   
     [StructLayout(LayoutKind.Sequential)]
     public struct BasePacketHeader
     {
         public byte         isAuthenticated;
         public byte         isCompressed;
-        public ushort       reserved;
+        public ushort       connectionType;
         public ushort       packetSize;
         public ushort       numSubpackets;
         public ulong        timestamp; //Miliseconds
     }
 
     public class BasePacket{
+
+        public const int TYPE_ZONE = 1;
+        public const int TYPE_CHAT = 2;
         public const int BASEPACKET_SIZE = 0x10;
 
         public BasePacketHeader header;

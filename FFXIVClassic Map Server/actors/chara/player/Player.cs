@@ -6,6 +6,7 @@ using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.list;
+using FFXIVClassic_Map_Server.packets.send.login;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.utils;
 using MySql.Data.MySqlClient;
@@ -61,8 +62,11 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 
         public PlayerWork playerWork = new PlayerWork();
 
-        public Player(uint actorID) : base(actorID)
+        public ConnectedPlayer playerSession;
+
+        public Player(ConnectedPlayer cp, uint actorID) : base(actorID)
         {
+            playerSession = cp;
             actorName = String.Format("_pc{0:00000000}", actorID);
             className = "Player";
             currentSubState = SetActorStatePacket.SUB_STATE_PLAYER;
@@ -360,14 +364,13 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
         }
 
         public void sendZoneInPackets(WorldManager world)
-        {
-            ClientConnection client;
-            client.queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId), true, false);
-            //client.queuePacket(_0x2Packet.buildPacket(player.actorID), true, false);
-            client.queuePacket(SetMusicPacket.buildPacket(actorId, 0x3D, 0x01), true, false);
-            client.queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR), true, false);       
+        {            
+            playerSession.queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId), true, false);
+            playerSession.queuePacket(_0x2Packet.buildPacket(actorId), true, false);
+            playerSession.queuePacket(SetMusicPacket.buildPacket(actorId, 0x3D, 0x01), true, false);
+            playerSession.queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR), true, false);
 
-            client.queuePacket(getSpawnPackets(actorId));
+            playerSession.queuePacket(getSpawnPackets(actorId));
 
             #region grouptest
             //Retainers
@@ -377,19 +380,19 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             retainerListEntries.Add(new ListEntry(0x24, 0x0, 0xFFFFFFFF, false, false, "TEST2"));
             retainerListEntries.Add(new ListEntry(0x25, 0x0, 0xFFFFFFFF, false, false, "TEST3"));
             BasePacket retainerListPacket = BasePacket.createPacket(ListUtils.createRetainerList(actorId, 0xF4, 1, 0x800000000004e639, retainerListEntries), true, false);
-            client.queuePacket(retainerListPacket);
+            playerSession.queuePacket(retainerListPacket);
 
             //Party
             List<ListEntry> partyListEntries = new List<ListEntry>();
             partyListEntries.Add(new ListEntry(actorId, 0xFFFFFFFF, 0xFFFFFFFF, false, true, customDisplayName));
             partyListEntries.Add(new ListEntry(0x029B27D3, 0xFFFFFFFF, 0x195, false, true, "Valentine Bluefeather"));
             BasePacket partyListPacket = BasePacket.createPacket(ListUtils.createPartyList(actorId, 0xF4, 1, 0x8000000000696df2, partyListEntries), true, false);
-            client.queuePacket(partyListPacket);
+            playerSession.queuePacket(partyListPacket);
             #endregion
 
             #region itemsetup
             ////////ITEMS////////
-            client.queuePacket(InventoryBeginChangePacket.buildPacket(actorId), true, false);
+            playerSession.queuePacket(InventoryBeginChangePacket.buildPacket(actorId), true, false);
 
 
             //TEST
@@ -433,7 +436,7 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
 
             #endregion
             #region equipsetup
-            client.queuePacket(BasePacket.createPacket(setinvPackets, true, false));
+            playerSession.queuePacket(BasePacket.createPacket(setinvPackets, true, false));
             EquipmentSetupPacket initialEqupmentPacket = new EquipmentSetupPacket();
             initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_BODY, 5);
             initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_HEAD, 3);
@@ -443,23 +446,23 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_LEGS, 8);
 
             //Equip Init
-            client.queuePacket(InventorySetBeginPacket.buildPacket(actorId, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false);
-            client.queuePacket(BasePacket.createPacket(initialEqupmentPacket.buildPackets(actorId), true, false));
-            client.queuePacket(InventorySetEndPacket.buildPacket(actorId), true, false);
+            playerSession.queuePacket(InventorySetBeginPacket.buildPacket(actorId, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false);
+            playerSession.queuePacket(BasePacket.createPacket(initialEqupmentPacket.buildPackets(actorId), true, false));
+            playerSession.queuePacket(InventorySetEndPacket.buildPacket(actorId), true, false);
 
-            client.queuePacket(InventoryEndChangePacket.buildPacket(actorId), true, false);
+            playerSession.queuePacket(InventoryEndChangePacket.buildPacket(actorId), true, false);
             ////////ITEMS//////// 
 
             #endregion
 
-            client.queuePacket(getInitPackets(actorId));
+            playerSession.queuePacket(getInitPackets(actorId));
 
             BasePacket innSpawn = zone.getSpawnPackets(actorId);
             BasePacket debugSpawn = world.GetDebugActor().getSpawnPackets(actorId);
-            BasePacket worldMasterSpawn = world.GetActor().getSpawnPackets(actorId);           
-            client.queuePacket(innSpawn);
-            client.queuePacket(debugSpawn);
-            client.queuePacket(worldMasterSpawn);
+            BasePacket worldMasterSpawn = world.GetActor().getSpawnPackets(actorId);
+            playerSession.queuePacket(innSpawn);
+            playerSession.queuePacket(debugSpawn);
+            playerSession.queuePacket(worldMasterSpawn);
 
             #region hardcode
             BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin"); //Bed, Book created
@@ -468,9 +471,9 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             reply9.replaceActorID(actorId);
             reply10.replaceActorID(actorId);
             reply11.replaceActorID(actorId);
-            client.queuePacket(reply9);
-            client.queuePacket(reply10);
-            client.queuePacket(reply11);
+            playerSession.queuePacket(reply9);
+            playerSession.queuePacket(reply10);
+            playerSession.queuePacket(reply11);
             #endregion
             
         }

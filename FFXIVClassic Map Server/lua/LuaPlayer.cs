@@ -62,12 +62,12 @@ namespace FFXIVClassic_Map_Server.lua
         public void runEvent(string functionName, params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
-            player.getConnection1().queuePacket(RunEventFunctionPacket.buildPacket(player.actorID, player.eventCurrentOwner, player.eventCurrentStarter, functionName, lParams), true, false);
+            player.queuePacket(RunEventFunctionPacket.buildPacket(player.actorID, player.eventCurrentOwner, player.eventCurrentStarter, functionName, lParams), true, false);
         }
 
         public void endEvent()
         {
-            player.getConnection1().queuePacket(EndEventPacket.buildPacket(player.actorID, player.eventCurrentOwner, player.eventCurrentStarter), true, false);
+            player.queuePacket(EndEventPacket.buildPacket(player.actorID, player.eventCurrentOwner, player.eventCurrentStarter), true, false);
         }
 
     }

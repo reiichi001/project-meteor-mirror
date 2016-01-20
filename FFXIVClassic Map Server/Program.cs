@@ -74,19 +74,23 @@ namespace FFXIVClassic_Lobby_Server
                     String input = Console.ReadLine();
                     String[] split = input.Split(' ');
 
-                    if (split.Length >= 3)
+                    if (split.Length >= 2)
                     {
                         if (split[0].Equals("sendpacket"))
                         {
-                            try{
-                                server.sendPacket("./packets/" + split[1], Int32.Parse(split[2]));
+                            try
+                            {
+                                server.sendPacket("./packets/" + split[1]);
                             }
                             catch (Exception e)
                             {
                                 Log.error("Could not load packet: " + e);
                             }
                         }
-                        else if (split[0].Equals("warp"))
+                    }
+                    else if (split.Length >= 3)
+                    {                        
+                        if (split[0].Equals("warp"))
                         {
                             server.doWarp(split[1], split[2], split[3], split[4]);
                         }

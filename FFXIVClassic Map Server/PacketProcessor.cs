@@ -55,11 +55,7 @@ namespace FFXIVClassic_Lobby_Server
         }     
 
         public void processPacket(ClientConnection client, BasePacket packet)
-        {
-            ConnectedPlayer player = null;
-            if (client.owner != 0 && mPlayers.ContainsKey(client.owner))
-                player = mPlayers[client.owner];
-            
+        {                      
             if (packet.header.isCompressed == 0x01)                       
                 BasePacket.decryptPacket(client.blowfish, ref packet);
 
@@ -80,6 +76,7 @@ namespace FFXIVClassic_Lobby_Server
                     BasePacket reply1 = new BasePacket(reply1Data);
                     BasePacket reply2 = new BasePacket("./packets/login/login2.bin");
 
+                    //Write Timestamp into Reply1
                     using (MemoryStream mem = new MemoryStream(reply1.data))
                     {
                         using (BinaryWriter binReader = new BinaryWriter(mem))
@@ -87,25 +84,9 @@ namespace FFXIVClassic_Lobby_Server
                             binReader.BaseStream.Seek(0x14, SeekOrigin.Begin);
                             binReader.Write((UInt32)Utils.UnixTimeStampUTC());
                         }
-                    }
+                    }                   
 
-                    //Already Handshaked
-                    if (client.owner != 0)
-                    {
-                        using (MemoryStream mem = new MemoryStream(reply2.data))
-                        {
-                            using (BinaryWriter binReader = new BinaryWriter(mem))
-                            {
-                                binReader.BaseStream.Seek(0x10, SeekOrigin.Begin);
-                                binReader.Write(player.actorID);
-                            }
-                        }                        
-
-                        client.queuePacket(reply1);
-                        client.queuePacket(reply2);
-                        break;
-                    }
-
+                    //Read in Actor Id that owns this connection
                     uint actorID = 0;
                     using (MemoryStream mem = new MemoryStream(packet.data))
                     {
@@ -123,9 +104,13 @@ namespace FFXIVClassic_Lobby_Server
                         }
                     }
 
+                    //Should never happen.... unless actor id IS 0!
                     if (actorID == 0)
                         break;
+
+                    client.owner = actorID;
                   
+                    //Write Actor ID into reply2
                     using (MemoryStream mem = new MemoryStream(reply2.data))
                     {
                         using (BinaryWriter binReader = new BinaryWriter(mem))
@@ -135,23 +120,29 @@ namespace FFXIVClassic_Lobby_Server
                         }
                     }
 
-                    if (((IPEndPoint)client.socket.LocalEndPoint).Port == 54992)
+                    ConnectedPlayer player = null;
+
+                    if (packet.header.connectionType == BasePacket.TYPE_ZONE)
                     {
-                        player = new ConnectedPlayer(actorID);
-                        mPlayers[actorID] = player;
-                        client.owner = actorID;
-                        client.connType = 0;
-                        player.setConnection1(client);
-                        Log.debug(String.Format("Got actorID {0} for conn {1}.", actorID, client.getAddress()));
-                    }
-                    else
-                    {
-                        client.owner = actorID;
-                        client.connType = 1;
-                        player.setConnection2(client);
+                        while (!mPlayers.ContainsKey(client.owner))
+                        { }
+                        player = mPlayers[client.owner];
                     }
 
-                    //Get Character info
+                    //Create connected player if not created
+                    if (player == null)
+                    { 
+                        player = new ConnectedPlayer(actorID);
+                        mPlayers[actorID] = player;
+                    }
+                    
+                    player.setConnection(packet.header.connectionType, client);
+
+                    if (packet.header.connectionType == BasePacket.TYPE_ZONE)
+                        Log.debug(String.Format("Got {0} connection for ActorID {1} @ {2}.", "zone", actorID, client.getAddress()));
+                    else if (packet.header.connectionType == BasePacket.TYPE_CHAT)
+                        Log.debug(String.Format("Got {0} connection for ActorID {1} @ {2}.", "chat", actorID, client.getAddress()));
+
                     //Create player actor
                     reply1.debugPrintPacket();
                     client.queuePacket(reply1);
@@ -172,6 +163,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 else if (subpacket.header.type == 0x03)
                 {
+                    ConnectedPlayer player = mPlayers[client.owner];
+
                     //Normal Game Opcode
                     switch (subpacket.gameMessage.opcode)
                     {
@@ -357,17 +350,14 @@ namespace FFXIVClassic_Lobby_Server
             }
         }        
 
-        public void sendPacket(string path, int conn)
+        public void sendPacket(string path)
         {
             BasePacket packet = new BasePacket(path);
 
             foreach (KeyValuePair<uint, ConnectedPlayer> entry in mPlayers)
             {                
                 packet.replaceActorID(entry.Value.actorID);
-                if (conn == 1 || conn == 3)
-                    entry.Value.getConnection1().queuePacket(packet);
-                if (conn == 2 || conn == 3)
-                    entry.Value.getConnection2().queuePacket(packet);
+                entry.Value.queuePacket(packet);
             }
         }        
 
@@ -438,10 +428,8 @@ namespace FFXIVClassic_Lobby_Server
                 packet.replaceActorID(entry.Value.actorID);
                 actorPacket.replaceActorID(entry.Value.actorID);
 
-                entry.Value.getConnection1().queuePacket(packet);
-                entry.Value.getConnection1().queuePacket(actorPacket);
-
-
+                entry.Value.queuePacket(packet);
+                entry.Value.queuePacket(actorPacket);                
             }
         }
         

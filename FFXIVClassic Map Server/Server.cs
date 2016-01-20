@@ -35,7 +35,7 @@ namespace FFXIVClassic_Lobby_Server
         #region Socket Handling
         public bool startServer()
         {
-            mWorldManager = new WorldManager();
+            mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneList();
 
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), FFXIV_MAP_PORT);
@@ -226,9 +226,9 @@ namespace FFXIVClassic_Lobby_Server
 
         #endregion
 
-        public void sendPacket(string path, int conn)
+        public void sendPacket(string path)
         {
-            mProcessor.sendPacket(path, conn);
+            mProcessor.sendPacket(path);
         }
 
         public void testCodePacket(uint id, uint value, string target)
@@ -245,14 +245,8 @@ namespace FFXIVClassic_Lobby_Server
                 
                 BasePacket packet = BasePacket.createPacket(changePropertyPacket, true, false);
                 packet.debugPrintPacket();
-                if (entry.Value.getConnection1() != null)
-                    entry.Value.getConnection1().queuePacket(packet);
-                else
-                    Log.error("Connection was null");
-                if (entry.Value.getConnection2() != null)
-                    entry.Value.getConnection2().queuePacket(packet);
-                else
-                    Log.error("Connection was null");
+
+                entry.Value.queuePacket(packet);               
             }
         }
 
@@ -268,8 +262,7 @@ namespace FFXIVClassic_Lobby_Server
                 SubPacket changePropertyPacket = changeProperty.buildPacket((entry.Value.actorID), (entry.Value.actorID));
                 BasePacket packet = BasePacket.createPacket(changePropertyPacket, true, false);
                 packet.debugPrintPacket();
-                entry.Value.getConnection1().queuePacket(packet);
-                entry.Value.getConnection2().queuePacket(packet);
+                entry.Value.queuePacket(packet);
             }
         }
 
