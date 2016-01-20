@@ -69,7 +69,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         {
             SubPacket spawnPacket;
             if (!spawnedFirstTime && playerActorId == actorId)
-                spawnPacket = SetActorPositionPacket.buildPacket(actorId, playerActorId, 0, positionX, positionY, positionZ, rotation, spawnType, false);
+                spawnPacket = SetActorPositionPacket.buildPacket(actorId, playerActorId, 0, positionX, positionY, positionZ, rotation, 0x1, false);
             else if (playerActorId == actorId)
                 spawnPacket = SetActorPositionPacket.buildPacket(actorId, playerActorId, 0xFFFFFFFF, positionX, positionY, positionZ, rotation, spawnType, true);
             else
@@ -102,10 +102,15 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public virtual BasePacket getSpawnPackets(uint playerActorId)
         {
+            return getSpawnPackets(playerActorId, 0x1);
+        }
+
+        public virtual BasePacket getSpawnPackets(uint playerActorId, uint spawnType)
+        {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(createAddActorPacket(playerActorId));
             subpackets.Add(createSpeedPacket(playerActorId));
-            subpackets.Add(createSpawnPositonPacket(playerActorId, 0x1));            
+            subpackets.Add(createSpawnPositonPacket(playerActorId, spawnType));            
             subpackets.Add(createNamePacket(playerActorId));
             subpackets.Add(createStatePacket(playerActorId));
             subpackets.Add(createIsZoneingPacket(playerActorId));

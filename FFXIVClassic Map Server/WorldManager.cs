@@ -7,6 +7,7 @@ using FFXIVClassic_Map_Server.common.EfficientHashTables;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.packets.send;
+using FFXIVClassic_Map_Server.packets.send.login;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -187,7 +188,8 @@ namespace FFXIVClassic_Map_Server
             player.rotation = spawnRotation;
 
             //Send packets
-            player.sendZoneInPackets(this);               
+            player.playerSession.queuePacket(_0xE2Packet.buildPacket(0x6c, 0xF), true, false);
+            player.sendZoneInPackets(this, spawnType);
         }
 
         //Login Zone In
@@ -205,7 +207,8 @@ namespace FFXIVClassic_Map_Server
             zone.addActorToZone(player);
 
             //Send packets
-            player.sendZoneInPackets(this);  
+            player.playerSession.queuePacket(_0x2Packet.buildPacket(player.actorId), true, false);
+            player.sendZoneInPackets(this, 0x1);  
         }
 
         public Player GetPCInWorld(string name)
@@ -265,6 +268,13 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public ZoneEntrance getZoneEntrance(uint entranceId)
+        {
+            if (zoneEntranceList.ContainsKey(entranceId))
+                return zoneEntranceList[entranceId];
+            else
+                return null;
+        }
     }
 
 }

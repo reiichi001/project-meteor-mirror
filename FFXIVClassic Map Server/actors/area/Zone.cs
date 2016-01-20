@@ -89,7 +89,8 @@ namespace FFXIVClassic_Map_Server
 
         public void addActorToZone(Actor actor)
         {
-            mActorList.Add(actor.actorId, actor);
+            if (!mActorList.ContainsKey(actor.actorId))
+                mActorList.Add(actor.actorId, actor);
 
             int gridX = (int)actor.positionX / boundingGridSize;
             int gridY = (int)actor.positionZ / boundingGridSize;

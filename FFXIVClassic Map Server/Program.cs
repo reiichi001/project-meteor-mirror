@@ -74,6 +74,20 @@ namespace FFXIVClassic_Lobby_Server
                     String input = Console.ReadLine();
                     String[] split = input.Split(' ');
 
+                    if (split.Length >= 1)
+                    {
+                        if (split[0].Equals("mypos"))
+                        {
+                            try
+                            {
+                                server.printPos();                                
+                            }
+                            catch (Exception e)
+                            {
+                                Log.error("Could not load packet: " + e);
+                            }
+                        }
+                    }
                     if (split.Length >= 2)
                     {
                         if (split[0].Equals("sendpacket"))
@@ -97,6 +111,10 @@ namespace FFXIVClassic_Lobby_Server
                             {
                                 Log.error("Could not change music: " + e);
                             }
+                        }
+                        else if (split[0].Equals("warp"))
+                        {
+                            server.doWarp(split[1]);
                         }
                     }
                     if (split.Length >= 3)

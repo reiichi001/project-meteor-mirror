@@ -145,14 +145,14 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
         }        
 
-        public override BasePacket getSpawnPackets(uint playerActorId)
+        public override BasePacket getSpawnPackets(uint playerActorId, uint spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(createAddActorPacket(playerActorId));
             if (isMyPlayer(playerActorId))
                 subpackets.AddRange(create0x132Packets(playerActorId));
             subpackets.Add(createSpeedPacket(playerActorId));
-            subpackets.Add(createSpawnPositonPacket(playerActorId, 0x1));
+            subpackets.Add(createSpawnPositonPacket(playerActorId, spawnType));
             subpackets.Add(createAppearancePacket(playerActorId));
             subpackets.Add(createNamePacket(playerActorId));
             subpackets.Add(_0xFPacket.buildPacket(playerActorId, playerActorId));
@@ -363,14 +363,13 @@ namespace FFXIVClassic_Map_Server.dataobjects.chara
             return propPacketUtil.done();
         }
 
-        public void sendZoneInPackets(WorldManager world)
+        public void sendZoneInPackets(WorldManager world, ushort spawnType)
         {            
-            playerSession.queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId), true, false);
-            playerSession.queuePacket(_0x2Packet.buildPacket(actorId), true, false);
-            playerSession.queuePacket(SetMusicPacket.buildPacket(actorId, 0x3D, 0x01), true, false);
+            playerSession.queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId), true, false);            
+            playerSession.queuePacket(SetMusicPacket.buildPacket(actorId, zone.bgmDay, 0x01), true, false);
             playerSession.queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR), true, false);
 
-            playerSession.queuePacket(getSpawnPackets(actorId));
+            playerSession.queuePacket(getSpawnPackets(actorId, spawnType));
 
             #region grouptest
             //Retainers

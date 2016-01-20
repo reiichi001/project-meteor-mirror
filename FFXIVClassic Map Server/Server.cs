@@ -14,6 +14,7 @@ using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server;
 using FFXIVClassic_Map_Server.actors;
 using FFXIVClassic_Map_Server.packets.send;
+using FFXIVClassic_Map_Server.dataobjects.chara;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -38,6 +39,7 @@ namespace FFXIVClassic_Lobby_Server
         {
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneList();
+            mWorldManager.LoadZoneEntranceList();
 
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), FFXIV_MAP_PORT);
 
@@ -283,6 +285,26 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
+        public void doWarp(string entranceId)
+        {
+            uint id;
+
+            if (entranceId.ToLower().StartsWith("0x"))
+                id = Convert.ToUInt32(entranceId, 16);
+            else
+                id = Convert.ToUInt32(entranceId);
+
+            FFXIVClassic_Map_Server.WorldManager.ZoneEntrance ze = mWorldManager.getZoneEntrance(id);
+
+            if (ze == null)
+                return;
+
+            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+            {
+                mWorldManager.DoZoneChange(entry.Value.getActor(), ze.zoneId, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, 0.0f);
+            }
+        }
+
         public void doWarp(string map, string sx, string sy, string sz)
         {
             uint mapId;
@@ -299,8 +321,6 @@ namespace FFXIVClassic_Lobby_Server
             
             foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
             {
-                BasePacket e2Packet = BasePacket.createPacket(_0xE2Packet.buildPacket(0x6c, 0xF), true, false); 
-                entry.Value.queuePacket(e2Packet);
                 mWorldManager.DoZoneChange(entry.Value.getActor(), mapId, 0x2, x, y, z, 0.0f);
             }
         }
@@ -310,6 +330,15 @@ namespace FFXIVClassic_Lobby_Server
             return mWorldManager;
         }
 
+
+        public void printPos()
+        {
+            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+            {
+                Player p = entry.Value.getActor();
+                Log.info(String.Format("{0} position: {1}, {2}, {3}, {4}", p.customDisplayName, p.positionX, p.positionY, p.positionZ, p.rotation));
+            }
+        }
     }
 
 }
