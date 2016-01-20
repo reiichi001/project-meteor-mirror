@@ -13,6 +13,7 @@ using System.IO;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server;
 using FFXIVClassic_Map_Server.actors;
+using FFXIVClassic_Map_Server.packets.send;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -266,12 +267,42 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public void doWarp(String map, String x, String y, String z)
+        public void doMusic(string music)
         {
-            if (map.ToLower().StartsWith("0x"))
-                mProcessor.doWarp(Convert.ToUInt32(map, 16), Single.Parse(x), Single.Parse(y), Single.Parse(z));
+            ushort musicId;
+            
+            if (music.ToLower().StartsWith("0x"))
+                musicId = Convert.ToUInt16(music, 16);
             else
-                mProcessor.doWarp(Convert.ToUInt32(map), Single.Parse(x), Single.Parse(y), Single.Parse(z));
+                musicId = Convert.ToUInt16(music);
+
+            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+            {
+                BasePacket musicPacket = BasePacket.createPacket(SetMusicPacket.buildPacket(entry.Value.actorID, musicId, 1), true, false);                
+                entry.Value.queuePacket(musicPacket);
+            }
+        }
+
+        public void doWarp(string map, string sx, string sy, string sz)
+        {
+            uint mapId;
+            float x,y,z;
+
+            if (map.ToLower().StartsWith("0x"))
+                mapId = Convert.ToUInt32(map, 16);
+            else
+                mapId = Convert.ToUInt32(map);
+            
+            x = Single.Parse(sx);
+            y = Single.Parse(sy);
+            z = Single.Parse(sz);
+            
+            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+            {
+                BasePacket e2Packet = BasePacket.createPacket(_0xE2Packet.buildPacket(0x6c, 0xF), true, false); 
+                entry.Value.queuePacket(e2Packet);
+                mWorldManager.DoZoneChange(entry.Value.getActor(), mapId, 0x2, x, y, z, 0.0f);
+            }
         }
 
         public WorldManager GetWorldManager()

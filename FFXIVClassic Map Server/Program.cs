@@ -87,8 +87,19 @@ namespace FFXIVClassic_Lobby_Server
                                 Log.error("Could not load packet: " + e);
                             }
                         }
+                        else if (split[0].Equals("music"))
+                        {
+                            try
+                            {
+                                server.doMusic(split[1]);
+                            }
+                            catch (Exception e)
+                            {
+                                Log.error("Could not change music: " + e);
+                            }
+                        }
                     }
-                    else if (split.Length >= 3)
+                    if (split.Length >= 3)
                     {                        
                         if (split[0].Equals("warp"))
                         {
