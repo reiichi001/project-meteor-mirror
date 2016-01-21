@@ -12,7 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace FFXIVClassic_Map_Server.dataobjects
+namespace FFXIVClassic_Map_Server.Actors
 {
     class Actor
     {        
@@ -121,6 +121,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public virtual BasePacket getInitPackets(uint playerActorId)
         {
             SetActorPropetyPacket initProperties = new SetActorPropetyPacket("/_init");
+            initProperties.addByte(0xE14B0CA8, 1);
+            initProperties.addByte(0x2138FD71, 1);
+            initProperties.addByte(0xFBFBCFB1, 1);
             initProperties.addTarget();
             return BasePacket.createPacket(initProperties.buildPacket(playerActorId, actorId), true, false);
         }

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server.actors.judge
+namespace FFXIVClassic_Map_Server.Actors
 {
     class Judge : Actor
     {

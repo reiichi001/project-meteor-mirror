@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server.actors.world
+namespace FFXIVClassic_Map_Server.Actors
 {
     class WorldMaster : Actor
     {

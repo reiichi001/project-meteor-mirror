@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server
+namespace FFXIVClassic_Map_Server.Actors
 {
     class Zone : Actor
     {
@@ -21,7 +21,7 @@ namespace FFXIVClassic_Map_Server
         public ushort bgmDay, bgmNight, bgmBattle;
         
         public int boundingGridSize = 50;
-        public int minX = -100, minY = -100, maxX = 100, maxY = 100;
+        public int minX = -1000, minY = -1000, maxX = 1000, maxY = 1000;
         private int numXBlocks, numYBlocks;
         private int halfWidth, halfHeight;
 
@@ -182,6 +182,8 @@ namespace FFXIVClassic_Map_Server
 
         public List<Actor> getActorsAroundPoint(float x, float y, int checkDistance)
         {
+            checkDistance /= boundingGridSize;
+
             int gridX = (int)x/boundingGridSize;
             int gridY = (int)y/boundingGridSize;
 
@@ -213,13 +215,23 @@ namespace FFXIVClassic_Map_Server
 
         public List<Actor> getActorsAroundActor(Actor actor, int checkDistance)
         {
+            checkDistance /= boundingGridSize;
+
             int gridX = (int)actor.positionX / boundingGridSize;
             int gridY = (int)actor.positionZ / boundingGridSize;
 
             gridX += halfWidth;
             gridY += halfHeight;
 
-
+            //Boundries
+            if (gridX < 0)
+                gridX = 0;
+            if (gridX >= numXBlocks)
+                gridX = numXBlocks - 1;
+            if (gridY < 0)
+                gridY = 0;
+            if (gridY >= numYBlocks)
+                gridY = numYBlocks - 1;
 
             List<Actor> result = new List<Actor>();
 

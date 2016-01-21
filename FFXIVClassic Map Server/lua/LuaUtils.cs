@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
 using System;

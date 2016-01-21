@@ -12,9 +12,9 @@ using FFXIVClassic_Lobby_Server.packets;
 using System.IO;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server;
-using FFXIVClassic_Map_Server.actors;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.dataobjects.chara;
+using FFXIVClassic_Map_Server.Actors;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -40,6 +40,7 @@ namespace FFXIVClassic_Lobby_Server
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneList();
             mWorldManager.LoadZoneEntranceList();
+            mWorldManager.LoadNPCs();
 
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), FFXIV_MAP_PORT);
 
@@ -250,22 +251,6 @@ namespace FFXIVClassic_Lobby_Server
                 packet.debugPrintPacket();
 
                 entry.Value.queuePacket(packet);               
-            }
-        }
-
-        public void testCodePacket2(string name, string target)
-        {
-            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-            {
-                SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(target);
-                changeProperty.addProperty(entry.Value.getActor(), name);
-                changeProperty.addProperty(entry.Value.getActor(), "charaWork.parameterSave.hpMax[0]");
-                changeProperty.setTarget(target);
-
-                SubPacket changePropertyPacket = changeProperty.buildPacket((entry.Value.actorID), (entry.Value.actorID));
-                BasePacket packet = BasePacket.createPacket(changePropertyPacket, true, false);
-                packet.debugPrintPacket();
-                entry.Value.queuePacket(packet);
             }
         }
 

@@ -93,7 +93,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             return true;
         }
 
-        public bool addProperty(FFXIVClassic_Map_Server.dataobjects.Actor actor, string name)
+        public bool addProperty(FFXIVClassic_Map_Server.Actors.Actor actor, string name)
         {
             string[] split = name.Split('.');
             int arrayIndex = 0;

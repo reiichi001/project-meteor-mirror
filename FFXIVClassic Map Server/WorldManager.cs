@@ -1,8 +1,6 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Map_Server.actors;
-using FFXIVClassic_Map_Server.actors.debug;
-using FFXIVClassic_Map_Server.actors.world;
+using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.common.EfficientHashTables;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.dataobjects.chara;
@@ -124,6 +122,61 @@ namespace FFXIVClassic_Map_Server
             Log.info(String.Format("Loaded {0} zone spawn locations.", count));
         }
 
+        public void LoadNPCs()
+        {            
+            int count = 0;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT 
+                                    id,
+                                    name,
+                                    zoneId,
+                                    actorTemplateId,
+                                    positionX,
+                                    positionY,
+                                    positionZ,
+                                    rotation,
+                                    actorState,
+                                    animationId,
+                                    actorClassName
+                                    FROM server_npclist
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            Npc npc = new Npc(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt32(2), reader.GetUInt32(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6), reader.GetFloat(7), reader.GetUInt16(8), reader.GetUInt32(9), reader.GetString(10));
+
+                            Zone zone = zoneList[npc.zoneId];
+                            if (zone == null)
+                                continue;
+                            npc.zone = zone;
+                            zone.addActorToZone(npc);
+                            count++;
+
+                        }
+                    }
+                   
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            Log.info(String.Format("Loaded {0} npc(s).", count));
+        }
+
         //Moves the actor to the new zone if exists. No packets are sent nor position changed.
         public void DoSeamlessZoneChange(Player player, uint destinationZoneId)
         {
@@ -235,6 +288,8 @@ namespace FFXIVClassic_Map_Server
 
         public Zone GetZone(uint zoneId)
         {
+            if (!zoneList.ContainsKey(zoneId))
+                return null;
             return zoneList[zoneId];
         }
 

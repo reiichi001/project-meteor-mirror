@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server.actors.debug
+namespace FFXIVClassic_Map_Server.Actors
 {
     class DebugProg : Actor
     {

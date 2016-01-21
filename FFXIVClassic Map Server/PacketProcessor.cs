@@ -30,12 +30,7 @@ using FFXIVClassic_Map_Server.packets.send.list;
 using FFXIVClassic_Map_Server.packets.receive.events;
 using FFXIVClassic_Map_Server.packets.send.events;
 using FFXIVClassic_Map_Server.lua;
-using FFXIVClassic_Map_Server.dataobjects.actors;
-using FFXIVClassic_Map_Server.dataobjects.chara.npc;
-using FFXIVClassic_Map_Server.actors;
 using System.Net;
-using FFXIVClassic_Map_Server.actors.debug;
-using FFXIVClassic_Map_Server.actors.world;
 using FFXIVClassic_Map_Server.common.EfficientHashTables;
 
 namespace FFXIVClassic_Lobby_Server
@@ -200,8 +195,10 @@ namespace FFXIVClassic_Lobby_Server
                             //Update Instance
                             List<BasePacket> instanceUpdatePackets = player.updateInstance(player.getActor().zone.getActorsAroundActor(player.getActor(), 50));
                             foreach (BasePacket bp in instanceUpdatePackets)
+                            {
+                            //    bp.debugPrintPacket();
                                 client.queuePacket(bp);
-
+                            }
                             break;
                         //Set Target 
                         case 0x00CD:

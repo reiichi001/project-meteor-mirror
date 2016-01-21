@@ -7,14 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Map_Server.dataobjects.chara.npc;
-using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.utils;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Map_Server;
 using FFXIVClassic_Map_Server.common.EfficientHashTables;
+using FFXIVClassic_Map_Server.Actors;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -458,6 +457,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Dispose();
                 }
             }
+
         }
 
         public static SubPacket getLatestAchievements(Player player)

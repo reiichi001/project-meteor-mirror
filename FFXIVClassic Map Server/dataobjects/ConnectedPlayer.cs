@@ -1,6 +1,6 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.packets;
-using FFXIVClassic_Map_Server.dataobjects.chara;
+using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
 using System.Collections.Generic;
@@ -110,9 +110,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 }
                 else
                 {
-                    BasePacket p = actor.getInitPackets(playerActor.actorId);
-                    p.replaceActorID(playerActor.actorId);
-                    basePackets.Add(p);
+                    basePackets.Add(actor.getSpawnPackets(playerActor.actorId, 1));
+                    basePackets.Add(actor.getInitPackets(playerActor.actorId));
                     actorInstanceList.Add(actor);
                 }
             }
