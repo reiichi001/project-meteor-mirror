@@ -38,7 +38,6 @@ namespace FFXIVClassic_Lobby_Server
     class PacketProcessor
     {
         Server mServer;
-        LuaEngine luaEngine = new LuaEngine();
         Dictionary<uint, ConnectedPlayer> mPlayers;
         List<ClientConnection> mConnections;
 
