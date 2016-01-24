@@ -25,16 +25,28 @@ namespace FFXIVClassic_Lobby_Server
         public const int BUFFER_SIZE        = 0x400;
         public const int BACKLOG            = 100;
 
+        private static Server mSelf;
+
         private Socket mServerSocket;
 
         private Dictionary<uint,ConnectedPlayer> mConnectedPlayerList = new Dictionary<uint,ConnectedPlayer>();
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
-        private LuaEngine luaEngine = new LuaEngine();
+        private LuaEngine mLuaEngine = new LuaEngine();
         private WorldManager mWorldManager;
         private StaticActors mStaticActors = new StaticActors();
         private PacketProcessor mProcessor;
         private Thread mProcessorThread;
         private Thread mGameThread;
+
+        public Server()
+        {
+            mSelf = this;
+        }
+
+        public static Server getServer()
+        {
+            return mSelf;
+        }
 
         #region Socket Handling
         public bool startServer()
@@ -351,6 +363,11 @@ namespace FFXIVClassic_Lobby_Server
                     mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, 0x2, x, y, z, 0.0f);
                 }
             }
+        }
+
+        public LuaEngine GetLuaEngine()
+        {
+            return mLuaEngine;
         }
 
         public WorldManager GetWorldManager()

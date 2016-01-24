@@ -248,6 +248,13 @@ namespace FFXIVClassic_Map_Server.Actors
 
         #endregion
 
+        public Actor FindActorInZone(uint id)
+        {
+            if (!mActorList.ContainsKey(id))
+                return null;
+            return mActorList[id];
+        }
+
         public Player FindPCInZone(string name)
         {
             foreach (Actor a in mActorList.Values)

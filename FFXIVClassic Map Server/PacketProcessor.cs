@@ -32,6 +32,7 @@ using FFXIVClassic_Map_Server.packets.send.events;
 using FFXIVClassic_Map_Server.lua;
 using System.Net;
 using FFXIVClassic_Map_Server.common.EfficientHashTables;
+using FFXIVClassic_Map_Server.Actors;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -223,12 +224,12 @@ namespace FFXIVClassic_Lobby_Server
                             player.eventCurrentStarter = eventStart.eventStarter;
 
                             //Is it a static actor? If not look in the player's instance
-                            //Actor ownerActor = findActor(player, player.eventCurrentOwner);
+                            Actor ownerActor = mServer.GetWorldManager().GetActorInWorld(player.eventCurrentOwner);
 
-                            //if (ownerActor == null)
-                              //  break;
+                            if (ownerActor == null)
+                              break;
 
-                            //luaEngine.doEventStart(player, ownerActor, eventStart);
+                            mServer.GetLuaEngine().doActorOnEventStarted(player.getActor(), ownerActor);
 
                             //Log.debug(String.Format("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.val1, eventStart.val2, eventStart.eventStarter, LuaParamReader.dumpParams(eventStart.luaParams)));
                             break;
@@ -238,12 +239,12 @@ namespace FFXIVClassic_Lobby_Server
                             EventUpdatePacket eventUpdate = new EventUpdatePacket(subpacket.data);
                             Log.debug(String.Format("\n===Event UPDATE===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nFunction ID: 0x{4:X}\nParams: {5}", eventUpdate.actorID, eventUpdate.scriptOwnerActorID, eventUpdate.val1, eventUpdate.val2, eventUpdate.step, LuaUtils.dumpParams(eventUpdate.luaParams)));
 
-                            /*Actor updateOwnerActor = findActor(player, player.eventCurrentOwner);
+                            Actor updateOwnerActor = mServer.GetWorldManager().GetActorInWorld(player.eventCurrentOwner);
                             if (updateOwnerActor == null)
                                 break;
 
-                            luaEngine.doEventUpdated(player, updateOwnerActor, eventUpdate);
-                            */
+                            mServer.GetLuaEngine().doActorOnEventUpdated(player.getActor(), updateOwnerActor, eventUpdate);
+                            
                             break;
                         case 0x012F:
                             subpacket.debugPrintSubPacket();

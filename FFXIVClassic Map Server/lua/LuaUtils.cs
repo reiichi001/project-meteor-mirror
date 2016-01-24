@@ -2,6 +2,7 @@
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
+using MoonSharp.Interpreter;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -190,6 +191,23 @@ namespace FFXIVClassic_Map_Server
             return luaParams;
         }
 
+        public static List<LuaParam> createLuaParamList(DynValue fromScript)
+        {
+            List<LuaParam> luaParams = new List<LuaParam>();
+
+            if (fromScript.Type == DataType.Tuple)
+            {
+                foreach (DynValue d in fromScript.Tuple)
+                {
+                    addToList(d, luaParams);
+                }
+            }
+            else
+                addToList(fromScript, luaParams);
+
+            return luaParams;
+        }
+
         public static List<LuaParam> createLuaParamList(params object[] list)
         {
             List<LuaParam> luaParams = new List<LuaParam>();
@@ -207,6 +225,37 @@ namespace FFXIVClassic_Map_Server
             }
 
             return luaParams;
+        }
+
+        private static void addToList(DynValue d, List<LuaParam> luaParams)
+        {
+            if (d.Type == DataType.Number)
+            {
+                luaParams.Add(new LuaParam(0x0, (uint)d.Number));
+            }
+            else if (d.Type == DataType.Number)
+            {
+                luaParams.Add(new LuaParam(0x0, (int)d.Number));
+            }
+            else if (d.Type == DataType.String)
+            {
+                luaParams.Add(new LuaParam(0x2, (string)d.String));
+            }
+            else if (d.Type == DataType.Boolean)
+            {
+                if (d.Boolean)
+                    luaParams.Add(new LuaParam(0x3, null));
+                else
+                    luaParams.Add(new LuaParam(0x4, null));
+            }
+            else if (d.Type == DataType.Nil)
+            {
+                luaParams.Add(new LuaParam(0x5, null));
+            }
+            else if (d.Type == DataType.Table)
+            {
+                //luaParams.Add(new LuaParam(0x6, ((Actor)o).actorId));
+            }
         }
 
         private static void addToList(object o, List<LuaParam> luaParams)

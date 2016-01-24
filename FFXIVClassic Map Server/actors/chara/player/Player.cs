@@ -7,6 +7,7 @@ using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
+using FFXIVClassic_Map_Server.packets.send.events;
 using FFXIVClassic_Map_Server.packets.send.list;
 using FFXIVClassic_Map_Server.packets.send.login;
 using FFXIVClassic_Map_Server.packets.send.player;
@@ -587,6 +588,44 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
             }
         }        
+
+        public void queuePacket(BasePacket packet)
+        {
+            playerSession.queuePacket(packet);
+        }
+
+        public void queuePacket(SubPacket packet)
+        {
+            playerSession.queuePacket(packet, true, false);
+        }
+
+        public void sendMessage(uint logType, string sender, string message)
+        {
+            queuePacket(SendMessagePacket.buildPacket(actorId, actorId, logType, sender, message));
+        }
+
+        public void logout()
+        {
+            queuePacket(LogoutPacket.buildPacket(actorId));
+        }
+
+        public void quitGame()
+        {
+            queuePacket(QuitPacket.buildPacket(actorId));
+        }
+
+        public void runEventFunction(string functionName, params object[] parameters)
+        {
+            List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
+            queuePacket(RunEventFunctionPacket.buildPacket(actorId, playerSession.eventCurrentOwner, playerSession.eventCurrentStarter, functionName, lParams));
+        }
+
+        public void endEvent()
+        {
+            SubPacket p = EndEventPacket.buildPacket(actorId, playerSession.eventCurrentOwner, playerSession.eventCurrentStarter);
+            p.debugPrintSubPacket();
+            queuePacket(p);
+        }
 
     }
 }

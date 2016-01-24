@@ -2,6 +2,7 @@
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.actors;
+using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.utils;
@@ -43,7 +44,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override SubPacket createScriptBindPacket(uint playerActorId)
         {
-            List<LuaParam> lParams = LuaUtils.createLuaParamList("/Chara/Npc/Populace/PopulaceStandard", false, false, false, false, false, 0xF47F6, false, false, 0, 1, "TEST");
+            List<LuaParam> lParams;
+
+            LuaEngine lua = Server.getServer().GetLuaEngine();
+            Player player = Server.getServer().GetWorldManager().GetPCInWorld(playerActorId);
+            lParams = lua.doActorOnInstantiate(player, this);
+
+            if (lParams == null)
+                lParams = LuaUtils.createLuaParamList("/Chara/Npc/Populace/PopulaceStandard", false, false, false, false, false, 0xF47F6, false, false, 0, 1, "TEST");
+
             return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
         }
 

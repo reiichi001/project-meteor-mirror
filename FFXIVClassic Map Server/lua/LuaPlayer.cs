@@ -1,7 +1,8 @@
-﻿using FFXIVClassic_Map_Server.dataobjects;
+﻿using FFXIVClassic_Map_Server.Actors;
+using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.events;
-using NLua;
+using MoonSharp.Interpreter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,23 +11,24 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.lua
 {
+    [MoonSharpUserData]
     class LuaPlayer
     {
-        private ConnectedPlayer player;
+        private Player player;
 
-        public LuaPlayer(ConnectedPlayer player)
+        public LuaPlayer(Player player)
         {
             this.player = player;
         }
 
         public void setMusic(ushort musicID, ushort playMode)
         {
-            player.queuePacket(SetMusicPacket.buildPacket(player.actorID, musicID, playMode), true, false);
+            player.playerSession.queuePacket(SetMusicPacket.buildPacket(player.actorId, musicID, playMode), true, false);
         }
 
         public void setWeather(uint weatherID)
         {
-            player.queuePacket(SetWeatherPacket.buildPacket(player.actorID, weatherID), true, false);
+            player.playerSession.queuePacket(SetWeatherPacket.buildPacket(player.actorId, weatherID), true, false);
         }
 
         public void getParameter(string paramName)
@@ -51,23 +53,23 @@ namespace FFXIVClassic_Map_Server.lua
 
         public void logout()
         {
-            player.queuePacket(LogoutPacket.buildPacket(player.actorID), true, false);
+            player.playerSession.queuePacket(LogoutPacket.buildPacket(player.actorId), true, false);
         }
 
         public void quitGame()
         {
-            player.queuePacket(QuitPacket.buildPacket(player.actorID), true, false);
+            player.playerSession.queuePacket(QuitPacket.buildPacket(player.actorId), true, false);
         }
 
         public void runEvent(string functionName, params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
-            player.queuePacket(RunEventFunctionPacket.buildPacket(player.actorID, player.eventCurrentOwner, player.eventCurrentStarter, functionName, lParams), true, false);
+        //    player.playerSession.queuePacket(RunEventFunctionPacket.buildPacket(player.actorId, player.eventCurrentOwner, player.eventCurrentStarter, functionName, lParams), true, false);
         }
 
         public void endEvent()
         {
-            player.queuePacket(EndEventPacket.buildPacket(player.actorID, player.eventCurrentOwner, player.eventCurrentStarter), true, false);
+          //  player.playerSession.queuePacket(EndEventPacket.buildPacket(player.actorId, player.eventCurrentOwner, player.eventCurrentStarter), true, false);
         }
 
     }

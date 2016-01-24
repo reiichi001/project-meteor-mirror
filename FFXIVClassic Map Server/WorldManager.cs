@@ -361,6 +361,17 @@ namespace FFXIVClassic_Map_Server
             return null;
         }
 
+        public Actor GetActorInWorld(uint charId)
+        {
+            foreach (Zone zone in zoneList.Values)
+            {
+                Actor a = zone.FindActorInZone(charId);
+                if (a != null)
+                    return a;
+            }
+            return null;
+        }
+
         public Player GetPCInWorld(uint charId)
         {
             foreach (Zone zone in zoneList.Values)

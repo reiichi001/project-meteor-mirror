@@ -23,8 +23,8 @@ namespace FFXIVClassic_Map_Server.packets.send.events
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
                     binWriter.Write((UInt32)playerActorID);
-                    binWriter.Write((UInt32)eventOwnerActorID);
-                    binWriter.Write((Byte)0);
+                    binWriter.Write((UInt32)0);
+                    binWriter.Write((Byte)1);
                     binWriter.Write(Encoding.ASCII.GetBytes(eventStarter), 0, Encoding.ASCII.GetByteCount(eventStarter) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(eventStarter));
                 }
             }
