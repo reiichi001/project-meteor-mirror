@@ -268,5 +268,18 @@ namespace FFXIVClassic_Map_Server.Actors
             return (Player)mActorList[id];
         }
 
+        public void clear()
+        {
+            //Clear All
+            mActorList.Clear();
+            for (int y = 0; y < numYBlocks; y++)
+            {
+                for (int x = 0; x < numXBlocks; x++)
+                {
+                    mActorBlock[x, y].Clear();
+                }
+            }
+        }
+
     }
 }

@@ -290,13 +290,18 @@ namespace FFXIVClassic_Lobby_Server
         }
 
         public void doWarp(ConnectedPlayer client, string entranceId)
-        {
+        {            
             uint id;
 
-            if (entranceId.ToLower().StartsWith("0x"))
-                id = Convert.ToUInt32(entranceId, 16);
-            else
-                id = Convert.ToUInt32(entranceId);
+            try
+            {
+                if (entranceId.ToLower().StartsWith("0x"))
+                    id = Convert.ToUInt32(entranceId, 16);
+                else
+                    id = Convert.ToUInt32(entranceId);
+            }
+            catch(FormatException e)
+            {return;}
 
             FFXIVClassic_Map_Server.WorldManager.ZoneEntrance ze = mWorldManager.getZoneEntrance(id);
 
@@ -314,27 +319,34 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public void doWarp(ConnectedPlayer client, string map, string sx, string sy, string sz)
+        public void doWarp(ConnectedPlayer client, string zone, string sx, string sy, string sz)
         {
-            uint mapId;
+            uint zoneId;
             float x,y,z;
 
-            if (map.ToLower().StartsWith("0x"))
-                mapId = Convert.ToUInt32(map, 16);
+            if (zone.ToLower().StartsWith("0x"))
+                zoneId = Convert.ToUInt32(zone, 16);
             else
-                mapId = Convert.ToUInt32(map);
+                zoneId = Convert.ToUInt32(zone);
             
+            if (mWorldManager.GetZone(zoneId) == null)
+            {
+                if (client != null)
+                    client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Zone does not exist or setting isn't valid."), true, false));
+                Log.error("Zone does not exist or setting isn't valid.");
+            }
+
             x = Single.Parse(sx);
             y = Single.Parse(sy);
             z = Single.Parse(sz);
 
             if (client != null)
-                mWorldManager.DoZoneChange(client.getActor(), mapId, 0x2, x, y, z, 0.0f);
+                mWorldManager.DoZoneChange(client.getActor(), zoneId, 0x2, x, y, z, 0.0f);
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    mWorldManager.DoZoneChange(entry.Value.getActor(), mapId, 0x2, x, y, z, 0.0f);
+                    mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, 0x2, x, y, z, 0.0f);
                 }
             }
         }
@@ -364,6 +376,8 @@ namespace FFXIVClassic_Lobby_Server
 
         internal void doCommand(string input, ConnectedPlayer client)
         {
+            input.Trim();
+
             String[] split = input.Split(' ');
 
             if (split.Length >= 1)
@@ -378,6 +392,12 @@ namespace FFXIVClassic_Lobby_Server
                     {
                         Log.error("Could not load packet: " + e);
                     }
+                }
+                else if (split[0].Equals("resetzone"))
+                {
+                    Log.info(String.Format("Got request to reset zone: {0}", client.getActor().zoneId));
+                    client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Resting zone {0}...", client.getActor().zoneId)), true, false));
+                    mWorldManager.reloadZone(client.getActor().zoneId);                    
                 }
             }
             if (split.Length >= 2)
