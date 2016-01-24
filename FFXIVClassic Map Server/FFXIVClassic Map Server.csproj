@@ -122,6 +122,7 @@
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />
     <Compile Include="packets\send\actor\DeleteAllActorsPacket.cs" />
+    <Compile Include="packets\send\actor\SetPushEventConditionWithCircle.cs" />
     <Compile Include="packets\send\actor\_0x132Packet.cs" />
     <Compile Include="packets\send\actor\SetActorIsZoningPacket.cs" />
     <Compile Include="packets\send\actor\DoBattleActionPacket.cs" />
