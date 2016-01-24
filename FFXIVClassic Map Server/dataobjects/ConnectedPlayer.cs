@@ -112,6 +112,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 {
                     basePackets.Add(actor.getSpawnPackets(playerActor.actorId, 1));
                     basePackets.Add(actor.getInitPackets(playerActor.actorId));
+                    basePackets.Add(actor.getSetEventStatusPackets(playerActor.actorId));
                     actorInstanceList.Add(actor);
                 }
             }

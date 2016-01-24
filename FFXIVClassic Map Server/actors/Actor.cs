@@ -1,9 +1,11 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.actors;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.packets.send.actor.events;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -36,6 +38,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public string className;
         public List<LuaParam> classParams;
+
+        public EventList eventConditions;
 
         public Actor(uint actorId)
         {
@@ -90,6 +94,64 @@ namespace FFXIVClassic_Map_Server.Actors
             return SetActorStatePacket.buildPacket(actorId, playerActorID, currentMainState, currentSubState);
         }
 
+        public List<SubPacket> getEventConditionPackets(uint playerActorId)
+        {
+            List<SubPacket> subpackets = new List<SubPacket>();
+
+            //Return empty list
+            if (eventConditions == null)
+                return subpackets;
+
+            if (eventConditions.talkEventConditions != null)
+            {
+                foreach (EventList.TalkEventCondition condition in eventConditions.talkEventConditions)                
+                    subpackets.Add(SetTalkEventCondition.buildPacket(playerActorId, actorId, condition.unknown1, condition.unknown2, condition.conditionName));                
+            }
+
+            if (eventConditions.noticeEventConditions != null)
+            {
+                foreach (EventList.NoticeEventCondition condition in eventConditions.noticeEventConditions)
+                    subpackets.Add(SetNoticeEventCondition.buildPacket(playerActorId, actorId, condition.unknown1, condition.unknown2, condition.conditionName));
+            }
+
+            if (eventConditions.emoteEventConditions != null)
+            {
+                foreach (EventList.EmoteEventCondition condition in eventConditions.emoteEventConditions)
+                    subpackets.Add(SetEmoteEventCondition.buildPacket(playerActorId, actorId, condition.unknown1, condition.unknown2, condition.emoteId, condition.conditionName));
+            }
+
+            return subpackets;
+        }
+
+        public BasePacket getSetEventStatusPackets(uint playerActorId)
+        {
+            List<SubPacket> subpackets = new List<SubPacket>();
+
+            //Return empty list
+            if (eventConditions == null)
+                return BasePacket.createPacket(subpackets, true, false);
+
+            if (eventConditions.talkEventConditions != null)
+            {
+                foreach (EventList.TalkEventCondition condition in eventConditions.talkEventConditions)                
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 1, condition.conditionName)); 
+            }
+
+            if (eventConditions.noticeEventConditions != null)
+            {
+                foreach (EventList.NoticeEventCondition condition in eventConditions.noticeEventConditions)
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 1, condition.conditionName));
+            }
+
+            if (eventConditions.emoteEventConditions != null)
+            {
+                foreach (EventList.EmoteEventCondition condition in eventConditions.emoteEventConditions)
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 1, condition.conditionName));
+            }
+
+            return BasePacket.createPacket(subpackets, true, false);
+        }
+
         public SubPacket createIsZoneingPacket(uint playerActorId)
         {
             return SetActorIsZoningPacket.buildPacket(actorId, playerActorId, false);
@@ -109,6 +171,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(createAddActorPacket(playerActorId));
+            subpackets.AddRange(getEventConditionPackets(playerActorId));
             subpackets.Add(createSpeedPacket(playerActorId));
             subpackets.Add(createSpawnPositonPacket(playerActorId, spawnType));            
             subpackets.Add(createNamePacket(playerActorId));
@@ -116,7 +179,7 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(createIsZoneingPacket(playerActorId));
             subpackets.Add(createScriptBindPacket(playerActorId));
             return BasePacket.createPacket(subpackets, true, false);
-        }
+        }        
 
         public virtual BasePacket getInitPackets(uint playerActorId)
         {

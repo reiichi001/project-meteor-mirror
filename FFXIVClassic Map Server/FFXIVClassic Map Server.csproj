@@ -69,6 +69,7 @@
     <Compile Include="actors\chara\Work.cs" />
     <Compile Include="actors\debug\Debug.cs" />
     <Compile Include="actors\director\WeatherDirector.cs" />
+    <Compile Include="actors\EventList.cs" />
     <Compile Include="actors\judge\Judge.cs" />
     <Compile Include="actors\StaticActors.cs" />
     <Compile Include="actors\world\WorldMaster.cs" />
@@ -122,7 +123,13 @@
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />
     <Compile Include="packets\send\actor\DeleteAllActorsPacket.cs" />
-    <Compile Include="packets\send\actor\SetPushEventConditionWithCircle.cs" />
+    <Compile Include="packets\send\actor\events\SetEventStatus.cs" />
+    <Compile Include="packets\send\actor\events\SetNoticeEventCondition.cs" />
+    <Compile Include="packets\send\actor\events\SetPushEventConditionWithTriggerBox.cs" />
+    <Compile Include="packets\send\actor\events\SetPushEventConditionWithFan.cs" />
+    <Compile Include="packets\send\actor\events\SetEmoteEventCondition.cs" />
+    <Compile Include="packets\send\actor\events\SetTalkEventCondition.cs" />
+    <Compile Include="packets\send\actor\events\SetPushEventConditionWithCircle.cs" />
     <Compile Include="packets\send\actor\_0x132Packet.cs" />
     <Compile Include="packets\send\actor\SetActorIsZoningPacket.cs" />
     <Compile Include="packets\send\actor\DoBattleActionPacket.cs" />

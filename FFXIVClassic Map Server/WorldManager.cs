@@ -143,7 +143,8 @@ namespace FFXIVClassic_Map_Server
                                     rotation,
                                     actorState,
                                     animationId,
-                                    actorClassName
+                                    actorClassName,
+                                    eventConditions
                                     FROM server_npclist
                                     ";
 
@@ -155,6 +156,14 @@ namespace FFXIVClassic_Map_Server
                         {
                             Npc npc = new Npc(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt32(2), reader.GetUInt32(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6), reader.GetFloat(7), reader.GetUInt16(8), reader.GetUInt32(9), reader.GetString(10));
 
+                            if (!reader.IsDBNull(11))
+                            {
+                                string eventConditions = reader.GetString(11);
+                                npc.loadEventConditions(eventConditions);
+                            }
+
+                            if (!zoneList.ContainsKey(npc.zoneId))
+                                continue;
                             Zone zone = zoneList[npc.zoneId];
                             if (zone == null)
                                 continue;

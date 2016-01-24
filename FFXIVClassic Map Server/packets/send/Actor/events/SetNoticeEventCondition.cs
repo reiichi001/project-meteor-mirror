@@ -13,23 +13,22 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.events
         public const ushort OPCODE = 0x016B;
         public const uint PACKET_SIZE = 0x48;
 
-        public static SubPacket buildPacket(uint playerActorID, uint targetActorID)
+        public static SubPacket buildPacket(uint playerActorID, uint sourceActorID, byte unknown1, byte unknown2, string conditionName)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
-
-            string eventName = "";
 
             using (MemoryStream mem = new MemoryStream(data))
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
-                {                    
-                    binWriter.Write((Byte)0);
-                    binWriter.Write((Byte)0);
-                    binWriter.Write(Encoding.ASCII.GetBytes(eventName), 0, Encoding.ASCII.GetByteCount(eventName) >= 0x24 ? 0x24 : Encoding.ASCII.GetByteCount(eventName));
+                {
+                    binWriter.Write((Byte)unknown1);
+                    binWriter.Write((Byte)unknown2);
+                    binWriter.Write(Encoding.ASCII.GetBytes(conditionName), 0, Encoding.ASCII.GetByteCount(conditionName) >= 0x24 ? 0x24 : Encoding.ASCII.GetByteCount(conditionName));
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, sourceActorID, playerActorID, data);
         }
+
     }
 }

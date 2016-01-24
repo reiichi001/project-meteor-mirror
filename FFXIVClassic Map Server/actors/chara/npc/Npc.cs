@@ -1,10 +1,12 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.utils;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,6 +51,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(createAddActorPacket(playerActorId));
+            subpackets.AddRange(getEventConditionPackets(playerActorId));
             subpackets.Add(createSpeedPacket(playerActorId));            
             subpackets.Add(createSpawnPositonPacket(playerActorId, 0x0));            
             subpackets.Add(createAppearancePacket(playerActorId));
@@ -168,7 +171,12 @@ namespace FFXIVClassic_Map_Server.Actors
                     conn.Dispose();
                 }
             }
-        } 
+        }
 
+        public void loadEventConditions(string eventConditions)
+        {
+            EventList conditions = JsonConvert.DeserializeObject<EventList>(eventConditions);
+            this.eventConditions = conditions;
+        }
     }
 }
