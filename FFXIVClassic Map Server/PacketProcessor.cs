@@ -181,7 +181,10 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x0003:
                             ChatMessagePacket chatMessage = new ChatMessagePacket(subpacket.data);
                             Log.info(String.Format("Got type-{5} message: {0} @ {1}, {2}, {3}, Rot: {4}", chatMessage.message, chatMessage.posX, chatMessage.posY, chatMessage.posZ, chatMessage.posRot, chatMessage.logType));
-                            subpacket.debugPrintSubPacket();
+                            //subpacket.debugPrintSubPacket();
+
+                            mServer.doCommand(chatMessage.message, player);
+
                             break;
                         //Unknown
                         case 0x0007:
@@ -346,17 +349,6 @@ namespace FFXIVClassic_Lobby_Server
                     packet.debugPrintPacket();
             }
         }        
-
-        public void sendPacket(string path)
-        {
-            BasePacket packet = new BasePacket(path);
-
-            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mPlayers)
-            {                
-                packet.replaceActorID(entry.Value.actorID);
-                entry.Value.queuePacket(packet);
-            }
-        }             
 
     }
 }

@@ -72,62 +72,7 @@ namespace FFXIVClassic_Lobby_Server
                 while (true)
                 {
                     String input = Console.ReadLine();
-                    String[] split = input.Split(' ');
-
-                    if (split.Length >= 1)
-                    {
-                        if (split[0].Equals("mypos"))
-                        {
-                            try
-                            {
-                                server.printPos();                                
-                            }
-                            catch (Exception e)
-                            {
-                                Log.error("Could not load packet: " + e);
-                            }
-                        }
-                    }
-                    if (split.Length >= 2)
-                    {
-                        if (split[0].Equals("sendpacket"))
-                        {
-                            try
-                            {
-                                server.sendPacket("./packets/" + split[1]);
-                            }
-                            catch (Exception e)
-                            {
-                                Log.error("Could not load packet: " + e);
-                            }
-                        }
-                        else if (split[0].Equals("music"))
-                        {
-                            try
-                            {
-                                server.doMusic(split[1]);
-                            }
-                            catch (Exception e)
-                            {
-                                Log.error("Could not change music: " + e);
-                            }
-                        }
-                        else if (split[0].Equals("warp"))
-                        {
-                            server.doWarp(split[1]);
-                        }
-                    }
-                    if (split.Length >= 3)
-                    {                        
-                        if (split[0].Equals("warp"))
-                        {
-                            server.doWarp(split[1], split[2], split[3], split[4]);
-                        }
-                        else if (split[0].Equals("property"))
-                        {
-                            server.testCodePacket(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
-                        }                     
-                    }                    
+                    server.doCommand(input, null);  
                 }
             }
 

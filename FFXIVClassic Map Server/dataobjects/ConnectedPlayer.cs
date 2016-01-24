@@ -95,8 +95,23 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public List<BasePacket> updateInstance(List<Actor> list)
         {            
             List<BasePacket> basePackets = new List<BasePacket>();
+            List<SubPacket> removeActorSubpackets = new List<SubPacket>();
             List<SubPacket> posUpdateSubpackets = new List<SubPacket>();
 
+            //Remove missing actors
+            for (int i = 0; i < actorInstanceList.Count; i++)
+            {
+                if (!list.Contains(actorInstanceList[i]))
+                {
+                    removeActorSubpackets.Add(RemoveActorPacket.buildPacket(playerActor.actorId, actorInstanceList[i].actorId));
+                    actorInstanceList.RemoveAt(i);                    
+                }
+            }
+
+            if (removeActorSubpackets.Count != 0)
+                basePackets.Add(BasePacket.createPacket(removeActorSubpackets, true, false));
+
+            //Add new actors or move
             for (int i = 0; i < list.Count; i++)
             {
                 Actor actor = list[i];

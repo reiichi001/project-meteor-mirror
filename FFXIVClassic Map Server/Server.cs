@@ -230,9 +230,23 @@ namespace FFXIVClassic_Lobby_Server
 
         #endregion
 
-        public void sendPacket(string path)
+        public void sendPacket(ConnectedPlayer client, string path)
         {
-            mProcessor.sendPacket(path);
+            BasePacket packet = new BasePacket(path);
+    
+            if (client != null)
+            {
+                packet.replaceActorID(client.actorID);
+                client.queuePacket(packet);
+            }
+            else
+            {
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    packet.replaceActorID(entry.Value.actorID);
+                    entry.Value.queuePacket(packet);
+                }
+            }
         }
 
         public void testCodePacket(uint id, uint value, string target)
@@ -254,7 +268,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public void doMusic(string music)
+        public void doMusic(ConnectedPlayer client, string music)
         {
             ushort musicId;
             
@@ -263,14 +277,19 @@ namespace FFXIVClassic_Lobby_Server
             else
                 musicId = Convert.ToUInt16(music);
 
-            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+            if (client != null)
+                client.queuePacket(BasePacket.createPacket(SetMusicPacket.buildPacket(client.actorID, musicId, 1), true, false));
+            else
             {
-                BasePacket musicPacket = BasePacket.createPacket(SetMusicPacket.buildPacket(entry.Value.actorID, musicId, 1), true, false);                
-                entry.Value.queuePacket(musicPacket);
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    BasePacket musicPacket = BasePacket.createPacket(SetMusicPacket.buildPacket(entry.Value.actorID, musicId, 1), true, false);
+                    entry.Value.queuePacket(musicPacket);
+                }
             }
         }
 
-        public void doWarp(string entranceId)
+        public void doWarp(ConnectedPlayer client, string entranceId)
         {
             uint id;
 
@@ -284,13 +303,18 @@ namespace FFXIVClassic_Lobby_Server
             if (ze == null)
                 return;
 
-            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+            if (client != null)
+                mWorldManager.DoZoneChange(client.getActor(), ze.zoneId, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, 0.0f);
+            else
             {
-                mWorldManager.DoZoneChange(entry.Value.getActor(), ze.zoneId, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, 0.0f);
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    mWorldManager.DoZoneChange(entry.Value.getActor(), ze.zoneId, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, 0.0f);
+                }
             }
         }
 
-        public void doWarp(string map, string sx, string sy, string sz)
+        public void doWarp(ConnectedPlayer client, string map, string sx, string sy, string sz)
         {
             uint mapId;
             float x,y,z;
@@ -303,10 +327,15 @@ namespace FFXIVClassic_Lobby_Server
             x = Single.Parse(sx);
             y = Single.Parse(sy);
             z = Single.Parse(sz);
-            
-            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+
+            if (client != null)
+                mWorldManager.DoZoneChange(client.getActor(), mapId, 0x2, x, y, z, 0.0f);
+            else
             {
-                mWorldManager.DoZoneChange(entry.Value.getActor(), mapId, 0x2, x, y, z, 0.0f);
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    mWorldManager.DoZoneChange(entry.Value.getActor(), mapId, 0x2, x, y, z, 0.0f);
+                }
             }
         }
 
@@ -316,13 +345,81 @@ namespace FFXIVClassic_Lobby_Server
         }
 
 
-        public void printPos()
+        public void printPos(ConnectedPlayer client)
         {
-            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+            if (client != null)
             {
-                Player p = entry.Value.getActor();
-                Log.info(String.Format("{0} position: {1}, {2}, {3}, {4}", p.customDisplayName, p.positionX, p.positionY, p.positionZ, p.rotation));
+                Player p = client.getActor();
+                client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Position: {1}, {2}, {3}, {4}", p.customDisplayName, p.positionX, p.positionY, p.positionZ, p.rotation)), true, false));
             }
+            else
+            {
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    Player p = entry.Value.getActor();
+                    Log.info(String.Format("{0} position: {1}, {2}, {3}, {4}", p.customDisplayName, p.positionX, p.positionY, p.positionZ, p.rotation));
+                }
+            }
+        }
+
+        internal void doCommand(string input, ConnectedPlayer client)
+        {
+            String[] split = input.Split(' ');
+
+            if (split.Length >= 1)
+            {
+                if (split[0].Equals("mypos"))
+                {
+                    try
+                    {
+                        printPos(client);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.error("Could not load packet: " + e);
+                    }
+                }
+            }
+            if (split.Length >= 2)
+            {
+                if (split[0].Equals("sendpacket"))
+                {
+                    try
+                    {
+                        sendPacket(client, "./packets/" + split[1]);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.error("Could not load packet: " + e);
+                    }
+                }
+                else if (split[0].Equals("music"))
+                {
+                    try
+                    {
+                        doMusic(client, split[1]);
+                    }
+                    catch (Exception e)
+                    {
+                        Log.error("Could not change music: " + e);
+                    }
+                }
+                else if (split[0].Equals("warp"))
+                {
+                    doWarp(client, split[1]);
+                }
+            }
+            if (split.Length >= 3)
+            {
+                if (split[0].Equals("warp"))
+                {
+                    doWarp(client, split[1], split[2], split[3], split[4]);
+                }
+                else if (split[0].Equals("property"))
+                {
+                    testCodePacket(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
+                }
+            }                  
         }
     }
 

@@ -458,21 +458,18 @@ namespace FFXIVClassic_Map_Server.Actors
 
             playerSession.queuePacket(getInitPackets(actorId));
 
-            BasePacket innSpawn = zone.getSpawnPackets(actorId);
+            BasePacket areaMasterSpawn = zone.getSpawnPackets(actorId);
             BasePacket debugSpawn = world.GetDebugActor().getSpawnPackets(actorId);
             BasePacket worldMasterSpawn = world.GetActor().getSpawnPackets(actorId);
-            playerSession.queuePacket(innSpawn);
+            playerSession.queuePacket(areaMasterSpawn);
             playerSession.queuePacket(debugSpawn);
             playerSession.queuePacket(worldMasterSpawn);
 
             #region hardcode
-            BasePacket reply9 = new BasePacket("./packets/login/login9_zonesetup.bin"); //Bed, Book created
             BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door created
             BasePacket reply11 = new BasePacket("./packets/login/login11.bin"); //NPC Create ??? Final init
-            reply9.replaceActorID(actorId);
             reply10.replaceActorID(actorId);
             reply11.replaceActorID(actorId);
-            playerSession.queuePacket(reply9);
             playerSession.queuePacket(reply10);
             playerSession.queuePacket(reply11);
             #endregion
