@@ -194,7 +194,7 @@ namespace FFXIVClassic_Lobby_Server
                             //Update Position
                             UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
                             player.updatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
-                            
+
                             //Update Instance
                             List<BasePacket> instanceUpdatePackets = player.updateInstance(player.getActor().zone.getActorsAroundActor(player.getActor(), 50));
                             foreach (BasePacket bp in instanceUpdatePackets)

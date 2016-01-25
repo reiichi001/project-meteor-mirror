@@ -151,7 +151,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public override BasePacket getSpawnPackets(uint playerActorId, uint spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(createAddActorPacket(playerActorId));
+            subpackets.Add(createAddActorPacket(playerActorId, 8));
             if (isMyPlayer(playerActorId))
                 subpackets.AddRange(create0x132Packets(playerActorId));
             subpackets.Add(createSpeedPacket(playerActorId));
@@ -617,7 +617,9 @@ namespace FFXIVClassic_Map_Server.Actors
         public void runEventFunction(string functionName, params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
-            queuePacket(RunEventFunctionPacket.buildPacket(actorId, playerSession.eventCurrentOwner, playerSession.eventCurrentStarter, functionName, lParams));
+            SubPacket spacket = RunEventFunctionPacket.buildPacket(actorId, playerSession.eventCurrentOwner, playerSession.eventCurrentStarter, functionName, lParams);
+            spacket.debugPrintSubPacket();
+            queuePacket(spacket);
         }
 
         public void endEvent()

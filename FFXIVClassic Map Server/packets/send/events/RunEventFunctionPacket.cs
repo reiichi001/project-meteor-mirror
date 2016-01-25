@@ -26,7 +26,7 @@ namespace FFXIVClassic_Map_Server.packets.send.events
                 {
                     binWriter.Write((UInt32)playerActorID);
                     binWriter.Write((UInt32)eventOwnerActorID);
-                    binWriter.Write((Byte)0);
+                    binWriter.Write((Byte)1);
                     binWriter.Write(Encoding.ASCII.GetBytes(eventStarter), 0, Encoding.ASCII.GetByteCount(eventStarter) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(eventStarter));
                     binWriter.Seek(0x29, SeekOrigin.Begin);
                     binWriter.Write(Encoding.ASCII.GetBytes(callFunction), 0, Encoding.ASCII.GetByteCount(callFunction) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(callFunction));

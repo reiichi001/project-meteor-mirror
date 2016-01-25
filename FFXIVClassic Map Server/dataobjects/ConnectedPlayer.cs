@@ -72,13 +72,20 @@ namespace FFXIVClassic_Map_Server.dataobjects
         }
 
         public void updatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
-        {
-            
+        {            
+
+            playerActor.oldPositionX = playerActor.positionX;
+            playerActor.oldPositionY = playerActor.positionY;
+            playerActor.oldPositionZ = playerActor.positionZ;
+            playerActor.oldRotation = playerActor.rotation;
+
             playerActor.positionX = x;
             playerActor.positionY = y;
             playerActor.positionZ = z;
             playerActor.rotation = rot;
             playerActor.moveState = moveState;
+
+            getActor().zone.updateActorPosition(getActor());
              
         }            
 

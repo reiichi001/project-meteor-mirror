@@ -1,4 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
+﻿using FFXIVClassic_Lobby_Server;
+using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.receive.events;
@@ -35,6 +36,7 @@ namespace FFXIVClassic_Map_Server.lua
                 if (File.Exists(luaPath))
                 {
                     Script script = new Script();
+                    script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
                     script.DoFile(luaPath);
                     DynValue result = script.Call(script.Globals["onInstantiate"], player, target);
                     List<LuaParam> lparams = LuaUtils.createLuaParamList(result);
@@ -51,8 +53,7 @@ namespace FFXIVClassic_Map_Server.lua
             }
 
             return null;
-        }
-
+        }       
 
         public void doActorOnEventStarted(Player player, Actor target)
         {
@@ -64,6 +65,7 @@ namespace FFXIVClassic_Map_Server.lua
                 if (File.Exists(luaPath))
                 {
                     Script script = new Script();
+                    script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
                     script.DoFile(luaPath);
                     DynValue result = script.Call(script.Globals["onEventStarted"], player, target);
                 }
@@ -81,6 +83,7 @@ namespace FFXIVClassic_Map_Server.lua
                 if (File.Exists(luaPath))
                 {
                     Script script = new Script();
+                    script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
                     script.DoFile(luaPath);
                     DynValue result = script.Call(script.Globals["onEventStarted"], player, target);
                 }
@@ -104,6 +107,7 @@ namespace FFXIVClassic_Map_Server.lua
                 if (File.Exists(luaPath))
                 {
                     Script script = new Script();
+                    script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
                     script.DoFile(luaPath);
                     DynValue result = script.Call(script.Globals["onEventUpdate"], player, target, eventUpdate.step, eventUpdate.luaParams);
                 }
@@ -121,6 +125,7 @@ namespace FFXIVClassic_Map_Server.lua
                 if (File.Exists(luaPath))
                 {
                     Script script = new Script();
+                    script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
                     script.DoFile(luaPath);
 
                     //Have to do this to combine LuaParams

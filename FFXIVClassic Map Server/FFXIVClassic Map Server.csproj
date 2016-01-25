@@ -68,6 +68,7 @@
     <Compile Include="actors\director\WeatherDirector.cs" />
     <Compile Include="actors\EventList.cs" />
     <Compile Include="actors\judge\Judge.cs" />
+    <Compile Include="actors\quest\Quest.cs" />
     <Compile Include="actors\StaticActors.cs" />
     <Compile Include="actors\world\WorldMaster.cs" />
     <Compile Include="ClientConnection.cs" />

@@ -31,7 +31,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public override BasePacket getSpawnPackets(uint playerActorId)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(createAddActorPacket(playerActorId));            
+            subpackets.Add(createAddActorPacket(playerActorId, 0));
             subpackets.Add(createSpeedPacket(playerActorId));
             subpackets.Add(createSpawnPositonPacket(playerActorId, 0x1));
             subpackets.Add(createNamePacket(playerActorId));

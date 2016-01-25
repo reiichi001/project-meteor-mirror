@@ -1,8 +1,10 @@
 ﻿using FFXIVClassic_Lobby_Server;
+using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Map_Server.packets.send.player;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -357,6 +359,45 @@ namespace FFXIVClassic_Map_Server.utils
             }
 
 
+        }
+
+        public void getStaticActors()
+        {
+            using (MemoryStream s = new MemoryStream(File.ReadAllBytes("D:\\luadec\\script\\staticactorr9w.luab")))
+            {
+                using (BinaryReader binReader = new BinaryReader(s))
+                {
+
+                    using (StreamWriter w = File.AppendText("D:\\myfile.txt"))
+                    {
+
+
+                        while (binReader.BaseStream.Position != binReader.BaseStream.Length)
+                        {
+                            uint id = Utils.swapEndian(binReader.ReadUInt32()) | 0xA0F00000;
+
+                            List<byte> list = new List<byte>();
+                            byte readByte;
+
+                            while ((readByte = binReader.ReadByte()) != 0)
+                            { //or whatever your condition is
+                                list.Add(readByte);
+                            }
+
+                            string output = Encoding.UTF8.GetString(list.ToArray());
+
+                            string output2 = String.Format("mStaticActors.Add(0x{0:x}, new {2}(0x{0:x}, \"{1}\"));", id, output.Substring(1 + output.LastIndexOf("/")), output.Split('/')[1]);
+
+                            Console.WriteLine(output2);
+                            w.WriteLine(output2);
+
+                        }
+
+                    }
+                }
+            }
+
+            return;
         }
     }
 }

@@ -33,7 +33,7 @@ namespace FFXIVClassic_Lobby_Server
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private LuaEngine mLuaEngine = new LuaEngine();
         private WorldManager mWorldManager;
-        private StaticActors mStaticActors = new StaticActors();
+        private static StaticActors mStaticActors = new StaticActors();
         private PacketProcessor mProcessor;
         private Thread mProcessorThread;
         private Thread mGameThread;
@@ -141,6 +141,14 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 mServerSocket.BeginAccept(new AsyncCallback(acceptCallback), mServerSocket);
             }
+        }
+
+        public static Actor getStaticActors(string name)
+        {
+            if (mStaticActors == null)
+                mStaticActors = new StaticActors();
+
+            return mStaticActors.findStaticActor(name);
         }
 
         /// <summary>

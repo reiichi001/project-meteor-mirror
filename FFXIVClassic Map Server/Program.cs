@@ -8,6 +8,8 @@ using MySql.Data.MySqlClient;
 using System.Reflection;
 using System.IO;
 using FFXIVClassic_Lobby_Server.dataobjects;
+using System.Collections.Generic;
+using System.Text;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -15,7 +17,7 @@ namespace FFXIVClassic_Lobby_Server
     {
 
         static void Main(string[] args)
-        {
+        {            
 #if DEBUG
             TextWriterTraceListener myWriter = new TextWriterTraceListener(System.Console.Out);
             Debug.Listeners.Add(myWriter);

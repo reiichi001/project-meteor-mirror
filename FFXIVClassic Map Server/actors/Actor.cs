@@ -54,9 +54,9 @@ namespace FFXIVClassic_Map_Server.Actors
             this.classParams = classParams;
         }
 
-        public SubPacket createAddActorPacket(uint playerActorId)
+        public SubPacket createAddActorPacket(uint playerActorId, byte val)
         {
-            return AddActorPacket.buildPacket(actorId, playerActorId, 0);
+            return AddActorPacket.buildPacket(actorId, playerActorId, val);
         } 
 
         public SubPacket createNamePacket(uint playerActorId)
@@ -77,7 +77,12 @@ namespace FFXIVClassic_Map_Server.Actors
             else if (playerActorId == actorId)
                 spawnPacket = SetActorPositionPacket.buildPacket(actorId, playerActorId, 0xFFFFFFFF, positionX, positionY, positionZ, rotation, spawnType, true);
             else
-                spawnPacket = SetActorPositionPacket.buildPacket(actorId, playerActorId, actorId, positionX, positionY, positionZ, rotation, spawnType, false);
+            {
+                if (this is Player)
+                    spawnPacket = SetActorPositionPacket.buildPacket(actorId, playerActorId, 0, positionX, positionY, positionZ, rotation, spawnType, false);
+                else
+                    spawnPacket = SetActorPositionPacket.buildPacket(actorId, playerActorId, actorId, positionX, positionY, positionZ, rotation, spawnType, false);
+            }
 
             //return SetActorPositionPacket.buildPacket(actorId, playerActorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
             spawnedFirstTime = true;
@@ -170,7 +175,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public virtual BasePacket getSpawnPackets(uint playerActorId, uint spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(createAddActorPacket(playerActorId));
+            subpackets.Add(createAddActorPacket(playerActorId, 8));
             subpackets.AddRange(getEventConditionPackets(playerActorId));
             subpackets.Add(createSpeedPacket(playerActorId));
             subpackets.Add(createSpawnPositonPacket(playerActorId, spawnType));            
