@@ -24,6 +24,7 @@ namespace FFXIVClassic_Lobby_Server
         public const int FFXIV_MAP_PORT     = 54992;
         public const int BUFFER_SIZE        = 0x400;
         public const int BACKLOG            = 100;
+        public const string STATIC_ACTORS_PATH = "./staticactors.bin";
 
         private static Server mSelf;
 
@@ -33,7 +34,7 @@ namespace FFXIVClassic_Lobby_Server
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private LuaEngine mLuaEngine = new LuaEngine();
         private WorldManager mWorldManager;
-        private static StaticActors mStaticActors = new StaticActors();
+        private static StaticActors mStaticActors;
         private PacketProcessor mProcessor;
         private Thread mProcessorThread;
         private Thread mGameThread;
@@ -51,6 +52,8 @@ namespace FFXIVClassic_Lobby_Server
         #region Socket Handling
         public bool startServer()
         {
+            mStaticActors = new StaticActors(STATIC_ACTORS_PATH);
+
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneList();
             mWorldManager.LoadZoneEntranceList();
@@ -143,11 +146,13 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
+        public static Actor getStaticActors(uint id)
+        {
+            return mStaticActors.getActor(id);
+        }
+
         public static Actor getStaticActors(string name)
         {
-            if (mStaticActors == null)
-                mStaticActors = new StaticActors();
-
             return mStaticActors.findStaticActor(name);
         }
 
@@ -423,7 +428,8 @@ namespace FFXIVClassic_Lobby_Server
                 else if (split[0].Equals("resetzone"))
                 {
                     Log.info(String.Format("Got request to reset zone: {0}", client.getActor().zoneId));
-                    client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Resting zone {0}...", client.getActor().zoneId)), true, false));
+                    if (client != null)
+                        client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Resting zone {0}...", client.getActor().zoneId)), true, false));
                     mWorldManager.reloadZone(client.getActor().zoneId);                    
                 }
             }

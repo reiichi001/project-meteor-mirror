@@ -267,6 +267,11 @@ namespace FFXIVClassic_Map_Server
             else if (o is int)
             {
                 luaParams.Add(new LuaParam(0x0, (int)o));
+            }                
+            else if (o is double)
+            {
+                if (((double)o) % 1 == 0)
+                    luaParams.Add(new LuaParam(0x0, (uint)(double)o));
             }
             else if (o is string)
             {
@@ -302,6 +307,9 @@ namespace FFXIVClassic_Map_Server
       
         public static string dumpParams(List<LuaParam> lParams)
         {
+            if (lParams == null)
+                return "Param list was null?";
+
             string dumpString = "";
             for (int i = 0; i < lParams.Count; i++)
             {

@@ -135,17 +135,19 @@ namespace FFXIVClassic_Map_Server
                                     SELECT 
                                     id,
                                     name,
-                                    zoneId,
-                                    actorTemplateId,
+                                    zoneId,                                    
                                     positionX,
                                     positionY,
                                     positionZ,
                                     rotation,
                                     actorState,
                                     animationId,
+                                    displayNameId,
+                                    customDisplayName,
                                     actorClassName,
                                     eventConditions
-                                    FROM server_npclist
+                                    FROM gamedata_actor_class
+                                    WHERE name is not NULL
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -154,11 +156,15 @@ namespace FFXIVClassic_Map_Server
                     {
                         while (reader.Read())
                         {
-                            Npc npc = new Npc(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt32(2), reader.GetUInt32(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6), reader.GetFloat(7), reader.GetUInt16(8), reader.GetUInt32(9), reader.GetString(10));
+                            string customName = null;
+                            if (!reader.IsDBNull(10))
+                                customName = reader.GetString(10);
 
-                            if (!reader.IsDBNull(11))
+                            Npc npc = new Npc(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt32(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6), reader.GetUInt16(7), reader.GetUInt32(8), reader.GetUInt32(9), customName, reader.GetString(11));
+
+                            if (!reader.IsDBNull(12))
                             {
-                                string eventConditions = reader.GetString(11);
+                                string eventConditions = reader.GetString(12);
                                 npc.loadEventConditions(eventConditions);
                             }
 
@@ -199,18 +205,19 @@ namespace FFXIVClassic_Map_Server
                                     SELECT 
                                     id,
                                     name,
-                                    zoneId,
-                                    actorTemplateId,
+                                    zoneId,                                    
                                     positionX,
                                     positionY,
                                     positionZ,
                                     rotation,
                                     actorState,
                                     animationId,
+                                    displayNameId,
+                                    customDisplayName,
                                     actorClassName,
                                     eventConditions
-                                    FROM server_npclist
-                                    WHERE zoneId = @zoneId
+                                    FROM gamedata_actorclass
+                                    WHERE name is not NULL AND zoneId = @zoneId
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -220,7 +227,11 @@ namespace FFXIVClassic_Map_Server
                     {
                         while (reader.Read())
                         {
-                            Npc npc = new Npc(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt32(2), reader.GetUInt32(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6), reader.GetFloat(7), reader.GetUInt16(8), reader.GetUInt32(9), reader.GetString(10));
+                            string customName = null;
+                            if (reader.IsDBNull(10))
+                                customName = reader.GetString(10);
+
+                            Npc npc = new Npc(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt32(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6), reader.GetUInt16(7), reader.GetUInt32(8), reader.GetUInt32(9), customName, reader.GetString(11));
 
                             if (!reader.IsDBNull(11))
                             {

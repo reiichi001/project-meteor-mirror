@@ -18,7 +18,7 @@ namespace FFXIVClassic_Map_Server.lua
 {
     class LuaEngine
     {
-        const string FILEPATH_COMMANDS = "./scripts/command/{0}.lua";
+        const string FILEPATH_COMMANDS = "./scripts/commands/{0}.lua";
         const string FILEPATH_NPCS = "./scripts/zones/{0}/npcs/{1}.lua";
 
         public LuaEngine()
@@ -38,7 +38,7 @@ namespace FFXIVClassic_Map_Server.lua
                     Script script = new Script();
                     script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
                     script.DoFile(luaPath);
-                    DynValue result = script.Call(script.Globals["onInstantiate"], player, target);
+                    DynValue result = script.Call(script.Globals["onInstantiate"], target);
                     List<LuaParam> lparams = LuaUtils.createLuaParamList(result);
                     return lparams;
                 }
@@ -109,7 +109,16 @@ namespace FFXIVClassic_Map_Server.lua
                     Script script = new Script();
                     script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
                     script.DoFile(luaPath);
-                    DynValue result = script.Call(script.Globals["onEventUpdate"], player, target, eventUpdate.step, eventUpdate.luaParams);
+
+                    //Have to do this to combine LuaParams
+                    List<Object> objects = new List<Object>();
+                    objects.Add(player);
+                    objects.Add(target);
+                    objects.Add(eventUpdate.step);
+                    objects.AddRange(LuaUtils.createLuaParamObjectList(eventUpdate.luaParams));
+
+                    //Run Script
+                    DynValue result = script.Call(script.Globals["onEventUpdate"], objects.ToArray());
                 }
                 else
                 {
@@ -117,7 +126,7 @@ namespace FFXIVClassic_Map_Server.lua
                     sendError.Add(EndEventPacket.buildPacket(player.actorId, player.playerSession.eventCurrentOwner, player.playerSession.eventCurrentStarter));
                     player.sendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", String.Format("ERROR: Could not find script for actor {0}.", target.getName()));
                     player.playerSession.queuePacket(BasePacket.createPacket(sendError, true, false));
-                }
+                }       
             }
             else if (target is Npc)
             {

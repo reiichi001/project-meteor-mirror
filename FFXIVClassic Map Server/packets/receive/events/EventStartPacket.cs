@@ -19,7 +19,6 @@ namespace FFXIVClassic_Map_Server.packets.receive.events
         public uint scriptOwnerActorID;
         public uint val1;
         public uint val2;
-
         public byte val3;
 
         public string eventStarter;
@@ -47,12 +46,7 @@ namespace FFXIVClassic_Map_Server.packets.receive.events
                         }
                         eventStarter = Encoding.ASCII.GetString(strList.ToArray());
 
-                        binReader.ReadUInt32();
-                        binReader.ReadUInt32();
-                        binReader.ReadUInt32();
-                        binReader.ReadUInt32();
-
-                        binReader.ReadByte();
+                        binReader.BaseStream.Seek(0x31, SeekOrigin.Begin);
 
                         luaParams = LuaUtils.readLuaParams(binReader);
                     }
