@@ -75,6 +75,19 @@ namespace FFXIVClassic_Lobby_Server.common
                     ((input << 24) & 0xff000000); 
         }
 
+        public static int swapEndian(int input)
+        {
+            uint inputAsUint = (uint)input;
+
+            input = (int)
+                    (((inputAsUint >> 24) & 0xff) |
+                    ((inputAsUint << 8) & 0xff0000) |
+                    ((inputAsUint >> 8) & 0xff00) |
+                    ((inputAsUint << 24) & 0xff000000));
+
+            return input;
+        }
+
         public static uint MurmurHash2(string key, uint seed)
         {
 	        // 'm' and 'r' are mixing constants generated offline.

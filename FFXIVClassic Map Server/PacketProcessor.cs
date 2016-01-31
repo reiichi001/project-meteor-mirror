@@ -192,6 +192,7 @@ namespace FFXIVClassic_Lobby_Server
                         //Update Position
                         case 0x00CA:
                             //Update Position
+                            //subpacket.debugPrintSubPacket();
                             UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
                             player.updatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
 

@@ -29,7 +29,7 @@ namespace FFXIVClassic_Map_Server
                 switch (code)
                 {
                     case 0x0: //Int32
-                        value = Utils.swapEndian(reader.ReadUInt32());                        
+                        value = Utils.swapEndian(reader.ReadInt32());                        
                         break;
                     case 0x1: //Int32
                         value = Utils.swapEndian(reader.ReadUInt32());        
@@ -86,11 +86,8 @@ namespace FFXIVClassic_Map_Server
                 writer.Write((Byte)l.typeID);
                 switch (l.typeID)
                 {
-                    case 0x0: //Int32
-                        if (l.value is uint)
-                            writer.Write((UInt32)Utils.swapEndian((UInt32)l.value));
-                        else
-                            writer.Write((UInt32)Utils.swapEndian((UInt32)(Int32)l.value));
+                    case 0x0: //Int32                        
+                        writer.Write((Int32)Utils.swapEndian((Int32)l.value));
                         break;
                     case 0x1: //Int32                        
                         writer.Write((UInt32)Utils.swapEndian((UInt32)l.value));
@@ -139,7 +136,7 @@ namespace FFXIVClassic_Map_Server
                         switch (code)
                         {
                             case 0x0: //Int32
-                                value = Utils.swapEndian(reader.ReadUInt32());
+                                value = Utils.swapEndian(reader.ReadInt32());
                                 break;
                             case 0x1: //Int32
                                 value = Utils.swapEndian(reader.ReadUInt32());
@@ -231,11 +228,11 @@ namespace FFXIVClassic_Map_Server
         {
             if (d.Type == DataType.Number)
             {
-                luaParams.Add(new LuaParam(0x0, (uint)d.Number));
+                luaParams.Add(new LuaParam(0x0, (int)d.Number));
             }
             else if (d.Type == DataType.Number)
             {
-                luaParams.Add(new LuaParam(0x0, (int)d.Number));
+                luaParams.Add(new LuaParam(0x1, (uint)d.Number));
             }
             else if (d.Type == DataType.String)
             {
@@ -260,13 +257,13 @@ namespace FFXIVClassic_Map_Server
 
         private static void addToList(object o, List<LuaParam> luaParams)
         {
-            if (o is uint)
-            {
-                luaParams.Add(new LuaParam(0x0, (uint)o));
-            }
-            else if (o is int)
+            if (o is int)
             {
                 luaParams.Add(new LuaParam(0x0, (int)o));
+            }
+            else if (o is uint)
+            {
+                luaParams.Add(new LuaParam(0x1, (uint)o));
             }                
             else if (o is double)
             {
@@ -316,7 +313,7 @@ namespace FFXIVClassic_Map_Server
                 switch (lParams[i].typeID)
                 {
                     case 0x0: //Int32
-                        dumpString += String.Format("0x{0:X}", (uint)lParams[i].value);
+                        dumpString += String.Format("0x{0:X}", (int)lParams[i].value);
                         break;
                     case 0x1: //Int32
                         dumpString += String.Format("0x{0:X}", (uint)lParams[i].value);
