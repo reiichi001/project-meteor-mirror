@@ -598,7 +598,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             playerSession.queuePacket(packet, true, false);
         }
-
+        
         public void sendMessage(uint logType, string sender, string message)
         {
             queuePacket(SendMessagePacket.buildPacket(actorId, actorId, logType, sender, message));
@@ -612,6 +612,32 @@ namespace FFXIVClassic_Map_Server.Actors
         public void quitGame()
         {
             queuePacket(QuitPacket.buildPacket(actorId));
+        }
+
+        public void changeMusic(ushort musicId)
+        {
+            queuePacket(SetMusicPacket.buildPacket(actorId, musicId, 1));
+        }
+
+        public void sendChocoboAppearance()
+        {
+            queuePacket(SetCurrentMountChocoboPacket.buildPacket(actorId, chocoboAppearance));
+        }
+
+        public void sendGoobbueAppearance()
+        {
+            queuePacket(SetCurrentMountGoobbuePacket.buildPacket(actorId, 1));
+        }
+        
+        public void sendWorldMessage(ushort worldMasterId, params object[] msgParams)
+        {
+            //queuePacket(WorldMasterPacket.buildPacket());
+        }
+
+        public void broadcastWorldMessage(ushort worldMasterId, params object[] msgParams)
+        {
+            //SubPacket worldMasterMessage = 
+            //zone.broadcastPacketAroundActor(this, worldMasterMessage);
         }
 
         public void runEventFunction(string functionName, params object[] parameters)

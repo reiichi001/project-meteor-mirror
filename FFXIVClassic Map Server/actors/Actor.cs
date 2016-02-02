@@ -29,6 +29,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public float positionX, positionY, positionZ, rotation;
         public float oldPositionX, oldPositionY, oldPositionZ, oldRotation;
         public ushort moveState, oldMoveState;
+        public float[] moveSpeeds = new float[5];
 
         public uint zoneId;
         public Zone zone = null;
@@ -52,6 +53,11 @@ namespace FFXIVClassic_Map_Server.Actors
             this.actorName = actorName;
             this.className = className;
             this.classParams = classParams;
+
+            this.moveSpeeds[0] = SetActorSpeedPacket.DEFAULT_STOP;
+            this.moveSpeeds[1] = SetActorSpeedPacket.DEFAULT_WALK;
+            this.moveSpeeds[2] = SetActorSpeedPacket.DEFAULT_RUN;
+            this.moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_RUN;
         }
 
         public SubPacket createAddActorPacket(uint playerActorId, byte val)
@@ -218,6 +224,30 @@ namespace FFXIVClassic_Map_Server.Actors
         public List<LuaParam> getLuaParams()
         {
             return classParams;
+        }
+
+        public void changeState(ushort newState)
+        {
+            currentMainState = newState;
+            SubPacket changeStatePacket = SetActorStatePacket.buildPacket(actorId, actorId, newState, currentSubState);
+            zone.broadcastPacketAroundActor(this, changeStatePacket);
+        }
+
+        public void changeSpeed(int type, float value)
+        {
+            moveSpeeds[type] = value;
+            SubPacket changeSpeedPacket = SetActorSpeedPacket.buildPacket(actorId, actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2]);
+            zone.broadcastPacketAroundActor(this, changeSpeedPacket);
+        }
+
+        public void changeSpeed(float speedStop, float speedWalk, float speedRun)
+        {
+            moveSpeeds[0] = speedStop;
+            moveSpeeds[1] = speedWalk;
+            moveSpeeds[2] = speedRun;
+            moveSpeeds[3] = speedRun;
+            SubPacket changeSpeedPacket = SetActorSpeedPacket.buildPacket(actorId, actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2]);
+            zone.broadcastPacketAroundActor(this, changeSpeedPacket);
         }
 
     }

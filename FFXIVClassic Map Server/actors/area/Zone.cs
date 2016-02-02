@@ -289,5 +289,22 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public void broadcastPacketAroundActor(Actor actor, SubPacket packet)
+        {
+            if (zone != null)
+            {
+                List<Actor> aroundActor = getActorsAroundActor(actor, 50);
+                foreach (Actor a in aroundActor)
+                {
+                    if (a is Player)
+                    {
+                        SubPacket clonedPacket = new SubPacket(packet, actor.actorId);
+                        Player p = (Player)a;                        
+                        p.queuePacket(clonedPacket);
+                    }
+                }
+            }
+        }
+
     }
 }

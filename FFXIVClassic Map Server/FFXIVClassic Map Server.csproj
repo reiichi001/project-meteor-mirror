@@ -147,6 +147,7 @@
     <Compile Include="packets\send\actor\_0xFPacket.cs" />
     <Compile Include="packets\send\events\EndEventPacket.cs" />
     <Compile Include="packets\send\events\RunEventFunctionPacket.cs" />
+    <Compile Include="packets\send\GameMessagePacket.cs" />
     <Compile Include="packets\send\list\ListEntry.cs" />
     <Compile Include="packets\send\list\ListUtils.cs" />
     <Compile Include="packets\send\list\SetListPropertyPacket.cs" />
