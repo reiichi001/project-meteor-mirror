@@ -15,10 +15,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public uint actorID = 0;
         Player playerActor;
         public List<Actor> actorInstanceList = new List<Actor>();
-
-        public uint eventCurrentOwner = 0;
-        public string eventCurrentStarter = "";
-
+        
         private ClientConnection zoneConnection;
         private ClientConnection chatConnection;
 

@@ -55,8 +55,8 @@ namespace FFXIVClassic_Map_Server
                         break;
                     case 0x6: //Actor (By Id)
                         value = Utils.swapEndian(reader.ReadUInt32());
-                        break;
-                    case 0x10: //Byte?
+                        break;                       
+                    case 0xC: //Byte
                         value = reader.ReadByte();
                         break;
                     case 0x1B: //Short?
@@ -106,7 +106,8 @@ namespace FFXIVClassic_Map_Server
                     case 0x6: //Actor (By Id)
                         writer.Write((UInt32)Utils.swapEndian((UInt32)l.value));
                         break;
-                    case 0x10: //Byte?                        
+                    case 0xC: //Byte
+                        writer.Write((Byte)l.value);
                         break;
                     case 0x1B: //Short?                        
                         break;
@@ -164,7 +165,7 @@ namespace FFXIVClassic_Map_Server
                             case 0x6: //Actor (By Id)
                                 value = Utils.swapEndian(reader.ReadUInt32());
                                 break;
-                            case 0x10: //Byte?
+                            case 0xC: //Byte
                                 value = reader.ReadByte();
                                 break;
                             case 0x1B: //Short?
@@ -268,7 +269,7 @@ namespace FFXIVClassic_Map_Server
             else if (o is double)
             {
                 if (((double)o) % 1 == 0)
-                    luaParams.Add(new LuaParam(0x0, (uint)(double)o));
+                    luaParams.Add(new LuaParam(0x0, (int)(double)o));
             }
             else if (o is string)
             {
@@ -288,6 +289,10 @@ namespace FFXIVClassic_Map_Server
             else if (o is Actor)
             {
                 luaParams.Add(new LuaParam(0x6, ((Actor)o).actorId));
+            }
+            else if (o is byte)
+            {
+                luaParams.Add(new LuaParam(0xC, (byte)o));
             }
         }
 
@@ -333,7 +338,7 @@ namespace FFXIVClassic_Map_Server
                     case 0x6: //Actor (By Id)
                         dumpString += String.Format("0x{0:X}", (uint)lParams[i].value);
                         break;
-                    case 0x10: //Byte?
+                    case 0xC: //Byte
                         dumpString += String.Format("0x{0:X}", (byte)lParams[i].value);
                         break;
                     case 0x1B: //Short?

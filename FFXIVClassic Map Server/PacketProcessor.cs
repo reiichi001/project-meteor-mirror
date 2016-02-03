@@ -221,19 +221,19 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x012D:                            
                             subpacket.debugPrintSubPacket();
                             EventStartPacket eventStart = new EventStartPacket(subpacket.data);
-                            player.eventCurrentOwner = eventStart.scriptOwnerActorID;
-                            player.eventCurrentStarter = eventStart.eventStarter;
+                            player.getActor().eventCurrentOwner = eventStart.scriptOwnerActorID;
+                            player.getActor().eventCurrentStarter = eventStart.eventStarter;
 
                             //Is it a static actor? If not look in the player's instance
-                            Actor ownerActor = Server.getStaticActors(player.eventCurrentOwner);
+                            Actor ownerActor = Server.getStaticActors(player.getActor().eventCurrentOwner);
                             if (ownerActor == null)
                             {
-                                ownerActor = mServer.GetWorldManager().GetActorInWorld(player.eventCurrentOwner);
+                                ownerActor = mServer.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
                                 if (ownerActor == null)
                                     break;
                             }
                             
-                            mServer.GetLuaEngine().doActorOnEventStarted(player.getActor(), ownerActor);
+                            mServer.GetLuaEngine().doActorOnEventStarted(player.getActor(), ownerActor, eventStart);
 
                             Log.debug(String.Format("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.val1, eventStart.val2, eventStart.eventStarter, LuaUtils.dumpParams(eventStart.luaParams)));
                             break;
@@ -244,10 +244,10 @@ namespace FFXIVClassic_Lobby_Server
                             Log.debug(String.Format("\n===Event UPDATE===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nStep: 0x{4:X}\nParams: {5}", eventUpdate.actorID, eventUpdate.scriptOwnerActorID, eventUpdate.val1, eventUpdate.val2, eventUpdate.step, LuaUtils.dumpParams(eventUpdate.luaParams)));
 
                             //Is it a static actor? If not look in the player's instance
-                            Actor updateOwnerActor = Server.getStaticActors(player.eventCurrentOwner);
+                            Actor updateOwnerActor = Server.getStaticActors(player.getActor().eventCurrentOwner);
                             if (updateOwnerActor == null)
                             {
-                                updateOwnerActor = mServer.GetWorldManager().GetActorInWorld(player.eventCurrentOwner);
+                                updateOwnerActor = mServer.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
                                 if (updateOwnerActor == null)
                                     break;
                             }

@@ -221,6 +221,11 @@ namespace FFXIVClassic_Map_Server.Actors
             return className;
         }
 
+        public ushort getState()
+        {
+            return currentMainState;
+        }
+
         public List<LuaParam> getLuaParams()
         {
             return classParams;
@@ -230,7 +235,9 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             currentMainState = newState;
             SubPacket changeStatePacket = SetActorStatePacket.buildPacket(actorId, actorId, newState, currentSubState);
+            SubPacket battleActionPacket = BattleAction1Packet.buildPacket(actorId, actorId);
             zone.broadcastPacketAroundActor(this, changeStatePacket);
+            zone.broadcastPacketAroundActor(this, battleActionPacket);
         }
 
         public void changeSpeed(int type, float value)

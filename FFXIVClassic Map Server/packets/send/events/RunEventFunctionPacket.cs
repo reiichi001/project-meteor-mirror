@@ -39,7 +39,7 @@ namespace FFXIVClassic_Map_Server.packets.send.events
                         switch (p.typeID)
                         {
                             case 0x0: //Int32
-                                binWriter.Write(Utils.swapEndian((UInt32)p.value));
+                                binWriter.Write(Utils.swapEndian((Int32)p.value));
                                 break;
                             case 0x1: //Int32
                                 binWriter.Write(Utils.swapEndian((UInt32)p.value));
@@ -59,8 +59,8 @@ namespace FFXIVClassic_Map_Server.packets.send.events
                             case 0x6: //Actor (By Id)
                                 binWriter.Write(Utils.swapEndian((UInt32)p.value));                                
                                 break;
-                            case 0x10: //Byte?
-                                //value = reader.ReadByte();
+                            case 0xC: //Byte
+                                binWriter.Write((Byte)p.value);                
                                 break;
                             case 0x1B: //Short?
                                 //value = reader.ReadUInt16();

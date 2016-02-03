@@ -28,7 +28,7 @@ namespace FFXIVClassic_Map_Server.Actors
         private Dictionary<uint, Actor> mActorList = new Dictionary<uint,Actor>();
         private List<Actor>[,] mActorBlock;
 
-        public Zone(uint id, string zoneName, ushort regionId, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool canStealth, bool isInn, bool canRideChocobo, bool isInstanceRaid)
+        public Zone(uint id, string zoneName, ushort regionId, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
             : base(id)
         {
 
@@ -68,7 +68,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public override SubPacket createScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
-            lParams = LuaUtils.createLuaParamList("/Area/Zone/ZoneMasterPrvI0", false, true, zoneName, "", 0xFFFFFFFF, false, false, canStealth, isInn, false, false, false, false, false, false);
+            lParams = LuaUtils.createLuaParamList("/Area/Zone/ZoneMasterPrvI0", false, true, zoneName, "", -1, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, false, false, false);
             return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
         }
 
@@ -82,6 +82,7 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(createStatePacket(playerActorId));
             subpackets.Add(createIsZoneingPacket(playerActorId));
             subpackets.Add(createScriptBindPacket(playerActorId));
+            subpackets[6].debugPrintSubPacket();
             return BasePacket.createPacket(subpackets, true, false);
         }
 
@@ -291,19 +292,16 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void broadcastPacketAroundActor(Actor actor, SubPacket packet)
         {
-            if (zone != null)
+            List<Actor> aroundActor = getActorsAroundActor(actor, 50);
+            foreach (Actor a in aroundActor)
             {
-                List<Actor> aroundActor = getActorsAroundActor(actor, 50);
-                foreach (Actor a in aroundActor)
+                if (a is Player)
                 {
-                    if (a is Player)
-                    {
-                        SubPacket clonedPacket = new SubPacket(packet, actor.actorId);
-                        Player p = (Player)a;                        
-                        p.queuePacket(clonedPacket);
-                    }
+                    SubPacket clonedPacket = new SubPacket(packet, actor.actorId);
+                    Player p = (Player)a;                        
+                    p.queuePacket(clonedPacket);
                 }
-            }
+            }            
         }
 
     }

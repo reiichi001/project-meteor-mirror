@@ -11,53 +11,53 @@ namespace FFXIVClassic_Map_Server.packets.send
 {
     class GameMessagePacket
     {        
-        public const ushort OPCODE_GAMEMESSAGE_WITH_ACTOR1 = 0x157;
-        public const ushort OPCODE_GAMEMESSAGE_WITH_ACTOR2 = 0x158;
-        public const ushort OPCODE_GAMEMESSAGE_WITH_ACTOR3 = 0x159;
-        public const ushort OPCODE_GAMEMESSAGE_WITH_ACTOR4 = 0x15a;
-        public const ushort OPCODE_GAMEMESSAGE_WITH_ACTOR5 = 0x15b;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_ACTOR1 = 0x157;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_ACTOR2 = 0x158;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_ACTOR3 = 0x159;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_ACTOR4 = 0x15a;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_ACTOR5 = 0x15b;
 
-        public const ushort OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER1 = 0x15c;
-        public const ushort OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER2 = 0x15d;
-        public const ushort OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER3 = 0x15e;
-        public const ushort OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER4 = 0x15f;
-        public const ushort OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER5 = 0x160;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER1 = 0x15c;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER2 = 0x15d;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER3 = 0x15e;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER4 = 0x15f;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER5 = 0x160;
 
-        public const ushort OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER1 = 0x161;
-        public const ushort OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER2 = 0x162;
-        public const ushort OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER3 = 0x163;
-        public const ushort OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER4 = 0x164;
-        public const ushort OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER5 = 0x165;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER1 = 0x161;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER2 = 0x162;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER3 = 0x163;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER4 = 0x164;
+        private const ushort OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER5 = 0x165;
 
-        public const ushort OPCODE_GAMEMESSAGE_WITHOUT_ACTOR1 = 0x166;
-        public const ushort OPCODE_GAMEMESSAGE_WITHOUT_ACTOR2 = 0x167;
-        public const ushort OPCODE_GAMEMESSAGE_WITHOUT_ACTOR3 = 0x168;
-        public const ushort OPCODE_GAMEMESSAGE_WITHOUT_ACTOR4 = 0x169;
-        public const ushort OPCODE_GAMEMESSAGE_WITHOUT_ACTOR5 = 0x16a;
+        private const ushort OPCODE_GAMEMESSAGE_WITHOUT_ACTOR1 = 0x166;
+        private const ushort OPCODE_GAMEMESSAGE_WITHOUT_ACTOR2 = 0x167;
+        private const ushort OPCODE_GAMEMESSAGE_WITHOUT_ACTOR3 = 0x168;
+        private const ushort OPCODE_GAMEMESSAGE_WITHOUT_ACTOR4 = 0x169;
+        private const ushort OPCODE_GAMEMESSAGE_WITHOUT_ACTOR5 = 0x16a;
 
-        public const ushort SIZE_GAMEMESSAGE_WITH_ACTOR1 = 0x30;
-        public const ushort SIZE_GAMEMESSAGE_WITH_ACTOR2 = 0x38;
-        public const ushort SIZE_GAMEMESSAGE_WITH_ACTOR3 = 0x40;
-        public const ushort SIZE_GAMEMESSAGE_WITH_ACTOR4 = 0x50;
-        public const ushort SIZE_GAMEMESSAGE_WITH_ACTOR5 = 0x70;
+        private const ushort SIZE_GAMEMESSAGE_WITH_ACTOR1 = 0x30;
+        private const ushort SIZE_GAMEMESSAGE_WITH_ACTOR2 = 0x38;
+        private const ushort SIZE_GAMEMESSAGE_WITH_ACTOR3 = 0x40;
+        private const ushort SIZE_GAMEMESSAGE_WITH_ACTOR4 = 0x50;
+        private const ushort SIZE_GAMEMESSAGE_WITH_ACTOR5 = 0x70;
 
-        public const ushort SIZE_GAMEMESSAGE_WITH_CUSTOM_SENDER1 = 0x48;
-        public const ushort SIZE_GAMEMESSAGE_WITH_CUSTOM_SENDER2 = 0x58;
-        public const ushort SIZE_GAMEMESSAGE_WITH_CUSTOM_SENDER3 = 0x68;
-        public const ushort SIZE_GAMEMESSAGE_WITH_CUSTOM_SENDER4 = 0x78;
-        public const ushort SIZE_GAMEMESSAGE_WITH_CUSTOM_SENDER5 = 0x98;
+        private const ushort SIZE_GAMEMESSAGE_WITH_CUSTOM_SENDER1 = 0x48;
+        private const ushort SIZE_GAMEMESSAGE_WITH_CUSTOM_SENDER2 = 0x58;
+        private const ushort SIZE_GAMEMESSAGE_WITH_CUSTOM_SENDER3 = 0x68;
+        private const ushort SIZE_GAMEMESSAGE_WITH_CUSTOM_SENDER4 = 0x78;
+        private const ushort SIZE_GAMEMESSAGE_WITH_CUSTOM_SENDER5 = 0x98;
 
-        public const ushort SIZE_GAMEMESSAGE_WITH_DISPID_SENDER1 = 0x30;
-        public const ushort SIZE_GAMEMESSAGE_WITH_DISPID_SENDER2 = 0x38;
-        public const ushort SIZE_GAMEMESSAGE_WITH_DISPID_SENDER3 = 0x40;
-        public const ushort SIZE_GAMEMESSAGE_WITH_DISPID_SENDER4 = 0x50;
-        public const ushort SIZE_GAMEMESSAGE_WITH_DISPID_SENDER5 = 0x60;
+        private const ushort SIZE_GAMEMESSAGE_WITH_DISPID_SENDER1 = 0x30;
+        private const ushort SIZE_GAMEMESSAGE_WITH_DISPID_SENDER2 = 0x38;
+        private const ushort SIZE_GAMEMESSAGE_WITH_DISPID_SENDER3 = 0x40;
+        private const ushort SIZE_GAMEMESSAGE_WITH_DISPID_SENDER4 = 0x50;
+        private const ushort SIZE_GAMEMESSAGE_WITH_DISPID_SENDER5 = 0x60;
 
-        public const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR1 = 0x28;
-        public const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR2 = 0x38;
-        public const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR3 = 0x38;
-        public const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR4 = 0x48;
-        public const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR5 = 0x68;
+        private const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR1 = 0x28;
+        private const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR2 = 0x38;
+        private const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR3 = 0x38;
+        private const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR4 = 0x48;
+        private const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR5 = 0x68;
 
         public static SubPacket buildPacket(uint sourceId, uint targetId, uint actorId, uint textOwnerActorId, ushort textId, byte log)
         {
@@ -310,9 +310,9 @@ namespace FFXIVClassic_Map_Server.packets.send
                     binWriter.Write((UInt16)log);
                     LuaUtils.writeLuaParams(binWriter, lParams);
 
-                    if (lParamsSize <= 0x14 - 12)
+                    if (lParamsSize <= 0x8)
                     {
-                        binWriter.Seek(0x30, SeekOrigin.Begin);
+                        binWriter.Seek(0x10, SeekOrigin.Begin);
                         binWriter.Write((UInt32)8);
                     }
                 }

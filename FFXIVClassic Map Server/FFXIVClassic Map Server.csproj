@@ -121,6 +121,7 @@
     <Compile Include="packets\receive\supportdesk\GMTicketIssuesRequestPacket.cs" />
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />
+    <Compile Include="packets\send\actor\BattleAction1Packet.cs" />
     <Compile Include="packets\send\actor\DeleteAllActorsPacket.cs" />
     <Compile Include="packets\send\actor\events\SetEventStatus.cs" />
     <Compile Include="packets\send\actor\events\SetNoticeEventCondition.cs" />

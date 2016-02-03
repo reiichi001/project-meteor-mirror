@@ -48,18 +48,25 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint[] timers = new uint[20];
 
         public ushort currentJob;
-
         public uint currentTitle;
 
+        //GC Related
         public byte gcCurrent;
         public byte gcRankLimsa;
         public byte gcRankGridania;
         public byte gcRankUldah;
 
+        //Mount Related
         public bool hasChocobo;
         public bool hasGoobbue;
         public byte chocoboAppearance;
         public string chocoboName;
+        public byte mountState = 0;
+
+        //Event Related
+        public uint eventCurrentOwner = 0;
+        public string eventCurrentStarter = "";
+        public uint eventMenuId = 0;
 
         public uint achievementPoints;
 
@@ -598,7 +605,25 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             playerSession.queuePacket(packet, true, false);
         }
-        
+
+        public void broadcastPacket(SubPacket packet)
+        {
+            foreach (Actor a in playerSession.actorInstanceList)
+            {
+                if (a is Player)
+                {
+                    Player p = (Player)a;
+                    SubPacket clonedPacket = new SubPacket(packet, a.actorId);
+                    p.queuePacket(clonedPacket);
+                }
+            }
+        }
+
+        public Zone getZone()
+        {
+            return zone;
+        }
+
         public void sendMessage(uint logType, string sender, string message)
         {
             queuePacket(SendMessagePacket.buildPacket(actorId, actorId, logType, sender, message));
@@ -628,10 +653,54 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             queuePacket(SetCurrentMountGoobbuePacket.buildPacket(actorId, 1));
         }
-        
-        public void sendWorldMessage(ushort worldMasterId, params object[] msgParams)
+
+        public void setMountState(byte mountState)
         {
-            //queuePacket(WorldMasterPacket.buildPacket());
+            this.mountState = mountState;
+        }
+
+        public byte getMountState()
+        {
+            return mountState;
+        }
+
+        public void doEmote(uint emoteId)
+        {            
+            broadcastPacket(ActorDoEmotePacket.buildPacket(actorId, actorId, emoteId));
+        }
+
+        public void sendGameMessage(Actor sourceActor, Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
+        {
+            if (msgParams.Length == 0)
+            {
+                queuePacket(GameMessagePacket.buildPacket(Server.getServer().GetWorldManager().GetActor().actorId, actorId, sourceActor.actorId, textIdOwner.actorId, textId, log));
+            }
+            else
+                queuePacket(GameMessagePacket.buildPacket(Server.getServer().GetWorldManager().GetActor().actorId, actorId, sourceActor.actorId, textIdOwner.actorId, textId, log, LuaUtils.createLuaParamList(msgParams)));
+        }
+
+        public void sendGameMessage(Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
+        {
+            if (msgParams.Length == 0)
+                queuePacket(GameMessagePacket.buildPacket(Server.getServer().GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log));
+            else
+                queuePacket(GameMessagePacket.buildPacket(Server.getServer().GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log, LuaUtils.createLuaParamList(msgParams)));
+        }
+
+        public void sendGameMessage(Actor textIdOwner, ushort textId, byte log, string customSender, params object[] msgParams)
+        {
+            if (msgParams.Length == 0)
+                queuePacket(GameMessagePacket.buildPacket(Server.getServer().GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log));
+            else
+                queuePacket(GameMessagePacket.buildPacket(Server.getServer().GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log, LuaUtils.createLuaParamList(msgParams)));
+        }
+
+        public void sendGameMessage(Actor textIdOwner, ushort textId, byte log, uint displayId, params object[] msgParams)
+        {
+            if (msgParams.Length == 0)
+                queuePacket(GameMessagePacket.buildPacket(Server.getServer().GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log));
+            else
+                queuePacket(GameMessagePacket.buildPacket(Server.getServer().GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log, LuaUtils.createLuaParamList(msgParams)));
         }
 
         public void broadcastWorldMessage(ushort worldMasterId, params object[] msgParams)
@@ -643,16 +712,29 @@ namespace FFXIVClassic_Map_Server.Actors
         public void runEventFunction(string functionName, params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
-            SubPacket spacket = RunEventFunctionPacket.buildPacket(actorId, playerSession.eventCurrentOwner, playerSession.eventCurrentStarter, functionName, lParams);
+            SubPacket spacket = RunEventFunctionPacket.buildPacket(actorId, eventCurrentOwner, eventCurrentStarter, functionName, lParams);
             spacket.debugPrintSubPacket();
             queuePacket(spacket);
         }
 
         public void endEvent()
         {
-            SubPacket p = EndEventPacket.buildPacket(actorId, playerSession.eventCurrentOwner, playerSession.eventCurrentStarter);
-            p.debugPrintSubPacket();
+            SubPacket p = EndEventPacket.buildPacket(actorId, eventCurrentOwner, eventCurrentStarter);
             queuePacket(p);
+
+            eventCurrentOwner = 0;
+            eventCurrentStarter = "";
+            eventMenuId = 0;
+        }
+
+        public void setCurrentMenuId(uint id)
+        {
+            eventMenuId = id;
+        }
+
+        public uint getCurrentMenuId()
+        {
+            return eventMenuId;
         }
 
     }

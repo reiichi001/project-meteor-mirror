@@ -60,14 +60,13 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
                     binWriter.Write((Single)walkSpeed);
                     binWriter.Write((UInt32)1);
 
-                    binWriter.Write((UInt16)00);
                     binWriter.Write((Single)runSpeed);
                     binWriter.Write((UInt32)2);
                     
                     binWriter.Write((Single)runSpeed);
                     binWriter.Write((UInt32)3);
 
-                    binWriter.BaseStream.Seek(0x90, SeekOrigin.Begin);
+                    binWriter.BaseStream.Seek(0x80, SeekOrigin.Begin);
 
                     binWriter.Write((UInt32)5);
                 }
