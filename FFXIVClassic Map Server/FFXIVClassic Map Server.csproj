@@ -125,7 +125,8 @@
     <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />
     <Compile Include="packets\send\actor\BattleAction1Packet.cs" />
     <Compile Include="packets\send\actor\battle\BattleAction.cs" />
-    <Compile Include="packets\send\actor\battle\DoBattleActionX10Packet.cs" />
+    <Compile Include="packets\send\actor\battle\BattleActionX18Packet.cs" />
+    <Compile Include="packets\send\actor\battle\BattleActionX10Packet.cs" />
     <Compile Include="packets\send\actor\DeleteAllActorsPacket.cs" />
     <Compile Include="packets\send\actor\events\SetEventStatus.cs" />
     <Compile Include="packets\send\actor\events\SetNoticeEventCondition.cs" />
@@ -136,7 +137,7 @@
     <Compile Include="packets\send\actor\events\SetPushEventConditionWithCircle.cs" />
     <Compile Include="packets\send\actor\_0x132Packet.cs" />
     <Compile Include="packets\send\actor\SetActorIsZoningPacket.cs" />
-    <Compile Include="packets\send\actor\battle\DoBattleActionSinglePacket.cs" />
+    <Compile Include="packets\send\actor\battle\BattleActionX01Packet.cs" />
     <Compile Include="packets\send\actor\inventory\EquipmentChangePacket.cs" />
     <Compile Include="packets\send\actor\inventory\InventoryBeginChangePacket.cs" />
     <Compile Include="packets\send\actor\inventory\InventoryEndChangePacket.cs" />

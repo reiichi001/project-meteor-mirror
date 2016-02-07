@@ -26,7 +26,8 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.battle
                     binWriter.Write((UInt32)animationId);
 
                     //Missing... last value is float, string in here as well?
-                    
+
+                    binWriter.Seek(0x20, SeekOrigin.Begin);
                     binWriter.Write((UInt32) actionList.Length); //Num actions (always 1 for this)
                     binWriter.Write((UInt16)commandId);
                     binWriter.Write((UInt16)810); //?
