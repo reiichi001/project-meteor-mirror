@@ -13,7 +13,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public const ushort OPCODE = 0x0139;
         public const uint PACKET_SIZE = 0x58;
 
-        public static SubPacket buildPacket(uint playerActorID, uint targetActorID)
+        public static SubPacket buildPacket(uint playerActorID, uint sourceActorId, uint targetActorId, uint animationId, uint effectId, ushort worldMasterTextId, ushort commandId, ushort amount, byte dirOrBody)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -21,27 +21,30 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                   /*
-                    uint32	actionSourceId = 0;
-		            uint32	animationId = 0;
-		            uint32	unknown0 = 0;
-		            uint32	unknown1 = 0;
-		            uint32	unknown2 = 0;
-		            uint32	unknown3 = 0;
-		            uint32	unknown4 = 0;
-		            float	unknown5 = 1.0f;
-		            uint32	unknown6 = 1;
-		            uint32	descriptionId = 0;
-		            uint32	actionTargetId = 0;
-		            uint16	damage = 0;
-		            uint16	damageType = 0;
-		            uint32	feedbackId = 0;
-		            uint32	attackSide = 0;
-                    */
+                    binWriter.Write((UInt32)sourceActorId);
+                    binWriter.Write((UInt32)animationId);
+
+                    //Missing... last value is float, string in here as well?
+
+                    binWriter.Seek(0x20, SeekOrigin.Begin);
+                    binWriter.Write((UInt16)1); //? Crashes if changed
+                    binWriter.Write((UInt16)0); //?
+                    binWriter.Write((UInt16)commandId);
+                    binWriter.Write((UInt16)810); //?
+
+                    binWriter.Write((UInt32)targetActorId);
+
+                    binWriter.Write((UInt16)amount);
+                    binWriter.Write((UInt16)worldMasterTextId);
+
+                    binWriter.Write((UInt32)effectId);
+
+                    binWriter.Write((Byte)dirOrBody);
+                    binWriter.Write((Byte)1); //?
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, playerActorID, data);
         }
     }
 }
