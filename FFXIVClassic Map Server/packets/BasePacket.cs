@@ -163,7 +163,7 @@ namespace FFXIVClassic_Lobby_Server.packets
                         while (binreader.BaseStream.Position + 4 < data.Length)
                         {
                             uint read = binreader.ReadUInt32();
-                            if (read == 0x029B2941 || read == 0x02977DC7 || read == 0x0297D2C8 || read == 0x0230d573 || read == 0x23317df || read == 0x23344a3) //Original ID
+                            if (read == 0x029B2941 || read == 0x02977DC7 || read == 0x0297D2C8 || read == 0x0230d573 || read == 0x23317df || read == 0x23344a3 || read == 0x1730bdb) //Original ID
                             {
                                 binWriter.BaseStream.Seek(binreader.BaseStream.Position - 0x4, SeekOrigin.Begin);
                                 binWriter.Write(actorID);

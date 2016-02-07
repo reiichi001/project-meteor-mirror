@@ -22,8 +22,10 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    int value = 0;
-                    binWriter.Write((Int32)value);
+                    int value1 = 0x10; //Instance ID?
+                    int value2 = 0x3980;
+                    binWriter.Write((Int16)value1);
+                    binWriter.Write((Int16)value2);
                     binWriter.Write(Encoding.ASCII.GetBytes(objectName), 0, Encoding.ASCII.GetByteCount(objectName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(objectName));
                     binWriter.BaseStream.Seek(0x24, SeekOrigin.Begin);
                     binWriter.Write(Encoding.ASCII.GetBytes(className), 0, Encoding.ASCII.GetByteCount(className) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(className));

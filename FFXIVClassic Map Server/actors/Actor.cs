@@ -2,6 +2,7 @@
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.actors;
+using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;

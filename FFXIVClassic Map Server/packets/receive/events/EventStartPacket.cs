@@ -1,4 +1,5 @@
-﻿using FFXIVClassic_Map_Server.lua;
+﻿using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Map_Server.lua;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,6 +22,10 @@ namespace FFXIVClassic_Map_Server.packets.receive.events
         public uint val2;
         public byte val3;
 
+        public uint errorIndex;
+        public uint errorNum;
+        public string error = null;
+
         public string eventStarter;
 
         public List<LuaParam> luaParams;
@@ -37,7 +42,20 @@ namespace FFXIVClassic_Map_Server.packets.receive.events
                         val1 = binReader.ReadUInt32();
                         val2 = binReader.ReadUInt32();
                         val3 = binReader.ReadByte();
+                        /*
+                        //Lua Error Dump
+                        if (val1 == 0x39800010)
+                        {
+                            errorIndex = actorID;
+                            errorNum = scriptOwnerActorID;
+                            error = ASCIIEncoding.ASCII.GetString(binReader.ReadBytes(0x80)).Replace("\0", "");
 
+                            if (errorIndex == 0)
+                                Log.error("LUA ERROR:");                            
+
+                            return;
+                        }
+                        */
                         List<byte> strList = new List<byte>();
                         byte curByte;
                         while ((curByte = binReader.ReadByte())!=0)

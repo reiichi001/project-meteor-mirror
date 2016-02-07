@@ -61,6 +61,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="actors\area\PrivateArea.cs" />
+    <Compile Include="actors\area\Zone.cs" />
     <Compile Include="actors\chara\npc\NpcWork.cs" />
     <Compile Include="actors\chara\AetheryteWork.cs" />
     <Compile Include="actors\chara\Work.cs" />
@@ -221,7 +223,7 @@
     <Compile Include="utils\ActorPropertyPacketUtil.cs" />
     <Compile Include="utils\CharacterUtils.cs" />
     <Compile Include="utils\SQLGeneration.cs" />
-    <Compile Include="actors\area\Zone.cs" />
+    <Compile Include="actors\area\Area.cs" />
     <Compile Include="WorldManager.cs" />
   </ItemGroup>
   <ItemGroup>

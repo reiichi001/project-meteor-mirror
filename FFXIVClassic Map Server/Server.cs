@@ -429,7 +429,12 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     Log.info(String.Format("Got request to reset zone: {0}", client.getActor().zoneId));
                     if (client != null)
+                    {
+                        client.getActor().zone.clear();
+                        client.getActor().zone.addActorToZone(client.getActor());
+                        client.getActor().sendInstanceUpdate();
                         client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Resting zone {0}...", client.getActor().zoneId)), true, false));
+                    }
                     mWorldManager.reloadZone(client.getActor().zoneId);                    
                 }
             }
@@ -462,7 +467,7 @@ namespace FFXIVClassic_Lobby_Server
                     doWarp(client, split[1]);
                 }
             }
-            if (split.Length >= 3)
+            if (split.Length >= 5)
             {
                 if (split[0].Equals("warp"))
                 {

@@ -1,6 +1,7 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
@@ -87,8 +88,9 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.property[4] = 1;
 
             charaWork.command[0] =  0xA0F00000 | 21001;
-            charaWork.command[1] =  0xA0F00000 | 21002;
-            charaWork.command[2] =  0xA0F00000 | 12003;
+            charaWork.command[1] =  0xA0F00000 | 21001;
+
+            charaWork.command[2] =  0xA0F00000 | 21002;
             charaWork.command[3] =  0xA0F00000 | 12004;
             charaWork.command[4] =  0xA0F00000 | 21005;
             charaWork.command[5] =  0xA0F00000 | 21006;
@@ -103,9 +105,6 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.command[14] = 0xA0F00000 | 29497;
             charaWork.command[15] = 0xA0F00000 | 22015;
 
-            charaWork.command[32] = 0xA0F00000 | 27155;
-            //charaWork.command[33] = 0xA0F00000 | 27150;
-            charaWork.command[34] = 0xA0F00000 | 27300;
 
             charaWork.commandAcquired[27150 - 26000] = true;
 
@@ -120,10 +119,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.battleTemp.generalParameter[3] = 1;
 
-
             charaWork.eventSave.bazaarTax = 5;
             charaWork.battleSave.potencial = 6.6f;
-            
+
+            charaWork.commandCategory[0] = 1;
+            charaWork.commandCategory[1] = 1;
+
+            charaWork.parameterSave.commandSlot_compatibility[0] = true;
+            charaWork.parameterSave.commandSlot_compatibility[1] = true;
+
             charaWork.commandBorder = 0x20;
             
             Database.loadPlayerCharacter(this);
@@ -737,5 +741,18 @@ namespace FFXIVClassic_Map_Server.Actors
             return eventMenuId;
         }
 
+
+        internal void sendInstanceUpdate()
+        {
+           
+            //Update Instance
+            List<BasePacket> instanceUpdatePackets = playerSession.updateInstance(zone.getActorsAroundActor(this, 50));
+            foreach (BasePacket bp in instanceUpdatePackets)
+            {
+                //    bp.debugPrintPacket();
+                queuePacket(bp);
+            }
+        
+        }
     }
 }

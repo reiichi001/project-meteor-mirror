@@ -1,10 +1,12 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.common.EfficientHashTables;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.packets.send;
+using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.login;
 using MySql.Data.MySqlClient;
 using System;
@@ -42,11 +44,13 @@ namespace FFXIVClassic_Map_Server
                     string query = @"
                                     SELECT 
                                     id,
-                                    regionId,
                                     zoneName,
+                                    regionId,
+                                    className,
                                     dayMusic,
                                     nightMusic,
                                     battleMusic,
+                                    isIsolated,
                                     isInn,
                                     canRideChocobo,
                                     canStealth,
@@ -60,7 +64,7 @@ namespace FFXIVClassic_Map_Server
                     {
                         while (reader.Read())
                         {
-                            Zone zone = new Zone(reader.GetUInt32(0), reader.GetString(2), reader.GetUInt16(1), reader.GetUInt16(3), reader.GetUInt16(4), reader.GetUInt16(5), reader.GetBoolean(6), reader.GetBoolean(7), reader.GetBoolean(8), reader.GetBoolean(9));
+                            Zone zone = new Zone(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt16(2), reader.GetString(3), reader.GetUInt16(4), reader.GetUInt16(5), reader.GetUInt16(6), reader.GetBoolean(7), reader.GetBoolean(8), reader.GetBoolean(9), reader.GetBoolean(10), reader.GetBoolean(11));
                             zoneList[zone.actorId] = zone;
                             count++;
                         }
@@ -147,7 +151,7 @@ namespace FFXIVClassic_Map_Server
                                     actorClassName,
                                     eventConditions
                                     FROM gamedata_actor_class
-                                    WHERE name is not NULL
+                                    WHERE name is not NULL AND zoneId > 0
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -216,7 +220,7 @@ namespace FFXIVClassic_Map_Server
                                     customDisplayName,
                                     actorClassName,
                                     eventConditions
-                                    FROM gamedata_actorclass
+                                    FROM gamedata_actor_class
                                     WHERE name is not NULL AND zoneId = @zoneId
                                     ";
 
@@ -228,14 +232,14 @@ namespace FFXIVClassic_Map_Server
                         while (reader.Read())
                         {
                             string customName = null;
-                            if (reader.IsDBNull(10))
+                            if (!reader.IsDBNull(10))
                                 customName = reader.GetString(10);
 
                             Npc npc = new Npc(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt32(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6), reader.GetUInt16(7), reader.GetUInt32(8), reader.GetUInt32(9), customName, reader.GetString(11));
 
-                            if (!reader.IsDBNull(11))
+                            if (!reader.IsDBNull(12))
                             {
-                                string eventConditions = reader.GetString(11);
+                                string eventConditions = reader.GetString(12);
                                 npc.loadEventConditions(eventConditions);
                             }
 
@@ -327,8 +331,11 @@ namespace FFXIVClassic_Map_Server
             player.rotation = spawnRotation;
 
             //Send packets
-            player.playerSession.queuePacket(_0xE2Packet.buildPacket(0x6c, 0xF), true, false);
+            player.playerSession.queuePacket(DeleteAllActorsPacket.buildPacket(player.actorId), true, false);
+            player.playerSession.queuePacket(_0xE2Packet.buildPacket(player.actorId, 0x0), true, false);
             player.sendZoneInPackets(this, spawnType);
+            player.playerSession.clearInstance();
+            player.sendInstanceUpdate();
         }
 
         //Login Zone In
@@ -346,8 +353,11 @@ namespace FFXIVClassic_Map_Server
             zone.addActorToZone(player);
 
             //Send packets
+            player.playerSession.queuePacket(DeleteAllActorsPacket.buildPacket(player.actorId), true, false);
             player.playerSession.queuePacket(_0x2Packet.buildPacket(player.actorId), true, false);
-            player.sendZoneInPackets(this, 0x1);  
+            player.sendZoneInPackets(this, 0x1);
+            player.playerSession.clearInstance();
+            player.sendInstanceUpdate();
         }
 
         public void reloadZone(uint zoneId)
@@ -356,7 +366,7 @@ namespace FFXIVClassic_Map_Server
                 return;
 
             Zone zone = zoneList[zoneId];
-            zone.clear();
+            //zone.clear();
             LoadNPCs(zone.actorId);
 
         }

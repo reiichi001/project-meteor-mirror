@@ -19,6 +19,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         private ClientConnection zoneConnection;
         private ClientConnection chatConnection;
 
+        public string errorMessage = "";
+
         bool isDisconnected;
 
         public ConnectedPlayer(uint actorId)
@@ -60,7 +62,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void queuePacket(SubPacket subPacket, bool isAuthed, bool isEncrypted)
         {
-            zoneConnection.queuePacket(subPacket, isAuthed, isEncrypted);
+                zoneConnection.queuePacket(subPacket, isAuthed, isEncrypted);
         }
 
         public Player getActor()
@@ -140,6 +142,12 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 basePackets.Add(BasePacket.createPacket(posUpdateSubpackets, true, false));
 
             return basePackets;
+        }
+
+
+        public void clearInstance()
+        {
+            actorInstanceList.Clear();
         }
 
     }

@@ -195,14 +195,7 @@ namespace FFXIVClassic_Lobby_Server
                             //subpacket.debugPrintSubPacket();
                             UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
                             player.updatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
-
-                            //Update Instance
-                            List<BasePacket> instanceUpdatePackets = player.updateInstance(player.getActor().zone.getActorsAroundActor(player.getActor(), 50));
-                            foreach (BasePacket bp in instanceUpdatePackets)
-                            {
-                            //    bp.debugPrintPacket();
-                                client.queuePacket(bp);
-                            }
+                            player.getActor().sendInstanceUpdate();
                             break;
                         //Set Target 
                         case 0x00CD:
@@ -218,9 +211,22 @@ namespace FFXIVClassic_Lobby_Server
                             player.getActor().currentLockedTarget = lockTarget.actorID;
                             break;
                         //Start Event
-                        case 0x012D:                            
+                        case 0x012D:
                             subpacket.debugPrintSubPacket();
                             EventStartPacket eventStart = new EventStartPacket(subpacket.data);
+
+                            /*
+                            if (eventStart.error != null)
+                            {
+                                player.errorMessage += eventStart.error;
+
+                                if (eventStart.errorIndex == eventStart.errorNum - 1)
+                                    Log.error("\n"+player.errorMessage);
+
+
+                                break;
+                            }
+                            */
                             player.getActor().eventCurrentOwner = eventStart.scriptOwnerActorID;
                             player.getActor().eventCurrentStarter = eventStart.eventStarter;
 
@@ -230,7 +236,10 @@ namespace FFXIVClassic_Lobby_Server
                             {
                                 ownerActor = mServer.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
                                 if (ownerActor == null)
+                                {
+                                    Log.debug(String.Format("\n===Event START===\nCould not find actor 0x{0:X} for event started by caller: 0x{1:X}\nEvent Starter: {2}\nParams: {3}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.eventStarter, LuaUtils.dumpParams(eventStart.luaParams)));
                                     break;
+                                }                                    
                             }
                             
                             mServer.GetLuaEngine().doActorOnEventStarted(player.getActor(), ownerActor, eventStart);
