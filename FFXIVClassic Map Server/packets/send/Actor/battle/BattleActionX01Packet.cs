@@ -6,14 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor
+namespace FFXIVClassic_Map_Server.packets.send.actor.battle
 {
-    class DoBattleActionPacket
+    class BattleActionX01Packet
     {
         public const ushort OPCODE = 0x0139;
         public const uint PACKET_SIZE = 0x58;
 
-        public static SubPacket buildPacket(uint playerActorID, uint sourceActorId, uint targetActorId, uint animationId, uint effectId, ushort worldMasterTextId, ushort commandId, ushort amount, byte dirOrBody)
+        public static SubPacket buildPacket(uint playerActorID, uint sourceActorId, uint targetActorId, uint animationId, uint effectId, ushort worldMasterTextId, ushort commandId, ushort amount, byte param)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -27,8 +27,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
                     //Missing... last value is float, string in here as well?
 
                     binWriter.Seek(0x20, SeekOrigin.Begin);
-                    binWriter.Write((UInt16)1); //? Crashes if changed
-                    binWriter.Write((UInt16)0); //?
+                    binWriter.Write((UInt32)1); //Num actions (always 1 for this)
                     binWriter.Write((UInt16)commandId);
                     binWriter.Write((UInt16)810); //?
 
@@ -39,7 +38,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
                     binWriter.Write((UInt32)effectId);
 
-                    binWriter.Write((Byte)dirOrBody);
+                    binWriter.Write((Byte)param);
                     binWriter.Write((Byte)1); //?
                 }
             }
