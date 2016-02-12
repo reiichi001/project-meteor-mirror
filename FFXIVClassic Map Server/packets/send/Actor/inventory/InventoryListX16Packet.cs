@@ -7,35 +7,36 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
+namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
 {
-    class InventoryItemPacket
+    class InventoryListX16Packet
     {
-
         public const ushort OPCODE = 0x014A;
-        public const uint PACKET_SIZE = 0x90;
+        public const uint PACKET_SIZE = 0x720;
 
         public static SubPacket buildPacket(uint playerActorID, List<Item> items, ref int listOffset)
         {
-            byte[] data;
+            byte[] data = new byte[PACKET_SIZE - 0x20];
 
-            using (MemoryStream mem = new MemoryStream())
+            using (MemoryStream mem = new MemoryStream(data))
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
+                    int max;
+                    if (items.Count - listOffset <= 16)
+                        max = items.Count - listOffset;
+                    else
+                        max = 16;
+
                     for (int i = listOffset; i < items.Count; i++)
                     {
                         binWriter.Write(items[i].toPacketBytes());
                         listOffset++;
                     }
                 }
-
-                data = mem.GetBuffer();
             }
 
             return new SubPacket(OPCODE, playerActorID, playerActorID, data);
         }
-
-
     }
 }

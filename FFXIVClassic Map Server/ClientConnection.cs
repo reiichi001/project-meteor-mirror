@@ -19,7 +19,7 @@ namespace FFXIVClassic_Lobby_Server
         //Connection stuff
         public Blowfish blowfish;
         public Socket socket;
-        public byte[] buffer = new byte[0xffff];
+        public byte[] buffer = new byte[0xfffff];
         private BlockingCollection<BasePacket> sendPacketQueue = new BlockingCollection<BasePacket>(1000);
 
         //Instance Stuff
@@ -46,7 +46,7 @@ namespace FFXIVClassic_Lobby_Server
                 BasePacket packet = sendPacketQueue.Take();                
 
                 byte[] packetBytes = packet.getPacketBytes();
-                byte[] buffer = new byte[0xffff];
+                byte[] buffer = new byte[0xfffff];
                 Array.Copy(packetBytes, buffer, packetBytes.Length);
                 try
                 {

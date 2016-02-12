@@ -14,6 +14,8 @@ using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Map_Server;
 using FFXIVClassic_Map_Server.common.EfficientHashTables;
 using FFXIVClassic_Map_Server.Actors;
+using FFXIVClassic_Map_Server.dataobjects;
+using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -448,6 +450,202 @@ namespace FFXIVClassic_Lobby_Server
                             player.playerWork.npcLinkshellChatExtra[npcLSId] = reader.GetBoolean(2);                            
                         }
                     }
+
+                    player.invNormal = getInventory(player, 0, InventorySetBeginPacket.CODE_INVENTORY);
+                    player.invKeyItems = getInventory(player, 0, InventorySetBeginPacket.CODE_KEYITEMS);
+                    player.invCurrancy = getInventory(player, 0, InventorySetBeginPacket.CODE_CURRANCY);
+
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+        }
+
+        public static List<Item> getInventory(Player player, uint slotOffset, uint type)
+        {
+            List<Item> items = new List<Item>();
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    //Load Last 5 Completed
+                    string query = @"
+                                    SELECT
+                                    serverItemId,
+                                    itemId,
+                                    quantity,
+                                    slot,
+                                    isUntradeable,
+                                    quality,
+                                    durability,
+                                    spiritBind,
+                                    materia1,
+                                    materia2,
+                                    materia3,
+                                    materia4,
+                                    materia5
+                                    FROM characters_inventory
+                                    INNER JOIN server_items ON serverItemId = server_items.id
+                                    WHERE characterId = @charId AND inventoryType = @type AND slot >= @slot ORDER BY slot";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@slot", slotOffset);
+                    cmd.Parameters.AddWithValue("@type", type);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {                        
+                        while (reader.Read())
+                        {
+                            uint uniqueId = reader.GetUInt32(0);
+                            uint itemId = reader.GetUInt32(1);
+                            int quantity = reader.GetInt32(2);
+                            uint slot = reader.GetUInt32(3);
+
+                            bool isUntradeable = reader.GetBoolean(4);
+                            byte qualityNumber = reader.GetByte(5);
+
+                            uint durability = reader.GetUInt32(6);
+                            ushort spiritBind = reader.GetUInt16(7);
+
+                            byte materia1 = reader.GetByte(8);
+                            byte materia2 = reader.GetByte(9);
+                            byte materia3 = reader.GetByte(10);
+                            byte materia4 = reader.GetByte(11);
+                            byte materia5 = reader.GetByte(12);
+
+                            items.Add(new Item(uniqueId, itemId, quantity, slot, isUntradeable, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5));
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            return items;
+        }
+
+        public static Item addItem(Player player, uint itemId, int quantity, byte quality, bool isUntradeable, uint durability, ushort type)
+        {
+            Item insertedItem = null;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    
+
+                    string query = @"
+                                    INSERT INTO server_items                                    
+                                    (itemId, quality, isUntradeable, durability)
+                                    VALUES
+                                    (@itemId, @quality, @isUntradeable, @durability); 
+                                    ";
+
+                    string query2 = @"
+                                    INSERT INTO characters_inventory
+                                    (characterId, slot, inventoryType, serverItemId, quantity)
+                                    SELECT @charId, IFNULL(MAX(SLOT)+1, 0), @inventoryType, LAST_INSERT_ID(), @quantity FROM characters_inventory WHERE characterId = @charId;
+                                    ";
+
+                    query += query2;
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@inventoryType", type);
+
+                    cmd.Parameters.AddWithValue("@itemId", itemId);
+                    cmd.Parameters.AddWithValue("@quantity", quantity);
+                    cmd.Parameters.AddWithValue("@quality", quality);
+                    cmd.Parameters.AddWithValue("@isUntradeable", isUntradeable);
+                    cmd.Parameters.AddWithValue("@durability", durability);
+                    cmd.ExecuteNonQuery();
+
+                    insertedItem = new Item((uint)cmd.LastInsertedId, itemId, quantity, (uint)player.getLastInventorySlot(type), isUntradeable, quality, durability, 0, 0, 0, 0, 0, 0);
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            return insertedItem;
+        }
+
+        public static void addQuantity(Player player, uint itemId, int quantity)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    UPDATE characters_inventory
+                                    SET quantity = quantity + @quantity
+                                    WHERE serverItemId = (SELECT id FROM server_items WHERE characterId = @charId AND itemId = @itemId LIMIT 1)
+                                    ";
+                    
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@quantity", quantity);
+                    cmd.Parameters.AddWithValue("@itemId", itemId);
+                    cmd.ExecuteNonQuery();
+
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+        }
+
+        public static void removeItem(Player player, uint uniqueItemId)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    //Load Last 5 Completed
+                    string query = @"
+                                    DELETE FROM server_items
+                                    WHERE id = @uniqueItemId; 
+                                    ";
+
+                    string query2 = @"
+                                    DELETE FROM character_inventory
+                                    WHERE uniqueServerId = @uniqueItemId; 
+                                    UPDATE character_inventory
+                                    SET slot = slot - 1
+                                    WHERE characterId = @charId AND slot > X
+                                    ";
+
+                    query += query2;
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.ExecuteNonQuery();
 
                 }
                 catch (MySqlException e)

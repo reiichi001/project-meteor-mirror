@@ -7,6 +7,7 @@ using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.events;
 using FFXIVClassic_Map_Server.packets.send.list;
@@ -24,6 +25,13 @@ namespace FFXIVClassic_Map_Server.Actors
 {
     class Player : Character
     {
+        public const int MAXSIZE_INVENTORY_NORMAL = 200;
+        public const int MAXSIZE_INVENTORY_CURRANCY = 320;
+        public const int MAXSIZE_INVENTORY_KEYITEMS = 500;
+        public const int MAXSIZE_INVENTORY_LOOT = 10;
+        public const int MAXSIZE_INVENTORY_MELDREQUEST = 4;
+        public const int MAXSIZE_INVENTORY_BAZAAR = 10;
+        public const int MAXSIZE_INVENTORY_EQUIPMENT = 10;
 
         public const int TIMER_TOTORAK = 0;
         public const int TIMER_DZEMAEL = 1;        
@@ -44,12 +52,21 @@ namespace FFXIVClassic_Map_Server.Actors
         public const int TIMER_BEHEST = 16;
         public const int TIMER_COMPANYBEHEST = 17;
         public const int TIMER_RETURN = 18;
-        public const int TIMER_SKIRMISH = 19;
+        public const int TIMER_SKIRMISH = 19;        
 
+        //Player Info
         public uint[] timers = new uint[20];
-
         public ushort currentJob;
         public uint currentTitle;
+
+        //Inventory        
+        public List<Item> invNormal = new List<Item>();
+        public List<Item> invCurrancy = new List<Item>();
+        public List<Item> invKeyItems = new List<Item>();
+        public List<Item> invLoot = new List<Item>();
+        public List<Item> invMeldRequest = new List<Item>();
+        public List<Item> invBazaar = new List<Item>();
+        public int[] invEquipment = new int[MAXSIZE_INVENTORY_EQUIPMENT];
 
         //GC Related
         public byte gcCurrent;
@@ -105,6 +122,9 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.command[14] = 0xA0F00000 | 29497;
             charaWork.command[15] = 0xA0F00000 | 22015;
 
+            charaWork.command[32] = 0xA0F00000 | 27191;
+            charaWork.command[33] = 0xA0F00000 | 22302;
+            charaWork.command[34] = 0xA0F00000 | 28466;
 
             charaWork.commandAcquired[27150 - 26000] = true;
 
@@ -124,12 +144,18 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.commandCategory[0] = 1;
             charaWork.commandCategory[1] = 1;
+            charaWork.commandCategory[32] = 1;
+            charaWork.commandCategory[33] = 1;
+            charaWork.commandCategory[34] = 1;
 
             charaWork.parameterSave.commandSlot_compatibility[0] = true;
             charaWork.parameterSave.commandSlot_compatibility[1] = true;
+            charaWork.parameterSave.commandSlot_compatibility[32] = true;
 
             charaWork.commandBorder = 0x20;
-            
+
+            charaWork.parameterTemp.tp = 3000;
+
             Database.loadPlayerCharacter(this);
         }
         
@@ -279,7 +305,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     propPacketUtil.addProperty(String.Format("charaWork.command[{0}]", i));
             }
          
-            /*
+            
             for (int i = 0; i < charaWork.commandCategory.Length; i++)
             {
                 charaWork.commandCategory[i] = 1;
@@ -292,7 +318,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 if (charaWork.commandAcquired[i] != false)
                     propPacketUtil.addProperty(String.Format("charaWork.commandAcquired[{0}]", i));
             }
-            */
+            
 
             for (int i = 0; i < charaWork.additionalCommandAcquired.Length; i++)
             {
@@ -379,11 +405,11 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void sendZoneInPackets(WorldManager world, ushort spawnType)
         {            
-            playerSession.queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId), true, false);            
-            playerSession.queuePacket(SetMusicPacket.buildPacket(actorId, zone.bgmDay, 0x01), true, false);
-            playerSession.queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR), true, false);
+            queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId));            
+            queuePacket(SetMusicPacket.buildPacket(actorId, zone.bgmDay, 0x01));
+            queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR));
 
-            playerSession.queuePacket(getSpawnPackets(actorId, spawnType));
+            queuePacket(getSpawnPackets(actorId, spawnType));
 
             #region grouptest
             //Retainers
@@ -405,23 +431,27 @@ namespace FFXIVClassic_Map_Server.Actors
 
             #region itemsetup
             ////////ITEMS////////
-            playerSession.queuePacket(InventoryBeginChangePacket.buildPacket(actorId), true, false);
+            queuePacket(InventoryBeginChangePacket.buildPacket(actorId));
 
+            queuePacket(InventorySetBeginPacket.buildPacket(actorId, 200, InventorySetBeginPacket.CODE_INVENTORY));
+            sendInventoryPackets(invNormal);
+            queuePacket(InventorySetEndPacket.buildPacket(actorId));
 
+            /*
+           
             //TEST
             List<Item> items = new List<Item>();
-            items.Add(new Item(1337, 8030920, 5)); //Leather Jacket
+            items.Add(new Item(1337, 8030920, 0)); //Leather Jacket
             items.Add(new Item(1338, 8013626, 1)); //Chocobo Mask
             items.Add(new Item(1339, 5030402, 2)); //Thyrus
             items.Add(new Item(1340, 8013635, 3)); //Dalamud Horn
             items.Add(new Item(1341, 10100132, 4)); //Savage Might 4
-            items.Add(new Item(1342, 8032407, 6)); //Green Summer Halter (Female)
-            items.Add(new Item(1343, 8051307, 7)); //Green Summer Tanga (Female)
-            items.Add(new Item(1344, 8050766, 8)); //Flame Private's Saroul
+            items.Add(new Item(1342, 8032407, 5)); //Green Summer Halter (Female)
+            //items.Add(new Item(1343, 8051307, 6)); //Green Summer Tanga (Female)
 
             int count = 0;
 
-            items[2].isHighQuality = true;
+            items[2].quality = 2;
             items[0].durability = 9999;
             items[0].spiritbind = 10000;
             items[0].materia1 = 6;
@@ -434,34 +464,36 @@ namespace FFXIVClassic_Map_Server.Actors
             items[3].durability = 9999;
             items[4].quantity = 99;
 
-            //Reused
-            SubPacket endInventory = InventorySetEndPacket.buildPacket(actorId);
-            SubPacket beginInventory = InventorySetBeginPacket.buildPacket(actorId, 200, 00);
-            SubPacket setInventory = InventoryItemPacket.buildPacket(actorId, items, ref count);
+            List<SubPacket> packets = new List<SubPacket>();
+            packets.Add(InventorySetBeginPacket.buildPacket(actorId, 200, InventorySetBeginPacket.CODE_INVENTORY));
+            packets.Add(InventoryListX08Packet.buildPacket(actorId, items,ref count));
+            packets.Add(InventorySetEndPacket.buildPacket(actorId));
 
-            List<SubPacket> setinvPackets = new List<SubPacket>();
-            setinvPackets.Add(beginInventory);
-            setinvPackets.Add(setInventory);
-            setinvPackets.Add(endInventory);
+            Item i = new Item(1343, 8051307, 0);
 
-            //client.queuePacket(currancy);
-            //client.queuePacket(keyitems);
+            packets.Add(InventorySetBeginPacket.buildPacket(actorId, 0x500, InventorySetBeginPacket.CODE_KEYITEMS));
+            packets.Add(InventoryListX01Packet.buildPacket(actorId, i));
+            packets.Add(InventorySetEndPacket.buildPacket(actorId));
 
+            BasePacket testPacket = BasePacket.createPacket(packets, true, false);
+            testPacket.debugPrintPacket();
+            playerSession.queuePacket(testPacket);
+            */
             #endregion
             #region equipsetup
-            playerSession.queuePacket(BasePacket.createPacket(setinvPackets, true, false));
-            EquipmentSetupPacket initialEqupmentPacket = new EquipmentSetupPacket();
-            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_BODY, 5);
-            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_HEAD, 3);
-            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_UNDERSHIRT, 6);
-            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_UNDERGARMENT, 7);
-            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_MAINHAND, 2);
-            initialEqupmentPacket.setItem(EquipmentSetupPacket.SLOT_LEGS, 8);
+            EquipmentListX08Packet initialEqupmentPacket = new EquipmentListX08Packet();
+            initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_BODY, 5);
+            initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_HEAD, 3);
+            initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_UNDERSHIRT, 6);
+            initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_UNDERGARMENT, 7);
+            initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_MAINHAND, 2);
+            initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_LEGS, 8);
 
             //Equip Init
-            playerSession.queuePacket(InventorySetBeginPacket.buildPacket(actorId, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false);
-            playerSession.queuePacket(BasePacket.createPacket(initialEqupmentPacket.buildPackets(actorId), true, false));
-            playerSession.queuePacket(InventorySetEndPacket.buildPacket(actorId), true, false);
+         //   playerSession.queuePacket(InventorySetBeginPacket.buildPacket(actorId, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false);
+         //   playerSession.queuePacket(BasePacket.createPacket(initialEqupmentPacket.buildPackets(actorId), true, false));
+         //   playerSession.queuePacket(InventorySetEndPacket.buildPacket(actorId), true, false);
+
 
             playerSession.queuePacket(InventoryEndChangePacket.buildPacket(actorId), true, false);
             ////////ITEMS//////// 
@@ -488,116 +520,87 @@ namespace FFXIVClassic_Map_Server.Actors
             
         }
 
+        private void sendInventoryPackets(Item item)
+        {
+            queuePacket(InventoryListX01Packet.buildPacket(actorId, item));
+        }
+
+        private void sendInventoryPackets(List<Item> items)
+        {
+            int currentIndex = 0;
+
+            while (true)
+            {
+                if (items.Count - currentIndex >= 64)
+                    queuePacket(InventoryListX64Packet.buildPacket(actorId, items, ref currentIndex));
+                else if (items.Count - currentIndex >= 32)
+                    queuePacket(InventoryListX32Packet.buildPacket(actorId, items, ref currentIndex));
+                else if (items.Count - currentIndex >= 16)
+                    queuePacket(InventoryListX16Packet.buildPacket(actorId, items, ref currentIndex));
+                else if (items.Count - currentIndex <= 8 && items.Count - currentIndex > 1)
+                    queuePacket(InventoryListX08Packet.buildPacket(actorId, items, ref currentIndex));
+                else if (items.Count - currentIndex == 1)
+                {
+                    queuePacket(InventoryListX01Packet.buildPacket(actorId, items[currentIndex]));
+                    currentIndex++;
+                }
+                else
+                    break;
+            }
+
+        }
+
+        private void sendRemoveInventoryPackets(List<ushort> slots)
+        {
+            int currentIndex = 0;
+
+            while (true)
+            {
+                if (slots.Count - currentIndex >= 64)
+                    queuePacket(InventoryRemoveX64Packet.buildPacket(actorId, slots, ref currentIndex));
+                else if (slots.Count - currentIndex >= 32)
+                    queuePacket(InventoryRemoveX32Packet.buildPacket(actorId, slots, ref currentIndex));
+                else if (slots.Count - currentIndex >= 16)
+                    queuePacket(InventoryRemoveX16Packet.buildPacket(actorId, slots, ref currentIndex));
+                else if (slots.Count - currentIndex >= 8)
+                    queuePacket(InventoryRemoveX08Packet.buildPacket(actorId, slots, ref currentIndex));
+                else if (slots.Count - currentIndex == 1)
+                    queuePacket(InventoryRemoveX01Packet.buildPacket(actorId, slots[currentIndex]));
+                else
+                    break;
+            }
+
+        }
+
+        /*
+        private void sendEquipmentPackets(List<int> indexes)
+        {
+            int currentIndex = 0;
+
+            InventorySetBeginPacket.buildPacket(actorId, MAXSIZE_INVENTORY_EQUIPMENT, InventorySetBeginPacket.CODE_EQUIPMENT);
+
+            while (true)
+            {
+                if (indexes.Count - currentIndex >= 64)
+                    queuePacket(EquipmentListX64Packet.buildPacket(actorId, indexes, ref currentIndex));
+                else if (indexes.Count - currentIndex >= 32)
+                    queuePacket(EquipmentListX32Packet.buildPacket(actorId, indexes, ref currentIndex));
+                else if (indexes.Count - currentIndex >= 16)
+                    queuePacket(EquipmentListX16Packet.buildPacket(actorId, indexes, ref currentIndex));
+                else if (indexes.Count - currentIndex >= 8)
+                    queuePacket(EquipmentListX08Packet.buildPacket(actorId, indexes, ref currentIndex));
+                else if (indexes.Count - currentIndex == 1)
+                    queuePacket(EquipmentListX01Packet.buildPacket(actorId, indexes[currentIndex]));
+                else
+                    break;
+            }
+
+            InventorySetEndPacket.buildPacket(actorId);
+        }
+        */
         public bool isMyPlayer(uint otherActorId)
         {
             return actorId == otherActorId;
-        }
-
-        public void loadNpcTemplate(uint id)
-        {
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                try
-                {
-                    conn.Open();
-
-                    string query = @"
-                                    SELECT                                     
-                                    displayNameId,
-                                    customDisplayName,
-                                    base,
-                                    size,
-                                    hairStyle,
-                                    hairHighlightColor,
-                                    hairVariation,
-                                    faceType,
-                                    characteristics,
-                                    characteristicsColor,
-                                    faceEyebrows,
-                                    faceIrisSize,
-                                    faceEyeShape,
-                                    faceNose,
-                                    faceFeatures,
-                                    faceMouth,
-                                    ears,
-                                    hairColor,
-                                    skinColor,
-                                    eyeColor,
-                                    voice,
-                                    mainHand,
-                                    offHand,
-                                    spMainHand,
-                                    spOffHand,
-                                    throwing,
-                                    pack,
-                                    pouch,
-                                    head,
-                                    body,
-                                    legs,
-                                    hands,
-                                    feet,
-                                    waist,
-                                    neck,
-                                    leftEars,
-                                    rightEars,
-                                    leftIndex,
-                                    rightIndex,
-                                    leftFinger,
-                                    rightFinger
-                                    FROM gamedata_actor_templates
-                                    INNER JOIN gamedata_actor_appearance ON gamedata_actor_templates.id = gamedata_actor_appearance.id
-                                    WHERE gamedata_actor_templates.id = @templateId
-                                    ";
-
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@templateId", id);
-
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            
-                            //Handle Name
-
-                            if (reader.IsDBNull(1))
-                                displayNameId = reader.GetUInt32(0);
-                            else
-                            {
-                                customDisplayName = reader.GetString(1);
-                                displayNameId = 0xFFFFFFF;
-                            }
-                            
-                            //Handle Appearance
-                            modelId = reader.GetUInt32(2);
-                            appearanceIds[Character.SIZE] = reader.GetUInt32(3);
-                            appearanceIds[Character.COLORINFO] = (uint)(reader.GetUInt32(18) | (reader.GetUInt32(17) << 10) | (reader.GetUInt32(19) << 20)); //17 - Skin Color, 16 - Hair Color, 18 - Eye Color
-                            appearanceIds[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.getFaceInfo(reader.GetByte(8), reader.GetByte(9), reader.GetByte(7), reader.GetByte(16), reader.GetByte(15), reader.GetByte(14), reader.GetByte(13), reader.GetByte(12), reader.GetByte(11), reader.GetByte(10)));
-                            appearanceIds[Character.HIGHLIGHT_HAIR] = (uint)(reader.GetUInt32(5) | reader.GetUInt32(4) << 10); //5- Hair Highlight, 4 - Hair Style
-                            appearanceIds[Character.VOICE] = reader.GetUInt32(19);
-                            appearanceIds[Character.WEAPON1] = reader.GetUInt32(21);
-                            //appearanceIds[Character.WEAPON2] = reader.GetUInt32(22);
-                            appearanceIds[Character.HEADGEAR] = reader.GetUInt32(28);
-                            appearanceIds[Character.BODYGEAR] = reader.GetUInt32(29);
-                            appearanceIds[Character.LEGSGEAR] = reader.GetUInt32(30);
-                            appearanceIds[Character.HANDSGEAR] = reader.GetUInt32(31);
-                            appearanceIds[Character.FEETGEAR] = reader.GetUInt32(32);
-                            appearanceIds[Character.WAISTGEAR] = reader.GetUInt32(33);
-                            appearanceIds[Character.R_EAR] = reader.GetUInt32(34);
-                            appearanceIds[Character.L_EAR] = reader.GetUInt32(35);
-                            appearanceIds[Character.R_FINGER] = reader.GetUInt32(38);
-                            appearanceIds[Character.L_FINGER] = reader.GetUInt32(39);
-                             
-                        }
-                    }
-
-                }
-                catch (MySqlException e)
-                { Console.WriteLine(e); }
-                finally
-                {
-                    conn.Dispose();
-                }
-            }
         }        
 
         public void queuePacket(BasePacket packet)
@@ -713,6 +716,94 @@ namespace FFXIVClassic_Map_Server.Actors
             //zone.broadcastPacketAroundActor(this, worldMasterMessage);
         }
 
+        public void addItem(uint itemId, ushort type, int quantity, byte quality)
+        {
+            List<SubPacket> addItemPackets = new List<SubPacket>();
+            Item storedItem = null;
+
+            //Check if item id exists
+            switch (type)
+            {
+                case InventorySetBeginPacket.CODE_INVENTORY:
+                    foreach (Item item in invNormal)
+                    {
+                        if (item.itemId == itemId)
+                        {
+                            storedItem = item;
+                            break;
+                        }
+                    }
+                    break;
+                case InventorySetBeginPacket.CODE_KEYITEMS:
+                    break;
+                case InventorySetBeginPacket.CODE_CURRANCY:
+                    break;
+                case InventorySetBeginPacket.CODE_MELDREQUEST:
+                    break;
+                case InventorySetBeginPacket.CODE_BAZAAR:
+                    break;
+                case InventorySetBeginPacket.CODE_LOOT:
+                    break;
+            }
+
+            //Update lists and db
+            queuePacket(InventoryBeginChangePacket.buildPacket(actorId));
+           
+            switch (type)
+            {
+                case InventorySetBeginPacket.CODE_INVENTORY:
+                    queuePacket(InventorySetBeginPacket.buildPacket(actorId, 200, InventorySetBeginPacket.CODE_INVENTORY));
+                    if (storedItem == null)
+                    {
+                        Item addedItem = Database.addItem(this, itemId, quantity, quality, false, 100, type);
+                        invNormal.Add(addedItem);
+                        sendInventoryPackets(addedItem);
+                    }
+                    else
+                    {
+                        Database.addQuantity(this, itemId, quantity);
+                        storedItem.quantity += quantity;
+                        sendInventoryPackets(storedItem);
+                    }
+                    queuePacket(InventorySetEndPacket.buildPacket(actorId));
+                    break;
+                case InventorySetBeginPacket.CODE_KEYITEMS:
+                    break;
+                case InventorySetBeginPacket.CODE_CURRANCY:
+                    break;
+                case InventorySetBeginPacket.CODE_MELDREQUEST:
+                    break;
+                case InventorySetBeginPacket.CODE_BAZAAR:
+                    break;
+                case InventorySetBeginPacket.CODE_LOOT:
+                    break;
+            }
+
+            //addItemPackets.Add(InventorySetBeginPacket.buildPacket(actorId, MAXSIZE_INVENTORY_NORMAL, type));
+            //sendInventoryPackets()
+            queuePacket(InventorySetEndPacket.buildPacket(actorId));
+        }
+
+        public void removeItem(uint itemId, uint quantity)
+        {
+
+        }
+
+        public void changeDurability(uint slot, uint durabilityChange)
+        {
+
+        }
+
+        public void changeSpiritBind(uint slot, uint spiritBindChange)
+        {
+
+        }
+
+        public void changeMateria(uint slot, byte materiaSlot, byte materiaId)
+        {
+
+        }
+
         public void runEventFunction(string functionName, params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
@@ -741,8 +832,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return eventMenuId;
         }
 
-
-        internal void sendInstanceUpdate()
+        public void sendInstanceUpdate()
         {
            
             //Update Instance
@@ -753,6 +843,27 @@ namespace FFXIVClassic_Map_Server.Actors
                 queuePacket(bp);
             }
         
+        }
+
+        public int getLastInventorySlot(ushort type)
+        {
+            switch (type)
+            {
+                case InventorySetBeginPacket.CODE_INVENTORY:
+                    return invNormal.Count == 0 ? 0 : invNormal.Count() + 1;
+                case InventorySetBeginPacket.CODE_KEYITEMS:
+                    return invKeyItems.Count == 0 ? 0 : invKeyItems.Count() + 1;
+                case InventorySetBeginPacket.CODE_CURRANCY:
+                    return invCurrancy.Count == 0 ? 0 : invCurrancy.Count() + 1;
+                case InventorySetBeginPacket.CODE_MELDREQUEST:
+                    return invMeldRequest.Count == 0 ? 0 : invMeldRequest.Count() + 1;
+                case InventorySetBeginPacket.CODE_BAZAAR:
+                    return invBazaar.Count == 0 ? 0 : invBazaar.Count() + 1;
+                case InventorySetBeginPacket.CODE_LOOT:
+                    return invLoot.Count == 0 ? 0 : invLoot.Count() + 1;
+            }
+
+            return 0;
         }
     }
 }

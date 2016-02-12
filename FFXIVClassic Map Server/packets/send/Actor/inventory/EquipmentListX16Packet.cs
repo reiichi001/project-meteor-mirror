@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
 {
-    class EquipmentSetupPacket
+    class EquipmentListX16Packet
     {
-        public const ushort OPCODE = 0x014E;
-        public const uint PACKET_SIZE = 0x58;
+        public const ushort OPCODE = 0x14F;
+        public const uint PACKET_SIZE = 0x80;
 
         public const uint UNEQUIPPED = 0xFFFFFFFF;
 
@@ -36,7 +36,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
 
         private uint[] equipment = new uint[0x17];
 
-        public EquipmentSetupPacket()
+        public EquipmentListX16Packet()
         {
             for (int i = 0; i < equipment.Length; i++)
                 equipment[i] = UNEQUIPPED; //We will use this as "Unequipped"
@@ -71,7 +71,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
                 runningCount++;
 
                 //Create another packet
-                if (runningCount >= 8)
+                if (runningCount >= 16)
                 {
                     packetCount = 0;
                     binWriter.Write((UInt32)8);

@@ -15,7 +15,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public uint slot;
 
         public bool isUntradeable = false;
-        public bool isHighQuality = false;
+        public byte quality = 1;
 
         public uint durability = 0;
         public ushort spiritbind = 0;
@@ -33,6 +33,23 @@ namespace FFXIVClassic_Map_Server.dataobjects
             this.itemId = itemId;
             this.quantity = quantity;
             this.slot = slot;            
+        }
+
+        public Item(uint uniqueId, uint itemId, int quantity, uint slot, bool isUntradeable, byte qualityNumber, uint durability, ushort spiritbind, byte materia1, byte materia2, byte materia3, byte materia4, byte materia5)
+        {
+            this.uniqueId = uniqueId;
+            this.itemId = itemId;
+            this.quantity = quantity;
+            this.slot = slot;
+            this.isUntradeable = isUntradeable;
+            this.quality = qualityNumber;
+            this.durability = durability;
+            this.spiritbind = spiritbind;
+            this.materia1 = materia1;
+            this.materia2 = materia2;
+            this.materia3 = materia3;
+            this.materia4 = materia4;
+            this.materia5 = materia5;
         }
 
         public byte[] toPacketBytes()
@@ -57,7 +74,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
                     binWriter.Write((UInt32)0x00000000);
 
-                    binWriter.Write(isHighQuality ? (byte)0x02 : (byte)0x01);
+                    binWriter.Write((byte)quality);
                     binWriter.Write((byte)0x01);
                     binWriter.Write((uint)durability);
 

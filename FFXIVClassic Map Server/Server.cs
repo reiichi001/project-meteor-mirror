@@ -406,6 +406,23 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
+        private void giveItem(ConnectedPlayer client, uint itemId)
+        {
+            if (client != null)
+            {
+                Player p = client.getActor();
+                p.addItem(itemId, 0, 1, 1);
+            }
+            else
+            {
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    Player p = entry.Value.getActor();
+                    p.addItem(itemId, 0, 1, 1);
+                }
+            }
+        }
+
         internal void doCommand(string input, ConnectedPlayer client)
         {
             input.Trim();
@@ -449,6 +466,17 @@ namespace FFXIVClassic_Lobby_Server
                     catch (Exception e)
                     {
                         Log.error("Could not load packet: " + e);
+                    }
+                }
+                else if (split[0].Equals("giveitem"))
+                {
+                    try
+                    {
+                        giveItem(client, UInt32.Parse(split[1]));
+                    }
+                    catch (Exception e)
+                    {
+                        Log.error("Could not give item.");
                     }
                 }
                 else if (split[0].Equals("music"))
