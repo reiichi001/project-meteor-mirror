@@ -16,6 +16,7 @@ using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
+using FFXIVClassic_Map_Server.actors.chara.player;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -411,14 +412,14 @@ namespace FFXIVClassic_Lobby_Server
             if (client != null)
             {
                 Player p = client.getActor();
-                p.addItem(itemId, 0, 1, 1);
+                p.inventories[Inventory.NORMAL].addItem(itemId, 0, 1, 1);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.addItem(itemId, 0, 1, 1);
+                    p.inventories[Inventory.NORMAL].addItem(itemId, 0, 1, 1);
                 }
             }
         }

@@ -65,6 +65,7 @@
     <Compile Include="actors\area\Zone.cs" />
     <Compile Include="actors\chara\npc\NpcWork.cs" />
     <Compile Include="actors\chara\AetheryteWork.cs" />
+    <Compile Include="actors\chara\player\Inventory.cs" />
     <Compile Include="actors\chara\Work.cs" />
     <Compile Include="actors\debug\Debug.cs" />
     <Compile Include="actors\director\WeatherDirector.cs" />

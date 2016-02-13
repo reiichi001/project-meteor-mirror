@@ -2,6 +2,7 @@
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.actors.area;
+using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
@@ -60,12 +61,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint currentTitle;
 
         //Inventory        
-        public List<Item> invNormal = new List<Item>();
-        public List<Item> invCurrancy = new List<Item>();
-        public List<Item> invKeyItems = new List<Item>();
-        public List<Item> invLoot = new List<Item>();
-        public List<Item> invMeldRequest = new List<Item>();
-        public List<Item> invBazaar = new List<Item>();
+        public Dictionary<ushort, Inventory> inventories = new Dictionary<ushort, Inventory>();
         public int[] invEquipment = new int[MAXSIZE_INVENTORY_EQUIPMENT];
 
         //GC Related
@@ -98,6 +94,10 @@ namespace FFXIVClassic_Map_Server.Actors
             actorName = String.Format("_pc{0:00000000}", actorID);
             className = "Player";
             currentSubState = SetActorStatePacket.SUB_STATE_PLAYER;
+
+            inventories[Inventory.NORMAL] = new Inventory(this, MAXSIZE_INVENTORY_NORMAL, Inventory.NORMAL);
+            inventories[Inventory.KEYITEMS] = new Inventory(this, MAXSIZE_INVENTORY_KEYITEMS, Inventory.KEYITEMS);
+            inventories[Inventory.CURRANCY] = new Inventory(this, MAXSIZE_INVENTORY_CURRANCY, Inventory.CURRANCY);
 
             charaWork.property[0] = 1;
             charaWork.property[1] = 1;
@@ -428,58 +428,9 @@ namespace FFXIVClassic_Map_Server.Actors
             BasePacket partyListPacket = BasePacket.createPacket(ListUtils.createPartyList(actorId, 0xF4, 1, 0x8000000000696df2, partyListEntries), true, false);
             playerSession.queuePacket(partyListPacket);
             #endregion
-
-            #region itemsetup
-            ////////ITEMS////////
+        
             queuePacket(InventoryBeginChangePacket.buildPacket(actorId));
-
-            queuePacket(InventorySetBeginPacket.buildPacket(actorId, 200, InventorySetBeginPacket.CODE_INVENTORY));
-            sendInventoryPackets(invNormal);
-            queuePacket(InventorySetEndPacket.buildPacket(actorId));
-
-            /*
-           
-            //TEST
-            List<Item> items = new List<Item>();
-            items.Add(new Item(1337, 8030920, 0)); //Leather Jacket
-            items.Add(new Item(1338, 8013626, 1)); //Chocobo Mask
-            items.Add(new Item(1339, 5030402, 2)); //Thyrus
-            items.Add(new Item(1340, 8013635, 3)); //Dalamud Horn
-            items.Add(new Item(1341, 10100132, 4)); //Savage Might 4
-            items.Add(new Item(1342, 8032407, 5)); //Green Summer Halter (Female)
-            //items.Add(new Item(1343, 8051307, 6)); //Green Summer Tanga (Female)
-
-            int count = 0;
-
-            items[2].quality = 2;
-            items[0].durability = 9999;
-            items[0].spiritbind = 10000;
-            items[0].materia1 = 6;
-            items[0].materia2 = 7;
-            items[0].materia3 = 8;
-            items[0].materia4 = 9;
-            items[0].materia5 = 10;
-            items[1].durability = 9999;
-            items[2].durability = 0xFFFFFFF;
-            items[3].durability = 9999;
-            items[4].quantity = 99;
-
-            List<SubPacket> packets = new List<SubPacket>();
-            packets.Add(InventorySetBeginPacket.buildPacket(actorId, 200, InventorySetBeginPacket.CODE_INVENTORY));
-            packets.Add(InventoryListX08Packet.buildPacket(actorId, items,ref count));
-            packets.Add(InventorySetEndPacket.buildPacket(actorId));
-
-            Item i = new Item(1343, 8051307, 0);
-
-            packets.Add(InventorySetBeginPacket.buildPacket(actorId, 0x500, InventorySetBeginPacket.CODE_KEYITEMS));
-            packets.Add(InventoryListX01Packet.buildPacket(actorId, i));
-            packets.Add(InventorySetEndPacket.buildPacket(actorId));
-
-            BasePacket testPacket = BasePacket.createPacket(packets, true, false);
-            testPacket.debugPrintPacket();
-            playerSession.queuePacket(testPacket);
-            */
-            #endregion
+            inventories[Inventory.NORMAL].sendFullInventory();
             #region equipsetup
             EquipmentListX08Packet initialEqupmentPacket = new EquipmentListX08Packet();
             initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_BODY, 5);
@@ -492,13 +443,9 @@ namespace FFXIVClassic_Map_Server.Actors
             //Equip Init
          //   playerSession.queuePacket(InventorySetBeginPacket.buildPacket(actorId, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false);
          //   playerSession.queuePacket(BasePacket.createPacket(initialEqupmentPacket.buildPackets(actorId), true, false));
-         //   playerSession.queuePacket(InventorySetEndPacket.buildPacket(actorId), true, false);
-
-
-            playerSession.queuePacket(InventoryEndChangePacket.buildPacket(actorId), true, false);
-            ////////ITEMS//////// 
-
+            //   playerSession.queuePacket(InventorySetEndPacket.buildPacket(actorId), true, false);
             #endregion
+            playerSession.queuePacket(InventoryEndChangePacket.buildPacket(actorId), true, false);         
 
             playerSession.queuePacket(getInitPackets(actorId));
 
@@ -518,36 +465,6 @@ namespace FFXIVClassic_Map_Server.Actors
             playerSession.queuePacket(reply11);
             #endregion
             
-        }
-
-        private void sendInventoryPackets(Item item)
-        {
-            queuePacket(InventoryListX01Packet.buildPacket(actorId, item));
-        }
-
-        private void sendInventoryPackets(List<Item> items)
-        {
-            int currentIndex = 0;
-
-            while (true)
-            {
-                if (items.Count - currentIndex >= 64)
-                    queuePacket(InventoryListX64Packet.buildPacket(actorId, items, ref currentIndex));
-                else if (items.Count - currentIndex >= 32)
-                    queuePacket(InventoryListX32Packet.buildPacket(actorId, items, ref currentIndex));
-                else if (items.Count - currentIndex >= 16)
-                    queuePacket(InventoryListX16Packet.buildPacket(actorId, items, ref currentIndex));
-                else if (items.Count - currentIndex <= 8 && items.Count - currentIndex > 1)
-                    queuePacket(InventoryListX08Packet.buildPacket(actorId, items, ref currentIndex));
-                else if (items.Count - currentIndex == 1)
-                {
-                    queuePacket(InventoryListX01Packet.buildPacket(actorId, items[currentIndex]));
-                    currentIndex++;
-                }
-                else
-                    break;
-            }
-
         }
 
         private void sendRemoveInventoryPackets(List<ushort> slots)
@@ -716,94 +633,6 @@ namespace FFXIVClassic_Map_Server.Actors
             //zone.broadcastPacketAroundActor(this, worldMasterMessage);
         }
 
-        public void addItem(uint itemId, ushort type, int quantity, byte quality)
-        {
-            List<SubPacket> addItemPackets = new List<SubPacket>();
-            Item storedItem = null;
-
-            //Check if item id exists
-            switch (type)
-            {
-                case InventorySetBeginPacket.CODE_INVENTORY:
-                    foreach (Item item in invNormal)
-                    {
-                        if (item.itemId == itemId)
-                        {
-                            storedItem = item;
-                            break;
-                        }
-                    }
-                    break;
-                case InventorySetBeginPacket.CODE_KEYITEMS:
-                    break;
-                case InventorySetBeginPacket.CODE_CURRANCY:
-                    break;
-                case InventorySetBeginPacket.CODE_MELDREQUEST:
-                    break;
-                case InventorySetBeginPacket.CODE_BAZAAR:
-                    break;
-                case InventorySetBeginPacket.CODE_LOOT:
-                    break;
-            }
-
-            //Update lists and db
-            queuePacket(InventoryBeginChangePacket.buildPacket(actorId));
-           
-            switch (type)
-            {
-                case InventorySetBeginPacket.CODE_INVENTORY:
-                    queuePacket(InventorySetBeginPacket.buildPacket(actorId, 200, InventorySetBeginPacket.CODE_INVENTORY));
-                    if (storedItem == null)
-                    {
-                        Item addedItem = Database.addItem(this, itemId, quantity, quality, false, 100, type);
-                        invNormal.Add(addedItem);
-                        sendInventoryPackets(addedItem);
-                    }
-                    else
-                    {
-                        Database.addQuantity(this, itemId, quantity);
-                        storedItem.quantity += quantity;
-                        sendInventoryPackets(storedItem);
-                    }
-                    queuePacket(InventorySetEndPacket.buildPacket(actorId));
-                    break;
-                case InventorySetBeginPacket.CODE_KEYITEMS:
-                    break;
-                case InventorySetBeginPacket.CODE_CURRANCY:
-                    break;
-                case InventorySetBeginPacket.CODE_MELDREQUEST:
-                    break;
-                case InventorySetBeginPacket.CODE_BAZAAR:
-                    break;
-                case InventorySetBeginPacket.CODE_LOOT:
-                    break;
-            }
-
-            //addItemPackets.Add(InventorySetBeginPacket.buildPacket(actorId, MAXSIZE_INVENTORY_NORMAL, type));
-            //sendInventoryPackets()
-            queuePacket(InventorySetEndPacket.buildPacket(actorId));
-        }
-
-        public void removeItem(uint itemId, uint quantity)
-        {
-
-        }
-
-        public void changeDurability(uint slot, uint durabilityChange)
-        {
-
-        }
-
-        public void changeSpiritBind(uint slot, uint spiritBindChange)
-        {
-
-        }
-
-        public void changeMateria(uint slot, byte materiaSlot, byte materiaId)
-        {
-
-        }
-
         public void runEventFunction(string functionName, params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
@@ -845,25 +674,5 @@ namespace FFXIVClassic_Map_Server.Actors
         
         }
 
-        public int getLastInventorySlot(ushort type)
-        {
-            switch (type)
-            {
-                case InventorySetBeginPacket.CODE_INVENTORY:
-                    return invNormal.Count == 0 ? 0 : invNormal.Count() + 1;
-                case InventorySetBeginPacket.CODE_KEYITEMS:
-                    return invKeyItems.Count == 0 ? 0 : invKeyItems.Count() + 1;
-                case InventorySetBeginPacket.CODE_CURRANCY:
-                    return invCurrancy.Count == 0 ? 0 : invCurrancy.Count() + 1;
-                case InventorySetBeginPacket.CODE_MELDREQUEST:
-                    return invMeldRequest.Count == 0 ? 0 : invMeldRequest.Count() + 1;
-                case InventorySetBeginPacket.CODE_BAZAAR:
-                    return invBazaar.Count == 0 ? 0 : invBazaar.Count() + 1;
-                case InventorySetBeginPacket.CODE_LOOT:
-                    return invLoot.Count == 0 ? 0 : invLoot.Count() + 1;
-            }
-
-            return 0;
-        }
     }
 }

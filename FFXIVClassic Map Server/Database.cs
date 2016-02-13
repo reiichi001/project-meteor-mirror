@@ -16,6 +16,7 @@ using FFXIVClassic_Map_Server.common.EfficientHashTables;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
+using FFXIVClassic_Map_Server.actors.chara.player;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -451,9 +452,9 @@ namespace FFXIVClassic_Lobby_Server
                         }
                     }
 
-                    player.invNormal = getInventory(player, 0, InventorySetBeginPacket.CODE_INVENTORY);
-                    player.invKeyItems = getInventory(player, 0, InventorySetBeginPacket.CODE_KEYITEMS);
-                    player.invCurrancy = getInventory(player, 0, InventorySetBeginPacket.CODE_CURRANCY);
+                    player.inventories[Inventory.NORMAL].initList(getInventory(player, 0, Inventory.NORMAL));
+                    player.inventories[Inventory.KEYITEMS].initList(getInventory(player, 0, Inventory.KEYITEMS));
+                    player.inventories[Inventory.CURRANCY].initList(getInventory(player, 0, Inventory.CURRANCY));
 
                 }
                 catch (MySqlException e)
@@ -575,7 +576,7 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.Parameters.AddWithValue("@durability", durability);
                     cmd.ExecuteNonQuery();
 
-                    insertedItem = new Item((uint)cmd.LastInsertedId, itemId, quantity, (uint)player.getLastInventorySlot(type), isUntradeable, quality, durability, 0, 0, 0, 0, 0, 0);
+                    insertedItem = new Item((uint)cmd.LastInsertedId, itemId, quantity, (uint)player.inventories[type].getNextEmptySlot(), isUntradeable, quality, durability, 0, 0, 0, 0, 0, 0);
                 }
                 catch (MySqlException e)
                 { Console.WriteLine(e); }
@@ -588,7 +589,7 @@ namespace FFXIVClassic_Lobby_Server
             return insertedItem;
         }
 
-        public static void addQuantity(Player player, uint itemId, int quantity)
+        public static void addQuantity(Player player, uint slot, int quantity)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -599,13 +600,13 @@ namespace FFXIVClassic_Lobby_Server
                     string query = @"
                                     UPDATE characters_inventory
                                     SET quantity = quantity + @quantity
-                                    WHERE serverItemId = (SELECT id FROM server_items WHERE characterId = @charId AND itemId = @itemId LIMIT 1)
+                                    WHERE serverItemId = (SELECT id FROM server_items WHERE characterId = @charId AND slot = @slot LIMIT 1)
                                     ";
                     
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@quantity", quantity);
-                    cmd.Parameters.AddWithValue("@itemId", itemId);
+                    cmd.Parameters.AddWithValue("@slot", slot);
                     cmd.ExecuteNonQuery();
 
                 }
