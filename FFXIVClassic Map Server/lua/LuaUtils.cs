@@ -31,6 +31,18 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public class Type9Param
+        {
+            public ulong item1;
+            public ulong item2;
+
+            public Type9Param(ulong item1, ulong item2)
+            {
+                this.item1 = item1;
+                this.item2 = item2;
+            }
+        }
+
         public static List<LuaParam> readLuaParams(BinaryReader reader)
         {
             List<LuaParam> luaParams = new List<LuaParam>();
@@ -80,8 +92,7 @@ namespace FFXIVClassic_Map_Server
                         value = new Type7Param(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
                         break;  
                     case 0x9: //Two Longs (only storing first one)
-                        value = Utils.swapEndian(reader.ReadUInt64());
-                        reader.ReadUInt64();
+                        value = new Type9Param(Utils.swapEndian(reader.ReadUInt64()), Utils.swapEndian(reader.ReadUInt64()));
                         break;
                     case 0xC: //Byte
                         value = reader.ReadByte();
@@ -141,8 +152,8 @@ namespace FFXIVClassic_Map_Server
                         writer.Write((Byte)type7.inventoryType);
                         break;
                     case 0x9: //Two Longs (only storing first one)
-                        writer.Write((UInt64)Utils.swapEndian((UInt64)l.value));
-                        writer.Write((UInt64)0);
+                        writer.Write((UInt64)Utils.swapEndian(((Type9Param)l.value).item1));
+                        writer.Write((UInt64)Utils.swapEndian(((Type9Param)l.value).item2));
                         break;
                     case 0xC: //Byte
                         writer.Write((Byte)l.value);
@@ -211,8 +222,7 @@ namespace FFXIVClassic_Map_Server
                                 value = new Type7Param(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
                                 break;
                             case 0x9: //Two Longs (only storing first one)
-                                value = Utils.swapEndian(reader.ReadUInt64());
-                                reader.ReadUInt64();
+                                value = new Type9Param(Utils.swapEndian(reader.ReadUInt64()), Utils.swapEndian(reader.ReadUInt64()));
                                 break;
                             case 0xC: //Byte
                                 value = reader.ReadByte();
@@ -343,9 +353,9 @@ namespace FFXIVClassic_Map_Server
             {
                 luaParams.Add(new LuaParam(0x7, (Type7Param)o)); 
             }
-            else if (o is ulong)
+            else if (o is Type9Param)
             {
-                luaParams.Add(new LuaParam(0x9, (ulong)o));
+                luaParams.Add(new LuaParam(0x9, (Type9Param)o));
             }
             else if (o is byte)
             {
@@ -403,7 +413,8 @@ namespace FFXIVClassic_Map_Server
                         dumpString += String.Format("0x{0:X}", (byte)lParams[i].value);
                         break;
                     case 0x9: //Long (+ 8 bytes ignored)
-                        dumpString += String.Format("0x{0:X}", (ulong)lParams[i].value);
+                        Type9Param type9Param = ((Type9Param)lParams[i].value);
+                        dumpString += String.Format("Type9 Param: (0x{0:X}, 0x{1:X})", type9Param.item1, type9Param.item2);
                         break;
                     case 0x1B: //Short?
                         dumpString += String.Format("0x{0:X}", (ushort)lParams[i].value);
