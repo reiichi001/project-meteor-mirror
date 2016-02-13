@@ -67,6 +67,18 @@ namespace FFXIVClassic_Lobby_Server.common
             return unixTimeStamp;
         }
 
+        public static ulong swapEndian(ulong input)
+        {
+            return ((0x00000000000000FF) & (input >> 56) |
+                    (0x000000000000FF00) & (input >> 40) |
+                    (0x0000000000FF0000) & (input >> 24) |
+                    (0x00000000FF000000) & (input >> 8) |
+                    (0x000000FF00000000) & (input << 8) |
+                    (0x0000FF0000000000) & (input << 24) |
+                    (0x00FF000000000000) & (input << 40) |
+                    (0xFF00000000000000) & (input << 56));
+        }
+
         public static uint swapEndian(uint input)
         {
             return ((input >> 24) & 0xff) | 

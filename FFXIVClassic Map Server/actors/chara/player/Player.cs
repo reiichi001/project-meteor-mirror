@@ -431,14 +431,15 @@ namespace FFXIVClassic_Map_Server.Actors
         
             queuePacket(InventoryBeginChangePacket.buildPacket(actorId));
             inventories[Inventory.NORMAL].sendFullInventory();
+            inventories[Inventory.CURRANCY].sendFullInventory();
             #region equipsetup
-            EquipmentListX08Packet initialEqupmentPacket = new EquipmentListX08Packet();
-            initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_BODY, 5);
-            initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_HEAD, 3);
-            initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_UNDERSHIRT, 6);
-            initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_UNDERGARMENT, 7);
-            initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_MAINHAND, 2);
-            initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_LEGS, 8);
+          //  EquipmentListX08Packet initialEqupmentPacket = new EquipmentListX08Packet();
+          //  initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_BODY, 5);
+          //  initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_HEAD, 3);
+          //  initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_UNDERSHIRT, 6);
+           // initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_UNDERGARMENT, 7);
+           // initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_MAINHAND, 2);
+           // initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_LEGS, 8);
 
             //Equip Init
          //   playerSession.queuePacket(InventorySetBeginPacket.buildPacket(actorId, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false);

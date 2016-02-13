@@ -12,7 +12,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public uint uniqueId;
         public uint itemId;
         public int quantity = 1;
-        public uint slot;
+        public ushort slot;
 
         public bool isUntradeable = false;
         public byte quality = 1;
@@ -27,7 +27,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public byte materia5 = 0;
 
         //Bare Minimum
-        public Item(uint id, uint itemId, uint slot)
+        public Item(uint id, uint itemId, ushort slot)
         {
             this.uniqueId = id;
             this.itemId = itemId;
@@ -35,7 +35,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             this.slot = slot;            
         }
 
-        public Item(uint uniqueId, uint itemId, int quantity, uint slot, bool isUntradeable, byte qualityNumber, uint durability, ushort spiritbind, byte materia1, byte materia2, byte materia3, byte materia4, byte materia5)
+        public Item(uint uniqueId, uint itemId, int quantity, ushort slot, bool isUntradeable, byte qualityNumber, uint durability, ushort spiritbind, byte materia1, byte materia2, byte materia3, byte materia4, byte materia5)
         {
             this.uniqueId = uniqueId;
             this.itemId = itemId;
@@ -64,8 +64,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
                     binWriter.Write((UInt32)0x00000000);
                     binWriter.Write((Int32)quantity);
                     binWriter.Write((UInt32)itemId);
-                    binWriter.Write((UInt32)slot);
+                    binWriter.Write((UInt16)slot);
 
+                    binWriter.Write((UInt16)0x0000);
                     binWriter.Write((UInt32)0x00000000);
                     binWriter.Write((UInt32)0x00000000);
                     binWriter.Write((UInt32)0x00000000);

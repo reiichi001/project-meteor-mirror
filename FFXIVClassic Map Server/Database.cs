@@ -509,7 +509,7 @@ namespace FFXIVClassic_Lobby_Server
                             uint uniqueId = reader.GetUInt32(0);
                             uint itemId = reader.GetUInt32(1);
                             int quantity = reader.GetInt32(2);
-                            uint slot = reader.GetUInt32(3);
+                            ushort slot = reader.GetUInt16(3);
 
                             bool isUntradeable = reader.GetBoolean(4);
                             byte qualityNumber = reader.GetByte(5);
@@ -576,7 +576,7 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.Parameters.AddWithValue("@durability", durability);
                     cmd.ExecuteNonQuery();
 
-                    insertedItem = new Item((uint)cmd.LastInsertedId, itemId, quantity, (uint)player.inventories[type].getNextEmptySlot(), isUntradeable, quality, durability, 0, 0, 0, 0, 0, 0);
+                    insertedItem = new Item((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.inventories[type].getNextEmptySlot(), isUntradeable, quality, durability, 0, 0, 0, 0, 0, 0);
                 }
                 catch (MySqlException e)
                 { Console.WriteLine(e); }

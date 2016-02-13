@@ -14,7 +14,23 @@ namespace FFXIVClassic_Map_Server
 {
     class LuaUtils
     {
-        
+    
+        public class Type7Param
+        {
+            public uint actorId;
+            public byte unknown;
+            public byte slot;
+            public byte inventoryType;
+
+            public Type7Param(uint actorId, byte unknown, byte slot, byte inventoryType)
+            {
+                this.actorId = actorId;
+                this.unknown = unknown;
+                this.slot = slot;
+                this.inventoryType = inventoryType;
+            }
+        }
+
         public static List<LuaParam> readLuaParams(BinaryReader reader)
         {
             List<LuaParam> luaParams = new List<LuaParam>();
@@ -55,7 +71,18 @@ namespace FFXIVClassic_Map_Server
                         break;
                     case 0x6: //Actor (By Id)
                         value = Utils.swapEndian(reader.ReadUInt32());
-                        break;                       
+                        break;
+                    case 0x7: //Weird one used for inventory
+                        uint type7ActorId = Utils.swapEndian(reader.ReadUInt32());
+                        byte type7Unknown = reader.ReadByte();
+                        byte type7Slot = reader.ReadByte();
+                        byte type7InventoryType = reader.ReadByte();
+                        value = new Type7Param(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
+                        break;  
+                    case 0x9: //Two Longs (only storing first one)
+                        value = Utils.swapEndian(reader.ReadUInt64());
+                        reader.ReadUInt64();
+                        break;
                     case 0xC: //Byte
                         value = reader.ReadByte();
                         break;
@@ -105,6 +132,17 @@ namespace FFXIVClassic_Map_Server
                         break;
                     case 0x6: //Actor (By Id)
                         writer.Write((UInt32)Utils.swapEndian((UInt32)l.value));
+                        break;
+                    case 0x7: //Weird one used for inventory
+                        Type7Param type7 = (Type7Param)l.value;
+                        writer.Write((UInt32)Utils.swapEndian((UInt32)type7.actorId));
+                        writer.Write((Byte)type7.unknown);
+                        writer.Write((Byte)type7.slot);
+                        writer.Write((Byte)type7.inventoryType);
+                        break;
+                    case 0x9: //Two Longs (only storing first one)
+                        writer.Write((UInt64)Utils.swapEndian((UInt64)l.value));
+                        writer.Write((UInt64)0);
                         break;
                     case 0xC: //Byte
                         writer.Write((Byte)l.value);
@@ -164,6 +202,17 @@ namespace FFXIVClassic_Map_Server
                                 break;
                             case 0x6: //Actor (By Id)
                                 value = Utils.swapEndian(reader.ReadUInt32());
+                                break;
+                            case 0x7: //Weird one used for inventory
+                                uint type7ActorId = Utils.swapEndian(reader.ReadUInt32());
+                                byte type7Unknown = reader.ReadByte();
+                                byte type7Slot = reader.ReadByte();
+                                byte type7InventoryType = reader.ReadByte();
+                                value = new Type7Param(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
+                                break;
+                            case 0x9: //Two Longs (only storing first one)
+                                value = Utils.swapEndian(reader.ReadUInt64());
+                                reader.ReadUInt64();
                                 break;
                             case 0xC: //Byte
                                 value = reader.ReadByte();
@@ -290,6 +339,14 @@ namespace FFXIVClassic_Map_Server
             {
                 luaParams.Add(new LuaParam(0x6, ((Actor)o).actorId));
             }
+            else if (o is Type7Param)
+            {
+                luaParams.Add(new LuaParam(0x7, (Type7Param)o)); 
+            }
+            else if (o is ulong)
+            {
+                luaParams.Add(new LuaParam(0x9, (ulong)o));
+            }
             else if (o is byte)
             {
                 luaParams.Add(new LuaParam(0xC, (byte)o));
@@ -338,8 +395,15 @@ namespace FFXIVClassic_Map_Server
                     case 0x6: //Actor (By Id)
                         dumpString += String.Format("0x{0:X}", (uint)lParams[i].value);
                         break;
+                    case 0x7: //Weird one used for inventory
+                        Type7Param type7Param = ((Type7Param)lParams[i].value);
+                        dumpString += String.Format("Type7 Param: (0x{0:X}, 0x{1:X}, 0x{2:X}, 0x{3:X})", type7Param.actorId, type7Param.unknown, type7Param.slot, type7Param.inventoryType);
+                        break;
                     case 0xC: //Byte
                         dumpString += String.Format("0x{0:X}", (byte)lParams[i].value);
+                        break;
+                    case 0x9: //Long (+ 8 bytes ignored)
+                        dumpString += String.Format("0x{0:X}", (ulong)lParams[i].value);
                         break;
                     case 0x1B: //Short?
                         dumpString += String.Format("0x{0:X}", (ushort)lParams[i].value);
