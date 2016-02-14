@@ -424,19 +424,19 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        private void removeItem(ConnectedPlayer client, ushort slot)
+        private void removeItem(ConnectedPlayer client, uint itemId, int quantity)        
         {
             if (client != null)
             {
                 Player p = client.getActor();
-                p.inventories[Inventory.NORMAL].removeItem(slot);
+                p.inventories[Inventory.NORMAL].removeItem(itemId, quantity);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.inventories[Inventory.NORMAL].removeItem(slot);
+                    p.inventories[Inventory.NORMAL].removeItem(itemId, quantity);
                 }
             }
         }
@@ -507,7 +507,10 @@ namespace FFXIVClassic_Lobby_Server
 
                     try
                     {
-                        removeItem(client, UInt16.Parse(split[1]));
+                        if (split.Length == 2)
+                            removeItem(client, UInt32.Parse(split[1]), 1);
+                        else if (split.Length == 3)
+                            removeItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
                     }
                     catch (Exception e)
                     {

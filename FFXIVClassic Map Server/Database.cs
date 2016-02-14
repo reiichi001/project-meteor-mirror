@@ -477,7 +477,6 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     conn.Open();
 
-                    //Load Last 5 Completed
                     string query = @"
                                     SELECT
                                     serverItemId,
@@ -600,7 +599,7 @@ namespace FFXIVClassic_Lobby_Server
                      string query = @"
                                     UPDATE characters_inventory
                                     SET quantity = @quantity
-                                    WHERE serverItemId = (SELECT id FROM server_items WHERE characterId = @charId AND slot = @slot LIMIT 1)
+                                    WHERE characterId = @charId AND slot = @slot
                                     ";
                     
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -622,20 +621,23 @@ namespace FFXIVClassic_Lobby_Server
 
         public static void removeItem(Player player, ulong serverItemId)
         {
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}; Allow User Variables=True", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
                 {
                     conn.Open();
 
-                    //Load Last 5 Completed
                     string query = @"
                                     SELECT slot INTO @slotToDelete FROM characters_inventory WHERE serverItemId = @serverItemId;
                                     UPDATE characters_inventory
                                     SET slot = slot - 1
-                                    WHERE characterId = 108 AND slot > @slotToDelete;
+                                    WHERE characterId = @charId AND slot > @slotToDelete;
+
                                     DELETE FROM characters_inventory
                                     WHERE serverItemId = @serverItemId;
+
+                                    DELETE FROM server_items
+                                    WHERE id = @serverItemId;
                                     ";                    
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -656,27 +658,25 @@ namespace FFXIVClassic_Lobby_Server
 
         public static void removeItem(Player player, ushort slot)
         {
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}; Allow User Variables=True", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
                 {
                     conn.Open();
 
-                    //Load Last 5 Completed
                     string query = @"
+                                    SELECT serverItemId INTO @serverItemId FROM characters_inventory WHERE characterId = @charId AND slot = @slot;
+
+                                    DELETE FROM characters_inventory
+                                    WHERE characterId = @charId AND slot = @slot;
+
                                     DELETE FROM server_items
-                                    WHERE slot = @slot; 
-                                    ";
+                                    WHERE id = @serverItemId;
 
-                    string query2 = @"
-                                    DELETE FROM character_inventory
-                                    WHERE uniqueServerId = @uniqueItemId; 
-                                    UPDATE character_inventory
+                                    UPDATE characters_inventory
                                     SET slot = slot - 1
-                                    WHERE characterId = @charId AND slot > @slot
+                                    WHERE characterId = @charId AND slot > @slot;
                                     ";
-
-                    query += query2;
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);

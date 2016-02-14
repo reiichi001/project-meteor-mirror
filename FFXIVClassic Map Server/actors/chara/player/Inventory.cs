@@ -99,9 +99,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public void removeItem(uint itemId, int quantity)
         {
-            if (!hasItem(itemId))
+            if (!hasItem(itemId, quantity))
                 return;
 
+            List<ushort> slotsToUpdate = new List<ushort>();
+            List<Item> itemsToRemove = new List<Item>();
             List<ushort> slotsToRemove = new List<ushort>();
             List<SubPacket> addItemPackets = new List<SubPacket>();
 
@@ -115,9 +117,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 {
                     //Stack nomnomed
                     if (item.quantity - quantityCount <= 0)
-                        slotsToRemove.Add(item.slot);
+                    {
+                        itemsToRemove.Add(item);
+                    }
                     else
+                    {
+                        slotsToUpdate.Add(item.slot);
                         item.quantity -= quantityCount; //Stack reduced
+                    }
 
                     quantityCount -= item.quantity;
                     lowestSlot = item.slot;
@@ -127,13 +134,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 }
             }
 
-            list.Sort();
-            int numSlotsRemoved = 0;
-            for (int i = 0; i < slotsToRemove.Count; i++)
+            for (int i = 0; i < slotsToUpdate.Count; i++)
             {
-                Database.removeItem(owner, (ushort)(slotsToRemove[i] - numSlotsRemoved));
-                list.RemoveAt(slotsToRemove[i] - numSlotsRemoved);
-                numSlotsRemoved++;
+                Database.setQuantity(owner, slotsToUpdate[i], list[slotsToUpdate[i]].quantity);
+            }
+
+            for (int i = 0; i < itemsToRemove.Count; i++)
+            {
+                Database.removeItem(owner, itemsToRemove[i].uniqueId);
+                list.Remove(itemsToRemove[i]);
             }
 
             owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
@@ -146,7 +155,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));
         }
 
-        public void removeItem(uint itemDBId)
+        public void removeItem(ulong itemDBId)
         {
             ushort slot = 0;
             Item toDelete = null;
@@ -179,6 +188,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public void removeItem(ushort slot)
         {
+            if (slot >= list.Count)
+                return;
+
             list.RemoveAt((int)slot);
             Database.removeItem(owner, slot);
 
@@ -293,9 +305,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 Item item = list[i];
                 if (item.itemId == itemId && item.quantity < item.maxStack)
                 {
-                    int oldQuantity = item.quantity;
-                    item.quantity = Math.Min(item.quantity + quantityCount, item.maxStack);
-                    quantityCount -= (item.maxStack - oldQuantity);
+                    quantityCount -= (item.maxStack - item.quantity);
                     if (quantityCount <= 0)
                         break;
                 }
