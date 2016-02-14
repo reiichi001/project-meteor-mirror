@@ -30,7 +30,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
 
                     for (int i = 0; i < max; i++)
                     {
-                        binWriter.Write(items[i].toPacketBytes());
+                        binWriter.Write(items[listOffset].toPacketBytes());
                         listOffset++;
                     }
                 }

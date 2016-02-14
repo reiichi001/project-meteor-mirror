@@ -27,9 +27,9 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
                     else
                         max = 64;
 
-                    for (int i = listOffset; i < max; i++)
+                    for (int i = 0; i < max; i++)
                     {
-                        binWriter.Write((UInt16)slots[i]);
+                        binWriter.Write((UInt16)slots[listOffset]);
                         listOffset++;
                     }
                 }

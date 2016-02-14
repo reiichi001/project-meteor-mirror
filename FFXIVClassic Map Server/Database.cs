@@ -556,24 +556,27 @@ namespace FFXIVClassic_Lobby_Server
                                     (@itemId, @quality, @isUntradeable, @durability); 
                                     ";
 
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
                     string query2 = @"
                                     INSERT INTO characters_inventory
                                     (characterId, slot, inventoryType, serverItemId, quantity)
-                                    SELECT @charId, IFNULL(MAX(SLOT)+1, 0), @inventoryType, LAST_INSERT_ID(), @quantity FROM characters_inventory WHERE characterId = @charId;
+                                    SELECT @charId, IFNULL(MAX(SLOT)+1, 0), @inventoryType, LAST_INSERT_ID(), @quantity FROM characters_inventory WHERE characterId = @charId AND inventoryType = @inventoryType;
                                     ";
 
-                    query += query2;
-
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@charId", player.actorId);
-                    cmd.Parameters.AddWithValue("@inventoryType", type);
-
+                    MySqlCommand cmd2 = new MySqlCommand(query2, conn);
+                    
                     cmd.Parameters.AddWithValue("@itemId", itemId);
-                    cmd.Parameters.AddWithValue("@quantity", quantity);
                     cmd.Parameters.AddWithValue("@quality", quality);
                     cmd.Parameters.AddWithValue("@isUntradeable", isUntradeable);
                     cmd.Parameters.AddWithValue("@durability", durability);
+
+                    cmd2.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd2.Parameters.AddWithValue("@inventoryType", type);
+                    cmd2.Parameters.AddWithValue("@quantity", quantity);
+
                     cmd.ExecuteNonQuery();
+                    cmd2.ExecuteNonQuery();
 
                     insertedItem = new Item((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.inventories[type].getNextEmptySlot(), isUntradeable, quality, durability, 0, 0, 0, 0, 0, 0);
                 }
@@ -588,7 +591,7 @@ namespace FFXIVClassic_Lobby_Server
             return insertedItem;
         }
 
-        public static void setQuantity(Player player, uint slot, int quantity)
+        public static void setQuantity(Player player, uint slot, ushort type, int quantity)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -599,13 +602,14 @@ namespace FFXIVClassic_Lobby_Server
                      string query = @"
                                     UPDATE characters_inventory
                                     SET quantity = @quantity
-                                    WHERE characterId = @charId AND slot = @slot
+                                    WHERE characterId = @charId AND slot = @slot AND inventoryType = @type;
                                     ";
                     
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@quantity", quantity);
                     cmd.Parameters.AddWithValue("@slot", slot);
+                    cmd.Parameters.AddWithValue("@type", type);
                     cmd.ExecuteNonQuery();
 
                 }
@@ -619,7 +623,7 @@ namespace FFXIVClassic_Lobby_Server
 
         }
 
-        public static void removeItem(Player player, ulong serverItemId)
+        public static void removeItem(Player player, ulong serverItemId, ushort type)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}; Allow User Variables=True", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -631,10 +635,10 @@ namespace FFXIVClassic_Lobby_Server
                                     SELECT slot INTO @slotToDelete FROM characters_inventory WHERE serverItemId = @serverItemId;
                                     UPDATE characters_inventory
                                     SET slot = slot - 1
-                                    WHERE characterId = @charId AND slot > @slotToDelete;
+                                    WHERE characterId = @charId AND slot > @slotToDelete AND inventoryType = @type;
 
                                     DELETE FROM characters_inventory
-                                    WHERE serverItemId = @serverItemId;
+                                    WHERE serverItemId = @serverItemId AND inventoryType = @type;
 
                                     DELETE FROM server_items
                                     WHERE id = @serverItemId;
@@ -643,6 +647,7 @@ namespace FFXIVClassic_Lobby_Server
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
+                    cmd.Parameters.AddWithValue("@type", type);
                     cmd.ExecuteNonQuery();
 
                 }
@@ -656,7 +661,7 @@ namespace FFXIVClassic_Lobby_Server
 
         }
 
-        public static void removeItem(Player player, ushort slot)
+        public static void removeItem(Player player, ushort slot, ushort type)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}; Allow User Variables=True", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -668,19 +673,20 @@ namespace FFXIVClassic_Lobby_Server
                                     SELECT serverItemId INTO @serverItemId FROM characters_inventory WHERE characterId = @charId AND slot = @slot;
 
                                     DELETE FROM characters_inventory
-                                    WHERE characterId = @charId AND slot = @slot;
+                                    WHERE characterId = @charId AND slot = @slot AND inventoryType = @type;
 
                                     DELETE FROM server_items
                                     WHERE id = @serverItemId;
 
                                     UPDATE characters_inventory
                                     SET slot = slot - 1
-                                    WHERE characterId = @charId AND slot > @slot;
+                                    WHERE characterId = @charId AND slot > @slot AND inventoryType = @type;
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@slot", slot);
+                    cmd.Parameters.AddWithValue("@type", type);
                     cmd.ExecuteNonQuery();
 
                 }

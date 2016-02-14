@@ -14,7 +14,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public int quantity = 1;
         public ushort slot;
 
-        public int maxStack = 5;
+        public int maxStack = 99999;
 
         public bool isUntradeable = false;
         public byte quality = 1;

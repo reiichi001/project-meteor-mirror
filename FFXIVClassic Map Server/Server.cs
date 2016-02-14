@@ -412,14 +412,14 @@ namespace FFXIVClassic_Lobby_Server
             if (client != null)
             {
                 Player p = client.getActor();
-                p.inventories[Inventory.NORMAL].addItem(itemId, 0, quantity, 1);
+                p.inventories[Inventory.NORMAL].addItem(itemId, quantity, 1);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.inventories[Inventory.NORMAL].addItem(itemId, 0, quantity, 1);
+                    p.inventories[Inventory.NORMAL].addItem(itemId, quantity, 1);
                 }
             }
         }
@@ -437,6 +437,74 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     Player p = entry.Value.getActor();
                     p.inventories[Inventory.NORMAL].removeItem(itemId, quantity);
+                }
+            }
+        }
+
+        private void giveCurrancy(ConnectedPlayer client, uint itemId, int quantity)
+        {
+            if (client != null)
+            {
+                Player p = client.getActor();
+                p.inventories[Inventory.CURRANCY].addItem(itemId, quantity, 1);
+            }
+            else
+            {
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    Player p = entry.Value.getActor();
+                    p.inventories[Inventory.CURRANCY].addItem(itemId, quantity, 1);
+                }
+            }
+        }
+
+        private void removeCurrancy(ConnectedPlayer client, uint itemId, int quantity)
+        {
+            if (client != null)
+            {
+                Player p = client.getActor();
+                p.inventories[Inventory.CURRANCY].removeItem(itemId, quantity);
+            }
+            else
+            {
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    Player p = entry.Value.getActor();
+                    p.inventories[Inventory.CURRANCY].removeItem(itemId, quantity);
+                }
+            }
+        }
+
+        private void giveKeyItem(ConnectedPlayer client, uint itemId)
+        {
+            if (client != null)
+            {
+                Player p = client.getActor();
+                p.inventories[Inventory.KEYITEMS].addItem(itemId, 1, 1);
+            }
+            else
+            {
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    Player p = entry.Value.getActor();
+                    p.inventories[Inventory.KEYITEMS].addItem(itemId, 1, 1);
+                }
+            }
+        }
+
+        private void removeKeyItem(ConnectedPlayer client, uint itemId)
+        {
+            if (client != null)
+            {
+                Player p = client.getActor();
+                p.inventories[Inventory.KEYITEMS].removeItem(itemId, 1);
+            }
+            else
+            {
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    Player p = entry.Value.getActor();
+                    p.inventories[Inventory.KEYITEMS].removeItem(itemId, 1);
                 }
             }
         }
@@ -514,7 +582,65 @@ namespace FFXIVClassic_Lobby_Server
                     }
                     catch (Exception e)
                     {
-                        Log.error("Could not give item.");
+                        Log.error("Could not remove item.");
+                    }
+                }
+                else if (split[0].Equals("givekeyitem"))
+                {
+                    try
+                    {
+                        if (split.Length == 2)
+                            giveKeyItem(client, UInt32.Parse(split[1]));                       
+                    }
+                    catch (Exception e)
+                    {
+                        Log.error("Could not give keyitem.");
+                    }
+                }
+                else if (split[0].Equals("removekeyitem"))
+                {
+                    if (split.Length < 2)
+                        return;
+
+                    try
+                    {
+                        if (split.Length == 2)
+                            removeKeyItem(client, UInt32.Parse(split[1]));                        
+                    }
+                    catch (Exception e)
+                    {
+                        Log.error("Could not remove keyitem.");
+                    }
+                }
+                else if (split[0].Equals("givecurrancy"))
+                {
+                    try
+                    {
+                        if (split.Length == 2)
+                            giveCurrancy(client, UInt32.Parse(split[1]), 1);
+                        else if (split.Length == 3)
+                            giveCurrancy(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
+                    }
+                    catch (Exception e)
+                    {
+                        Log.error("Could not give currancy.");
+                    }
+                }
+                else if (split[0].Equals("removecurrancy"))
+                {
+                    if (split.Length < 2)
+                        return;
+
+                    try
+                    {
+                        if (split.Length == 2)
+                            removeCurrancy(client, UInt32.Parse(split[1]), 1);
+                        else if (split.Length == 3)
+                            removeCurrancy(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
+                    }
+                    catch (Exception e)
+                    {
+                        Log.error("Could not remove currancy.");
                     }
                 }
                 else if (split[0].Equals("music"))

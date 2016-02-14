@@ -432,6 +432,7 @@ namespace FFXIVClassic_Map_Server.Actors
             queuePacket(InventoryBeginChangePacket.buildPacket(actorId));
             inventories[Inventory.NORMAL].sendFullInventory();
             inventories[Inventory.CURRANCY].sendFullInventory();
+            inventories[Inventory.KEYITEMS].sendFullInventory();
             #region equipsetup
           //  EquipmentListX08Packet initialEqupmentPacket = new EquipmentListX08Packet();
           //  initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_BODY, 5);
@@ -632,6 +633,11 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             //SubPacket worldMasterMessage = 
             //zone.broadcastPacketAroundActor(this, worldMasterMessage);
+        }
+
+        public Inventory getInventory(ushort type)
+        {
+            return inventories[type];
         }
 
         public void runEventFunction(string functionName, params object[] parameters)

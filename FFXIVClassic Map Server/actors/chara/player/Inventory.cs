@@ -40,7 +40,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             list = itemsFromDB;
         }
 
-        public void addItem(uint itemId, ushort type, int quantity, byte quality)
+        public void addItem(uint itemId, int quantity, byte quality)
         {
             if (!isSpaceForAdd(itemId, quantity))
                 return;
@@ -79,20 +79,27 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             //These had their quantities changed
             foreach (ushort slot in slotsToUpdate)
             {
-                Database.setQuantity(owner, slot, list[slot].quantity);                
-                sendInventoryPackets(list[slot]);
+                Database.setQuantity(owner, slot, inventoryCode, list[slot].quantity);
+
+                if (inventoryCode != CURRANCY && inventoryCode != KEYITEMS)
+                    sendInventoryPackets(list[slot]);
             }
 
             //New item that spilled over
             while (quantityCount > 0)
             {
-                Item addedItem = Database.addItem(owner, itemId, Math.Min(quantityCount, 5), quality, false, 100, type);
+                Item addedItem = Database.addItem(owner, itemId, Math.Min(quantityCount, 5), quality, false, 100, inventoryCode);
                 list.Add(addedItem);
-                sendInventoryPackets(addedItem);
+
+                if (inventoryCode != CURRANCY && inventoryCode != KEYITEMS)
+                    sendInventoryPackets(addedItem);
 
                 quantityCount -= addedItem.maxStack;
             }
-            
+
+            if (inventoryCode == CURRANCY || inventoryCode == KEYITEMS)
+                sendFullInventory();
+
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
             owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));
         }
@@ -115,10 +122,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 Item item = list[i];
                 if (item.itemId == itemId)
                 {
+                    int oldQuantity = item.quantity;
                     //Stack nomnomed
                     if (item.quantity - quantityCount <= 0)
                     {
                         itemsToRemove.Add(item);
+                        slotsToRemove.Add(item.slot);
                     }
                     else
                     {
@@ -126,7 +135,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                         item.quantity -= quantityCount; //Stack reduced
                     }
 
-                    quantityCount -= item.quantity;
+                    quantityCount -= oldQuantity;
                     lowestSlot = item.slot;
 
                     if (quantityCount <= 0)
@@ -136,13 +145,25 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             for (int i = 0; i < slotsToUpdate.Count; i++)
             {
-                Database.setQuantity(owner, slotsToUpdate[i], list[slotsToUpdate[i]].quantity);
+                Database.setQuantity(owner, slotsToUpdate[i], inventoryCode, list[slotsToUpdate[i]].quantity);
             }
 
+            int oldListSize = list.Count;
             for (int i = 0; i < itemsToRemove.Count; i++)
             {
-                Database.removeItem(owner, itemsToRemove[i].uniqueId);
+                Database.removeItem(owner, itemsToRemove[i].uniqueId, inventoryCode);
                 list.Remove(itemsToRemove[i]);
+            }
+
+            //Realign slots
+            for (int i = lowestSlot; i < list.Count; i++)
+                list[i].slot = (ushort)i;
+
+            //Added tail end items that need to be cleared for slot realignment
+            for (int i = oldListSize-1; i >= oldListSize - itemsToRemove.Count; i--)
+            {
+                if (!slotsToRemove.Contains((ushort)i))
+                    slotsToRemove.Add((ushort)i);
             }
 
             owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
@@ -172,14 +193,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (toDelete == null)
                 return;
 
+            int oldListSize = list.Count;
             list.RemoveAt(slot);
-            Database.removeItem(owner, itemDBId);
+            Database.removeItem(owner, itemDBId, inventoryCode);
 
+            //Realign slots
+            for (int i = slot; i < list.Count; i++)
+                list[i].slot = (ushort)i;
+           
             owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
             owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
 
             sendInventoryPackets(slot);
             sendInventoryRemovePackets(slot);
+            if (slot != oldListSize - 1)
+                sendInventoryRemovePackets((ushort)(oldListSize - 1));
 
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
             owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));
@@ -191,14 +219,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (slot >= list.Count)
                 return;
 
+            int oldListSize = list.Count;
             list.RemoveAt((int)slot);
-            Database.removeItem(owner, slot);
+            Database.removeItem(owner, slot, inventoryCode);
+
+            //Realign slots
+            for (int i = slot; i < list.Count; i++)
+                list[i].slot = (ushort)i;
 
             owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
             owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
 
             sendInventoryPackets(slot);
             sendInventoryRemovePackets(slot);
+            if (slot != oldListSize - 1)
+                sendInventoryRemovePackets((ushort)(oldListSize - 1));
 
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
             owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));
