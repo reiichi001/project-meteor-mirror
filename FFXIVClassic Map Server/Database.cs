@@ -589,7 +589,7 @@ namespace FFXIVClassic_Lobby_Server
             return insertedItem;
         }
 
-        public static void addQuantity(Player player, uint slot, int quantity)
+        public static void setQuantity(Player player, uint slot, int quantity)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -597,9 +597,9 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     conn.Open();
 
-                    string query = @"
+                     string query = @"
                                     UPDATE characters_inventory
-                                    SET quantity = quantity + @quantity
+                                    SET quantity = @quantity
                                     WHERE serverItemId = (SELECT id FROM server_items WHERE characterId = @charId AND slot = @slot LIMIT 1)
                                     ";
                     
@@ -620,7 +620,41 @@ namespace FFXIVClassic_Lobby_Server
 
         }
 
-        public static void removeItem(Player player, uint uniqueItemId)
+        public static void removeItem(Player player, ulong serverItemId)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    //Load Last 5 Completed
+                    string query = @"
+                                    SELECT slot INTO @slotToDelete FROM characters_inventory WHERE serverItemId = @serverItemId;
+                                    UPDATE characters_inventory
+                                    SET slot = slot - 1
+                                    WHERE characterId = 108 AND slot > @slotToDelete;
+                                    DELETE FROM characters_inventory
+                                    WHERE serverItemId = @serverItemId;
+                                    ";                    
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
+                    cmd.ExecuteNonQuery();
+
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+        }
+
+        public static void removeItem(Player player, ushort slot)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -631,7 +665,7 @@ namespace FFXIVClassic_Lobby_Server
                     //Load Last 5 Completed
                     string query = @"
                                     DELETE FROM server_items
-                                    WHERE id = @uniqueItemId; 
+                                    WHERE slot = @slot; 
                                     ";
 
                     string query2 = @"
@@ -639,13 +673,14 @@ namespace FFXIVClassic_Lobby_Server
                                     WHERE uniqueServerId = @uniqueItemId; 
                                     UPDATE character_inventory
                                     SET slot = slot - 1
-                                    WHERE characterId = @charId AND slot > X
+                                    WHERE characterId = @charId AND slot > @slot
                                     ";
 
                     query += query2;
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@slot", slot);
                     cmd.ExecuteNonQuery();
 
                 }

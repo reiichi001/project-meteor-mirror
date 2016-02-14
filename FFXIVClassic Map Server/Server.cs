@@ -407,19 +407,36 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        private void giveItem(ConnectedPlayer client, uint itemId)
+        private void giveItem(ConnectedPlayer client, uint itemId, int quantity)
         {
             if (client != null)
             {
                 Player p = client.getActor();
-                p.inventories[Inventory.NORMAL].addItem(itemId, 0, 1, 1);
+                p.inventories[Inventory.NORMAL].addItem(itemId, 0, quantity, 1);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.inventories[Inventory.NORMAL].addItem(itemId, 0, 1, 1);
+                    p.inventories[Inventory.NORMAL].addItem(itemId, 0, quantity, 1);
+                }
+            }
+        }
+
+        private void removeItem(ConnectedPlayer client, ushort slot)
+        {
+            if (client != null)
+            {
+                Player p = client.getActor();
+                p.inventories[Inventory.NORMAL].removeItem(slot);
+            }
+            else
+            {
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    Player p = entry.Value.getActor();
+                    p.inventories[Inventory.NORMAL].removeItem(slot);
                 }
             }
         }
@@ -455,11 +472,11 @@ namespace FFXIVClassic_Lobby_Server
                     }
                     mWorldManager.reloadZone(client.getActor().zoneId);                    
                 }
-            }
-            if (split.Length >= 2)
-            {
-                if (split[0].Equals("sendpacket"))
+                else if (split[0].Equals("sendpacket"))
                 {
+                    if (split.Length < 2)
+                        return;
+
                     try
                     {
                         sendPacket(client, "./packets/" + split[1]);
@@ -470,10 +487,27 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 else if (split[0].Equals("giveitem"))
-                {
+                {                    
                     try
                     {
-                        giveItem(client, UInt32.Parse(split[1]));
+                        if (split.Length == 2)
+                            giveItem(client, UInt32.Parse(split[1]), 1);
+                        else if (split.Length == 3)
+                            giveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
+                    }
+                    catch (Exception e)
+                    {
+                        Log.error("Could not give item.");
+                    }
+                }
+                else if (split[0].Equals("removeitem"))
+                {
+                    if (split.Length < 2)
+                        return;
+
+                    try
+                    {
+                        removeItem(client, UInt16.Parse(split[1]));
                     }
                     catch (Exception e)
                     {
@@ -482,6 +516,9 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 else if (split[0].Equals("music"))
                 {
+                    if (split.Length < 2)
+                        return;
+
                     try
                     {
                         doMusic(client, split[1]);
@@ -493,20 +530,17 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 else if (split[0].Equals("warp"))
                 {
-                    doWarp(client, split[1]);
-                }
-            }
-            if (split.Length >= 5)
-            {
-                if (split[0].Equals("warp"))
-                {
-                    doWarp(client, split[1], split[2], split[3], split[4]);
+                    if (split.Length == 2)                    
+                        doWarp(client, split[1]);
+                    else if (split.Length == 5)
+                        doWarp(client, split[1], split[2], split[3], split[4]);
                 }
                 else if (split[0].Equals("property"))
                 {
-                    testCodePacket(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
+                    if (split.Length == 5)
+                        testCodePacket(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
                 }
-            }                  
+            }               
         }
     }
 
