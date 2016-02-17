@@ -22,6 +22,7 @@ namespace FFXIVClassic_Lobby_Server
         public byte[] buffer = new byte[0xffff];
         public CircularBuffer<byte> incomingStream = new CircularBuffer<byte>(1024);
         public BlockingCollection<BasePacket> sendPacketQueue = new BlockingCollection<BasePacket>(100);
+        public int lastPartialSize = 0;
 
         //Instance Stuff
         public uint currentUserId = 0;

@@ -44,6 +44,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
         public uint currentClass = 0;
         public uint currentJob = 0;
         public uint allegiance = 0;
+        public uint tribe = 0;
 
         public uint currentLevel = 1;
 
@@ -60,7 +61,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                 {
                     uint version = reader.ReadUInt32();
                     uint unknown1 = reader.ReadUInt32();
-                    appearance.tribe = reader.ReadByte();
+                    info.tribe = reader.ReadByte();
                     appearance.size = reader.ReadByte();
                     appearance.hairStyle = reader.ReadUInt16();
                     appearance.hairHighlightColor = reader.ReadUInt16();
@@ -106,7 +107,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
             return info;
         }
 
-        public String buildForCharaList(Character chara, Appearance appearance)
+        public static String buildForCharaList(Character chara, Appearance appearance)
         {
             byte[] data;
             
@@ -137,7 +138,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     writer.Write(System.Text.Encoding.UTF8.GetBytes(chara.name + '\0'));
                     writer.Write((UInt32)0x1c);
                     writer.Write((UInt32)0x04);
-                    writer.Write((UInt32)getTribeModel(appearance.tribe));
+                    writer.Write((UInt32)getTribeModel(chara.tribe));
                     writer.Write((UInt32)appearance.size);
                     uint colorVal = appearance.skinColor | (uint)(appearance.hairColor << 10) | (uint)(appearance.eyeColor << 20);
                     writer.Write((UInt32)colorVal);
@@ -185,7 +186,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     writer.Write((UInt16)chara.currentLevel);
                     writer.Write((byte)chara.currentJob);
                     writer.Write((UInt16)1);
-                    writer.Write((byte)appearance.tribe);
+                    writer.Write((byte)chara.tribe);
 
                     writer.Write((UInt32)0xe22222aa);
 
@@ -204,8 +205,8 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
 
                     writer.BaseStream.Seek(0x10, SeekOrigin.Current);
 
-                    writer.Write((UInt32)chara.allegiance);
-                    writer.Write((UInt32)chara.allegiance);
+                    writer.Write((UInt32)chara.initialTown);
+                    writer.Write((UInt32)chara.initialTown);
                 }
 
                 data = stream.GetBuffer();
@@ -223,7 +224,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
             return Convert.ToBase64String(bytes).Replace('+', '-').Replace('/', '_');
         }
 
-        public UInt32 getTribeModel(byte tribe)
+        public static UInt32 getTribeModel(byte tribe)
         {
             switch (tribe)
             {

@@ -9,25 +9,30 @@ using FFXIVClassic_Lobby_Server.common;
 using System.IO;
 
 namespace FFXIVClassic_Lobby_Server.packets
-{    
+{
+
     [StructLayout(LayoutKind.Sequential)]
     public struct BasePacketHeader
     {
-        public byte         isAuthenticated;
-        public byte         isEncrypted;
-        public ushort       reserved;
-        public ushort       packetSize;
-        public ushort       numSubpackets;
-        public uint         unknown1; //Id?
-        public uint         unknown2; //Usually 0x13B       
+        public byte isAuthenticated;
+        public byte isEncrypted;
+        public ushort connectionType;
+        public ushort packetSize;
+        public ushort numSubpackets;
+        public ulong timestamp; //Miliseconds
     }
 
-    public class BasePacket{
+    public class BasePacket
+    {
+
+        public const int TYPE_ZONE = 1;
+        public const int TYPE_CHAT = 2;
         public const int BASEPACKET_SIZE = 0x10;
 
         public BasePacketHeader header;
-        public byte[]           data;
+        public byte[] data;
 
+        //Loads a sniffed packet from a file
         public unsafe BasePacket(String path)
         {
             byte[] bytes = File.ReadAllBytes(path);
@@ -45,10 +50,16 @@ namespace FFXIVClassic_Lobby_Server.packets
 
             int packetSize = header.packetSize;
 
-            data = new byte[packetSize - BASEPACKET_SIZE];
-            Array.Copy(bytes, BASEPACKET_SIZE, data, 0, packetSize - BASEPACKET_SIZE);
+            if (packetSize - BASEPACKET_SIZE != 0)
+            {
+                data = new byte[packetSize - BASEPACKET_SIZE];
+                Array.Copy(bytes, BASEPACKET_SIZE, data, 0, packetSize - BASEPACKET_SIZE);
+            }
+            else
+                data = new byte[0];
         }
 
+        //Loads a sniffed packet from a byte array
         public unsafe BasePacket(byte[] bytes)
         {
             if (bytes.Length < BASEPACKET_SIZE)
@@ -65,7 +76,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             int packetSize = header.packetSize;
 
             data = new byte[packetSize - BASEPACKET_SIZE];
-            Array.Copy(bytes, BASEPACKET_SIZE, data, 0, packetSize - BASEPACKET_SIZE);         
+            Array.Copy(bytes, BASEPACKET_SIZE, data, 0, packetSize - BASEPACKET_SIZE);
         }
 
         public unsafe BasePacket(byte[] bytes, ref int offset)
@@ -81,7 +92,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             int packetSize = header.packetSize;
 
             if (bytes.Length < offset + header.packetSize)
-                throw new OverflowException("Packet Error: Packet size didn't equal given size");            
+                throw new OverflowException("Packet Error: Packet size didn't equal given size");
 
             data = new byte[packetSize - BASEPACKET_SIZE];
             Array.Copy(bytes, offset + BASEPACKET_SIZE, data, 0, packetSize - BASEPACKET_SIZE);
@@ -90,7 +101,7 @@ namespace FFXIVClassic_Lobby_Server.packets
         }
 
         public BasePacket(BasePacketHeader header, byte[] data)
-        {         
+        {
             this.header = header;
             this.data = data;
         }
@@ -102,7 +113,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             int offset = 0;
 
             while (offset < data.Length)
-                subpackets.Add(new SubPacket(data, ref offset));            
+                subpackets.Add(new SubPacket(data, ref offset));
 
             return subpackets;
         }
@@ -141,6 +152,52 @@ namespace FFXIVClassic_Lobby_Server.packets
             return outBytes;
         }
 
+        //Replaces all instances of the sniffed actorID with the given one
+        public void replaceActorID(uint actorID)
+        {
+            using (MemoryStream mem = new MemoryStream(data))
+            {
+                using (BinaryWriter binWriter = new BinaryWriter(mem))
+                {
+                    using (BinaryReader binreader = new BinaryReader(mem))
+                    {
+                        while (binreader.BaseStream.Position + 4 < data.Length)
+                        {
+                            uint read = binreader.ReadUInt32();
+                            if (read == 0x029B2941 || read == 0x02977DC7 || read == 0x0297D2C8 || read == 0x0230d573 || read == 0x23317df || read == 0x23344a3 || read == 0x1730bdb) //Original ID
+                            {
+                                binWriter.BaseStream.Seek(binreader.BaseStream.Position - 0x4, SeekOrigin.Begin);
+                                binWriter.Write(actorID);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //Replaces all instances of the sniffed actorID with the given one
+        public void replaceActorID(uint fromActorID, uint actorID)
+        {
+            using (MemoryStream mem = new MemoryStream(data))
+            {
+                using (BinaryWriter binWriter = new BinaryWriter(mem))
+                {
+                    using (BinaryReader binreader = new BinaryReader(mem))
+                    {
+                        while (binreader.BaseStream.Position + 4 < data.Length)
+                        {
+                            uint read = binreader.ReadUInt32();
+                            if (read == fromActorID) //Original ID
+                            {
+                                binWriter.BaseStream.Seek(binreader.BaseStream.Position - 0x4, SeekOrigin.Begin);
+                                binWriter.Write(actorID);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         #region Utility Functions
         public static BasePacket createPacket(List<SubPacket> subpackets, bool isAuthed, bool isEncrypted)
         {
@@ -148,16 +205,17 @@ namespace FFXIVClassic_Lobby_Server.packets
             BasePacketHeader header = new BasePacketHeader();
             byte[] data = null;
 
-            header.isAuthenticated = isAuthed?(byte)1:(byte)0;
-            header.isEncrypted = isEncrypted?(byte)1:(byte)0;
+            header.isAuthenticated = isAuthed ? (byte)1 : (byte)0;
+            header.isEncrypted = isEncrypted ? (byte)1 : (byte)0;
             header.numSubpackets = (ushort)subpackets.Count;
             header.packetSize = BASEPACKET_SIZE;
+            header.timestamp = Utils.MilisUnixTimeStampUTC();
 
             //Get packet size
             foreach (SubPacket subpacket in subpackets)
                 header.packetSize += subpacket.header.subpacketSize;
 
-            data = new byte[header.packetSize-0x10];
+            data = new byte[header.packetSize - 0x10];
 
             //Add Subpackets
             int offset = 0;
@@ -184,6 +242,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             header.isEncrypted = isEncrypted ? (byte)1 : (byte)0;
             header.numSubpackets = (ushort)1;
             header.packetSize = BASEPACKET_SIZE;
+            header.timestamp = Utils.MilisUnixTimeStampUTC();
 
             //Get packet size
             header.packetSize += subpacket.header.subpacketSize;
@@ -192,9 +251,30 @@ namespace FFXIVClassic_Lobby_Server.packets
 
             //Add Subpackets
             byte[] subpacketData = subpacket.getBytes();
-            Array.Copy(subpacketData, 0, data, 0, subpacketData.Length);            
+            Array.Copy(subpacketData, 0, data, 0, subpacketData.Length);
 
             Debug.Assert(data != null);
+
+            BasePacket packet = new BasePacket(header, data);
+            return packet;
+        }
+
+        public static BasePacket createPacket(byte[] data, bool isAuthed, bool isEncrypted)
+        {
+
+            Debug.Assert(data != null);
+
+            //Create Header
+            BasePacketHeader header = new BasePacketHeader();
+
+            header.isAuthenticated = isAuthed ? (byte)1 : (byte)0;
+            header.isEncrypted = isEncrypted ? (byte)1 : (byte)0;
+            header.numSubpackets = (ushort)1;
+            header.packetSize = BASEPACKET_SIZE;
+            header.timestamp = Utils.MilisUnixTimeStampUTC();
+
+            //Get packet size
+            header.packetSize += (ushort)data.Length;
 
             BasePacket packet = new BasePacket(header, data);
             return packet;
@@ -206,7 +286,8 @@ namespace FFXIVClassic_Lobby_Server.packets
             int size = packet.header.packetSize;
 
             int offset = 0;
-            while (offset < data.Length) { 
+            while (offset < data.Length)
+            {
                 if (data.Length < offset + SubPacket.SUBPACKET_SIZE)
                     throw new OverflowException("Packet Error: Subpacket was too small");
 
@@ -219,7 +300,7 @@ namespace FFXIVClassic_Lobby_Server.packets
                 if (data.Length < offset + header.subpacketSize)
                     throw new OverflowException("Packet Error: Subpacket size didn't equal subpacket data");
 
-                blowfish.Encipher(data, offset + 0x10, header.subpacketSize-0x10);
+                blowfish.Encipher(data, offset + 0x10, header.subpacketSize - 0x10);
 
                 offset += header.subpacketSize;
             }
@@ -246,7 +327,7 @@ namespace FFXIVClassic_Lobby_Server.packets
                 if (data.Length < offset + header.subpacketSize)
                     throw new OverflowException("Packet Error: Subpacket size didn't equal subpacket data");
 
-                blowfish.Decipher(data, offset + 0x10, header.subpacketSize-0x10);
+                blowfish.Decipher(data, offset + 0x10, header.subpacketSize - 0x10);
 
                 offset += header.subpacketSize;
             }
@@ -257,13 +338,13 @@ namespace FFXIVClassic_Lobby_Server.packets
         {
 #if DEBUG
             Console.BackgroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine("IsAuthed: {0}, IsEncrypted: {1}, Size: 0x{2:X}, Num Subpackets: {3}", header.isAuthenticated, header.isEncrypted, header.packetSize, header.numSubpackets);            
+            Console.WriteLine("IsAuthed: {0}, IsEncrypted: {1}, Size: 0x{2:X}, Num Subpackets: {3}", header.isAuthenticated, header.isEncrypted, header.packetSize, header.numSubpackets);
             Console.WriteLine("{0}", Utils.ByteArrayToHex(getHeaderBytes()));
             foreach (SubPacket sub in getSubpackets())
                 sub.debugPrintSubPacket();
             Console.BackgroundColor = ConsoleColor.Black;
 #endif
         }
-        
+
     }
 }

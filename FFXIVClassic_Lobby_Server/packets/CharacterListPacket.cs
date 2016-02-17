@@ -77,8 +77,7 @@ namespace FFXIVClassic_Lobby_Server.packets
                 binWriter.Write(Encoding.ASCII.GetBytes(chara.name.PadRight(0x20, '\0'))); //Name
                 binWriter.Write(Encoding.ASCII.GetBytes(worldname.PadRight(0xE, '\0'))); //World Name
 
-                CharaInfo info = JsonConvert.DeserializeObject<CharaInfo>(chara.charaInfo);
-                binWriter.Write(info.buildForCharaList(chara, appearance)); //Appearance Data
+                binWriter.Write(CharaInfo.buildForCharaList(chara, appearance)); //Appearance Data
                 //binWriter.Write(CharaInfo.debug()); //Appearance Data
                 
                 characterCount++;

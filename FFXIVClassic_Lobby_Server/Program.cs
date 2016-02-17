@@ -35,7 +35,7 @@ namespace FFXIVClassic_Lobby_Server
                 startServer = false;
 
             //Test DB Connection
-            Console.Write("Testing DB connection... ");
+            Console.Write("Testing DB connection to \"{0}\"... ", ConfigConstants.DATABASE_HOST);
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try

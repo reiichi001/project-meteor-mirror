@@ -15,96 +15,48 @@ namespace FFXIVClassic_Lobby_Server
 {
     class PacketProcessor
     {
-        List<ClientConnection> mConnections;
-        Boolean isAlive = true;
 
-        public PacketProcessor(List<ClientConnection> connectionList)
+        public void processPacket(ClientConnection client, BasePacket packet)
         {
-            mConnections = connectionList;
-        }
 
-        public void update()
-        {
-            Console.WriteLine("Packet processing thread has started");
-            while (isAlive)
-            {
-                lock (mConnections)
-                {
-                    foreach (ClientConnection client in mConnections)
-                    {
-                        //Receive packets
-                        while (true)
-                        {
-                            if (client.incomingStream.Size < BasePacket.BASEPACKET_SIZE)
-                                break;
-
-                            try {
-                                if (client.incomingStream.Size < BasePacket.BASEPACKET_SIZE)
-                                    break;
-                                BasePacketHeader header = BasePacket.getHeader(client.incomingStream.Peek(BasePacket.BASEPACKET_SIZE));
-
-                                if (client.incomingStream.Size < header.packetSize)
-                                    break;
-
-                                BasePacket packet = new BasePacket(client.incomingStream.Get(header.packetSize));
-                                processPacket(client, packet);
-
-                            }
-                            catch(OverflowException)
-                            { break; }
-                        }
-
-                        //Send packets
-                        while (client.sendPacketQueue.Count != 0)
-                            client.flushQueuedSendPackets();
-                    }
-                }
-
-                //Don't waste CPU if isn't needed
-                if (mConnections.Count == 0)
-                    Thread.Sleep(2000);
-                else
-                    Thread.Sleep(100);
-            }
-        }
-
-        private void processPacket(ClientConnection client, BasePacket packet)
-        {
-            
             if ((packet.header.packetSize == 0x288) && (packet.data[0x34] == 'T'))		//Test Ticket Data
             {
                 //Crypto handshake
                 ProcessStartSession(client, packet);
                 return;
             }
-            
+
             BasePacket.decryptPacket(client.blowfish, ref packet);
 
-            //packet.debugPrintPacket();
+            packet.debugPrintPacket();
 
             List<SubPacket> subPackets = packet.getSubpackets();
             foreach (SubPacket subpacket in subPackets)
             {
                 subpacket.debugPrintSubPacket();
-                switch (subpacket.header.opcode)
+
+                if (subpacket.header.type == 3)
                 {
-                    case 0x03:
-                        ProcessGetCharacters(client, subpacket);
-                        break;
-                    case 0x04:
-                        ProcessSelectCharacter(client, subpacket);
-                        break;
-                    case 0x05:
-                        ProcessSessionAcknowledgement(client, subpacket);
-                        break;
-                    case 0x0B:
-                        ProcessModifyCharacter(client, subpacket);
-                        break;  
-                    case 0x0F:
+                    switch (subpacket.gameMessage.opcode)
+                    {
+                        case 0x03:
+                            ProcessGetCharacters(client, subpacket);
+                            break;
+                        case 0x04:
+                            ProcessSelectCharacter(client, subpacket);
+                            break;
+                        case 0x05:
+                            ProcessSessionAcknowledgement(client, subpacket);
+                            break;
+                        case 0x0B:
+                            ProcessModifyCharacter(client, subpacket);
+                            break;
+                        case 0x0F:
                         //Mod Retainers
-                    default:
-                        Log.debug(String.Format("Unknown command 0x{0:X} received.", subpacket.header.opcode));
-                        break;
+                        default:
+                            Log.debug(String.Format("Unknown command 0x{0:X} received.", subpacket.gameMessage.opcode));
+                            break;
+                    }
                 }
             }
         }

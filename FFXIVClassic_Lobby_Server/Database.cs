@@ -146,7 +146,6 @@ namespace FFXIVClassic_Lobby_Server
 
                     cmd.Parameters.AddWithValue("@characterId", cid);
                     cmd.Parameters.AddWithValue("@baseId", 0xFFFFFFFF);
-                    cmd.Parameters.AddWithValue("@tribe", charaInfo.appearance.tribe);
                     cmd.Parameters.AddWithValue("@size", charaInfo.appearance.size);
                     cmd.Parameters.AddWithValue("@voice", charaInfo.appearance.voice);
                     cmd.Parameters.AddWithValue("@skinColor", charaInfo.appearance.skinColor);
@@ -360,7 +359,7 @@ namespace FFXIVClassic_Lobby_Server
                 try
                 {
                     conn.Open();
-                    appearance = conn.Query<Appearance>("SELECT * FROM characters_appearance WHERE id=@CharaId", new { CharaId = charaId }).SingleOrDefault();
+                    appearance = conn.Query<Appearance>("SELECT * FROM characters_appearance WHERE characterId=@CharaId", new { CharaId = charaId }).SingleOrDefault();
                 }
                 catch (MySqlException e)
                 {

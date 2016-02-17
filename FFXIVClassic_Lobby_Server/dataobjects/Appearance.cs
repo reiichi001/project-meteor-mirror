@@ -10,7 +10,6 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
     {
         ////////////
         //Chara Info
-        public byte tribe = 0;
         public byte size = 0;
         public byte voice = 0;
         public ushort skinColor = 0;
