@@ -98,6 +98,9 @@ namespace FFXIVClassic_Map_Server.Actors
             inventories[Inventory.NORMAL] = new Inventory(this, MAXSIZE_INVENTORY_NORMAL, Inventory.NORMAL);
             inventories[Inventory.KEYITEMS] = new Inventory(this, MAXSIZE_INVENTORY_KEYITEMS, Inventory.KEYITEMS);
             inventories[Inventory.CURRANCY] = new Inventory(this, MAXSIZE_INVENTORY_CURRANCY, Inventory.CURRANCY);
+            inventories[Inventory.MELDREQUEST] = new Inventory(this, MAXSIZE_INVENTORY_MELDREQUEST, Inventory.MELDREQUEST);
+            inventories[Inventory.BAZAAR] = new Inventory(this, MAXSIZE_INVENTORY_BAZAAR, Inventory.BAZAAR);
+            inventories[Inventory.LOOT] = new Inventory(this, MAXSIZE_INVENTORY_LOOT, Inventory.LOOT);
 
             charaWork.property[0] = 1;
             charaWork.property[1] = 1;
@@ -433,6 +436,9 @@ namespace FFXIVClassic_Map_Server.Actors
             inventories[Inventory.NORMAL].sendFullInventory();
             inventories[Inventory.CURRANCY].sendFullInventory();
             inventories[Inventory.KEYITEMS].sendFullInventory();
+            inventories[Inventory.BAZAAR].sendFullInventory();
+            inventories[Inventory.MELDREQUEST].sendFullInventory();
+            inventories[Inventory.LOOT].sendFullInventory();
             #region equipsetup
           //  EquipmentListX08Packet initialEqupmentPacket = new EquipmentListX08Packet();
           //  initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_BODY, 5);

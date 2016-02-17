@@ -121,6 +121,7 @@
     <Compile Include="packets\receive\social\FriendlistRequestPacket.cs" />
     <Compile Include="packets\receive\supportdesk\FaqBodyRequestPacket.cs" />
     <Compile Include="packets\receive\supportdesk\FaqListRequestPacket.cs" />
+    <Compile Include="packets\receive\supportdesk\GMSupportTicketPacket.cs" />
     <Compile Include="packets\receive\supportdesk\GMTicketIssuesRequestPacket.cs" />
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />

@@ -353,6 +353,12 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x01D4:
                             client.queuePacket(BasePacket.createPacket(GMTicketPacket.buildPacket(player.actorID, "This is a GM Ticket Title", "This is a GM Ticket Body."), true, false));
                             break;
+                        //GM Ticket Sent
+                        case 0x01D5:
+                            GMSupportTicketPacket gmTicket = new GMSupportTicketPacket(subpacket.data);
+                            Log.info("Got GM Ticket: \n" + gmTicket.ticketTitle + "\n" + gmTicket.ticketBody);
+                            client.queuePacket(BasePacket.createPacket(GMTicketSentResponsePacket.buildPacket(player.actorID, true), true, false));
+                            break;
                         //Request to end ticket
                         case 0x01D6:
                             client.queuePacket(BasePacket.createPacket(EndGMTicketPacket.buildPacket(player.actorID), true, false));

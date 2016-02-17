@@ -455,6 +455,9 @@ namespace FFXIVClassic_Lobby_Server
                     player.inventories[Inventory.NORMAL].initList(getInventory(player, 0, Inventory.NORMAL));
                     player.inventories[Inventory.KEYITEMS].initList(getInventory(player, 0, Inventory.KEYITEMS));
                     player.inventories[Inventory.CURRANCY].initList(getInventory(player, 0, Inventory.CURRANCY));
+                    player.inventories[Inventory.BAZAAR].initList(getInventory(player, 0, Inventory.BAZAAR));
+                    player.inventories[Inventory.MELDREQUEST].initList(getInventory(player, 0, Inventory.MELDREQUEST));
+                    player.inventories[Inventory.LOOT].initList(getInventory(player, 0, Inventory.LOOT));
 
                 }
                 catch (MySqlException e)

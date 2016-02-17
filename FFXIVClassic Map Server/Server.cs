@@ -23,7 +23,7 @@ namespace FFXIVClassic_Lobby_Server
     class Server
     {
         public const int FFXIV_MAP_PORT     = 54992;
-        public const int BUFFER_SIZE        = 0x400;
+        public const int BUFFER_SIZE        = 0xFFFF; //Max basepacket size is 0xFFFF
         public const int BACKLOG            = 100;
         public const string STATIC_ACTORS_PATH = "./staticactors.bin";
 
@@ -163,12 +163,29 @@ namespace FFXIVClassic_Lobby_Server
         /// <param name="result"></param>
         private void receiveCallback(IAsyncResult result)
         {
-            ClientConnection conn = (ClientConnection)result.AsyncState;            
+            ClientConnection conn = (ClientConnection)result.AsyncState;
+
+            //Check if disconnected
+            if ((conn.socket.Poll(1, SelectMode.SelectRead) && conn.socket.Available == 0))
+            {
+                if (mConnectedPlayerList.ContainsKey(conn.owner))
+                    mConnectedPlayerList.Remove(conn.owner);
+                lock (mConnectionList)
+                {
+                    mConnectionList.Remove(conn);
+                } 
+                if (conn.connType == BasePacket.TYPE_ZONE)
+                    Log.conn(String.Format("{0} has disconnected.", conn.owner == 0 ? conn.getAddress() : "User " + conn.owner));
+                return;
+            }
 
             try
             {
                 int bytesRead = conn.socket.EndReceive(result);
-                if (bytesRead > 0)
+
+                bytesRead += conn.lastPartialSize;
+
+                if (bytesRead >= 0)
                 {
                     int offset = 0;
 
@@ -176,6 +193,7 @@ namespace FFXIVClassic_Lobby_Server
                     while(true)
                     {                        
                         BasePacket basePacket = buildPacket(ref offset, conn.buffer, bytesRead);
+                        
                         //If can't build packet, break, else process another
                         if (basePacket == null)                        
                             break;                        
@@ -184,8 +202,12 @@ namespace FFXIVClassic_Lobby_Server
                     }
                     
                     //Not all bytes consumed, transfer leftover to beginning
-                    if (offset < bytesRead)                    
+                    if (offset < bytesRead)
                         Array.Copy(conn.buffer, offset, conn.buffer, 0, bytesRead - offset);
+
+                    Array.Clear(conn.buffer, bytesRead - offset, conn.buffer.Length - (bytesRead - offset));
+
+                    conn.lastPartialSize = bytesRead - offset;
 
                     //Build any queued subpackets into basepackets and send
                     conn.flushQueuedSendPackets();
@@ -424,6 +446,27 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
+        private void giveItem(ConnectedPlayer client, uint itemId, int quantity, ushort type)
+        {
+            if (client != null)
+            {
+                Player p = client.getActor();
+
+                if (p.inventories.ContainsKey(type))
+                    p.inventories[type].addItem(itemId, quantity, 1);
+            }
+            else
+            {
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    Player p = entry.Value.getActor();
+
+                    if (p.inventories.ContainsKey(type))
+                        p.inventories[type].addItem(itemId, quantity, 1);
+                }
+            }
+        }
+
         private void removeItem(ConnectedPlayer client, uint itemId, int quantity)        
         {
             if (client != null)
@@ -437,6 +480,27 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     Player p = entry.Value.getActor();
                     p.inventories[Inventory.NORMAL].removeItem(itemId, quantity);
+                }
+            }
+        }
+
+        private void removeItem(ConnectedPlayer client, uint itemId, int quantity, ushort type)
+        {
+            if (client != null)
+            {
+                Player p = client.getActor();
+
+                if (p.inventories.ContainsKey(type))
+                    p.inventories[type].removeItem(itemId, quantity);
+            }
+            else
+            {
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    Player p = entry.Value.getActor();
+
+                    if (p.inventories.ContainsKey(type))
+                        p.inventories[type].removeItem(itemId, quantity);
                 }
             }
         }
@@ -562,6 +626,8 @@ namespace FFXIVClassic_Lobby_Server
                             giveItem(client, UInt32.Parse(split[1]), 1);
                         else if (split.Length == 3)
                             giveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
+                        else if (split.Length == 4)
+                            giveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]), UInt16.Parse(split[3]));
                     }
                     catch (Exception e)
                     {
@@ -579,6 +645,8 @@ namespace FFXIVClassic_Lobby_Server
                             removeItem(client, UInt32.Parse(split[1]), 1);
                         else if (split.Length == 3)
                             removeItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
+                        else if (split.Length == 4)
+                            removeItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]), UInt16.Parse(split[3]));
                     }
                     catch (Exception e)
                     {

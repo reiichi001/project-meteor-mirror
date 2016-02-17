@@ -32,6 +32,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void setConnection(int type, ClientConnection conn)
         {
+            conn.connType = type;
             switch (type)
             {
                 case BasePacket.TYPE_ZONE:
