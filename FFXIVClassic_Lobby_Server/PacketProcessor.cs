@@ -1,6 +1,7 @@
 ﻿using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Lobby_Server.packets.receive;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -79,7 +80,7 @@ namespace FFXIVClassic_Lobby_Server
 
         private void ProcessSessionAcknowledgement(ClientConnection client, SubPacket packet)
         {
-            PacketStructs.SessionPacket sessionPacket = PacketStructs.toSessionStruct(packet.data);           
+            SessionPacket sessionPacket = new SessionPacket(packet.data);
             String clientVersion = sessionPacket.version;
 
             Log.info(String.Format("Got acknowledgment for secure session."));         
@@ -127,7 +128,7 @@ namespace FFXIVClassic_Lobby_Server
 
         private void ProcessSelectCharacter(ClientConnection client, SubPacket packet)
         {
-            FFXIVClassic_Lobby_Server.packets.PacketStructs.SelectCharRequestPacket selectCharRequest = PacketStructs.toSelectCharRequestStruct(packet.data);
+            SelectCharacterPacket selectCharRequest = new SelectCharacterPacket(packet.data);
 
             Log.info(String.Format("{0} => Select character id {1}", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId, selectCharRequest.characterId));
 
@@ -156,8 +157,7 @@ namespace FFXIVClassic_Lobby_Server
 
         private void ProcessModifyCharacter(ClientConnection client, SubPacket packet)
         {
-
-            PacketStructs.CharacterRequestPacket charaReq = PacketStructs.toCharacterRequestStruct(packet.data);
+            CharacterModifyPacket charaReq = new CharacterModifyPacket(packet.data);
             var slot = charaReq.slot;
             var code = charaReq.command;
             var name = charaReq.characterName;
