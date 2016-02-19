@@ -538,8 +538,11 @@ namespace FFXIVClassic_Map_Server.Actors
             playerSession.queuePacket(packet, true, false);
         }
 
-        public void broadcastPacket(SubPacket packet)
+        public void broadcastPacket(SubPacket packet, bool sendToSelf)
         {
+            if (sendToSelf)            
+                queuePacket(packet);
+            
             foreach (Actor a in playerSession.actorInstanceList)
             {
                 if (a is Player)
@@ -597,8 +600,8 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         public void doEmote(uint emoteId)
-        {            
-            broadcastPacket(ActorDoEmotePacket.buildPacket(actorId, actorId, emoteId));
+        {
+            broadcastPacket(ActorDoEmotePacket.buildPacket(actorId, actorId, currentTarget, emoteId), true);
         }
 
         public void sendGameMessage(Actor sourceActor, Actor textIdOwner, ushort textId, byte log, params object[] msgParams)

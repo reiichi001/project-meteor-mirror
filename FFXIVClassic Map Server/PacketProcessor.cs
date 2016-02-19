@@ -158,7 +158,13 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 else if (subpacket.header.type == 0x03)
                 {
-                    ConnectedPlayer player = mPlayers[client.owner];
+                    ConnectedPlayer player = null;
+
+                    if(mPlayers.ContainsKey(client.owner))
+                        player = mPlayers[client.owner];
+
+                    if (player == null)
+                        return;
 
                     //Normal Game Opcode
                     switch (subpacket.gameMessage.opcode)
@@ -181,9 +187,15 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x0003:
                             ChatMessagePacket chatMessage = new ChatMessagePacket(subpacket.data);
                             Log.info(String.Format("Got type-{5} message: {0} @ {1}, {2}, {3}, Rot: {4}", chatMessage.message, chatMessage.posX, chatMessage.posY, chatMessage.posZ, chatMessage.posRot, chatMessage.logType));
-                            //subpacket.debugPrintSubPacket();
+                            subpacket.debugPrintSubPacket();
 
-                            mServer.doCommand(chatMessage.message, player);
+                            if (chatMessage.message.StartsWith("!"))
+                            {
+                                if (mServer.doCommand(chatMessage.message, player))
+                                    continue;
+                            }                           
+
+                            player.getActor().broadcastPacket(SendMessagePacket.buildPacket(player.actorID, player.actorID, chatMessage.logType, player.getActor().customDisplayName, chatMessage.message), false);
 
                             break;
                         //Unknown
@@ -203,7 +215,7 @@ namespace FFXIVClassic_Lobby_Server
 
                             SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
                             player.getActor().currentTarget = setTarget.actorID;
-                            client.queuePacket(BasePacket.createPacket(SetActorTargetAnimatedPacket.buildPacket(player.actorID, player.actorID, setTarget.actorID), true, false));
+                            player.getActor().broadcastPacket(SetActorTargetAnimatedPacket.buildPacket(player.actorID, player.actorID, setTarget.actorID), true);
                             break;
                         //Lock Target
                         case 0x00CC:

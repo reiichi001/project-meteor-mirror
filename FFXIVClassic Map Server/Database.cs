@@ -233,14 +233,14 @@ namespace FFXIVClassic_Lobby_Server
                         offHand,
                         head,
                         body,
-                        hands,
                         legs,
+                        hands,
                         feet,
                         waist,
                         leftFinger,
                         rightFinger,
-                        leftEars,
-                        rightEars
+                        leftEar,
+                        rightEar
                         FROM characters_appearance WHERE characterId = @charId";
 
                     cmd = new MySqlCommand(query, conn);

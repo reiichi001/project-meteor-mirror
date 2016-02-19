@@ -216,6 +216,16 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
             }
 
+            //Remove players if isolation zone
+            if (isIsolated)
+            {
+                for (int i = 0; i < result.Count; i++)
+                {
+                    if (result[i] is Player)
+                        result.RemoveAt(i);
+                }
+            }
+
             return result;
         }
 
@@ -306,11 +316,17 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void broadcastPacketAroundActor(Actor actor, SubPacket packet)
         {
+            if (isIsolated)
+                return;
+
             List<Actor> aroundActor = getActorsAroundActor(actor, 50);
             foreach (Actor a in aroundActor)
-            {
+            {                
                 if (a is Player)
                 {
+                    if (isIsolated && packet.header.sourceId != a.actorId)
+                        continue;
+
                     SubPacket clonedPacket = new SubPacket(packet, actor.actorId);
                     Player p = (Player)a;                        
                     p.queuePacket(clonedPacket);

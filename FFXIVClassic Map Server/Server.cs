@@ -205,8 +205,6 @@ namespace FFXIVClassic_Lobby_Server
                     if (offset < bytesRead)
                         Array.Copy(conn.buffer, offset, conn.buffer, 0, bytesRead - offset);
 
-                    Array.Clear(conn.buffer, bytesRead - offset, conn.buffer.Length - (bytesRead - offset));
-
                     conn.lastPartialSize = bytesRead - offset;
 
                     //Build any queued subpackets into basepackets and send
@@ -573,9 +571,11 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        internal void doCommand(string input, ConnectedPlayer client)
+        internal bool doCommand(string input, ConnectedPlayer client)
         {
             input.Trim();
+            if (input.StartsWith("!"))
+                input = input.Substring(1);
 
             String[] split = input.Split(' ');
 
@@ -586,6 +586,7 @@ namespace FFXIVClassic_Lobby_Server
                     try
                     {
                         printPos(client);
+                        return true;
                     }
                     catch (Exception e)
                     {
@@ -602,16 +603,18 @@ namespace FFXIVClassic_Lobby_Server
                         client.getActor().sendInstanceUpdate();
                         client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Resting zone {0}...", client.getActor().zoneId)), true, false));
                     }
-                    mWorldManager.reloadZone(client.getActor().zoneId);                    
+                    mWorldManager.reloadZone(client.getActor().zoneId);
+                    return true;
                 }
                 else if (split[0].Equals("sendpacket"))
                 {
                     if (split.Length < 2)
-                        return;
+                        return false;
 
                     try
                     {
                         sendPacket(client, "./packets/" + split[1]);
+                        return true;
                     }
                     catch (Exception e)
                     {
@@ -628,6 +631,7 @@ namespace FFXIVClassic_Lobby_Server
                             giveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
                         else if (split.Length == 4)
                             giveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]), UInt16.Parse(split[3]));
+                        return true;
                     }
                     catch (Exception e)
                     {
@@ -637,7 +641,7 @@ namespace FFXIVClassic_Lobby_Server
                 else if (split[0].Equals("removeitem"))
                 {
                     if (split.Length < 2)
-                        return;
+                        return false;
 
                     try
                     {
@@ -647,6 +651,7 @@ namespace FFXIVClassic_Lobby_Server
                             removeItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
                         else if (split.Length == 4)
                             removeItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]), UInt16.Parse(split[3]));
+                        return true;
                     }
                     catch (Exception e)
                     {
@@ -668,12 +673,13 @@ namespace FFXIVClassic_Lobby_Server
                 else if (split[0].Equals("removekeyitem"))
                 {
                     if (split.Length < 2)
-                        return;
+                        return false;
 
                     try
                     {
                         if (split.Length == 2)
-                            removeKeyItem(client, UInt32.Parse(split[1]));                        
+                            removeKeyItem(client, UInt32.Parse(split[1]));
+                        return true;
                     }
                     catch (Exception e)
                     {
@@ -697,7 +703,7 @@ namespace FFXIVClassic_Lobby_Server
                 else if (split[0].Equals("removecurrancy"))
                 {
                     if (split.Length < 2)
-                        return;
+                        return false;
 
                     try
                     {
@@ -705,6 +711,7 @@ namespace FFXIVClassic_Lobby_Server
                             removeCurrancy(client, UInt32.Parse(split[1]), 1);
                         else if (split.Length == 3)
                             removeCurrancy(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
+                        return true;
                     }
                     catch (Exception e)
                     {
@@ -714,11 +721,12 @@ namespace FFXIVClassic_Lobby_Server
                 else if (split[0].Equals("music"))
                 {
                     if (split.Length < 2)
-                        return;
+                        return false;
 
                     try
                     {
                         doMusic(client, split[1]);
+                        return true;
                     }
                     catch (Exception e)
                     {
@@ -731,13 +739,16 @@ namespace FFXIVClassic_Lobby_Server
                         doWarp(client, split[1]);
                     else if (split.Length == 5)
                         doWarp(client, split[1], split[2], split[3], split[4]);
+                    return true;
                 }
                 else if (split[0].Equals("property"))
                 {
                     if (split.Length == 5)
                         testCodePacket(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
+                    return true;
                 }
-            }               
+            }
+            return false;
         }
     }
 
