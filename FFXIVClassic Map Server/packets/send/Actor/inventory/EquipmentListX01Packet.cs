@@ -13,7 +13,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
         public const ushort OPCODE = 0x014D;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket buildPacket(uint playerActorID, ushort slot, uint itemSlot)
+        public static SubPacket buildPacket(uint playerActorID, ushort equipSlot, uint itemSlot)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -21,7 +21,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    binWriter.Write((UInt16)slot);
+                    binWriter.Write((UInt16)equipSlot);
                     binWriter.Write((UInt32)itemSlot);
                 }
             }

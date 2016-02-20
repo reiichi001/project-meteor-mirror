@@ -581,12 +581,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void sendChocoboAppearance()
         {
-            queuePacket(SetCurrentMountChocoboPacket.buildPacket(actorId, chocoboAppearance));
+            broadcastPacket(SetCurrentMountChocoboPacket.buildPacket(actorId, chocoboAppearance), true);
         }
 
         public void sendGoobbueAppearance()
         {
-            queuePacket(SetCurrentMountGoobbuePacket.buildPacket(actorId, 1));
+            broadcastPacket(SetCurrentMountGoobbuePacket.buildPacket(actorId, 1), true);
         }
 
         public void setMountState(byte mountState)
