@@ -43,8 +43,11 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
         public uint birthDay = 0;
         public uint currentClass = 0;
         public uint currentJob = 0;
-        public uint allegiance = 0;
+        public uint initialTown = 0;
         public uint tribe = 0;
+
+        public ushort zoneId;
+        public float x, y, z, rot;
 
         public uint currentLevel = 1;
 
@@ -97,7 +100,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
 
                     reader.BaseStream.Seek(0x10, SeekOrigin.Current);
 
-                    info.allegiance = reader.ReadByte();
+                    info.initialTown = reader.ReadByte();
 
                 }
             }

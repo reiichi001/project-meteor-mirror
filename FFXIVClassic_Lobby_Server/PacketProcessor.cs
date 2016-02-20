@@ -2,6 +2,7 @@
 using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Lobby_Server.packets.receive;
+using FFXIVClassic_Lobby_Server.utils;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -80,6 +81,7 @@ namespace FFXIVClassic_Lobby_Server
 
         private void ProcessSessionAcknowledgement(ClientConnection client, SubPacket packet)
         {
+            packet.debugPrintSubPacket();
             SessionPacket sessionPacket = new SessionPacket(packet.data);
             String clientVersion = sessionPacket.version;
 
@@ -159,7 +161,6 @@ namespace FFXIVClassic_Lobby_Server
         {
             CharacterModifyPacket charaReq = new CharacterModifyPacket(packet.data);
             var slot = charaReq.slot;
-            var code = charaReq.command;
             var name = charaReq.characterName;
             var worldId = charaReq.worldId;
 
@@ -196,7 +197,7 @@ namespace FFXIVClassic_Lobby_Server
 
             bool alreadyTaken;
 
-            switch (code)
+            switch (charaReq.command)
             {
                 case 0x01://Reserve
                     
@@ -226,6 +227,45 @@ namespace FFXIVClassic_Lobby_Server
                     break;
                 case 0x02://Make                    
                     CharaInfo info = CharaInfo.getFromNewCharRequest(charaReq.characterInfoEncoded);
+
+                    //Set Initial Appearance
+                    /*
+                    uint[] classAppearance = CharacterCreatorUtils.getEquipmentForClass(info.currentClass);
+                    info.weapon1 = classAppearance[0];
+                    info.weapon2 = classAppearance[1];
+                    info.head = classAppearance[2];
+                    info.body = classAppearance[3];
+                    info.hands = classAppearance[4];
+                    info.legs = classAppearance[5];
+                    info.feet = classAppearance[6];
+                    info.belt = classAppearance[7];
+
+                    */
+                    //Set Initial Position
+                    switch (info.initialTown)
+                    {
+                        case 1:
+                            info.zoneId = 193;
+                            info.x = 0.016f;
+                            info.y = 10.35f;
+                            info.z = -36.91f;
+                            info.rot = 0.025f;
+                            break;
+                        case 2:
+                            info.zoneId = 166;
+                            info.x = 356.09f;
+                            info.y = 3.74f;
+                            info.z = -701.62f;
+                            info.rot = -1.4f;
+                            break;
+                        case 3:
+                            info.zoneId = 184;
+                            info.x = 12.63f;
+                            info.y = 196.05f;
+                            info.z = 131.01f;
+                            info.rot = -1.34f;
+                            break;
+                    }
 
                     Database.makeCharacter(client.currentUserId, client.newCharaCid, info);
 
@@ -264,7 +304,7 @@ namespace FFXIVClassic_Lobby_Server
                     break;
             }
 
-            CharaCreatorPacket charaCreator = new CharaCreatorPacket(charaReq.sequence, code, pid, cid, 1, name, worldName);
+            CharaCreatorPacket charaCreator = new CharaCreatorPacket(charaReq.sequence, charaReq.command, pid, cid, 1, name, worldName);
             BasePacket charaCreatorPacket = BasePacket.createPacket(charaCreator.buildPacket(), true, false);            
             BasePacket.encryptPacket(client.blowfish, charaCreatorPacket);
             client.queuePacket(charaCreatorPacket);

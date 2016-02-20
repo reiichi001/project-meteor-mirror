@@ -53,7 +53,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Open();
 
                     //Check if exists                    
-                    MySqlCommand cmd = new MySqlCommand("SELECT * FROM characters WHERE name=@name AND serverId=@serverId", conn);
+                    MySqlCommand cmd = new MySqlCommand("SELECT * FROM characters WHERE name=@name AND serverId=@serverId AND state != 2 AND state != 1", conn);
                     cmd.Parameters.AddWithValue("@serverId", serverId);
                     cmd.Parameters.AddWithValue("@name", name);
                     using (MySqlDataReader Reader = cmd.ExecuteReader())
@@ -111,19 +111,72 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Open();
                     MySqlCommand cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = "UPDATE characters SET state=2, charaInfo=@encodedInfo WHERE userId=@userId AND id=@cid";
-                    cmd.Prepare();
-
+                    cmd.CommandText = @"
+                                        UPDATE characters SET 
+                                        state=2,
+                                        currentZoneId=@zoneId,
+                                        positionX=@x,
+                                        positionY=@y,
+                                        positionZ=@z,
+                                        rotation=@r,
+                                        guardian=@guardian,
+                                        birthDay=@birthDay,
+                                        birthMonth=@birthMonth,
+                                        initialTown=@initialTown,
+                                        tribe=@tribe,
+                                        currentClassJob=@currentClass
+                                        WHERE userId=@userId AND id=@cid;
+            
+                                        INSERT INTO characters_appearance
+                                        (characterId, baseId, size, voice, skinColor, hairStyle, hairColor, hairHighlightColor, eyeColor, faceType, faceEyebrows, faceEyeShape, faceIrisSize, faceNose, faceMouth, faceFeatures, ears, characteristics, characteristicsColor, mainhand, head, body, hands, legs, feet)
+                                        VALUES
+                                        (@cid, 4294967295, @size, @voice, @skinColor, @hairStyle, @hairColor, @hairHighlightColor, @eyeColor, @faceType, @faceEyebrows, @faceEyeShape, @faceIrisSize, @faceNose, @faceMouth, @faceFeatures, @ears, @characteristics, @characteristicsColor, @mainhand, @head, @body, @hands, @legs, @feet)
+                                        ";
                     cmd.Parameters.AddWithValue("@userId", accountId);
                     cmd.Parameters.AddWithValue("@cid", cid);
-                    string json = JsonConvert.SerializeObject(charaInfo);
-                    cmd.Parameters.AddWithValue("@encodedInfo", json);
+                    cmd.Parameters.AddWithValue("@guardian", charaInfo.guardian);
+                    cmd.Parameters.AddWithValue("@birthDay", charaInfo.birthDay);
+                    cmd.Parameters.AddWithValue("@birthMonth", charaInfo.birthMonth);
+                    cmd.Parameters.AddWithValue("@initialTown", charaInfo.initialTown);
+                    cmd.Parameters.AddWithValue("@tribe", charaInfo.tribe);
+                    cmd.Parameters.AddWithValue("@currentClass", charaInfo.currentClass);
+
+                    cmd.Parameters.AddWithValue("@zoneId", charaInfo.zoneId);
+                    cmd.Parameters.AddWithValue("@x", charaInfo.x);
+                    cmd.Parameters.AddWithValue("@y", charaInfo.y);
+                    cmd.Parameters.AddWithValue("@z", charaInfo.z);
+                    cmd.Parameters.AddWithValue("@r", charaInfo.rot);
+
+                    cmd.Parameters.AddWithValue("@size", charaInfo.appearance.size);
+                    cmd.Parameters.AddWithValue("@voice", charaInfo.appearance.voice);
+                    cmd.Parameters.AddWithValue("@skinColor", charaInfo.appearance.skinColor);
+                    cmd.Parameters.AddWithValue("@hairStyle", charaInfo.appearance.hairStyle);
+                    cmd.Parameters.AddWithValue("@hairColor", charaInfo.appearance.hairColor);
+                    cmd.Parameters.AddWithValue("@hairHighlightColor", charaInfo.appearance.hairHighlightColor);
+                    cmd.Parameters.AddWithValue("@eyeColor", charaInfo.appearance.eyeColor);
+                    cmd.Parameters.AddWithValue("@faceType", charaInfo.appearance.faceType);
+                    cmd.Parameters.AddWithValue("@faceEyebrows", charaInfo.appearance.faceEyebrows);
+                    cmd.Parameters.AddWithValue("@faceEyeShape", charaInfo.appearance.faceEyeShape);
+                    cmd.Parameters.AddWithValue("@faceIrisSize", charaInfo.appearance.faceIrisSize);
+                    cmd.Parameters.AddWithValue("@faceNose", charaInfo.appearance.faceNose);
+                    cmd.Parameters.AddWithValue("@faceMouth", charaInfo.appearance.faceMouth);
+                    cmd.Parameters.AddWithValue("@faceFeatures", charaInfo.appearance.faceFeatures);
+                    cmd.Parameters.AddWithValue("@ears", charaInfo.appearance.ears);
+                    cmd.Parameters.AddWithValue("@characteristics", charaInfo.appearance.characteristics);
+                    cmd.Parameters.AddWithValue("@characteristicsColor", charaInfo.appearance.characteristicsColor);
+
+                    cmd.Parameters.AddWithValue("@mainhand", 0);
+                    cmd.Parameters.AddWithValue("@head", 1024);
+                    cmd.Parameters.AddWithValue("@body", 1024);
+                    cmd.Parameters.AddWithValue("@hands", 1024);
+                    cmd.Parameters.AddWithValue("@legs", 1024);
+                    cmd.Parameters.AddWithValue("@feet", 1024);
+                    
                     cmd.ExecuteNonQuery();
 
                 }
                 catch (MySqlException e)
                 {
-
                 }
                 finally
                 {
@@ -246,7 +299,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Open();
                     MySqlCommand cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = "DELETE FROM characters WHERE id=@cid AND name=@name";
+                    cmd.CommandText = "UPDATE characters SET state=1 WHERE id=@cid AND name=@name";
                     cmd.Prepare();
                     cmd.Parameters.AddWithValue("@cid", characterId);
                     cmd.Parameters.AddWithValue("@name", name);
@@ -316,7 +369,7 @@ namespace FFXIVClassic_Lobby_Server
                 try
                 {
                     conn.Open();
-                    charaList = conn.Query<Character>("SELECT * FROM characters WHERE userId=@UserId AND state in (1,2) ORDER BY slot", new { UserId = userId }).ToList();
+                    charaList = conn.Query<Character>("SELECT * FROM characters WHERE userId=@UserId AND state = 2 ORDER BY slot", new { UserId = userId }).ToList();
                 }
                 catch (MySqlException e)
                 { charaList = new List<Character>(); }

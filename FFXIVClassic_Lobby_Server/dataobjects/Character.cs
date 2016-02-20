@@ -20,13 +20,13 @@ namespace FFXIVClassic_Lobby_Server
         public bool doRename;
         public uint currentZoneId;
 
-        public byte guardian = 0;
-        public byte birthMonth = 0;
-        public byte birthDay = 0;
+        public byte guardian;
+        public byte birthMonth;
+        public byte birthDay;
         public uint currentClass = 3;
         public uint currentJob = 0;
-        public byte initialTown = 0;
-        public byte tribe = 0;
+        public byte initialTown;
+        public byte tribe;
 
         public uint currentLevel = 1;
 

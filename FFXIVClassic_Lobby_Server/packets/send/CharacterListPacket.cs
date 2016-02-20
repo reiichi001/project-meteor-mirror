@@ -73,7 +73,7 @@ namespace FFXIVClassic_Lobby_Server.packets
                 
                 binWriter.Write((byte)options); //Options (0x01: Service Account not active, 0x72: Change Chara Name) 
                 binWriter.Write((ushort)0);  
-                binWriter.Write((uint)0xF4); //Logged out zone
+                binWriter.Write((uint)chara.currentZoneId); //Logged out zone
                 binWriter.Write(Encoding.ASCII.GetBytes(chara.name.PadRight(0x20, '\0'))); //Name
                 binWriter.Write(Encoding.ASCII.GetBytes(worldname.PadRight(0xE, '\0'))); //World Name
 
