@@ -17,13 +17,44 @@ namespace FFXIVClassic_Lobby_Server
         public const int BUFFER_SIZE        = 0xFFFF;
         public const int BACKLOG            = 100;
 
+        private const int CLEANUP_THREAD_SLEEP_TIME = 60;
+
         private Socket mServerSocket;
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private PacketProcessor mProcessor;
 
+        private Thread cleanupThread;
+        private bool killCleanupThread = false;
+
+        private void socketCleanup()
+        {
+            Console.WriteLine("Cleanup thread started; it will run every {0} seconds.", CLEANUP_THREAD_SLEEP_TIME);
+            while (!killCleanupThread)
+            {
+                int count = 0;
+                for (int i = mConnectionList.Count - 1; i >= 0; i--)
+                {
+                    ClientConnection conn = mConnectionList[i];
+                    if (conn.socket.Poll(1, SelectMode.SelectRead) && conn.socket.Available == 0)
+                    {
+                        conn.socket.Disconnect(false);
+                        mConnectionList.Remove(conn);
+                        count++;
+                    }
+                }
+                if (count != 0)
+                    Log.conn(String.Format("{0} connections were cleaned up.", count));
+                Thread.Sleep(CLEANUP_THREAD_SLEEP_TIME*1000);
+            }
+        }
+
         #region Socket Handling
         public bool startServer()
         {
+            cleanupThread = new Thread(new ThreadStart(socketCleanup));
+            cleanupThread.Name = "LobbyThread:Cleanup";
+            cleanupThread.Start();
+
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), FFXIV_LOBBY_PORT);
            
             try{
