@@ -165,12 +165,13 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.Parameters.AddWithValue("@characteristics", charaInfo.appearance.characteristics);
                     cmd.Parameters.AddWithValue("@characteristicsColor", charaInfo.appearance.characteristicsColor);
 
-                    cmd.Parameters.AddWithValue("@mainhand", 0);
-                    cmd.Parameters.AddWithValue("@head", 1024);
-                    cmd.Parameters.AddWithValue("@body", 1024);
-                    cmd.Parameters.AddWithValue("@hands", 1024);
-                    cmd.Parameters.AddWithValue("@legs", 1024);
-                    cmd.Parameters.AddWithValue("@feet", 1024);
+                    cmd.Parameters.AddWithValue("@mainhand", charaInfo.weapon1);
+                    cmd.Parameters.AddWithValue("@offhand", charaInfo.weapon2);
+                    cmd.Parameters.AddWithValue("@head", charaInfo.head);
+                    cmd.Parameters.AddWithValue("@body", charaInfo.body);
+                    cmd.Parameters.AddWithValue("@legs", charaInfo.legs);
+                    cmd.Parameters.AddWithValue("@hands", charaInfo.hands);                    
+                    cmd.Parameters.AddWithValue("@feet", charaInfo.feet);
                     
                     cmd.ExecuteNonQuery();
 

@@ -228,19 +228,17 @@ namespace FFXIVClassic_Lobby_Server
                 case 0x02://Make                    
                     CharaInfo info = CharaInfo.getFromNewCharRequest(charaReq.characterInfoEncoded);
 
-                    //Set Initial Appearance
-                    /*
+                    //Set Initial Appearance (items will be loaded in by map server)                    
                     uint[] classAppearance = CharacterCreatorUtils.getEquipmentForClass(info.currentClass);
                     info.weapon1 = classAppearance[0];
                     info.weapon2 = classAppearance[1];
-                    info.head = classAppearance[2];
-                    info.body = classAppearance[3];
-                    info.hands = classAppearance[4];
-                    info.legs = classAppearance[5];
-                    info.feet = classAppearance[6];
-                    info.belt = classAppearance[7];
-
-                    */
+                    info.head = classAppearance[7];
+                    info.body = classAppearance[8];
+                    info.legs = classAppearance[9];
+                    info.hands = classAppearance[10];
+                    info.feet = classAppearance[11];
+                    info.belt = classAppearance[12];
+                    
                     //Set Initial Position
                     switch (info.initialTown)
                     {

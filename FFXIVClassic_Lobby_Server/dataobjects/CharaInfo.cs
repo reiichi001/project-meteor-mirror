@@ -51,6 +51,15 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
 
         public uint currentLevel = 1;
 
+        public uint weapon1;
+        public uint weapon2;
+        public uint head;
+        public uint body;
+        public uint hands;
+        public uint legs;
+        public uint feet;
+        public uint belt;
+
         public static CharaInfo getFromNewCharRequest(String encoded)
         {
             byte[] data = Convert.FromBase64String(encoded.Replace('-', '+').Replace('_', '/'));
