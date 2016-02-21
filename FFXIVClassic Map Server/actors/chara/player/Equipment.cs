@@ -1,5 +1,6 @@
 ﻿using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
+using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using System;
 using System.Collections.Generic;
@@ -34,12 +35,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         private ushort inventoryCapacity;
         private ushort inventoryCode;
         private Item[] list;
+        private Inventory normalInventory;
 
-        public Equipment(Player ownerPlayer, ushort capacity, ushort code)
+        public Equipment(Player ownerPlayer, Inventory normalInventory, ushort capacity, ushort code)
         {
             owner = ownerPlayer;
             inventoryCapacity = capacity;
             inventoryCode = code;
+            list = new Item[inventoryCapacity];
+            this.normalInventory = normalInventory;
         }
 
         public Item GetItemAtSlot(ushort slot)
@@ -48,6 +52,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return list[slot];
             else
                 return null;
+        }
+
+        public void SendFullEquipment(bool doClear)
+        {
+            List<ushort> slotsToUpdate = new List<ushort>();
+            for (ushort i = 0; i < list.Length; i++)
+            {
+                if (list[i] == null && doClear)
+                    slotsToUpdate.Add(0);
+                else if (list[i] != null)
+                    slotsToUpdate.Add(i);
+            }
+
+            SendEquipmentPackets(slotsToUpdate);            
         }
 
         public void SetEquipment(List<Tuple<ushort, Item>> toEquip)
@@ -64,41 +82,68 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public void Equip(ushort slot, Item item)
         {
-            if (slot < list.Length)
-                list[slot] = item;
+            if (slot >= list.Length)
+                return;        
+
+            owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
+
+            if (list[slot] != null)            
+                normalInventory.RefreshItem(list[slot], item);            
+            else
+                normalInventory.RefreshItem(item);
+
+            owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
             SendEquipmentPackets(slot, item);
+            owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
+
+            owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));
+
+            list[slot] = item;
         }
 
         public void Unequip(ushort slot)
         {
-            if (slot < list.Length)
-                list[slot] = null;
+            if (slot >= list.Length)
+                return;
+
+            owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
+
+            normalInventory.RefreshItem(list[slot]);
+
+            owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
             SendEquipmentPackets(slot, null);
+            owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
+
+            owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));
+
+            list[slot] = null;
         }
 
         private void SendEquipmentPackets(ushort equipSlot, Item item)
         {
             if (item == null)
-                owner.queuePacket(EquipmentListX01Packet.buildPacket(owner.actorId, equipSlot, 0));
+                owner.queuePacket(InventoryRemoveX01Packet.buildPacket(owner.actorId, equipSlot));
             else
                 owner.queuePacket(EquipmentListX01Packet.buildPacket(owner.actorId, equipSlot, item.slot));
         }
 
         private void SendEquipmentPackets(List<ushort> slotsToUpdate)
         {
+            owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            
             int currentIndex = 0;
 
             while (true)
             {
-                if (list.Length - currentIndex >= 64)
+                if (slotsToUpdate.Count - currentIndex >= 64)
                     owner.queuePacket(EquipmentListX64Packet.buildPacket(owner.actorId, list, slotsToUpdate, ref currentIndex));
-                else if (list.Length - currentIndex >= 32)
+                else if (slotsToUpdate.Count - currentIndex >= 32)
                     owner.queuePacket(EquipmentListX32Packet.buildPacket(owner.actorId, list, slotsToUpdate, ref currentIndex));
-                else if (list.Length - currentIndex >= 16)
+                else if (slotsToUpdate.Count - currentIndex >= 16)
                     owner.queuePacket(EquipmentListX16Packet.buildPacket(owner.actorId, list, slotsToUpdate, ref currentIndex));
-                else if (list.Length - currentIndex > 1)
+                else if (slotsToUpdate.Count - currentIndex > 1)
                     owner.queuePacket(EquipmentListX08Packet.buildPacket(owner.actorId, list, slotsToUpdate, ref currentIndex));
-                else if (list.Length - currentIndex == 1)
+                else if (slotsToUpdate.Count - currentIndex == 1)
                 {
                     owner.queuePacket(EquipmentListX01Packet.buildPacket(owner.actorId, slotsToUpdate[currentIndex], list[currentIndex].slot));
                     currentIndex++;
@@ -107,6 +152,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     break;
             }
 
+            owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
         }
 
     }

@@ -432,14 +432,14 @@ namespace FFXIVClassic_Lobby_Server
             if (client != null)
             {
                 Player p = client.getActor();
-                p.inventories[Inventory.NORMAL].addItem(itemId, quantity, 1);
+                p.getInventory(Inventory.NORMAL).addItem(itemId, quantity, 1);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.inventories[Inventory.NORMAL].addItem(itemId, quantity, 1);
+                    p.getInventory(Inventory.NORMAL).addItem(itemId, quantity, 1);
                 }
             }
         }
@@ -450,8 +450,8 @@ namespace FFXIVClassic_Lobby_Server
             {
                 Player p = client.getActor();
 
-                if (p.inventories.ContainsKey(type))
-                    p.inventories[type].addItem(itemId, quantity, 1);
+                if (p.getInventory(type) != null)
+                    p.getInventory(type).addItem(itemId, quantity, 1);
             }
             else
             {
@@ -459,8 +459,8 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     Player p = entry.Value.getActor();
 
-                    if (p.inventories.ContainsKey(type))
-                        p.inventories[type].addItem(itemId, quantity, 1);
+                    if (p.getInventory(type) != null)
+                        p.getInventory(type).addItem(itemId, quantity, 1);
                 }
             }
         }
@@ -470,14 +470,14 @@ namespace FFXIVClassic_Lobby_Server
             if (client != null)
             {
                 Player p = client.getActor();
-                p.inventories[Inventory.NORMAL].removeItem(itemId, quantity);
+                p.getInventory(Inventory.NORMAL).removeItem(itemId, quantity);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.inventories[Inventory.NORMAL].removeItem(itemId, quantity);
+                    p.getInventory(Inventory.NORMAL).removeItem(itemId, quantity);
                 }
             }
         }
@@ -488,8 +488,8 @@ namespace FFXIVClassic_Lobby_Server
             {
                 Player p = client.getActor();
 
-                if (p.inventories.ContainsKey(type))
-                    p.inventories[type].removeItem(itemId, quantity);
+                if (p.getInventory(type) != null)
+                    p.getInventory(type).removeItem(itemId, quantity);
             }
             else
             {
@@ -497,8 +497,8 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     Player p = entry.Value.getActor();
 
-                    if (p.inventories.ContainsKey(type))
-                        p.inventories[type].removeItem(itemId, quantity);
+                    if (p.getInventory(type) != null)
+                        p.getInventory(type).removeItem(itemId, quantity);
                 }
             }
         }
@@ -508,14 +508,14 @@ namespace FFXIVClassic_Lobby_Server
             if (client != null)
             {
                 Player p = client.getActor();
-                p.inventories[Inventory.CURRANCY].addItem(itemId, quantity, 1);
+                p.getInventory(Inventory.CURRANCY).addItem(itemId, quantity, 1);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.inventories[Inventory.CURRANCY].addItem(itemId, quantity, 1);
+                    p.getInventory(Inventory.CURRANCY).addItem(itemId, quantity, 1);
                 }
             }
         }
@@ -525,14 +525,14 @@ namespace FFXIVClassic_Lobby_Server
             if (client != null)
             {
                 Player p = client.getActor();
-                p.inventories[Inventory.CURRANCY].removeItem(itemId, quantity);
+                p.getInventory(Inventory.CURRANCY).removeItem(itemId, quantity);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.inventories[Inventory.CURRANCY].removeItem(itemId, quantity);
+                    p.getInventory(Inventory.CURRANCY).removeItem(itemId, quantity);
                 }
             }
         }
@@ -542,14 +542,14 @@ namespace FFXIVClassic_Lobby_Server
             if (client != null)
             {
                 Player p = client.getActor();
-                p.inventories[Inventory.KEYITEMS].addItem(itemId, 1, 1);
+                p.getInventory(Inventory.KEYITEMS).addItem(itemId, 1, 1);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.inventories[Inventory.KEYITEMS].addItem(itemId, 1, 1);
+                    p.getInventory(Inventory.KEYITEMS).addItem(itemId, 1, 1);
                 }
             }
         }
@@ -559,14 +559,14 @@ namespace FFXIVClassic_Lobby_Server
             if (client != null)
             {
                 Player p = client.getActor();
-                p.inventories[Inventory.KEYITEMS].removeItem(itemId, 1);
+                p.getInventory(Inventory.KEYITEMS).removeItem(itemId, 1);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.inventories[Inventory.KEYITEMS].removeItem(itemId, 1);
+                    p.getInventory(Inventory.KEYITEMS).removeItem(itemId, 1);
                 }
             }
         }

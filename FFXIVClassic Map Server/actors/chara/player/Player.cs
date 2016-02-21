@@ -32,7 +32,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public const int MAXSIZE_INVENTORY_LOOT = 10;
         public const int MAXSIZE_INVENTORY_MELDREQUEST = 4;
         public const int MAXSIZE_INVENTORY_BAZAAR = 10;
-        public const int MAXSIZE_INVENTORY_EQUIPMENT = 10;
+        public const int MAXSIZE_INVENTORY_EQUIPMENT = 35;
 
         public const int TIMER_TOTORAK = 0;
         public const int TIMER_DZEMAEL = 1;        
@@ -61,8 +61,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint currentTitle;
 
         //Inventory        
-        public Dictionary<ushort, Inventory> inventories = new Dictionary<ushort, Inventory>();
-        public int[] invEquipment = new int[MAXSIZE_INVENTORY_EQUIPMENT];
+        private Dictionary<ushort, Inventory> inventories = new Dictionary<ushort, Inventory>();
+        private Equipment equipment;
 
         //GC Related
         public byte gcCurrent;
@@ -101,6 +101,8 @@ namespace FFXIVClassic_Map_Server.Actors
             inventories[Inventory.MELDREQUEST] = new Inventory(this, MAXSIZE_INVENTORY_MELDREQUEST, Inventory.MELDREQUEST);
             inventories[Inventory.BAZAAR] = new Inventory(this, MAXSIZE_INVENTORY_BAZAAR, Inventory.BAZAAR);
             inventories[Inventory.LOOT] = new Inventory(this, MAXSIZE_INVENTORY_LOOT, Inventory.LOOT);
+
+            equipment = new Equipment(this, inventories[Inventory.NORMAL], MAXSIZE_INVENTORY_EQUIPMENT, Inventory.EQUIPMENT);
 
             charaWork.property[0] = 1;
             charaWork.property[1] = 1;
@@ -431,7 +433,8 @@ namespace FFXIVClassic_Map_Server.Actors
             BasePacket partyListPacket = BasePacket.createPacket(ListUtils.createPartyList(actorId, 0xF4, 1, 0x8000000000696df2, partyListEntries), true, false);
             playerSession.queuePacket(partyListPacket);
             #endregion
-        
+
+            #region Inventory & Equipment
             queuePacket(InventoryBeginChangePacket.buildPacket(actorId));
             inventories[Inventory.NORMAL].sendFullInventory();
             inventories[Inventory.CURRANCY].sendFullInventory();
@@ -439,21 +442,9 @@ namespace FFXIVClassic_Map_Server.Actors
             inventories[Inventory.BAZAAR].sendFullInventory();
             inventories[Inventory.MELDREQUEST].sendFullInventory();
             inventories[Inventory.LOOT].sendFullInventory();
-            #region equipsetup
-          //  EquipmentListX08Packet initialEqupmentPacket = new EquipmentListX08Packet();
-          //  initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_BODY, 5);
-          //  initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_HEAD, 3);
-          //  initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_UNDERSHIRT, 6);
-           // initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_UNDERGARMENT, 7);
-           // initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_MAINHAND, 2);
-           // initialEqupmentPacket.setItem(EquipmentListX08Packet.SLOT_LEGS, 8);
-
-            //Equip Init
-         //   playerSession.queuePacket(InventorySetBeginPacket.buildPacket(actorId, 0x23, InventorySetBeginPacket.CODE_EQUIPMENT), true, false);
-         //   playerSession.queuePacket(BasePacket.createPacket(initialEqupmentPacket.buildPackets(actorId), true, false));
-            //   playerSession.queuePacket(InventorySetEndPacket.buildPacket(actorId), true, false);
+            equipment.SendFullEquipment(false);   
+            playerSession.queuePacket(InventoryEndChangePacket.buildPacket(actorId), true, false);
             #endregion
-            playerSession.queuePacket(InventoryEndChangePacket.buildPacket(actorId), true, false);         
 
             playerSession.queuePacket(getInitPackets(actorId));
 
@@ -646,7 +637,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public Inventory getInventory(ushort type)
         {
-            return inventories[type];
+            if (inventories.ContainsKey(type))
+                return inventories[type];
+            else
+                return null;
+        }
+
+        public Equipment getEquipment()
+        {
+            return equipment;
         }
 
         public void runEventFunction(string functionName, params object[] parameters)

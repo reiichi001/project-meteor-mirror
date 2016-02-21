@@ -40,6 +40,35 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             list = itemsFromDB;
         }
 
+        public Item getItem(ushort slot)
+        {
+            if (slot < list.Count)
+                return list[slot];
+            else
+                return null;
+        }
+
+        public void RefreshItem(Item item)
+        {
+            owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            sendInventoryPackets(item);
+            owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
+        }
+
+        public void RefreshItem(params Item[] items)
+        {
+            owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            sendInventoryPackets(items.ToList());
+            owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
+        }
+
+        public void RefreshItem(List<Item> items)
+        {
+            owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            sendInventoryPackets(items);
+            owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
+        }
+
         public void addItem(uint itemId, int quantity, byte quality)
         {
             if (!isSpaceForAdd(itemId, quantity))
@@ -173,6 +202,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             sendInventoryRemovePackets(slotsToRemove);
 
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
+
+            if (inventoryCode == NORMAL)
+                owner.getEquipment().SendFullEquipment(false);
+
             owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));
         }
 
@@ -210,6 +243,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 sendInventoryRemovePackets((ushort)(oldListSize - 1));
 
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
+
+            if (inventoryCode == NORMAL)
+                owner.getEquipment().SendFullEquipment(false);
+
             owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));
 
         }
@@ -236,6 +273,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 sendInventoryRemovePackets((ushort)(oldListSize - 1));
 
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
+
+            if (inventoryCode == NORMAL)
+                owner.getEquipment().SendFullEquipment(false);
+
             owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));
         }
 
@@ -266,6 +307,31 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         private void sendInventoryPackets(Item item)
         {
             owner.queuePacket(InventoryListX01Packet.buildPacket(owner.actorId, item));
+        }
+
+        private void sendInventoryPackets(List<Item> items)
+        {
+            int currentIndex = 0;
+
+            while (true)
+            {
+                if (items.Count - currentIndex >= 64)
+                    owner.queuePacket(InventoryListX64Packet.buildPacket(owner.actorId, items, ref currentIndex));
+                else if (items.Count - currentIndex >= 32)
+                    owner.queuePacket(InventoryListX32Packet.buildPacket(owner.actorId, items, ref currentIndex));
+                else if (items.Count - currentIndex >= 16)
+                    owner.queuePacket(InventoryListX16Packet.buildPacket(owner.actorId, items, ref currentIndex));
+                else if (items.Count - currentIndex > 1)
+                    owner.queuePacket(InventoryListX08Packet.buildPacket(owner.actorId, items, ref currentIndex));
+                else if (items.Count - currentIndex == 1)
+                {
+                    owner.queuePacket(InventoryListX01Packet.buildPacket(owner.actorId, items[currentIndex]));
+                    currentIndex++;
+                }
+                else
+                    break;
+            }
+
         }
 
         private void sendInventoryPackets(int startOffset)

@@ -452,12 +452,12 @@ namespace FFXIVClassic_Lobby_Server
                         }
                     }
 
-                    player.inventories[Inventory.NORMAL].initList(getInventory(player, 0, Inventory.NORMAL));
-                    player.inventories[Inventory.KEYITEMS].initList(getInventory(player, 0, Inventory.KEYITEMS));
-                    player.inventories[Inventory.CURRANCY].initList(getInventory(player, 0, Inventory.CURRANCY));
-                    player.inventories[Inventory.BAZAAR].initList(getInventory(player, 0, Inventory.BAZAAR));
-                    player.inventories[Inventory.MELDREQUEST].initList(getInventory(player, 0, Inventory.MELDREQUEST));
-                    player.inventories[Inventory.LOOT].initList(getInventory(player, 0, Inventory.LOOT));
+                    player.getInventory(Inventory.NORMAL).initList(getInventory(player, 0, Inventory.NORMAL));
+                    player.getInventory(Inventory.KEYITEMS).initList(getInventory(player, 0, Inventory.KEYITEMS));
+                    player.getInventory(Inventory.CURRANCY).initList(getInventory(player, 0, Inventory.CURRANCY));
+                    player.getInventory(Inventory.BAZAAR).initList(getInventory(player, 0, Inventory.BAZAAR));
+                    player.getInventory(Inventory.MELDREQUEST).initList(getInventory(player, 0, Inventory.MELDREQUEST));
+                    player.getInventory(Inventory.LOOT).initList(getInventory(player, 0, Inventory.LOOT));
 
                 }
                 catch (MySqlException e)
@@ -581,7 +581,7 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                     cmd2.ExecuteNonQuery();
 
-                    insertedItem = new Item((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.inventories[type].getNextEmptySlot(), isUntradeable, quality, durability, 0, 0, 0, 0, 0, 0);
+                    insertedItem = new Item((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.getInventory(type).getNextEmptySlot(), isUntradeable, quality, durability, 0, 0, 0, 0, 0, 0);
                 }
                 catch (MySqlException e)
                 { Console.WriteLine(e); }
