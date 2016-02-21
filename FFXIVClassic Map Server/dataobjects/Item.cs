@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,7 +22,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         //itemData sheet
         public readonly int durability;
         public readonly int icon;
-        public readonly int king;
+        public readonly int kind;
         public readonly int color;
         public readonly int material;
         public readonly int decoration;
@@ -42,6 +43,54 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public readonly int repairItemNum;
         public readonly int repairLevel;
         public readonly int repairLicense;
+
+        public Item(MySqlDataReader reader)
+        {
+            catalogID = reader.GetUInt32("catalogID");
+            name = reader.GetString("name");
+
+            category = reader.GetString("category");
+            maxStack = reader.GetInt32("maxStack");
+            isRare = reader.GetBoolean("isRare");
+            isExclusive = reader.GetBoolean("isExclusive");
+
+            durability = reader.GetInt32("durability");
+            icon = reader.GetInt32("icon");
+            kind = reader.GetInt32("kind");
+            color = reader.GetInt32("color");
+            material = reader.GetInt32("material");
+            decoration = reader.GetInt32("decoration");
+            use = reader.GetInt32("use");
+            mainSkill = reader.GetInt32("mainSkill");
+            //unknown1 = reader.GetInt32("unknown1");
+            level = reader.GetInt32("level");
+            compatibility = reader.GetInt32("compatibility");
+            effectMagnitude = reader.GetFloat("effectMagnitude");
+            effectRate = reader.GetFloat("effectRate");
+            shieldBlocking = reader.GetFloat("shieldBlocking");
+            effectDuration = reader.GetFloat("effectDuration");
+            recastTime = reader.GetFloat("recastTime");
+            //unknown2 = reader.GetFloat("unknown2");
+            recastGroup = reader.GetByte("recastGroup");
+            repairSkill = reader.GetInt32("repairSkill");
+            repairItem = reader.GetInt32("repairItem");
+            repairItemNum = reader.GetInt32("repairItemNum");
+            repairLevel = reader.GetInt32("repairLevel");
+            repairLicense = reader.GetInt32("repairLicense");
+            
+            if (IsWeapon())
+            {
+
+            }
+            else if (IsArmor())
+            {
+
+            }
+            else if (IsAccessory())
+            {
+
+            }
+        }
 
         #region Utility Functions
         public bool IsMoney()
@@ -75,6 +124,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
         }
 
         public bool IsWeapon()
+        {
+            return catalogID >= 3900000 && catalogID <= 7999999;
+        }
+
+        public static bool IsWeapon(uint catalogID)
         {
             return catalogID >= 3900000 && catalogID <= 7999999;
         }
@@ -279,7 +333,17 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return catalogID >= 8000000 && catalogID <= 8999999;
         }
 
+        public static bool IsArmor(uint catalogID)
+        {
+            return catalogID >= 8000000 && catalogID <= 8999999;
+        }
+
         public bool IsAccessory()
+        {
+            return catalogID >= 9000000 && catalogID <= 9079999;
+        }
+
+        public static bool IsAccessory(uint catalogID)
         {
             return catalogID >= 9000000 && catalogID <= 9079999;
         }
@@ -334,11 +398,23 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return -1;
         }
 
+        public double getItemHQValue(float value1, float value2)
+        {
+            return Math.Max(value1 + 1, Math.Ceiling(value1 * value2));
+        }
+
         #endregion
 
     }
+
     class EquipmentItem : Item
-    {       
+    {
+        //graphics
+        public readonly int graphicsCategoryId;
+        public readonly int graphicsEquipId;
+        public readonly int graphicsVariantId;
+        public readonly int graphicsColorId;
+   
         //equipment sheet
         public readonly int equipPoint;
         public readonly short equipTribe1;
@@ -364,16 +440,39 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public readonly int elementalBonusType;
         public readonly short elementalBonusValue;
+
+        public EquipmentItem(MySqlDataReader reader) 
+            : base (reader)
+        {
+            equipPoint = reader.GetInt32("equipPoint");
+            equipTribe1 = reader.GetInt16("equipTribe1");
+            unknown1 = reader.GetUInt16("unknown1");
+            equipTribe2 = reader.GetInt16("equipTribe2");
+            unknown2 = reader.GetUInt16("unknown2");
+            equipTribe3 = reader.GetInt16("equipTribe3");
+            unknown3 = reader.GetUInt16("unknown3");
+            equipTribe4 = reader.GetInt16("equipTribe4");
+            unknown4 = reader.GetUInt16("unknown4");
+
+            paramBonusType1 = reader.GetInt32("paramBonusType1");
+            paramBonusValue1 = reader.GetInt16("paramBonusValue1");
+            paramBonusType2 = reader.GetInt32("paramBonusType2");
+            paramBonusValue2 = reader.GetInt16("paramBonusValue2");
+            paramBonusType3 = reader.GetInt32("paramBonusType3");
+            paramBonusValue3 = reader.GetInt16("paramBonusValue3");
+            paramBonusType4 = reader.GetInt32("paramBonusType4");
+            paramBonusValue4 = reader.GetInt16("paramBonusValue4");
+
+            paramBonusAtSlotType = reader.GetInt32("paramBonusAtSlotType");
+            paramBonusAtSlotValue = reader.GetInt16("paramBonusAtSlotValue");
+
+            elementalBonusType = reader.GetInt32("elementalBonusType");
+            elementalBonusValue = reader.GetInt16("elementalBonusValue");
+        }
     }
 
     class WeaponItem : EquipmentItem
     {
-        //graphics
-        public readonly int graphicsWeaponId;
-        public readonly int graphicsEquipId;
-        public readonly int graphicsVariantId;
-        public readonly int graphicsColorId;
-
         //weapon sheet
         public readonly short attack;
         public readonly short magicAttack;
@@ -396,16 +495,36 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public readonly float damageAttributeValue2;
         public readonly int damageAttributeType3;
         public readonly float damageAttributeValue3;
+
+        public WeaponItem(MySqlDataReader reader)
+            : base(reader)
+        {
+            attack = reader.GetInt16("attack");
+            magicAttack = reader.GetInt16("magicAttack");
+            craftProcessing = reader.GetInt16("craftProcessing");
+            craftMagicProcessing = reader.GetInt16("craftMagicProcessing");
+            harvestPotency = reader.GetInt16("harvestPotency");
+            harvestLimit = reader.GetInt16("harvestLimit");
+            frequency = reader.GetByte("frequency");
+            rate = reader.GetInt16("rate");
+            magicRate = reader.GetInt16("magicRate");
+            craftProcessControl = reader.GetInt16("craftProcessControl");
+            harvestRate = reader.GetInt16("harvestRate");
+            critical = reader.GetInt16("critical");
+            magicCritical = reader.GetInt16("magicCritical");
+            parry = reader.GetInt16("parry");
+
+            damageAttributeType1 = reader.GetInt32("damageAttributeType1");
+            damageAttributeValue1 = reader.GetFloat("damageAttributeValue1");
+            damageAttributeType2 = reader.GetInt32("damageAttributeType2");
+            damageAttributeValue2 = reader.GetFloat("damageAttributeValue2");
+            damageAttributeType3 = reader.GetInt32("damageAttributeType3");
+            damageAttributeValue3 = reader.GetFloat("damageAttributeValue3");
+        }
     }
 
     class ArmorItem : EquipmentItem
     {
-        //graphics
-        public readonly int graphicsArmorId;
-        public readonly int graphicsEquipId;
-        public readonly int graphicsVariantId;
-        public readonly int graphicsColorId;
-
         //armor sheet
         public readonly short defence;   
         public readonly short magicDefence;
@@ -421,20 +540,39 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public readonly short damageDefenseValue3;
         public readonly int damageDefenseType4;
         public readonly short damageDefenseValue4;
+
+        public ArmorItem(MySqlDataReader reader)
+            : base(reader)
+        {
+            defence = reader.GetInt16("defence");
+            magicDefence = reader.GetInt16("magicDefence");
+            criticalDefense = reader.GetInt16("criticalDefense");
+            evasion = reader.GetInt16("evasion");
+            magicResistance = reader.GetInt16("magicResistance");
+
+            damageDefenseType1 = reader.GetInt32("damageDefenseType1");
+            damageDefenseValue1 = reader.GetInt16("damageDefenseValue1");
+            damageDefenseType2 = reader.GetInt32("damageDefenseType2");
+            damageDefenseValue2 = reader.GetInt16("damageDefenseValue2");
+            damageDefenseType3 = reader.GetInt32("damageDefenseType3");
+            damageDefenseValue3 = reader.GetInt16("damageDefenseValue3");
+            damageDefenseType4 = reader.GetInt32("damageDefenseType4");
+            damageDefenseValue4 = reader.GetInt16("damageDefenseValue4");
+        }
     }
 
     class AccessoryItem : EquipmentItem
     {
-        //graphics
-        public readonly int graphicsAccessoryId;
-        public readonly int graphicsEquipId;
-        public readonly int graphicsVariantId;
-        public readonly int graphicsColorId;
-
         //accessory sheet
         public readonly byte power;
         public readonly byte size;
-    }
 
+        public AccessoryItem(MySqlDataReader reader)
+            : base(reader)
+        {
+            power = reader.GetByte("power");
+            size = reader.GetByte("size");
+        }
+    }
     
 }
