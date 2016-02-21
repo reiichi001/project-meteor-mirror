@@ -76,20 +76,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             repairItem = reader.GetInt32("repairItem");
             repairItemNum = reader.GetInt32("repairItemNum");
             repairLevel = reader.GetInt32("repairLevel");
-            repairLicense = reader.GetInt32("repairLicense");
-            
-            if (IsWeapon())
-            {
-
-            }
-            else if (IsArmor())
-            {
-
-            }
-            else if (IsAccessory())
-            {
-
-            }
+            repairLicense = reader.GetInt32("repairLicense");            
         }
 
         #region Utility Functions
@@ -410,10 +397,10 @@ namespace FFXIVClassic_Map_Server.dataobjects
     class EquipmentItem : Item
     {
         //graphics
-        public readonly int graphicsCategoryId;
-        public readonly int graphicsEquipId;
-        public readonly int graphicsVariantId;
-        public readonly int graphicsColorId;
+        public readonly uint graphicsWeaponId;
+        public readonly uint graphicsEquipmentId;
+        public readonly uint graphicsVariantId;
+        public readonly uint graphicsColorId;
    
         //equipment sheet
         public readonly int equipPoint;
@@ -444,6 +431,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public EquipmentItem(MySqlDataReader reader) 
             : base (reader)
         {
+            graphicsWeaponId = reader.GetUInt32("weaponId");
+            graphicsEquipmentId = reader.GetUInt32("equipmentId");
+            graphicsVariantId = reader.GetUInt32("variantId");
+            graphicsColorId = reader.GetUInt32("colorId");
+
             equipPoint = reader.GetInt32("equipPoint");
             equipTribe1 = reader.GetInt16("equipTribe1");
             unknown1 = reader.GetUInt16("unknown1");

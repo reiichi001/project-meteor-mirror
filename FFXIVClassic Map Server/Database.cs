@@ -96,6 +96,56 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
+        public static Dictionary<uint, Item> getItemGamedata()
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                Dictionary<uint, Item> gamedataItems = new Dictionary<uint, Item>();
+          
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                SELECT
+                                equipSlot,
+                                itemSlot
+                                FROM characters_inventory_equipment                                    
+                                WHERE characterId = @charId ORDER BY equipSlot";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint id = reader.GetUInt32("catalogID");
+                            Item item = null;
+
+                            if (Item.IsWeapon(id))
+                                item = new WeaponItem(reader);
+                            else if (Item.IsArmor(id))
+                                item = new ArmorItem(reader);
+                            else if (Item.IsAccessory(id))
+                                item = new AccessoryItem(reader);
+                            else
+                                item = new Item(reader);
+
+                            gamedataItems.Add(item.catalogID, item);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+                
+                return gamedataItems;
+            }
+        }
+
         public static void loadPlayerCharacter(Player player)
         {            
             string query;
