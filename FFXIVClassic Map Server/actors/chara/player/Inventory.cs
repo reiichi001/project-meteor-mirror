@@ -21,11 +21,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         public const ushort CURRANCY = 0x0063; //Max 0x140
         public const ushort KEYITEMS = 0x0064; //Max 0x500
         public const ushort EQUIPMENT = 0x00FE; //Max 0x23
+        public const ushort EQUIPMENT_OTHERPLAYER = 0x00F9; //Max 0x23
 
         private Player owner;
         private ushort inventoryCapacity;
         private ushort inventoryCode;
-        private List<Item> list;
+        private List<InventoryItem> list;
 
         public Inventory(Player ownerPlayer, ushort capacity, ushort code)
         {
@@ -35,12 +36,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         }
 
         #region Inventory Management
-        public void initList(List<Item> itemsFromDB)
+        public void initList(List<InventoryItem> itemsFromDB)
         {
             list = itemsFromDB;
         }
 
-        public Item getItem(ushort slot)
+        public InventoryItem getItem(ushort slot)
         {
             if (slot < list.Count)
                 return list[slot];
@@ -48,21 +49,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return null;
         }
 
-        public void RefreshItem(Item item)
+        public void RefreshItem(InventoryItem item)
         {
             owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
             sendInventoryPackets(item);
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
         }
 
-        public void RefreshItem(params Item[] items)
+        public void RefreshItem(params InventoryItem[] items)
         {
             owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
             sendInventoryPackets(items.ToList());
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
         }
 
-        public void RefreshItem(List<Item> items)
+        public void RefreshItem(List<InventoryItem> items)
         {
             owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
             sendInventoryPackets(items);
@@ -81,7 +82,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             int quantityCount = quantity;
             for (int i = 0; i < list.Count; i++)
             {
-                Item item = list[i];
+                InventoryItem item = list[i];
                 if (item.itemId == itemId && item.quantity < item.maxStack)
                 {
                     slotsToUpdate.Add(item.slot);
@@ -117,7 +118,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             //New item that spilled over
             while (quantityCount > 0)
             {
-                Item addedItem = Database.addItem(owner, itemId, Math.Min(quantityCount, 5), quality, false, 100, inventoryCode);
+                InventoryItem addedItem = Database.addItem(owner, itemId, Math.Min(quantityCount, 5), quality, false, 100, inventoryCode);
                 list.Add(addedItem);
 
                 if (inventoryCode != CURRANCY && inventoryCode != KEYITEMS)
@@ -139,7 +140,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return;
 
             List<ushort> slotsToUpdate = new List<ushort>();
-            List<Item> itemsToRemove = new List<Item>();
+            List<InventoryItem> itemsToRemove = new List<InventoryItem>();
             List<ushort> slotsToRemove = new List<ushort>();
             List<SubPacket> addItemPackets = new List<SubPacket>();
 
@@ -148,7 +149,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             ushort lowestSlot = 0;
             for (int i = list.Count - 1; i >= 0; i--)
             {
-                Item item = list[i];
+                InventoryItem item = list[i];
                 if (item.itemId == itemId)
                 {
                     int oldQuantity = item.quantity;
@@ -212,8 +213,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         public void removeItem(ulong itemDBId)
         {
             ushort slot = 0;
-            Item toDelete = null;
-            foreach (Item item in list)
+            InventoryItem toDelete = null;
+            foreach (InventoryItem item in list)
             {
                 if (item.uniqueId == itemDBId)
                 {
@@ -304,12 +305,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
         }
 
-        private void sendInventoryPackets(Item item)
+        private void sendInventoryPackets(InventoryItem item)
         {
             owner.queuePacket(InventoryListX01Packet.buildPacket(owner.actorId, item));
         }
 
-        private void sendInventoryPackets(List<Item> items)
+        private void sendInventoryPackets(List<InventoryItem> items)
         {
             int currentIndex = 0;
 
@@ -403,7 +404,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             int quantityCount = quantity;
             for (int i = 0; i < list.Count; i++)
             {
-                Item item = list[i];
+                InventoryItem item = list[i];
                 if (item.itemId == itemId && item.quantity < item.maxStack)
                 {
                     quantityCount -= (item.maxStack - item.quantity);
@@ -424,7 +425,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             int count = 0;
 
-            foreach (Item item in list)
+            foreach (InventoryItem item in list)
             {
                 if (item.itemId == itemId)
                     count += item.quantity;

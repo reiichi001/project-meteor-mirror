@@ -459,6 +459,7 @@ namespace FFXIVClassic_Lobby_Server
                     player.getInventory(Inventory.MELDREQUEST).initList(getInventory(player, 0, Inventory.MELDREQUEST));
                     player.getInventory(Inventory.LOOT).initList(getInventory(player, 0, Inventory.LOOT));
 
+                    player.getEquipment().SetEquipment(getEquipment(player));
                 }
                 catch (MySqlException e)
                 { Console.WriteLine(e); }
@@ -470,9 +471,115 @@ namespace FFXIVClassic_Lobby_Server
 
         }
 
-        public static List<Item> getInventory(Player player, uint slotOffset, uint type)
+        public static List<Tuple<ushort, InventoryItem>> getEquipment(Player player)
         {
-            List<Item> items = new List<Item>();
+            List<Tuple<ushort, InventoryItem>> equipment = new List<Tuple<ushort, InventoryItem>>();
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT
+                                    equipSlot,
+                                    itemSlot
+                                    FROM characters_inventory_equipment                                    
+                                    WHERE characterId = @charId ORDER BY equipSlot";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            ushort equipSlot = reader.GetUInt16(0);
+                            ushort itemSlot = reader.GetUInt16(1);
+                            InventoryItem item = player.getInventory(Inventory.NORMAL).getItem(itemSlot);
+                            equipment.Add(new Tuple<ushort, InventoryItem>(equipSlot, item));
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            return equipment;
+        }
+
+        public static void equipItem(Player player, ushort equipSlot, ushort itemSlot)
+        {
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    INSERT INTO characters_inventory_equipment                                    
+                                    (characterId, equipSlot, itemSlot)
+                                    VALUES
+                                    (@characterId, @equipSlot, @itemSlot)
+                                    ON DUPLICATE KEY UPDATE itemSlot=@itemSlot;
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@characterId", player.actorId);
+                    cmd.Parameters.AddWithValue("@equipSlot", equipSlot);
+                    cmd.Parameters.AddWithValue("@itemSlot", itemSlot);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+        }
+
+        public static void unequipItem(Player player, ushort equipSlot)
+        {
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    DELETE FROM characters_inventory_equipment                                    
+                                    WHERE characterId = @characterId AND equipSlot = @equipSlot;
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@characterId", player.actorId);
+                    cmd.Parameters.AddWithValue("@equipSlot", equipSlot);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+        }
+
+        public static List<InventoryItem> getInventory(Player player, uint slotOffset, uint type)
+        {
+            List<InventoryItem> items = new List<InventoryItem>();
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -525,7 +632,7 @@ namespace FFXIVClassic_Lobby_Server
                             byte materia4 = reader.GetByte(11);
                             byte materia5 = reader.GetByte(12);
 
-                            items.Add(new Item(uniqueId, itemId, quantity, slot, isUntradeable, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5));
+                            items.Add(new InventoryItem(uniqueId, itemId, quantity, slot, isUntradeable, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5));
                         }
                     }
                 }
@@ -540,9 +647,9 @@ namespace FFXIVClassic_Lobby_Server
             return items;
         }
 
-        public static Item addItem(Player player, uint itemId, int quantity, byte quality, bool isUntradeable, uint durability, ushort type)
+        public static InventoryItem addItem(Player player, uint itemId, int quantity, byte quality, bool isUntradeable, uint durability, ushort type)
         {
-            Item insertedItem = null;
+            InventoryItem insertedItem = null;
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -581,7 +688,7 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                     cmd2.ExecuteNonQuery();
 
-                    insertedItem = new Item((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.getInventory(type).getNextEmptySlot(), isUntradeable, quality, durability, 0, 0, 0, 0, 0, 0);
+                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.getInventory(type).getNextEmptySlot(), isUntradeable, quality, durability, 0, 0, 0, 0, 0, 0);
                 }
                 catch (MySqlException e)
                 { Console.WriteLine(e); }

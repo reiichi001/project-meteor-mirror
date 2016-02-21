@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,99 +8,140 @@ namespace FFXIVClassic_Map_Server.dataobjects
 {
     class Item
     {
-        public uint uniqueId;
-        public uint itemId;
-        public int quantity = 1;
-        public ushort slot;
+        //Basic
+        public readonly string id;
+        public readonly string name;
+        
+        //_item sheet
+        public readonly string category;
+        public readonly int maxStack;
+        public readonly bool isRare;
+        public readonly bool isExclusive;
 
-        public int maxStack = 99999;
-
-        public bool isUntradeable = false;
-        public byte quality = 1;
-
-        public uint durability = 0;
-        public ushort spiritbind = 0;
-
-        public byte materia1 = 0;
-        public byte materia2 = 0;
-        public byte materia3 = 0;
-        public byte materia4 = 0;
-        public byte materia5 = 0;
-
-        //Bare Minimum
-        public Item(uint id, uint itemId, ushort slot)
-        {
-            this.uniqueId = id;
-            this.itemId = itemId;
-            this.quantity = quantity;
-            this.slot = slot;            
-        }
-
-        public Item(uint uniqueId, uint itemId, int quantity, ushort slot, bool isUntradeable, byte qualityNumber, uint durability, ushort spiritbind, byte materia1, byte materia2, byte materia3, byte materia4, byte materia5)
-        {
-            this.uniqueId = uniqueId;
-            this.itemId = itemId;
-            this.quantity = quantity;
-            this.slot = slot;
-            this.isUntradeable = isUntradeable;
-            this.quality = qualityNumber;
-            this.durability = durability;
-            this.spiritbind = spiritbind;
-            this.materia1 = materia1;
-            this.materia2 = materia2;
-            this.materia3 = materia3;
-            this.materia4 = materia4;
-            this.materia5 = materia5;
-        }
-
-        public byte[] toPacketBytes()
-        {           
-            byte[] data = new byte[0x70];
-
-            using (MemoryStream mem = new MemoryStream(data))
-            {
-                using (BinaryWriter binWriter = new BinaryWriter(mem))
-                {
-                    binWriter.Write((UInt32)uniqueId);
-                    binWriter.Write((UInt32)0x00000000);
-                    binWriter.Write((Int32)quantity);
-                    binWriter.Write((UInt32)itemId);
-                    binWriter.Write((UInt16)slot);
-
-                    binWriter.Write((UInt16)0x0000);
-                    binWriter.Write((UInt32)0x00000000);
-                    binWriter.Write((UInt32)0x00000000);
-                    binWriter.Write((UInt32)0x00000000);
-
-                    binWriter.Write(isUntradeable ? (UInt32)0x3 : (UInt32)0x0);
-
-                    binWriter.Write((UInt32)0x00000000);
-
-                    binWriter.Write((byte)quality);
-                    binWriter.Write((byte)0x01);
-                    binWriter.Write((uint)durability);
-
-                    binWriter.BaseStream.Seek(0x10-0x06, SeekOrigin.Current);
-
-                    binWriter.Write((byte)0x01);
-                    binWriter.Write((byte)0x01);
-                    binWriter.Write((byte)0x01);
-                    binWriter.Write((byte)0x01);
-
-                    binWriter.BaseStream.Seek(0x10, SeekOrigin.Current);
-
-                    binWriter.Write((ushort)spiritbind);
-
-                    binWriter.Write((byte)materia1);
-                    binWriter.Write((byte)materia2);
-                    binWriter.Write((byte)materia3);
-                    binWriter.Write((byte)materia4);
-                    binWriter.Write((byte)materia5);
-                }                
-            }
-
-            return data;        
-        }
+        //itemData sheet
+        public readonly int durability;
+        public readonly int icon;
+        public readonly int king;
+        public readonly int color;
+        public readonly int material;
+        public readonly int decoration;
+        public readonly int use;
+        public readonly int mainSkill;
+        public readonly int unknown1;
+        public readonly int level;
+        public readonly int compatibility;
+        public readonly float effectMagnitude;
+        public readonly float effectRate;
+        public readonly float shieldBlocking;
+        public readonly float effectDuration;
+        public readonly float recastTime;
+        public readonly float unknown2;
+        public readonly byte recastGroup;
+        public readonly int repairSkill;
+        public readonly int repairItem;
+        public readonly int repairItemNum;
+        public readonly int repairLevel;
+        public readonly int repairLicense;
 
     }
+    class EquipmentItem : Item
+    {       
+        //equipment sheet
+        public readonly int equipPoint;
+        public readonly short equipTribe1;
+        public readonly ushort unknown1;
+        public readonly short equipTribe2;
+        public readonly ushort unknown2;
+        public readonly short equipTribe3;
+        public readonly ushort unknown3;
+        public readonly short equipTribe4;
+        public readonly ushort unknown4;
+
+        public readonly int paramBonusType1;
+        public readonly short paramBonusValue1;
+        public readonly int paramBonusType2;
+        public readonly short paramBonusValue2;
+        public readonly int paramBonusType3;
+        public readonly short paramBonusValue3;
+        public readonly int paramBonusType4;
+        public readonly short paramBonusValue4;
+
+        public readonly int paramBonusAtSlotType;
+        public readonly short paramBonusAtSlotValue;
+
+        public readonly int elementalBonusType;
+        public readonly short elementalBonusValue;
+    }
+
+    class WeaponItem : EquipmentItem
+    {
+        //graphics
+        public readonly int graphicsWeaponId;
+        public readonly int graphicsEquipId;
+        public readonly int graphicsVariantId;
+        public readonly int graphicsColorId;
+
+        //weapon sheet
+        public readonly short attack;
+        public readonly short magicAttack;
+        public readonly short craftProcessing;
+        public readonly short craftMagicProcessing;
+        public readonly short harvestPotency;
+        public readonly short harvestLimit;
+        public readonly byte frequency;
+        public readonly short rate;
+        public readonly short magicRate;
+        public readonly short craftProcessControl;
+        public readonly short harvestRate;
+        public readonly short critical;
+        public readonly short magicCritical;
+        public readonly short parry;
+
+        public readonly int damageAttributeType1;
+        public readonly float damageAttributeValue1;
+        public readonly int damageAttributeType2;
+        public readonly float damageAttributeValue2;
+        public readonly int damageAttributeType3;
+        public readonly float damageAttributeValue3;
+    }
+
+    class ArmorItem : EquipmentItem
+    {
+        //graphics
+        public readonly int graphicsArmorId;
+        public readonly int graphicsEquipId;
+        public readonly int graphicsVariantId;
+        public readonly int graphicsColorId;
+
+        //armor sheet
+        public readonly short defence;   
+        public readonly short magicDefence;
+        public readonly short criticalDefense;
+        public readonly short evasion;
+        public readonly short magicResistance;
+
+        public readonly int damageDefenseType1;
+        public readonly short damageDefenseValue1;
+        public readonly int damageDefenseType2;
+        public readonly short damageDefenseValue2;
+        public readonly int damageDefenseType3;
+        public readonly short damageDefenseValue3;
+        public readonly int damageDefenseType4;
+        public readonly short damageDefenseValue4;
+    }
+
+    class AccessoryItem : EquipmentItem
+    {
+        //graphics
+        public readonly int graphicsAccessoryId;
+        public readonly int graphicsEquipId;
+        public readonly int graphicsVariantId;
+        public readonly int graphicsColorId;
+
+        //accessory sheet
+        public readonly byte power;
+        public readonly byte size;
+    }
+
+    
 }

@@ -1,4 +1,5 @@
-﻿using FFXIVClassic_Map_Server.Actors;
+﻿using FFXIVClassic_Lobby_Server;
+using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
@@ -34,7 +35,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         private Player owner;
         private ushort inventoryCapacity;
         private ushort inventoryCode;
-        private Item[] list;
+        private InventoryItem[] list;
         private Inventory normalInventory;
 
         public Equipment(Player ownerPlayer, Inventory normalInventory, ushort capacity, ushort code)
@@ -42,11 +43,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             owner = ownerPlayer;
             inventoryCapacity = capacity;
             inventoryCode = code;
-            list = new Item[inventoryCapacity];
+            list = new InventoryItem[inventoryCapacity];
             this.normalInventory = normalInventory;
         }
 
-        public Item GetItemAtSlot(ushort slot)
+        public InventoryItem GetItemAtSlot(ushort slot)
         {
             if (slot < list.Length)
                 return list[slot];
@@ -65,25 +66,27 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     slotsToUpdate.Add(i);
             }
 
-            SendEquipmentPackets(slotsToUpdate);            
+            owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            SendEquipmentPackets(slotsToUpdate);
+            owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));      
         }
 
-        public void SetEquipment(List<Tuple<ushort, Item>> toEquip)
+        public void SetEquipment(List<Tuple<ushort, InventoryItem>> toEquip)
         {
             List<ushort> slotsToUpdate = new List<ushort>();
             for (int i = 0; i < toEquip.Count; i++)
             {
                 slotsToUpdate.Add(toEquip[i].Item1);
                 list[toEquip[i].Item1] = toEquip[i].Item2;
-            }
-
-            SendEquipmentPackets(slotsToUpdate);            
+            }            
         }
 
-        public void Equip(ushort slot, Item item)
+        public void Equip(ushort slot, InventoryItem item)
         {
             if (slot >= list.Length)
-                return;        
+                return;
+
+            Database.equipItem(owner, slot, item.slot);
 
             owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
 
@@ -106,6 +109,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (slot >= list.Length)
                 return;
 
+            Database.unequipItem(owner, slot);
+
             owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
 
             normalInventory.RefreshItem(list[slot]);
@@ -119,7 +124,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             list[slot] = null;
         }
 
-        private void SendEquipmentPackets(ushort equipSlot, Item item)
+        private void SendEquipmentPackets(ushort equipSlot, InventoryItem item)
         {
             if (item == null)
                 owner.queuePacket(InventoryRemoveX01Packet.buildPacket(owner.actorId, equipSlot));
@@ -129,7 +134,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         private void SendEquipmentPackets(List<ushort> slotsToUpdate)
         {
-            owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
             
             int currentIndex = 0;
 
@@ -145,14 +149,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     owner.queuePacket(EquipmentListX08Packet.buildPacket(owner.actorId, list, slotsToUpdate, ref currentIndex));
                 else if (slotsToUpdate.Count - currentIndex == 1)
                 {
-                    owner.queuePacket(EquipmentListX01Packet.buildPacket(owner.actorId, slotsToUpdate[currentIndex], list[currentIndex].slot));
+                    owner.queuePacket(EquipmentListX01Packet.buildPacket(owner.actorId, slotsToUpdate[currentIndex], list[slotsToUpdate[currentIndex]].slot));
                     currentIndex++;
                 }
                 else
                     break;
             }
 
-            owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
         }
 
     }

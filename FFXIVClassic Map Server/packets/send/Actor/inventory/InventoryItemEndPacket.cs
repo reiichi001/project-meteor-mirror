@@ -15,7 +15,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
         public const ushort OPCODE = 0x0149;
         public const uint PACKET_SIZE = 0x90;
 
-        public static SubPacket buildPacket(uint playerActorID, List<Item> items, ref int listOffset)
+        public static SubPacket buildPacket(uint playerActorID, List<InventoryItem> items, ref int listOffset)
         {
             byte[] data;
 
