@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FFXIVClassic_Lobby_Server;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,9 +15,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public int quantity = 1;
         public ushort slot;
 
-        public int maxStack = 99999;
-
-        public bool isUntradeable = false;
+        public byte itemType;
         public byte quality = 1;
 
         public uint durability = 0;
@@ -34,16 +33,19 @@ namespace FFXIVClassic_Map_Server.dataobjects
             this.uniqueId = id;
             this.itemId = itemId;
             this.quantity = quantity;
-            this.slot = slot;            
+            this.slot = slot;
+
+            Item gItem = Server.getItemGamedata(id);
+            itemType = gItem.isExclusive ? (byte)0x3 : (byte)0x0;
         }
 
-        public InventoryItem(uint uniqueId, uint itemId, int quantity, ushort slot, bool isUntradeable, byte qualityNumber, uint durability, ushort spiritbind, byte materia1, byte materia2, byte materia3, byte materia4, byte materia5)
+        public InventoryItem(uint uniqueId, uint itemId, int quantity, ushort slot, byte itemType, byte qualityNumber, uint durability, ushort spiritbind, byte materia1, byte materia2, byte materia3, byte materia4, byte materia5)
         {
             this.uniqueId = uniqueId;
             this.itemId = itemId;
             this.quantity = quantity;
             this.slot = slot;
-            this.isUntradeable = isUntradeable;
+            this.itemType = itemType;
             this.quality = qualityNumber;
             this.durability = durability;
             this.spiritbind = spiritbind;
@@ -73,7 +75,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                     binWriter.Write((UInt32)0x00000000);
                     binWriter.Write((UInt32)0x00000000);
 
-                    binWriter.Write(isUntradeable ? (UInt32)0x3 : (UInt32)0x0);
+                    binWriter.Write((UInt32)itemType);
 
                     binWriter.Write((UInt32)0x00000000);
 

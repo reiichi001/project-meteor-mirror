@@ -35,7 +35,8 @@ namespace FFXIVClassic_Lobby_Server
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private LuaEngine mLuaEngine = new LuaEngine();
 
-        private WorldManager mWorldManager;        
+        private WorldManager mWorldManager;
+        private static Dictionary<uint, Item> gamedataItems;
         private static StaticActors mStaticActors;
 
         private PacketProcessor mProcessor;
@@ -50,10 +51,12 @@ namespace FFXIVClassic_Lobby_Server
             return mSelf;
         }
 
-        #region Socket Handling
         public bool startServer()
         {
             mStaticActors = new StaticActors(STATIC_ACTORS_PATH);
+            
+            gamedataItems = Database.getItemGamedata();
+            Log.info(String.Format("Loaded {0} items.",gamedataItems.Count));
 
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneList();
@@ -99,6 +102,7 @@ namespace FFXIVClassic_Lobby_Server
             return true;
         }
 
+        #region Socket Handling
         private void acceptCallback(IAsyncResult result)
         {
             ClientConnection conn = null;
@@ -155,6 +159,14 @@ namespace FFXIVClassic_Lobby_Server
         public static Actor getStaticActors(string name)
         {
             return mStaticActors.findStaticActor(name);
+        }
+
+        public static Item getItemGamedata(uint id)
+        {
+            if (gamedataItems.ContainsKey(id))
+                return gamedataItems[id];
+            else
+                return null;
         }
 
         /// <summary>

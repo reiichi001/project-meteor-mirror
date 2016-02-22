@@ -108,10 +108,14 @@ namespace FFXIVClassic_Lobby_Server
 
                     string query = @"
                                 SELECT
-                                equipSlot,
-                                itemSlot
-                                FROM characters_inventory_equipment                                    
-                                WHERE characterId = @charId ORDER BY equipSlot";
+                                *                                
+                                FROM gamedata_items
+                                LEFT JOIN gamedata_items_equipment  ON gamedata_items.catalogID = gamedata_items_equipment.catalogID
+                                LEFT JOIN gamedata_items_accessory  ON gamedata_items.catalogID = gamedata_items_accessory.catalogID
+                                LEFT JOIN gamedata_items_armor      ON gamedata_items.catalogID = gamedata_items_armor.catalogID
+                                LEFT JOIN gamedata_items_weapon     ON gamedata_items.catalogID = gamedata_items_weapon.catalogID
+                                LEFT JOIN gamedata_items_graphics   ON gamedata_items.catalogID = gamedata_items_graphics.catalogID
+                                ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -670,7 +674,7 @@ namespace FFXIVClassic_Lobby_Server
                             int quantity = reader.GetInt32(2);
                             ushort slot = reader.GetUInt16(3);
 
-                            bool isUntradeable = reader.GetBoolean(4);
+                            byte itemType = reader.GetByte(4);
                             byte qualityNumber = reader.GetByte(5);
 
                             uint durability = reader.GetUInt32(6);
@@ -682,7 +686,7 @@ namespace FFXIVClassic_Lobby_Server
                             byte materia4 = reader.GetByte(11);
                             byte materia5 = reader.GetByte(12);
 
-                            items.Add(new InventoryItem(uniqueId, itemId, quantity, slot, isUntradeable, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5));
+                            items.Add(new InventoryItem(uniqueId, itemId, quantity, slot, itemType, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5));
                         }
                     }
                 }
@@ -697,7 +701,7 @@ namespace FFXIVClassic_Lobby_Server
             return items;
         }
 
-        public static InventoryItem addItem(Player player, uint itemId, int quantity, byte quality, bool isUntradeable, uint durability, ushort type)
+        public static InventoryItem addItem(Player player, uint itemId, int quantity, byte quality, byte itemType, uint durability, ushort type)
         {
             InventoryItem insertedItem = null;
 
@@ -728,7 +732,7 @@ namespace FFXIVClassic_Lobby_Server
                     
                     cmd.Parameters.AddWithValue("@itemId", itemId);
                     cmd.Parameters.AddWithValue("@quality", quality);
-                    cmd.Parameters.AddWithValue("@isUntradeable", isUntradeable);
+                    cmd.Parameters.AddWithValue("@itemType", itemType);
                     cmd.Parameters.AddWithValue("@durability", durability);
 
                     cmd2.Parameters.AddWithValue("@charId", player.actorId);
@@ -738,7 +742,7 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                     cmd2.ExecuteNonQuery();
 
-                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.getInventory(type).getNextEmptySlot(), isUntradeable, quality, durability, 0, 0, 0, 0, 0, 0);
+                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.getInventory(type).getNextEmptySlot(), itemType, quality, durability, 0, 0, 0, 0, 0, 0);
                 }
                 catch (MySqlException e)
                 { Console.WriteLine(e); }

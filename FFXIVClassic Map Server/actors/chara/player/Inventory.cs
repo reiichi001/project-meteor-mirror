@@ -75,20 +75,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (!isSpaceForAdd(itemId, quantity))
                 return;
 
+            Item gItem = Server.getItemGamedata(itemId);
             List<ushort> slotsToUpdate = new List<ushort>();
             List<SubPacket> addItemPackets = new List<SubPacket>();
 
             //Check if item id exists 
             int quantityCount = quantity;
             for (int i = 0; i < list.Count; i++)
-            {
+            {                
                 InventoryItem item = list[i];
-                if (item.itemId == itemId && item.quantity < item.maxStack)
+                if (item.itemId == itemId && item.quantity < gItem.maxStack)
                 {
                     slotsToUpdate.Add(item.slot);
                     int oldQuantity = item.quantity;
-                    item.quantity = Math.Min(item.quantity + quantityCount, item.maxStack);
-                    quantityCount -= (item.maxStack - oldQuantity);
+                    item.quantity = Math.Min(item.quantity + quantityCount, gItem.maxStack);
+                    quantityCount -= (gItem.maxStack - oldQuantity);
                     if (quantityCount <= 0)
                         break;
                 }
@@ -118,13 +119,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             //New item that spilled over
             while (quantityCount > 0)
             {
-                InventoryItem addedItem = Database.addItem(owner, itemId, Math.Min(quantityCount, 5), quality, false, 100, inventoryCode);
+                InventoryItem addedItem = Database.addItem(owner, itemId, Math.Min(quantityCount, 5), quality, gItem.isExclusive ? (byte)0x3 : (byte)0x0, 100, inventoryCode);
+
+                
                 list.Add(addedItem);
 
                 if (inventoryCode != CURRANCY && inventoryCode != KEYITEMS)
                     sendInventoryPackets(addedItem);
 
-                quantityCount -= addedItem.maxStack;
+                quantityCount -= gItem.maxStack;
             }
 
             if (inventoryCode == CURRANCY || inventoryCode == KEYITEMS)
@@ -405,9 +408,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             for (int i = 0; i < list.Count; i++)
             {
                 InventoryItem item = list[i];
-                if (item.itemId == itemId && item.quantity < item.maxStack)
+                Item gItem = Server.getItemGamedata(item.itemId);
+                if (item.itemId == itemId && item.quantity < gItem.maxStack)
                 {
-                    quantityCount -= (item.maxStack - item.quantity);
+                    quantityCount -= (gItem.maxStack - item.quantity);
                     if (quantityCount <= 0)
                         break;
                 }

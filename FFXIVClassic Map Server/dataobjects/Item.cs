@@ -426,15 +426,18 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public readonly short additionalEffect;
         public readonly bool materialBindPermission;
-        public readonly short materiaTable;
+        public readonly short materializeTable;
 
         public EquipmentItem(MySqlDataReader reader) 
             : base (reader)
         {
-            graphicsWeaponId = reader.GetUInt32("weaponId");
-            graphicsEquipmentId = reader.GetUInt32("equipmentId");
-            graphicsVariantId = reader.GetUInt32("variantId");
-            graphicsColorId = reader.GetUInt32("colorId");
+            if (!reader.IsDBNull(reader.GetOrdinal("weaponId")) && !reader.IsDBNull(reader.GetOrdinal("equipmentId")) && !reader.IsDBNull(reader.GetOrdinal("variantId")) && !reader.IsDBNull(reader.GetOrdinal("colorId")))
+            {
+                graphicsWeaponId = reader.GetUInt32("weaponId");
+                graphicsEquipmentId = reader.GetUInt32("equipmentId");
+                graphicsVariantId = reader.GetUInt32("variantId");
+                graphicsColorId = reader.GetUInt32("colorId");
+            }
 
             equipPoint = reader.GetInt32("equipPoint");
             equipTribe = reader.GetInt16("equipTribe");
@@ -461,8 +464,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
             paramBonusValue10 = reader.GetInt16("paramBonusValue10");
 
             additionalEffect = reader.GetInt16("additionalEffect");
-            materialBindPermission = reader.GetBoolean("materialBindPermission");
-            materiaTable = reader.GetInt16("materiaTable");
+            materialBindPermission = reader.GetBoolean("materiaBindPermission");
+            materializeTable = reader.GetInt16("materializeTable");
         }
     }
 
@@ -529,8 +532,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
     class ArmorItem : EquipmentItem
     {
         //armor sheet
-        public readonly short defence;   
-        public readonly short magicDefence;
+        public readonly short defense;
+        public readonly short magicDefense;
         public readonly short criticalDefense;
         public readonly short evasion;
         public readonly short magicResistance;
@@ -547,8 +550,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public ArmorItem(MySqlDataReader reader)
             : base(reader)
         {
-            defence = reader.GetInt16("defence");
-            magicDefence = reader.GetInt16("magicDefence");
+            defense = reader.GetInt16("defense");
+            magicDefense = reader.GetInt16("magicDefense");
             criticalDefense = reader.GetInt16("criticalDefense");
             evasion = reader.GetInt16("evasion");
             magicResistance = reader.GetInt16("magicResistance");
