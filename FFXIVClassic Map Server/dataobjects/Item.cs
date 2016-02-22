@@ -364,12 +364,12 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public bool IsUsable()
         {
-            return use != 0;
+            return isUseable != 0;
         }
 
         public bool IsUseFree()
         {
-            return use == -1;
+            return isUseable == -1;
         }
 
         public bool IsLostAfterUsed()
