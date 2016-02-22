@@ -21,14 +21,14 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         //itemData sheet
         public readonly int durability;
+        public readonly int sellPrice;
         public readonly int icon;
         public readonly int kind;
-        public readonly int color;
-        public readonly int material;
-        public readonly int decoration;
-        public readonly int use;
+        public readonly int rarity;
+        public readonly int isUseable;
         public readonly int mainSkill;
-        public readonly int unknown1;
+        public readonly int subSkill;
+        public readonly int levelType;
         public readonly int level;
         public readonly int compatibility;
         public readonly float effectMagnitude;
@@ -36,7 +36,6 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public readonly float shieldBlocking;
         public readonly float effectDuration;
         public readonly float recastTime;
-        public readonly float unknown2;
         public readonly byte recastGroup;
         public readonly int repairSkill;
         public readonly int repairItem;
@@ -57,12 +56,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
             durability = reader.GetInt32("durability");
             icon = reader.GetInt32("icon");
             kind = reader.GetInt32("kind");
-            color = reader.GetInt32("color");
-            material = reader.GetInt32("material");
-            decoration = reader.GetInt32("decoration");
-            use = reader.GetInt32("use");
+            rarity = reader.GetInt32("rarity");
+            isUseable = reader.GetInt32("isUseable");
             mainSkill = reader.GetInt32("mainSkill");
-            //unknown1 = reader.GetInt32("unknown1");
+            subSkill = reader.GetInt32("subSkill");
+            levelType = reader.GetInt32("levelType");
             level = reader.GetInt32("level");
             compatibility = reader.GetInt32("compatibility");
             effectMagnitude = reader.GetFloat("effectMagnitude");
@@ -70,7 +68,6 @@ namespace FFXIVClassic_Map_Server.dataobjects
             shieldBlocking = reader.GetFloat("shieldBlocking");
             effectDuration = reader.GetFloat("effectDuration");
             recastTime = reader.GetFloat("recastTime");
-            //unknown2 = reader.GetFloat("unknown2");
             recastGroup = reader.GetByte("recastGroup");
             repairSkill = reader.GetInt32("repairSkill");
             repairItem = reader.GetInt32("repairItem");
@@ -404,14 +401,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
    
         //equipment sheet
         public readonly int equipPoint;
-        public readonly short equipTribe1;
-        public readonly ushort unknown1;
-        public readonly short equipTribe2;
-        public readonly ushort unknown2;
-        public readonly short equipTribe3;
-        public readonly ushort unknown3;
-        public readonly short equipTribe4;
-        public readonly ushort unknown4;
+        public readonly short equipTribe;
 
         public readonly int paramBonusType1;
         public readonly short paramBonusValue1;
@@ -421,12 +411,22 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public readonly short paramBonusValue3;
         public readonly int paramBonusType4;
         public readonly short paramBonusValue4;
+        public readonly int paramBonusType5;
+        public readonly short paramBonusValue5;
+        public readonly int paramBonusType6;
+        public readonly short paramBonusValue6;
+        public readonly int paramBonusType7;
+        public readonly short paramBonusValue7;
+        public readonly int paramBonusType8;
+        public readonly short paramBonusValue8;
+        public readonly int paramBonusType9;
+        public readonly short paramBonusValue9;
+        public readonly int paramBonusType10;
+        public readonly short paramBonusValue10;
 
-        public readonly int paramBonusAtSlotType;
-        public readonly short paramBonusAtSlotValue;
-
-        public readonly int elementalBonusType;
-        public readonly short elementalBonusValue;
+        public readonly short additionalEffect;
+        public readonly bool materialBindPermission;
+        public readonly short materiaTable;
 
         public EquipmentItem(MySqlDataReader reader) 
             : base (reader)
@@ -437,14 +437,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             graphicsColorId = reader.GetUInt32("colorId");
 
             equipPoint = reader.GetInt32("equipPoint");
-            equipTribe1 = reader.GetInt16("equipTribe1");
-            unknown1 = reader.GetUInt16("unknown1");
-            equipTribe2 = reader.GetInt16("equipTribe2");
-            unknown2 = reader.GetUInt16("unknown2");
-            equipTribe3 = reader.GetInt16("equipTribe3");
-            unknown3 = reader.GetUInt16("unknown3");
-            equipTribe4 = reader.GetInt16("equipTribe4");
-            unknown4 = reader.GetUInt16("unknown4");
+            equipTribe = reader.GetInt16("equipTribe");
 
             paramBonusType1 = reader.GetInt32("paramBonusType1");
             paramBonusValue1 = reader.GetInt16("paramBonusValue1");
@@ -454,12 +447,22 @@ namespace FFXIVClassic_Map_Server.dataobjects
             paramBonusValue3 = reader.GetInt16("paramBonusValue3");
             paramBonusType4 = reader.GetInt32("paramBonusType4");
             paramBonusValue4 = reader.GetInt16("paramBonusValue4");
+            paramBonusType5 = reader.GetInt32("paramBonusType5");
+            paramBonusValue5 = reader.GetInt16("paramBonusValue5");
+            paramBonusType6 = reader.GetInt32("paramBonusType6");
+            paramBonusValue6 = reader.GetInt16("paramBonusValue6");
+            paramBonusType7 = reader.GetInt32("paramBonusType7");
+            paramBonusValue7 = reader.GetInt16("paramBonusValue7");
+            paramBonusType8 = reader.GetInt32("paramBonusType8");
+            paramBonusValue8 = reader.GetInt16("paramBonusValue8");
+            paramBonusType9 = reader.GetInt32("paramBonusType9");
+            paramBonusValue9 = reader.GetInt16("paramBonusValue9");
+            paramBonusType10 = reader.GetInt32("paramBonusType10");
+            paramBonusValue10 = reader.GetInt16("paramBonusValue10");
 
-            paramBonusAtSlotType = reader.GetInt32("paramBonusAtSlotType");
-            paramBonusAtSlotValue = reader.GetInt16("paramBonusAtSlotValue");
-
-            elementalBonusType = reader.GetInt32("elementalBonusType");
-            elementalBonusValue = reader.GetInt16("elementalBonusValue");
+            additionalEffect = reader.GetInt16("additionalEffect");
+            materialBindPermission = reader.GetBoolean("materialBindPermission");
+            materiaTable = reader.GetInt16("materiaTable");
         }
     }
 
@@ -488,6 +491,10 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public readonly int damageAttributeType3;
         public readonly float damageAttributeValue3;
 
+        public readonly short damagePower;
+        public readonly float damageInterval;
+        public readonly short ammoVirtualDamagePower;
+
         public WeaponItem(MySqlDataReader reader)
             : base(reader)
         {
@@ -512,6 +519,10 @@ namespace FFXIVClassic_Map_Server.dataobjects
             damageAttributeValue2 = reader.GetFloat("damageAttributeValue2");
             damageAttributeType3 = reader.GetInt32("damageAttributeType3");
             damageAttributeValue3 = reader.GetFloat("damageAttributeValue3");
+
+            damagePower = reader.GetInt16("damagePower");
+            damageInterval = reader.GetFloat("damageInterval");
+            ammoVirtualDamagePower = reader.GetInt16("ammoVirtualDamagePower");
         }
     }
 

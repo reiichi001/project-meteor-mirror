@@ -34,11 +34,11 @@ namespace FFXIVClassic_Lobby_Server
         private Dictionary<uint,ConnectedPlayer> mConnectedPlayerList = new Dictionary<uint,ConnectedPlayer>();
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private LuaEngine mLuaEngine = new LuaEngine();
-        private WorldManager mWorldManager;
+
+        private WorldManager mWorldManager;        
         private static StaticActors mStaticActors;
+
         private PacketProcessor mProcessor;
-        private Thread mProcessorThread;
-        private Thread mGameThread;
 
         public Server()
         {

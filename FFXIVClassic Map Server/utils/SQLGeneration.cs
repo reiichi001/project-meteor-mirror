@@ -14,62 +14,7 @@ namespace FFXIVClassic_Map_Server.utils
 {
     class SQLGeneration
     {
-        public static void generateItems()
-        {
-
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                try
-                {
-                    conn.Open();
-
-                    //Load Last 5 Completed
-                    string query = @"
-                                    INSERT INTO gamedata_items VALUES (@id, @displayNameId, NULL)";
-
-
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@id", 100);
-                    cmd.Parameters.AddWithValue("@displayNameId", 100);
-
-                    cmd.Prepare();
-
-                    string line, line2;
-                    Regex csvSplit = new Regex("(?:^|,)(\"(?:[^\"]+|\"\")*\"|[^,]*)", RegexOptions.Compiled);
-                    System.IO.StreamReader file = new System.IO.StreamReader("D:\\Coding\\FFXIV Related\\FFXIV Tool\\2012.09.19.0001.decode.csv\\actorclass.csv");
-                    while ((line = file.ReadLine()) != null)
-                    {
-                        MatchCollection matches = csvSplit.Matches(line);
-
-                        uint id;
-                        uint nameId;
-
-                        try
-                        {
-                            id = UInt32.Parse(matches[0].Value.Trim(','));
-                            nameId = UInt32.Parse(matches[6].Value.Trim(','));
-
-                        }
-                        catch (FormatException e)
-                        { continue; }
-
-                        cmd.Parameters["@id"].Value = id;
-                        cmd.Parameters["@displayNameId"].Value = nameId;
-
-                        Console.WriteLine("Wrote: {0} : {1}", id, nameId);
-                        cmd.ExecuteNonQuery();
-
-                    }
-                }
-                catch (MySqlException e)
-                { Console.WriteLine(e); }
-                finally
-                {
-                    conn.Dispose();
-                }
-            }
-        }
-
+        
         public static void generateZones()
         {
 

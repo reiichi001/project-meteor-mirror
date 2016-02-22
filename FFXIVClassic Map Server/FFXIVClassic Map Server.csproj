@@ -100,6 +100,7 @@
     <Compile Include="dataobjects\DBWorld.cs" />
     <Compile Include="dataobjects\InventoryItem.cs" />
     <Compile Include="dataobjects\ConnectedPlayer.cs" />
+    <Compile Include="dataobjects\Item.cs" />
     <Compile Include="dataobjects\RecruitmentDetails.cs" />
     <Compile Include="dataobjects\SearchEntry.cs" />
     <Compile Include="lua\LuaEngine.cs" />
