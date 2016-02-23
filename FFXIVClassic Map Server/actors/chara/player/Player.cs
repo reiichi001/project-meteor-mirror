@@ -635,6 +635,35 @@ namespace FFXIVClassic_Map_Server.Actors
             //zone.broadcastPacketAroundActor(this, worldMasterMessage);
         }
 
+        public void graphicChange(int slot, InventoryItem invItem)
+        {
+            Item item = Server.getItemGamedata(invItem.itemId);
+
+            if (item == null)
+            {
+                
+            }
+            else if (item is EquipmentItem)
+            {
+                EquipmentItem eqItem = (EquipmentItem)item;
+
+                uint graphicId;
+
+                if (eqItem.graphicsWeaponId == null || eqItem.graphicsEquipmentId == null || eqItem.graphicsVariantId == null)                
+                    graphicId = 1025;                
+                else
+                {
+                    graphicId = 
+                        eqItem.graphicsWeaponId << 20 |
+                        eqItem.graphicsEquipmentId << 10 |
+                        eqItem.graphicsVariantId << 5 |
+                        eqItem.graphicsColorId << 5;
+                }
+                appearanceIds[BODYGEAR] = graphicId;
+                broadcastPacket(createAppearancePacket(actorId), true);
+            }            
+        }
+
         public Inventory getInventory(ushort type)
         {
             if (inventories.ContainsKey(type))

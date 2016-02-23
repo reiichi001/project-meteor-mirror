@@ -119,7 +119,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             //New item that spilled over
             while (quantityCount > 0)
             {
-                InventoryItem addedItem = Database.addItem(owner, itemId, Math.Min(quantityCount, 5), quality, gItem.isExclusive ? (byte)0x3 : (byte)0x0, 100, inventoryCode);
+                InventoryItem addedItem = Database.addItem(owner, itemId, Math.Min(quantityCount, 5), quality, gItem.isExclusive ? (byte)0x3 : (byte)0x0, gItem.durability, inventoryCode);
 
                 
                 list.Add(addedItem);

@@ -647,7 +647,7 @@ namespace FFXIVClassic_Lobby_Server
                                     itemId,
                                     quantity,
                                     slot,
-                                    isUntradeable,
+                                    itemType,
                                     quality,
                                     durability,
                                     spiritBind,
@@ -677,7 +677,7 @@ namespace FFXIVClassic_Lobby_Server
                             byte itemType = reader.GetByte(4);
                             byte qualityNumber = reader.GetByte(5);
 
-                            uint durability = reader.GetUInt32(6);
+                            int durability = reader.GetInt32(6);
                             ushort spiritBind = reader.GetUInt16(7);
 
                             byte materia1 = reader.GetByte(8);
@@ -701,7 +701,7 @@ namespace FFXIVClassic_Lobby_Server
             return items;
         }
 
-        public static InventoryItem addItem(Player player, uint itemId, int quantity, byte quality, byte itemType, uint durability, ushort type)
+        public static InventoryItem addItem(Player player, uint itemId, int quantity, byte quality, byte itemType, int durability, ushort type)
         {
             InventoryItem insertedItem = null;
 
@@ -715,9 +715,9 @@ namespace FFXIVClassic_Lobby_Server
 
                     string query = @"
                                     INSERT INTO server_items                                    
-                                    (itemId, quality, isUntradeable, durability)
+                                    (itemId, quality, itemType, durability)
                                     VALUES
-                                    (@itemId, @quality, @isUntradeable, @durability); 
+                                    (@itemId, @quality, @itemType, @durability); 
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);

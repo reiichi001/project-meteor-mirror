@@ -18,7 +18,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public byte itemType;
         public byte quality = 1;
 
-        public uint durability = 0;
+        public int durability = 0;
         public ushort spiritbind = 0;
 
         public byte materia1 = 0;
@@ -39,7 +39,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             itemType = gItem.isExclusive ? (byte)0x3 : (byte)0x0;
         }
 
-        public InventoryItem(uint uniqueId, uint itemId, int quantity, ushort slot, byte itemType, byte qualityNumber, uint durability, ushort spiritbind, byte materia1, byte materia2, byte materia3, byte materia4, byte materia5)
+        public InventoryItem(uint uniqueId, uint itemId, int quantity, ushort slot, byte itemType, byte qualityNumber, int durability, ushort spiritbind, byte materia1, byte materia2, byte materia3, byte materia4, byte materia5)
         {
             this.uniqueId = uniqueId;
             this.itemId = itemId;
