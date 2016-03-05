@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ namespace FFXIVClassic_Lobby_Server
 
             if ((packet.header.packetSize == 0x288) && (packet.data[0x34] == 'T'))		//Test Ticket Data
             {
+                packet.debugPrintPacket();
                 //Crypto handshake
                 ProcessStartSession(client, packet);
                 return;
@@ -65,13 +67,12 @@ namespace FFXIVClassic_Lobby_Server
 
         private void ProcessStartSession(ClientConnection client, BasePacket packet)
         {
-            UInt32 clientTime = BitConverter.ToUInt32(packet.data, 0x74);
+            SecurityHandshakePacket securityHandshake = new SecurityHandshakePacket(packet.data);
 
-            //We assume clientTime is 0x50E0E812, but we need to generate a proper key later
-            byte[] blowfishKey = { 0xB4, 0xEE, 0x3F, 0x6C, 0x01, 0x6F, 0x5B, 0xD9, 0x71, 0x50, 0x0D, 0xB1, 0x85, 0xA2, 0xAB, 0x43};
+            byte[] blowfishKey = GenerateKey(securityHandshake.ticketPhrase, securityHandshake.clientNumber);
             client.blowfish = new Blowfish(blowfishKey);
 
-            Log.info(String.Format("Received encryption key: 0x{0:X}", clientTime));
+            Log.info(String.Format("SecCNum: 0x{0:X}", securityHandshake.clientNumber));
 
             //Respond with acknowledgment
             BasePacket outgoingPacket = new BasePacket(HardCoded_Packets.g_secureConnectionAcknowledgment);
@@ -242,21 +243,21 @@ namespace FFXIVClassic_Lobby_Server
                     //Set Initial Position
                     switch (info.initialTown)
                     {
-                        case 1:
+                        case 1: //ocn0Battle02 (Limsa)
                             info.zoneId = 193;
                             info.x = 0.016f;
                             info.y = 10.35f;
                             info.z = -36.91f;
                             info.rot = 0.025f;
                             break;
-                        case 2:
+                        case 2: //fst0Battle03 (Gridania)
                             info.zoneId = 166;
                             info.x = 356.09f;
                             info.y = 3.74f;
                             info.z = -701.62f;
                             info.rot = -1.4f;
                             break;
-                        case 3:
+                        case 3: //wil0Battle01 (Ul'dah)
                             info.zoneId = 184;
                             info.x = 12.63f;
                             info.y = 196.05f;
@@ -357,5 +358,32 @@ namespace FFXIVClassic_Lobby_Server
             client.queuePacket(basePacket);
         }
 
+        private byte[] GenerateKey(string ticketPhrase, uint clientNumber)
+        {
+            byte[] key;
+            using (MemoryStream memStream = new MemoryStream(0x2C))
+            {
+                using (BinaryWriter binWriter = new BinaryWriter(memStream))
+                {
+                    binWriter.Write((Byte)0x78);
+                    binWriter.Write((Byte)0x56);
+                    binWriter.Write((Byte)0x34);
+                    binWriter.Write((Byte)0x12);
+                    binWriter.Write((UInt32)clientNumber);
+                    binWriter.Write((Byte)0xE8);
+                    binWriter.Write((Byte)0x03);
+                    binWriter.Write((Byte)0x00);
+                    binWriter.Write((Byte)0x00);
+                    binWriter.Write(Encoding.ASCII.GetBytes(ticketPhrase), 0, Encoding.ASCII.GetByteCount(ticketPhrase) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(ticketPhrase));                    
+                }
+                byte[] nonMD5edKey = memStream.GetBuffer();
+
+                using (MD5 md5Hash = MD5.Create())
+                {
+                    key = md5Hash.ComputeHash(nonMD5edKey);
+                }
+            }
+            return key;
+        }
     }
 }

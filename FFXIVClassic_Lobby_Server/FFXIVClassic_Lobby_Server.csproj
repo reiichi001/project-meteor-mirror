@@ -72,6 +72,7 @@
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\CharacterModifyPacket.cs" />
+    <Compile Include="packets\receive\SecurityHandshakePacket.cs" />
     <Compile Include="packets\receive\SelectCharacterPacket.cs" />
     <Compile Include="packets\receive\SessionPacket.cs" />
     <Compile Include="packets\send\CharaCreatorPacket.cs" />

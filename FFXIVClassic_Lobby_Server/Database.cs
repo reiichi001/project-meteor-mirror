@@ -128,9 +128,9 @@ namespace FFXIVClassic_Lobby_Server
                                         WHERE userId=@userId AND id=@cid;
             
                                         INSERT INTO characters_appearance
-                                        (characterId, baseId, size, voice, skinColor, hairStyle, hairColor, hairHighlightColor, eyeColor, faceType, faceEyebrows, faceEyeShape, faceIrisSize, faceNose, faceMouth, faceFeatures, ears, characteristics, characteristicsColor, mainhand, head, body, hands, legs, feet)
+                                        (characterId, baseId, size, voice, skinColor, hairStyle, hairColor, hairHighlightColor, eyeColor, faceType, faceEyebrows, faceEyeShape, faceIrisSize, faceNose, faceMouth, faceFeatures, ears, characteristics, characteristicsColor, mainhand, head, body, hands, legs, feet, waist)
                                         VALUES
-                                        (@cid, 4294967295, @size, @voice, @skinColor, @hairStyle, @hairColor, @hairHighlightColor, @eyeColor, @faceType, @faceEyebrows, @faceEyeShape, @faceIrisSize, @faceNose, @faceMouth, @faceFeatures, @ears, @characteristics, @characteristicsColor, @mainhand, @head, @body, @hands, @legs, @feet)
+                                        (@cid, 4294967295, @size, @voice, @skinColor, @hairStyle, @hairColor, @hairHighlightColor, @eyeColor, @faceType, @faceEyebrows, @faceEyeShape, @faceIrisSize, @faceNose, @faceMouth, @faceFeatures, @ears, @characteristics, @characteristicsColor, @mainhand, @head, @body, @hands, @legs, @feet, @waist)
                                         ";
                     cmd.Parameters.AddWithValue("@userId", accountId);
                     cmd.Parameters.AddWithValue("@cid", cid);
@@ -172,6 +172,7 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.Parameters.AddWithValue("@legs", charaInfo.legs);
                     cmd.Parameters.AddWithValue("@hands", charaInfo.hands);                    
                     cmd.Parameters.AddWithValue("@feet", charaInfo.feet);
+                    cmd.Parameters.AddWithValue("@waist", charaInfo.belt);
                     
                     cmd.ExecuteNonQuery();
 
