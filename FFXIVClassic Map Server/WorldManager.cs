@@ -5,6 +5,7 @@ using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.common.EfficientHashTables;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.dataobjects.chara;
+using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.login;
@@ -275,7 +276,7 @@ namespace FFXIVClassic_Map_Server
             if (player.zone != null)
             {
                 oldZone = player.zone;
-                oldZone.removeActorToZone(player);
+                oldZone.removeActorFromZone(player);
             }
 
             //Add player to new zone and update
@@ -286,6 +287,8 @@ namespace FFXIVClassic_Map_Server
                 return;
 
             newZone.addActorToZone(player);
+
+            LuaEngine.onZoneIn(player);
         }
 
         //Moves actor to new zone, and sends packets to spawn at the given zone entrance
@@ -310,7 +313,7 @@ namespace FFXIVClassic_Map_Server
             if (player.zone != null)
             {
                 oldZone = player.zone;
-                oldZone.removeActorToZone(player);
+                oldZone.removeActorFromZone(player);
             }
 
             //Add player to new zone and update
@@ -336,6 +339,8 @@ namespace FFXIVClassic_Map_Server
             player.sendZoneInPackets(this, spawnType);
             player.playerSession.clearInstance();
             player.sendInstanceUpdate();
+
+            LuaEngine.onZoneIn(player);
         }
 
         //Login Zone In
@@ -351,13 +356,16 @@ namespace FFXIVClassic_Map_Server
             //Set the current zone and add player
             player.zone = zone;
             zone.addActorToZone(player);
-
+            
             //Send packets
             player.playerSession.queuePacket(DeleteAllActorsPacket.buildPacket(player.actorId), true, false);
             player.playerSession.queuePacket(_0x2Packet.buildPacket(player.actorId), true, false);
             player.sendZoneInPackets(this, 0x1);
             player.playerSession.clearInstance();
             player.sendInstanceUpdate();
+
+            LuaEngine.onLogin(player);
+            LuaEngine.onZoneIn(player);
         }
 
         public void reloadZone(uint zoneId)

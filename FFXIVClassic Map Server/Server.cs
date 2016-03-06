@@ -25,6 +25,8 @@ namespace FFXIVClassic_Lobby_Server
         public const int FFXIV_MAP_PORT     = 54992;
         public const int BUFFER_SIZE        = 0xFFFF; //Max basepacket size is 0xFFFF
         public const int BACKLOG            = 100;
+        public const int HEALTH_THREAD_SLEEP_TIME = 5;
+
         public const string STATIC_ACTORS_PATH = "./staticactors.bin";
 
         private static Server mSelf;
@@ -41,6 +43,30 @@ namespace FFXIVClassic_Lobby_Server
 
         private PacketProcessor mProcessor;
 
+        private Thread mConnectionHealthThread;
+        private bool killHealthThread = false;
+
+        private void connectionHealth()
+        {
+            Log.info(String.Format("Connection Health thread started; it will run every {0} seconds.", HEALTH_THREAD_SLEEP_TIME));
+            while (!killHealthThread)
+            {
+                lock (mConnectedPlayerList)
+                {
+                    List<ConnectedPlayer> dcedPlayers = new List<ConnectedPlayer>();
+                    foreach (ConnectedPlayer cp in mConnectedPlayerList.Values)
+                    {
+                        if (cp.checkIfDCing())
+                            dcedPlayers.Add(cp);
+                    }
+
+                    foreach (ConnectedPlayer cp in dcedPlayers)
+                        cp.getActor().cleanupAndSave();
+                }
+                Thread.Sleep(HEALTH_THREAD_SLEEP_TIME * 1000);
+            }
+        }
+
         public Server()
         {
             mSelf = this;
@@ -53,6 +79,10 @@ namespace FFXIVClassic_Lobby_Server
 
         public bool startServer()
         {
+            mConnectionHealthThread = new Thread(new ThreadStart(connectionHealth));
+            mConnectionHealthThread.Name = "MapThread:Health";
+            //mConnectionHealthThread.Start();
+
             mStaticActors = new StaticActors(STATIC_ACTORS_PATH);
             
             gamedataItems = Database.getItemGamedata();
@@ -100,6 +130,15 @@ namespace FFXIVClassic_Lobby_Server
             //mGameThread = new Thread(new ThreadStart(mProcessor.update));
             //mGameThread.Start();
             return true;
+        }
+
+        public void removePlayer(Player player)
+        {
+            lock (mConnectedPlayerList)
+            {
+                if (mConnectedPlayerList.ContainsKey(player.actorId))
+                    mConnectedPlayerList.Remove(player.actorId);
+            }
         }
 
         #region Socket Handling
@@ -411,16 +450,10 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public LuaEngine GetLuaEngine()
-        {
-            return mLuaEngine;
-        }
-
         public WorldManager GetWorldManager()
         {
             return mWorldManager;
         }
-
 
         public void printPos(ConnectedPlayer client)
         {
@@ -439,19 +472,36 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        private void giveItem(ConnectedPlayer client, uint itemId, int quantity)
+        private void setGraphic(ConnectedPlayer client, uint slot, uint wId, uint eId, uint vId, uint cId)
         {
             if (client != null)
             {
                 Player p = client.getActor();
-                p.getInventory(Inventory.NORMAL).addItem(itemId, quantity, 1);
+                p.graphicChange(slot, wId, eId, vId, cId);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.NORMAL).addItem(itemId, quantity, 1);
+                    p.graphicChange(slot, wId, eId, vId, cId);
+                }
+            }
+        }
+
+        private void giveItem(ConnectedPlayer client, uint itemId, int quantity)
+        {
+            if (client != null)
+            {
+                Player p = client.getActor();
+                p.getInventory(Inventory.NORMAL).addItem(itemId, quantity);
+            }
+            else
+            {
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    Player p = entry.Value.getActor();
+                    p.getInventory(Inventory.NORMAL).addItem(itemId, quantity);
                 }
             }
         }
@@ -463,7 +513,7 @@ namespace FFXIVClassic_Lobby_Server
                 Player p = client.getActor();
 
                 if (p.getInventory(type) != null)
-                    p.getInventory(type).addItem(itemId, quantity, 1);
+                    p.getInventory(type).addItem(itemId, quantity);
             }
             else
             {
@@ -472,7 +522,7 @@ namespace FFXIVClassic_Lobby_Server
                     Player p = entry.Value.getActor();
 
                     if (p.getInventory(type) != null)
-                        p.getInventory(type).addItem(itemId, quantity, 1);
+                        p.getInventory(type).addItem(itemId, quantity);
                 }
             }
         }
@@ -520,14 +570,14 @@ namespace FFXIVClassic_Lobby_Server
             if (client != null)
             {
                 Player p = client.getActor();
-                p.getInventory(Inventory.CURRANCY).addItem(itemId, quantity, 1);
+                p.getInventory(Inventory.CURRANCY).addItem(itemId, quantity);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.CURRANCY).addItem(itemId, quantity, 1);
+                    p.getInventory(Inventory.CURRANCY).addItem(itemId, quantity);
                 }
             }
         }
@@ -554,14 +604,14 @@ namespace FFXIVClassic_Lobby_Server
             if (client != null)
             {
                 Player p = client.getActor();
-                p.getInventory(Inventory.KEYITEMS).addItem(itemId, 1, 1);
+                p.getInventory(Inventory.KEYITEMS).addItem(itemId, 1);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.KEYITEMS).addItem(itemId, 1, 1);
+                    p.getInventory(Inventory.KEYITEMS).addItem(itemId, 1);
                 }
             }
         }
@@ -618,6 +668,18 @@ namespace FFXIVClassic_Lobby_Server
                     mWorldManager.reloadZone(client.getActor().zoneId);
                     return true;
                 }
+                else if (split[0].Equals("reloaditems"))
+                {
+                    Log.info(String.Format("Got request to reload item gamedata"));
+                    if (client != null)                    
+                        client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Reloading Item Gamedata..."));                    
+                    gamedataItems.Clear();
+                    gamedataItems = Database.getItemGamedata();
+                    Log.info(String.Format("Loaded {0} items.", gamedataItems.Count));
+                    if (client != null)
+                        client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Loaded {0} items.", gamedataItems.Count)));                    
+                    return true;
+                }
                 else if (split[0].Equals("sendpacket"))
                 {
                     if (split.Length < 2)
@@ -631,6 +693,19 @@ namespace FFXIVClassic_Lobby_Server
                     catch (Exception e)
                     {
                         Log.error("Could not load packet: " + e);
+                    }
+                }
+                else if (split[0].Equals("graphic"))
+                {
+                    try
+                    {
+                        if (split.Length == 6)
+                            setGraphic(client, UInt32.Parse(split[1]), UInt32.Parse(split[2]), UInt32.Parse(split[3]), UInt32.Parse(split[4]), UInt32.Parse(split[5]));
+                        return true;
+                    }
+                    catch (Exception e)
+                    {
+                        Log.error("Could not give item.");
                     }
                 }
                 else if (split[0].Equals("giveitem"))
@@ -755,7 +830,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 else if (split[0].Equals("property"))
                 {
-                    if (split.Length == 5)
+                    if (split.Length == 4)
                         testCodePacket(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
                     return true;
                 }

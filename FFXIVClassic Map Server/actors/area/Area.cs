@@ -4,6 +4,7 @@ using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using MoonSharp.Interpreter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +21,6 @@ namespace FFXIVClassic_Map_Server.Actors
         public ushort weatherNormal, weatherCommon, weatherRare;
         public ushort bgmDay, bgmNight, bgmBattle;
 
-
         private string classPath;
 
         public int boundingGridSize = 50;
@@ -30,6 +30,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         private Dictionary<uint, Actor> mActorList = new Dictionary<uint,Actor>();
         private List<Actor>[,] mActorBlock;
+
+        Script areaScript;
 
         public Area(uint id, string zoneName, ushort regionId, string className, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
             : base(id)
@@ -66,7 +68,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     mActorBlock[x, y] = new List<Actor>();
                 }
             }
-                
+            
         }
 
         public override SubPacket createScriptBindPacket(uint playerActorId)
@@ -117,7 +119,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 mActorBlock[gridX, gridY].Add(actor);
         }
 
-        public void removeActorToZone(Actor actor)
+        public void removeActorFromZone(Actor actor)
         {
             mActorList.Remove(actor.actorId);
 

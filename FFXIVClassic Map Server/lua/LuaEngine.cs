@@ -19,6 +19,8 @@ namespace FFXIVClassic_Map_Server.lua
 {
     class LuaEngine
     {
+        const string FILEPATH_PLAYER = "./scripts/player.lua";
+        const string FILEPATH_ZONE = "./scripts/zones/{0}/zone.lua";
         const string FILEPATH_COMMANDS = "./scripts/commands/{0}.lua";
         const string FILEPATH_NPCS = "./scripts/zones/{0}/npcs/{1}.lua";
 
@@ -27,7 +29,7 @@ namespace FFXIVClassic_Map_Server.lua
             UserData.RegistrationPolicy = InteropRegistrationPolicy.Automatic;
         }
 
-        public List<LuaParam> doActorOnInstantiate(Player player, Actor target)
+        public static List<LuaParam> doActorOnInstantiate(Player player, Actor target)
         {
             string luaPath;
 
@@ -58,7 +60,7 @@ namespace FFXIVClassic_Map_Server.lua
             return null;
         }       
 
-        public void doActorOnEventStarted(Player player, Actor target, EventStartPacket eventStart)
+        public static void doActorOnEventStarted(Player player, Actor target, EventStartPacket eventStart)
         {
             string luaPath;
 
@@ -96,7 +98,7 @@ namespace FFXIVClassic_Map_Server.lua
            
         }
 
-        public void doActorOnEventUpdated(Player player, Actor target, EventUpdatePacket eventUpdate)
+        public static void doActorOnEventUpdated(Player player, Actor target, EventUpdatePacket eventUpdate)
         {
             string luaPath;
 
@@ -131,5 +133,38 @@ namespace FFXIVClassic_Map_Server.lua
                 player.playerSession.queuePacket(BasePacket.createPacket(sendError, true, false));
             }                  
         }
+
+        public static void onZoneIn(Player player)
+        {
+            string luaPath = String.Format(FILEPATH_ZONE, player.getZone().actorId);
+          
+            if (File.Exists(luaPath))
+            {
+                Script script = new Script();
+                ((ScriptLoaderBase)script.Options.ScriptLoader).ModulePaths = new string[] { "./scripts/?", "./scripts/?.lua" };
+                script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
+                script.Globals["getWorldMaster"] = (Func<Actor>)Server.getServer().GetWorldManager().GetActor;
+                script.DoFile(luaPath);
+                
+                //Run Script
+                DynValue result = script.Call(script.Globals["onZoneIn"], player);
+            }            
+        }
+
+        public static void onLogin(Player player)
+        {
+            if (File.Exists(FILEPATH_PLAYER))
+            {
+                Script script = new Script();
+                ((ScriptLoaderBase)script.Options.ScriptLoader).ModulePaths = new string[] { "./scripts/?", "./scripts/?.lua" };
+                script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
+                script.Globals["getWorldMaster"] = (Func<Actor>)Server.getServer().GetWorldManager().GetActor;
+                script.DoFile(FILEPATH_PLAYER);
+
+                //Run Script
+                DynValue result = script.Call(script.Globals["onLogin"], player);
+            }
+        }
+
     }
 }

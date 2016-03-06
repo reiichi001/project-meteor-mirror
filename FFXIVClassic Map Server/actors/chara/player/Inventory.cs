@@ -70,6 +70,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
         }
 
+        public void addItem(uint itemId)
+        {
+            addItem(itemId, 1, 1);
+        }
+
+        public void addItem(uint itemId, int quantity)
+        {
+            addItem(itemId, quantity, 1);
+        }
+
         public void addItem(uint itemId, int quantity, byte quality)
         {
             if (!isSpaceForAdd(itemId, quantity))
@@ -119,7 +129,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             //New item that spilled over
             while (quantityCount > 0)
             {
-                InventoryItem addedItem = Database.addItem(owner, itemId, Math.Min(quantityCount, 5), quality, gItem.isExclusive ? (byte)0x3 : (byte)0x0, gItem.durability, inventoryCode);
+                InventoryItem addedItem = Database.addItem(owner, itemId, Math.Min(quantityCount, gItem.maxStack), quality, gItem.isExclusive ? (byte)0x3 : (byte)0x0, gItem.durability, inventoryCode);
 
                 
                 list.Add(addedItem);
@@ -132,6 +142,31 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             if (inventoryCode == CURRANCY || inventoryCode == KEYITEMS)
                 sendFullInventory();
+
+            owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
+            owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));
+        }
+
+        public void addItem(uint[] itemId)
+        {
+            if (!isSpaceForAdd(itemId[0], itemId.Length))
+                return;
+
+            //Update lists and db
+            owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
+            owner.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+
+            int startPos = list.Count;
+
+            //New item that spilled over
+            for (int i = 0; i < itemId.Length; i++)
+            {
+                Item gItem = Server.getItemGamedata(itemId[i]);
+                InventoryItem addedItem = Database.addItem(owner, itemId[i], 1, (byte)1, gItem.isExclusive ? (byte)0x3 : (byte)0x0, gItem.durability, inventoryCode);
+                list.Add(addedItem);
+            }
+
+            sendInventoryPackets(startPos);
 
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));
             owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));

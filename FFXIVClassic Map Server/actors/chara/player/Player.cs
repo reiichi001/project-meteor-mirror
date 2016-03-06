@@ -59,6 +59,9 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint[] timers = new uint[20];
         public ushort currentJob;
         public uint currentTitle;
+        public uint playTime;
+        public uint lastPlayTimeUpdate;
+        public bool isGM = false;
 
         //Inventory        
         private Dictionary<ushort, Inventory> inventories = new Dictionary<ushort, Inventory>();
@@ -162,6 +165,7 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.parameterTemp.tp = 3000;
 
             Database.loadPlayerCharacter(this);
+            lastPlayTimeUpdate = Utils.UnixTimeStampUTC();
         }
         
         public List<SubPacket> create0x132Packets(uint playerActorId)
@@ -545,6 +549,34 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public void setDCFlag(bool flag)
+        {
+            if (flag)
+            {
+                broadcastPacket(SetActorIconPacket.buildPacket(actorId, actorId, SetActorIconPacket.DISCONNECTING), true);
+            }
+            else
+            {
+                if (isGM)
+                    broadcastPacket(SetActorIconPacket.buildPacket(actorId, actorId, SetActorIconPacket.ISGM), true);
+                else
+                    broadcastPacket(SetActorIconPacket.buildPacket(actorId, actorId, 0), true);
+            }
+        }
+
+        public void cleanupAndSave()
+        {                        
+            //Remove actor from zone and main server list
+            zone.removeActorFromZone(this);
+            Server.getServer().removePlayer(this);
+
+            //Save Player
+            Database.savePlayerPlayTime(this);
+            Database.savePlayerPosition(this);
+
+            Log.info(String.Format("{0} has been logged out and saved.", this.customDisplayName));
+        }
+
         public Zone getZone()
         {
             return zone;
@@ -558,11 +590,25 @@ namespace FFXIVClassic_Map_Server.Actors
         public void logout()
         {
             queuePacket(LogoutPacket.buildPacket(actorId));
+            cleanupAndSave();
         }
 
         public void quitGame()
         {
             queuePacket(QuitPacket.buildPacket(actorId));
+            cleanupAndSave();
+        }
+
+        public uint getPlayTime(bool doUpdate)
+        {
+            if (doUpdate)
+            {
+                uint curTime = Utils.UnixTimeStampUTC();
+                playTime += curTime - lastPlayTimeUpdate;
+                lastPlayTimeUpdate = curTime;
+            }
+
+            return playTime;
         }
 
         public void changeMusic(ushort musicId)
@@ -635,33 +681,62 @@ namespace FFXIVClassic_Map_Server.Actors
             //zone.broadcastPacketAroundActor(this, worldMasterMessage);
         }
 
+        public void graphicChange(uint slot, uint graphicId)
+        {
+            appearanceIds[slot] = graphicId;
+            broadcastPacket(createAppearancePacket(actorId), true);
+        }
+
+        public void graphicChange(uint slot, uint weapId, uint equipId, uint variantId, uint colorId)
+        {
+
+            uint mixedVariantId;
+
+            if (weapId == 0)
+                mixedVariantId = ((variantId & 0x1F) << 5) | colorId;
+            else
+                mixedVariantId = variantId;
+
+            uint graphicId =
+                    (weapId & 0x3FF)  << 20 |
+                    (equipId & 0x3FF) << 10 |
+                    (mixedVariantId & 0x3FF);
+
+            appearanceIds[slot] = graphicId;
+            broadcastPacket(createAppearancePacket(actorId), true);
+            
+        }
+
         public void graphicChange(int slot, InventoryItem invItem)
         {
-            Item item = Server.getItemGamedata(invItem.itemId);
-
-            if (item == null)
+            if (invItem == null)            
+                appearanceIds[slot] = 0;            
+            else
             {
-                
-            }
-            else if (item is EquipmentItem)
-            {
-                EquipmentItem eqItem = (EquipmentItem)item;
-
-                uint graphicId;
-
-                if (eqItem.graphicsWeaponId == null || eqItem.graphicsEquipmentId == null || eqItem.graphicsVariantId == null)                
-                    graphicId = 1025;                
-                else
+                Item item = Server.getItemGamedata(invItem.itemId);
+                if (item is EquipmentItem)
                 {
-                    graphicId = 
-                        eqItem.graphicsWeaponId << 20 |
-                        eqItem.graphicsEquipmentId << 10 |
-                        eqItem.graphicsVariantId << 5 |
-                        eqItem.graphicsColorId << 5;
+                    EquipmentItem eqItem = (EquipmentItem)item;
+
+                    uint mixedVariantId;
+                    
+                    if (eqItem.graphicsWeaponId == 0)
+                        mixedVariantId = ((eqItem.graphicsVariantId & 0x1F) << 5) | eqItem.graphicsColorId;
+                    else
+                        mixedVariantId = eqItem.graphicsVariantId;
+
+                    uint graphicId =
+                            (eqItem.graphicsWeaponId & 0x3FF) << 20 |
+                            (eqItem.graphicsEquipmentId & 0x3FF) << 10 |
+                            (mixedVariantId & 0x3FF);
+
+                    appearanceIds[slot] = graphicId;
                 }
-                appearanceIds[BODYGEAR] = graphicId;
-                broadcastPacket(createAppearancePacket(actorId), true);
-            }            
+            }
+
+            Database.savePlayerAppearance(this);
+
+            broadcastPacket(createAppearancePacket(actorId), true);
         }
 
         public Inventory getInventory(ushort type)

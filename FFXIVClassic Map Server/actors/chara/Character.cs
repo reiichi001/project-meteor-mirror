@@ -16,29 +16,32 @@ namespace FFXIVClassic_Map_Server.Actors
         public const int FACEINFO = 2;
         public const int HIGHLIGHT_HAIR = 3;
         public const int VOICE = 4;
-        public const int WEAPON1 = 5;
-        public const int WEAPON2 = 6;
-        public const int WEAPON3 = 7;
-        public const int UNKNOWN1 = 8;
-        public const int UNKNOWN2 = 9;
-        public const int UNKNOWN3 = 10;
-        public const int UNKNOWN4 = 11;
+        public const int MAINHAND = 5;
+        public const int OFFHAND = 6;
+        public const int SPMAINHAND = 7;
+        public const int SPOFFHAND = 8;
+        public const int THROWING = 9;
+        public const int PACK = 10;
+        public const int POUCH = 11;
         public const int HEADGEAR = 12;
         public const int BODYGEAR = 13;
         public const int LEGSGEAR = 14;
         public const int HANDSGEAR = 15;
         public const int FEETGEAR = 16;
         public const int WAISTGEAR = 17;
-        public const int UNKNOWN5 = 18;
-        public const int R_EAR = 19;
-        public const int L_EAR = 20;
-        public const int UNKNOWN6 = 21;
-        public const int UNKNOWN7 = 22;
-        public const int R_FINGER = 23;
-        public const int L_FINGER = 24;
+        public const int NECKGEAR = 18;
+        public const int L_EAR = 19;
+        public const int R_EAR = 20;
+        public const int R_WRIST = 21;
+        public const int L_WRIST = 22;
+        public const int R_RINGFINGER = 23;
+        public const int L_RINGFINGER = 24;
+        public const int R_INDEXFINGER = 25;
+        public const int L_INDEXFINGER = 26;
+        public const int UNKNOWN = 27;
 
         public uint modelId;
-        public uint[] appearanceIds = new uint[0x1D];
+        public uint[] appearanceIds = new uint[28];
 
         public uint animationId = 0;
 

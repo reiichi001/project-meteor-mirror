@@ -18,12 +18,14 @@ namespace FFXIVClassic_Lobby_Server.common
         }
 
         public static void debug(String message)
-        {
+        {         
+#if DEBUG
             Console.Write("[{0}]", DateTime.Now.ToString("dd/MMM HH:mm"));
             Console.ForegroundColor = ConsoleColor.Yellow;
             Console.Write("[DEBUG] ");
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.WriteLine(message);
+#endif
         }
 
         public static void info(String message)

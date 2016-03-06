@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server;
+using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.packets.send.actor;
@@ -19,9 +20,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
         private ClientConnection zoneConnection;
         private ClientConnection chatConnection;
 
-        public string errorMessage = "";
+        private uint lastPingPacket = Utils.UnixTimeStampUTC();
 
-        bool isDisconnected;
+        public string errorMessage = "";
 
         public ConnectedPlayer(uint actorId)
         {
@@ -51,10 +52,14 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void disconnect()
         {
-            isDisconnected = true;
             zoneConnection.disconnect();
             chatConnection.disconnect();
         }      
+
+        public bool isDisconnected()
+        {
+            return (!zoneConnection.isConnected() && !chatConnection.isConnected());
+        }
 
         public void queuePacket(BasePacket basePacket)
         {
@@ -69,6 +74,23 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public Player getActor()
         {
             return playerActor;
+        }
+
+        public void ping()
+        {
+            lastPingPacket = Utils.UnixTimeStampUTC();
+        }
+
+        public bool checkIfDCing()
+        {
+            uint currentTime = Utils.UnixTimeStampUTC();
+            if (currentTime - lastPingPacket >= 5000) //Show D/C flag
+                playerActor.setDCFlag(true);
+            else if (currentTime - lastPingPacket >= 30000) //DCed
+                return true;
+            else
+                playerActor.setDCFlag(false);
+            return false;
         }
 
         public void updatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
@@ -88,17 +110,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             getActor().zone.updateActorPosition(getActor());
              
         }            
-
-        public void sendMotd()
-        {
-            
-        }
-
-        public void sendChat(ConnectedPlayer sender, string message, int mode)
-        {
-
-        }
-
+        
         public List<BasePacket> updateInstance(List<Actor> list)
         {            
             List<BasePacket> basePackets = new List<BasePacket>();

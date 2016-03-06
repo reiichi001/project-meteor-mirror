@@ -146,8 +146,6 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 else if (subpacket.header.type == 0x07)
                 {
-                    //Ping?
-                    //packet.debugPrintPacket();
                     BasePacket init = Login0x7ResponsePacket.buildPacket(BitConverter.ToUInt32(packet.data, 0x10), Utils.UnixTimeStampUTC());
                     //client.queuePacket(init);
                 }
@@ -174,6 +172,7 @@ namespace FFXIVClassic_Lobby_Server
                             //subpacket.debugPrintSubPacket();
                             PingPacket pingPacket = new PingPacket(subpacket.data);
                             client.queuePacket(BasePacket.createPacket(PongPacket.buildPacket(player.actorID, pingPacket.time), true, false));
+                            player.ping();
                             break;
                         //Unknown
                         case 0x0002:
@@ -254,7 +253,7 @@ namespace FFXIVClassic_Lobby_Server
                                 }                                    
                             }
                             
-                            mServer.GetLuaEngine().doActorOnEventStarted(player.getActor(), ownerActor, eventStart);
+                            LuaEngine.doActorOnEventStarted(player.getActor(), ownerActor, eventStart);
 
                             Log.debug(String.Format("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.val1, eventStart.val2, eventStart.eventStarter, LuaUtils.dumpParams(eventStart.luaParams)));
                             break;
@@ -273,7 +272,7 @@ namespace FFXIVClassic_Lobby_Server
                                     break;
                             }
 
-                            mServer.GetLuaEngine().doActorOnEventUpdated(player.getActor(), updateOwnerActor, eventUpdate);
+                            LuaEngine.doActorOnEventUpdated(player.getActor(), updateOwnerActor, eventUpdate);
                             
                             break;
                         case 0x012F:

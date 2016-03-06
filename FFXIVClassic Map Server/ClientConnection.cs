@@ -63,6 +63,11 @@ namespace FFXIVClassic_Lobby_Server
             return String.Format("{0}:{1}", (socket.RemoteEndPoint as IPEndPoint).Address, (socket.RemoteEndPoint as IPEndPoint).Port);
         }
 
+        public bool isConnected()
+        {
+            return (socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
+        }
+
         public void disconnect()
         {
             if (socket.Connected)

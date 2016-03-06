@@ -49,9 +49,8 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             List<LuaParam> lParams;
 
-            LuaEngine lua = Server.getServer().GetLuaEngine();
             Player player = Server.getServer().GetWorldManager().GetPCInWorld(playerActorId);
-            lParams = lua.doActorOnInstantiate(player, this);
+            lParams = LuaEngine.doActorOnInstantiate(player, this);
 
             if (lParams == null)
             {
@@ -154,7 +153,7 @@ namespace FFXIVClassic_Map_Server.Actors
                             appearanceIds[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.getFaceInfo(reader.GetByte(6), reader.GetByte(7), reader.GetByte(5), reader.GetByte(14), reader.GetByte(13), reader.GetByte(12), reader.GetByte(11), reader.GetByte(10), reader.GetByte(9), reader.GetByte(8)));
                             appearanceIds[Character.HIGHLIGHT_HAIR] = (uint)(reader.GetUInt32(3) | reader.GetUInt32(2) << 10); //5- Hair Highlight, 4 - Hair Style
                             appearanceIds[Character.VOICE] = reader.GetUInt32(17);
-                            appearanceIds[Character.WEAPON1] = reader.GetUInt32(19);
+                            appearanceIds[Character.MAINHAND] = reader.GetUInt32(19);
                             //appearanceIds[Character.WEAPON2] = reader.GetUInt32(22);
                             appearanceIds[Character.HEADGEAR] = reader.GetUInt32(26);
                             appearanceIds[Character.BODYGEAR] = reader.GetUInt32(27);
@@ -164,8 +163,8 @@ namespace FFXIVClassic_Map_Server.Actors
                             appearanceIds[Character.WAISTGEAR] = reader.GetUInt32(31);
                             appearanceIds[Character.R_EAR] = reader.GetUInt32(32);
                             appearanceIds[Character.L_EAR] = reader.GetUInt32(33);
-                            appearanceIds[Character.R_FINGER] = reader.GetUInt32(36);
-                            appearanceIds[Character.L_FINGER] = reader.GetUInt32(37);
+                            appearanceIds[Character.R_RINGFINGER] = reader.GetUInt32(36);
+                            appearanceIds[Character.L_RINGFINGER] = reader.GetUInt32(37);
 
                         }
                     }

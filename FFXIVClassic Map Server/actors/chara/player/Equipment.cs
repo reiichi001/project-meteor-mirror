@@ -13,24 +13,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 {
     class Equipment
     {
-        public const int SLOT_MAINHAND = 0x00;
-        public const int SLOT_OFFHAND = 0x01;
-        public const int SLOT_THROWINGWEAPON = 0x04;
-        public const int SLOT_PACK = 0x05;
-        public const int SLOT_POUCH = 0x06;
-        public const int SLOT_HEAD = 0x08;
-        public const int SLOT_UNDERSHIRT = 0x09;
-        public const int SLOT_BODY = 0x0A;
-        public const int SLOT_UNDERGARMENT = 0x0B;
-        public const int SLOT_LEGS = 0x0C;
-        public const int SLOT_HANDS = 0x0D;
-        public const int SLOT_BOOTS = 0x0E;
-        public const int SLOT_WAIST = 0x0F;
-        public const int SLOT_NECK = 0x10;
-        public const int SLOT_EARS = 0x11;
-        public const int SLOT_WRISTS = 0x13;
-        public const int SLOT_RIGHTFINGER = 0x15;
-        public const int SLOT_LEFTFINGER = 0x16;
+        public const int SLOT_MAINHAND = 0;
+        public const int SLOT_OFFHAND = 1;
+        public const int SLOT_THROWINGWEAPON = 4;
+        public const int SLOT_PACK = 5;
+        public const int SLOT_POUCH = 6;
+        public const int SLOT_HEAD = 8;
+        public const int SLOT_UNDERSHIRT = 9;
+        public const int SLOT_BODY = 10;
+        public const int SLOT_UNDERGARMENT = 11;
+        public const int SLOT_LEGS = 12;
+        public const int SLOT_HANDS = 13;
+        public const int SLOT_BOOTS = 14;
+        public const int SLOT_WAIST = 15;
+        public const int SLOT_NECK = 16;
+        public const int SLOT_EARS = 17;
+        public const int SLOT_WRISTS = 19;
+        public const int SLOT_RIGHTFINGER = 21;
+        public const int SLOT_LEFTFINGER = 22;
 
         private Player owner;
         private ushort inventoryCapacity;
@@ -71,6 +71,27 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));      
         }
 
+        public void SetEquipment(ushort[] slots, ushort[] itemSlots)
+        {
+            if (slots.Length != itemSlots.Length)
+                return;
+
+            for (int i = 0; i < slots.Length; i++)
+            {
+                InventoryItem item = normalInventory.getItem(itemSlots[i]);
+
+                if (item == null)
+                    continue;
+
+                Database.equipItem(owner, slots[i], itemSlots[i]);
+                list[slots[i]] = normalInventory.getItem(itemSlots[i]);
+            }
+
+            owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
+            SendFullEquipment(false);
+            owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));
+        }
+
         public void SetEquipment(List<Tuple<ushort, InventoryItem>> toEquip)
         {
             List<ushort> slotsToUpdate = new List<ushort>();
@@ -79,6 +100,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 slotsToUpdate.Add(toEquip[i].Item1);
                 list[toEquip[i].Item1] = toEquip[i].Item2;
             }            
+        }
+
+        public void Equip(ushort slot, ushort invSlot)
+        {
+            InventoryItem item = normalInventory.getItem(invSlot);
+
+            if (item == null)
+                return;
+
+            Equip(slot, item);
         }
 
         public void Equip(ushort slot, InventoryItem item)

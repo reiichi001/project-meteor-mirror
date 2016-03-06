@@ -150,6 +150,132 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
+        public static void savePlayerAppearance(Player player)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    UPDATE characters_appearance SET 
+                    mainHand = @mainHand,
+                    offHand = @offHand,
+                    head = @head,
+                    body = @body,
+                    legs = @legs,
+                    hands = @hands,
+                    feet = @feet,
+                    waist = @waist,
+                    leftFinger = @leftFinger,
+                    rightFinger = @rightFinger,
+                    leftEar = @leftEar,
+                    rightEar = @rightEar
+                    WHERE characterId = @charaId
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@mainHand", player.appearanceIds[Character.MAINHAND]);
+                    cmd.Parameters.AddWithValue("@offHand", player.appearanceIds[Character.OFFHAND]);
+                    cmd.Parameters.AddWithValue("@head", player.appearanceIds[Character.HEADGEAR]);
+                    cmd.Parameters.AddWithValue("@body", player.appearanceIds[Character.BODYGEAR]);
+                    cmd.Parameters.AddWithValue("@legs", player.appearanceIds[Character.LEGSGEAR]);
+                    cmd.Parameters.AddWithValue("@hands", player.appearanceIds[Character.HANDSGEAR]);
+                    cmd.Parameters.AddWithValue("@feet", player.appearanceIds[Character.FEETGEAR]);
+                    cmd.Parameters.AddWithValue("@waist", player.appearanceIds[Character.WAISTGEAR]);
+                    cmd.Parameters.AddWithValue("@leftFinger", player.appearanceIds[Character.L_RINGFINGER]);
+                    cmd.Parameters.AddWithValue("@rightFinger", player.appearanceIds[Character.R_RINGFINGER]);
+                    cmd.Parameters.AddWithValue("@leftEar", player.appearanceIds[Character.L_EAR]);
+                    cmd.Parameters.AddWithValue("@rightEar", player.appearanceIds[Character.R_EAR]);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void savePlayerPosition(Player player)
+        {
+            string query;            
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    UPDATE characters SET 
+                    positionX = @x,
+                    positionY = @y,
+                    positionZ = @z,
+                    rotation = @rot,
+                    currentZoneId = @zoneId
+                    WHERE id = @charaId
+                    ";
+                   
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@x", player.positionX);
+                    cmd.Parameters.AddWithValue("@y", player.positionY);
+                    cmd.Parameters.AddWithValue("@z", player.positionZ);
+                    cmd.Parameters.AddWithValue("@rot", player.rotation);
+                    cmd.Parameters.AddWithValue("@zoneId", player.zoneId);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void savePlayerPlayTime(Player player)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    UPDATE characters SET 
+                    playTime = @playtime
+                    WHERE id = @charaId
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@playtime", player.getPlayTime(true));
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
         public static void loadPlayerCharacter(Player player)
         {            
             string query;
@@ -164,7 +290,7 @@ namespace FFXIVClassic_Lobby_Server
                     //Load basic info                  
                     query = @"
                     SELECT 
-                    name,
+                    name,            
                     positionX,
                     positionY,
                     positionZ,
@@ -184,7 +310,8 @@ namespace FFXIVClassic_Lobby_Server
                     tribe,
                     currentParty,
                     restBonus,
-                    achievementPoints
+                    achievementPoints,
+                    playTime
                     FROM characters WHERE id = @charId";                    
 
                     cmd = new MySqlCommand(query, conn);
@@ -214,10 +341,11 @@ namespace FFXIVClassic_Lobby_Server
                             player.playerWork.tribe = reader.GetByte(17);
                             player.playerWork.restBonusExpRate = reader.GetInt32(19);
                             player.achievementPoints = reader.GetUInt32(20);
+                            player.playTime = reader.GetUInt32(21);
                         }
                     }
 
-                    player.charaWork.parameterSave.state_mainSkillLevel = 49;
+                    player.charaWork.parameterSave.state_mainSkillLevel = 50;
 
                     /*
                     //Get level of our classjob
@@ -312,8 +440,8 @@ namespace FFXIVClassic_Lobby_Server
                             player.appearanceIds[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.getFaceInfo(reader.GetByte(8), reader.GetByte(9), reader.GetByte(10), reader.GetByte(11), reader.GetByte(12), reader.GetByte(13), reader.GetByte(14), reader.GetByte(15), reader.GetByte(16), reader.GetByte(17)));
                             player.appearanceIds[Character.HIGHLIGHT_HAIR] = (uint)(reader.GetUInt16(6) | reader.GetUInt16(4) << 10);
                             player.appearanceIds[Character.VOICE] = reader.GetByte(2);
-                            player.appearanceIds[Character.WEAPON1] = reader.GetUInt32(18);
-                            player.appearanceIds[Character.WEAPON2] = reader.GetUInt32(19);
+                            player.appearanceIds[Character.MAINHAND] = reader.GetUInt32(18);
+                            player.appearanceIds[Character.OFFHAND] = reader.GetUInt32(19);
                             player.appearanceIds[Character.HEADGEAR] = reader.GetUInt32(20);
                             player.appearanceIds[Character.BODYGEAR] = reader.GetUInt32(21);
                             player.appearanceIds[Character.LEGSGEAR] = reader.GetUInt32(22);
@@ -322,8 +450,8 @@ namespace FFXIVClassic_Lobby_Server
                             player.appearanceIds[Character.WAISTGEAR] = reader.GetUInt32(25);
                             player.appearanceIds[Character.R_EAR] = reader.GetUInt32(26);
                             player.appearanceIds[Character.L_EAR] = reader.GetUInt32(27);
-                            player.appearanceIds[Character.R_FINGER] = reader.GetUInt32(28);
-                            player.appearanceIds[Character.L_FINGER] = reader.GetUInt32(29);
+                            player.appearanceIds[Character.R_RINGFINGER] = reader.GetUInt32(28);
+                            player.appearanceIds[Character.L_RINGFINGER] = reader.GetUInt32(29);
                         }
 
                     }
@@ -946,6 +1074,7 @@ namespace FFXIVClassic_Lobby_Server
 
             return cheevosPacket.buildPacket(player.actorId);
         }
+
 
     }
 }
