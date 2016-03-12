@@ -77,6 +77,7 @@ function loadGearset(player, classId)
 	gearset = player:getGearset(classId);
 	
 	if gearset == nil then
+		player:getEquipment():ToggleDBWrite(true);
 		return;
 	end
 	

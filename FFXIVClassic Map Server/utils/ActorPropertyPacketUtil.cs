@@ -37,6 +37,13 @@ namespace FFXIVClassic_Map_Server.utils
             }
         }
 
+        public void newTarget(string target)
+        {
+            currentActorPropertyPacket.addTarget();
+            currentTarget = target;
+            currentActorPropertyPacket.setTarget(target);            
+        }
+
         public List<SubPacket> done()
         {
             currentActorPropertyPacket.addTarget();

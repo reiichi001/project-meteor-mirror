@@ -717,11 +717,39 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void doClassChange(byte classId)
         {
+            //load hotbars
+            //Calculate stats
+            //Calculate hp/mp
+
+            //Get Potenciel ??????
+            
+            //Set HP/MP/TP PARAMS
+
+            //Set mainskill and level
+            
+            //Set Parameters
+
+            //Set current EXP
+
+            //Set Hotbar Commands 1
+            //Set Hotbar Commands 2
+            //Set Hotbar Commands 3
+
+            //Check if bonus point available... set
+
+            //Set rested EXP
+
             charaWork.parameterSave.state_mainSkill[0] = classId;
 
+            playerWork.restBonusExpRate = 0.0f;
+
             ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("charaWork/stateForAll", this, actorId);
+
             propertyBuilder.addProperty("charaWork.parameterSave.state_mainSkill[0]");
             propertyBuilder.addProperty("charaWork.parameterSave.state_mainSkillLevel");
+            propertyBuilder.newTarget("playerWork/expBonus");
+            propertyBuilder.addProperty("playerWork.restBonusExpRate");
+
             List<SubPacket> packets = propertyBuilder.done();
 
             foreach (SubPacket packet in packets)
