@@ -668,7 +668,7 @@ namespace FFXIVClassic_Lobby_Server
                                     equipSlot,
                                     itemId
                                     FROM characters_inventory_equipment                                    
-                                    WHERE characterId = @charId AND classId = @classId ORDER BY equipSlot";
+                                    WHERE characterId = @charId AND (classId = @classId OR classId = 0) ORDER BY equipSlot";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
@@ -715,7 +715,7 @@ namespace FFXIVClassic_Lobby_Server
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@characterId", player.actorId);
-                    cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
+                    cmd.Parameters.AddWithValue("@classId", (equipSlot == Equipment.SLOT_UNDERSHIRT || equipSlot == Equipment.SLOT_UNDERGARMENT) ? 0 : player.charaWork.parameterSave.state_mainSkill[0]);
                     cmd.Parameters.AddWithValue("@equipSlot", equipSlot);
                     cmd.Parameters.AddWithValue("@uniqueItemId", uniqueItemId);
 
