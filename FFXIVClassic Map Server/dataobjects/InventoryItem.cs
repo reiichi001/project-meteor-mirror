@@ -10,7 +10,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 {
     class InventoryItem
     {
-        public uint uniqueId;
+        public ulong uniqueId;
         public uint itemId;
         public int quantity = 1;
         public ushort slot;
@@ -32,11 +32,32 @@ namespace FFXIVClassic_Map_Server.dataobjects
         {
             this.uniqueId = id;
             this.itemId = itemId;
-            this.quantity = quantity;
+            this.quantity = 1;
             this.slot = slot;
 
-            Item gItem = Server.getItemGamedata(id);
+            Item gItem = Server.getItemGamedata(itemId);
             itemType = gItem.isExclusive ? (byte)0x3 : (byte)0x0;
+        }
+
+        //For check command
+        public InventoryItem(InventoryItem item, ushort equipSlot)
+        {
+            this.uniqueId = item.uniqueId;
+            this.itemId = item.itemId;
+            this.quantity = item.quantity;
+            this.slot = equipSlot;
+
+            this.itemType = item.itemType;
+            this.quality = item.quality;
+
+            this.durability = item.durability;
+            this.spiritbind = item.spiritbind;
+
+            this.materia1 = item.materia1;
+            this.materia2 = item.materia2;
+            this.materia3 = item.materia3;
+            this.materia4 = item.materia4;
+            this.materia5 = item.materia5;
         }
 
         public InventoryItem(uint uniqueId, uint itemId, int quantity, ushort slot, byte itemType, byte qualityNumber, int durability, ushort spiritbind, byte materia1, byte materia2, byte materia3, byte materia4, byte materia5)
@@ -64,13 +85,12 @@ namespace FFXIVClassic_Map_Server.dataobjects
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    binWriter.Write((UInt32)uniqueId);
-                    binWriter.Write((UInt32)0x00000000);
+                    binWriter.Write((UInt64)uniqueId);
                     binWriter.Write((Int32)quantity);
                     binWriter.Write((UInt32)itemId);
                     binWriter.Write((UInt16)slot);
 
-                    binWriter.Write((UInt16)0x0000);
+                    binWriter.Write((UInt16)0x0001);
                     binWriter.Write((UInt32)0x00000000);
                     binWriter.Write((UInt32)0x00000000);
                     binWriter.Write((UInt32)0x00000000);

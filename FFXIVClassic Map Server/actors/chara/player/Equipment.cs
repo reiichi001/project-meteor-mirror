@@ -38,6 +38,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         private InventoryItem[] list;
         private Inventory normalInventory;
 
+        private bool writeToDB = true;
+
         public Equipment(Player ownerPlayer, Inventory normalInventory, ushort capacity, ushort code)
         {
             owner = ownerPlayer;
@@ -53,6 +55,38 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return list[slot];
             else
                 return null;
+        }
+
+        public void SendCheckEquipmentToPlayer(Player toPlayer)
+        {
+            List<InventoryItem> items = new List<InventoryItem>();
+            for (ushort i = 0; i < list.Length; i++)
+            {
+                if (list[i] != null)
+                {
+                    InventoryItem equipItem = new InventoryItem(list[i], i);
+                    items.Add(equipItem);
+                }
+            }
+
+            toPlayer.queuePacket(InventorySetBeginPacket.buildPacket(owner.actorId, toPlayer.actorId, 0x23, Inventory.EQUIPMENT_OTHERPLAYER));
+            int currentIndex = 0;
+
+            while (true)
+            {
+                if (items.Count - currentIndex >= 16)
+                    toPlayer.queuePacket(InventoryListX16Packet.buildPacket(owner.actorId, toPlayer.actorId, items, ref currentIndex));
+                else if (items.Count - currentIndex > 1)
+                    toPlayer.queuePacket(InventoryListX08Packet.buildPacket(owner.actorId, toPlayer.actorId, items, ref currentIndex));
+                else if (items.Count - currentIndex == 1)
+                {
+                    toPlayer.queuePacket(InventoryListX01Packet.buildPacket(owner.actorId, toPlayer.actorId, items[currentIndex]));
+                    currentIndex++;
+                }
+                else
+                    break;
+            }
+            toPlayer.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId, toPlayer.actorId));
         }
 
         public void SendFullEquipment(bool doClear)
@@ -78,13 +112,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             for (int i = 0; i < slots.Length; i++)
             {
-                InventoryItem item = normalInventory.getItem(itemSlots[i]);
+                InventoryItem item = normalInventory.getItemBySlot(itemSlots[i]);
 
                 if (item == null)
                     continue;
 
                 Database.equipItem(owner, slots[i], itemSlots[i]);
-                list[slots[i]] = normalInventory.getItem(itemSlots[i]);
+                list[slots[i]] = normalInventory.getItemBySlot(itemSlots[i]);
             }
 
             owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
@@ -92,19 +126,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             owner.queuePacket(InventoryEndChangePacket.buildPacket(owner.actorId));
         }
 
-        public void SetEquipment(List<Tuple<ushort, InventoryItem>> toEquip)
+        public void SetEquipment(InventoryItem[] toEquip)
         {
             List<ushort> slotsToUpdate = new List<ushort>();
-            for (int i = 0; i < toEquip.Count; i++)
+            for (ushort i = 0; i < toEquip.Length; i++)
             {
-                slotsToUpdate.Add(toEquip[i].Item1);
-                list[toEquip[i].Item1] = toEquip[i].Item2;
-            }            
+                if (toEquip[i] != null)
+                    slotsToUpdate.Add(i); 
+            }
+            list = toEquip;
         }
 
         public void Equip(ushort slot, ushort invSlot)
         {
-            InventoryItem item = normalInventory.getItem(invSlot);
+            InventoryItem item = normalInventory.getItemBySlot(invSlot);
 
             if (item == null)
                 return;
@@ -117,7 +152,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (slot >= list.Length)
                 return;
 
-            Database.equipItem(owner, slot, item.slot);
+            if (writeToDB)
+                Database.equipItem(owner, slot, item.uniqueId);
 
             owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
 
@@ -135,12 +171,18 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             list[slot] = item;
         }
 
+        public void ToggleDBWrite(bool flag)
+        {
+            writeToDB = flag;
+        }
+
         public void Unequip(ushort slot)
         {
             if (slot >= list.Length)
                 return;
 
-            Database.unequipItem(owner, slot);
+            if (writeToDB)
+                Database.unequipItem(owner, slot);
 
             owner.queuePacket(InventoryBeginChangePacket.buildPacket(owner.actorId));
 
@@ -187,6 +229,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     break;
             }
 
+        }
+
+        public int GetCapacity()
+        {
+            return list.Length;
         }
 
     }

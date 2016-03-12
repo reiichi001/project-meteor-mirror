@@ -41,12 +41,22 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             list = itemsFromDB;
         }
 
-        public InventoryItem getItem(ushort slot)
+        public InventoryItem getItemBySlot(ushort slot)
         {
             if (slot < list.Count)
                 return list[slot];
             else
                 return null;
+        }
+
+        public InventoryItem getItemById(ulong itemId)
+        {
+            foreach (InventoryItem item in list)
+            {
+                if (item.uniqueId == itemId)
+                    return item;
+            }
+            return null;
         }
 
         public void RefreshItem(InventoryItem item)

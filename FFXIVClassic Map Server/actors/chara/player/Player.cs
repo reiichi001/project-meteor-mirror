@@ -409,7 +409,7 @@ namespace FFXIVClassic_Map_Server.Actors
             propPacketUtil.addProperty("playerWork.birthdayDay");
             propPacketUtil.addProperty("playerWork.initialTown");
             
-            return propPacketUtil.done();
+            return BasePacket.createPacket(propPacketUtil.done(), true, false);
         }
 
         public void sendZoneInPackets(WorldManager world, ushort spawnType)
@@ -683,8 +683,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void graphicChange(uint slot, uint graphicId)
         {
-            appearanceIds[slot] = graphicId;
-            broadcastPacket(createAppearancePacket(actorId), true);
+            appearanceIds[slot] = graphicId;           
         }
 
         public void graphicChange(uint slot, uint weapId, uint equipId, uint variantId, uint colorId)
@@ -702,9 +701,33 @@ namespace FFXIVClassic_Map_Server.Actors
                     (equipId & 0x3FF) << 10 |
                     (mixedVariantId & 0x3FF);
 
-            appearanceIds[slot] = graphicId;
-            broadcastPacket(createAppearancePacket(actorId), true);
+            appearanceIds[slot] = graphicId;            
             
+        }
+
+        public void sendAppearance()
+        {
+            broadcastPacket(createAppearancePacket(actorId), true);
+        }
+
+        public InventoryItem[] getGearset(ushort classId)
+        {
+            return Database.getEquipment(this, classId);
+        }
+
+        public void doClassChange(byte classId)
+        {
+            charaWork.parameterSave.state_mainSkill[0] = classId;
+
+            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("charaWork/stateForAll", this, actorId);
+            propertyBuilder.addProperty("charaWork.parameterSave.state_mainSkill[0]");
+            propertyBuilder.addProperty("charaWork.parameterSave.state_mainSkillLevel");
+            List<SubPacket> packets = propertyBuilder.done();
+
+            foreach (SubPacket packet in packets)
+                broadcastPacket(packet, true);
+
+            Log.info("Class change request to: " + classId);
         }
 
         public void graphicChange(int slot, InventoryItem invItem)
@@ -747,9 +770,33 @@ namespace FFXIVClassic_Map_Server.Actors
                 return null;
         }
 
+        public Actor getActorInInstance(uint actorId)
+        {
+            foreach (Actor a in playerSession.actorInstanceList)
+            {
+                if (a.actorId == actorId)
+                    return a;
+            }
+
+            return null;
+        }
+
         public Equipment getEquipment()
         {
             return equipment;
+        }
+
+        public void examinePlayer(Actor examinee)
+        {
+            Player toBeExamined;
+            if (examinee is Player)
+                toBeExamined = (Player)examinee;
+            else
+                return;
+
+            queuePacket(InventoryBeginChangePacket.buildPacket(toBeExamined.actorId, actorId));
+            toBeExamined.getEquipment().SendCheckEquipmentToPlayer(this);
+            queuePacket(InventoryEndChangePacket.buildPacket(toBeExamined.actorId, actorId));
         }
 
         public void runEventFunction(string functionName, params object[] parameters)

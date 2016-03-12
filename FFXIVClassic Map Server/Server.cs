@@ -478,6 +478,7 @@ namespace FFXIVClassic_Lobby_Server
             {
                 Player p = client.getActor();
                 p.graphicChange(slot, wId, eId, vId, cId);
+                p.sendAppearance();
             }
             else
             {
@@ -485,6 +486,7 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     Player p = entry.Value.getActor();
                     p.graphicChange(slot, wId, eId, vId, cId);
+                    p.sendAppearance();
                 }
             }
         }

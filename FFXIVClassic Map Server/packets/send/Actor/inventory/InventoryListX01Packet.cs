@@ -14,7 +14,12 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
         public const ushort OPCODE = 0x0148;
         public const uint PACKET_SIZE = 0x90;
 
-        public static SubPacket buildPacket(uint playerActorID, InventoryItem item)
+        public static SubPacket buildPacket(uint playerActorId, InventoryItem item)
+        {
+            return buildPacket(playerActorId, playerActorId, item);
+        }
+
+        public static SubPacket buildPacket(uint sourceActorId, uint targetActorId, InventoryItem item)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -26,7 +31,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, targetActorId, data);
         }
 
     }

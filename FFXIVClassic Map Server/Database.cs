@@ -641,7 +641,7 @@ namespace FFXIVClassic_Lobby_Server
                     player.getInventory(Inventory.MELDREQUEST).initList(getInventory(player, 0, Inventory.MELDREQUEST));
                     player.getInventory(Inventory.LOOT).initList(getInventory(player, 0, Inventory.LOOT));
 
-                    player.getEquipment().SetEquipment(getEquipment(player));
+                    player.getEquipment().SetEquipment(getEquipment(player, player.charaWork.parameterSave.state_mainSkill[0]));
                 }
                 catch (MySqlException e)
                 { Console.WriteLine(e); }
@@ -653,9 +653,9 @@ namespace FFXIVClassic_Lobby_Server
 
         }
 
-        public static List<Tuple<ushort, InventoryItem>> getEquipment(Player player)
+        public static InventoryItem[] getEquipment(Player player, ushort classId)
         {
-            List<Tuple<ushort, InventoryItem>> equipment = new List<Tuple<ushort, InventoryItem>>();
+            InventoryItem[] equipment = new InventoryItem[player.getEquipment().GetCapacity()];
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -666,21 +666,22 @@ namespace FFXIVClassic_Lobby_Server
                     string query = @"
                                     SELECT
                                     equipSlot,
-                                    itemSlot
+                                    itemId
                                     FROM characters_inventory_equipment                                    
-                                    WHERE characterId = @charId ORDER BY equipSlot";
+                                    WHERE characterId = @charId AND classId = @classId ORDER BY equipSlot";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@classId", classId);
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             ushort equipSlot = reader.GetUInt16(0);
-                            ushort itemSlot = reader.GetUInt16(1);
-                            InventoryItem item = player.getInventory(Inventory.NORMAL).getItem(itemSlot);
-                            equipment.Add(new Tuple<ushort, InventoryItem>(equipSlot, item));
+                            ulong uniqueItemId = reader.GetUInt16(1);
+                            InventoryItem item = player.getInventory(Inventory.NORMAL).getItemById(uniqueItemId);
+                            equipment[equipSlot] = item;
                         }
                     }
                 }
@@ -695,7 +696,7 @@ namespace FFXIVClassic_Lobby_Server
             return equipment;
         }
 
-        public static void equipItem(Player player, ushort equipSlot, ushort itemSlot)
+        public static void equipItem(Player player, ushort equipSlot, ulong uniqueItemId)
         {
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -706,16 +707,17 @@ namespace FFXIVClassic_Lobby_Server
 
                     string query = @"
                                     INSERT INTO characters_inventory_equipment                                    
-                                    (characterId, equipSlot, itemSlot)
+                                    (characterId, classId, equipSlot, itemId)
                                     VALUES
-                                    (@characterId, @equipSlot, @itemSlot)
-                                    ON DUPLICATE KEY UPDATE itemSlot=@itemSlot;
+                                    (@characterId, @classId, @equipSlot, @uniqueItemId)
+                                    ON DUPLICATE KEY UPDATE itemId=@uniqueItemId;
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@characterId", player.actorId);
+                    cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
                     cmd.Parameters.AddWithValue("@equipSlot", equipSlot);
-                    cmd.Parameters.AddWithValue("@itemSlot", itemSlot);
+                    cmd.Parameters.AddWithValue("@uniqueItemId", uniqueItemId);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -740,11 +742,12 @@ namespace FFXIVClassic_Lobby_Server
 
                     string query = @"
                                     DELETE FROM characters_inventory_equipment                                    
-                                    WHERE characterId = @characterId AND equipSlot = @equipSlot;
+                                    WHERE characterId = @characterId AND classId = @classId AND equipSlot = @equipSlot;
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@characterId", player.actorId);
+                    cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
                     cmd.Parameters.AddWithValue("@equipSlot", equipSlot);
 
                     cmd.ExecuteNonQuery();

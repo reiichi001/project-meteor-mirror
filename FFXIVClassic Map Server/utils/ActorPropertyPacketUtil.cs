@@ -37,12 +37,12 @@ namespace FFXIVClassic_Map_Server.utils
             }
         }
 
-        public BasePacket done()
+        public List<SubPacket> done()
         {
             currentActorPropertyPacket.addTarget();
             currentActorPropertyPacket.setIsMore(false);
             subPackets.Add(currentActorPropertyPacket.buildPacket(playerActorId, forActor.actorId));
-            return BasePacket.createPacket(subPackets, true, false);
+            return subPackets;
         }
 
     }
