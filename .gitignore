@@ -2,3 +2,10 @@ FFXIVClassic Map Server/bin/Debug/packets/wireshark packets/
 FFXIVClassic Map Server/bin/
 FFXIVClassic Map Server/obj/
 config.ini
+FFXIVClassic_Lobby_Server/bin/
+FFXIVClassic_Lobby_Server/obj/
+ipch/
+Blowfish/Debug/
+Debug/
+FFXIVClassic_Lobby_Server.opensdf
+FFXIVClassic_Lobby_Server.sdf

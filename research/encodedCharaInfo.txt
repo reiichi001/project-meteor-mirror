@@ -1,0 +1,63 @@
+===Encoded Chara Info=== By Ioncannon
+-Based on chara info array in Seventh Umbral
+
+0x000:					 Int32;
+0x004:					 Int32;
+0x008:Name Size			 	 Int32;
+0x00C:Name				String; Variable size, but in file the name "Wrenix Wrong" is 0xD in size
+0x019:Size? Offset?			 Int32; Must be 0x1c or is crashes....
+0x01D:Unknown				 Int32;
+0x021:Tribe Model		 	 Int32;
+0x025:Size				 Int32;
+0x029:Colors Info		 	 Int32;
+0x02D:Face Info			 	 Int32;
+0x031:Hair Style + Highlight Color		 	 Int32;
+0x035:Voice				 Int32;
+0x039:MainHand			 	 Int32;
+0x03D:OffHand			 	 Int32;
+0x041:					 Int32;
+0x045:					 Int32;
+0x049:					 Int32;
+0x04D:					 Int32;
+0x051:					 Int32;
+0x055:Head				 Int32;
+0x059:Body				 Int32;
+0x06D:Legs				 Int32;
+0x061:Hands				 Int32;
+0x065:Feet				 Int32;
+0x069:Waist				 Int32;
+0x06D:					 Int32;
+0x071:Right Ear			 	 Int32;
+0x075:Left Ear			 	 Int32;
+0x079:					 Int32;
+0x07D:					 Int32;
+0x081:Right Ring		 	 Int32;
+0x085:Left Ring			 	 Int32;
+
+====Zeros/Unknown====
+
+0x091:ID?????				 Int32;
+0x095:Unknown (Must be > 0x00)		 Int32;
+0x099:Class				  Byte;
+0x09A:Level				 Short;
+0x09C:Job				  Byte;
+0x09D:Unknown				 Short;
+0x09F:Tribe				  Byte;
+
+0x0A0:					 Int32;
+0x0A4:Location Str Size  		 Int32;
+0x0A8:Location String			String; Variable size, but in file it is prv0Inn01\0, 0x0A in size.
+
+0x0B2:Territory Str Size 		 Int32;
+0x0B6:Territory Str?			String; Variable size, but in file it is defaultTerritory\0, 0x11 in size.
+
+0x0C7:Guardian			  	  Byte;
+0x0C8:Birth Month		  	  Byte;
+0x0C9:Birth Day			  	  Byte;
+
+0x0CA:					 Short;
+0x0CC:					 Int32;
+0x0D0:					 Int32;
+
+0x0E4:					  Byte;
+0x0E8:Allegiance		  	  Byte;

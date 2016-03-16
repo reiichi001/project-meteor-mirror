@@ -1,0 +1,6 @@
+Server Sheet
+
+0x00:Server ID			Short;
+0x02:Server Position		Short;
+0x04:Server Pop			Short;
+0x10:Server Name
