@@ -5,7 +5,7 @@ VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClassic Map Server", "FFXIVClassic Map Server\FFXIVClassic Map Server.csproj", "{E8FA2784-D4B9-4711-8CC6-712A4B1CD54F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClassic_Lobby_Server", "FFXIVClassic_Lobby_Server\FFXIVClassic_Lobby_Server.csproj", "{703091E0-F69C-4177-8FAE-C258AC6A65AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClassic Lobby Server", "FFXIVClassic Lobby Server\FFXIVClassic Lobby Server.csproj", "{703091E0-F69C-4177-8FAE-C258AC6A65AA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
