@@ -115,6 +115,7 @@
     <Compile Include="packets\receive\events\EventUpdatePacket.cs" />
     <Compile Include="packets\receive\events\EventStartPacket.cs" />
     <Compile Include="packets\receive\HandshakePacket.cs" />
+    <Compile Include="packets\receive\ParameterDataRequestPacket.cs" />
     <Compile Include="packets\receive\recruitment\RecruitmentDetailsRequestPacket.cs" />
     <Compile Include="packets\receive\recruitment\RecruitmentSearchRequestPacket.cs" />
     <Compile Include="packets\receive\recruitment\StartRecruitingRequestPacket.cs" />

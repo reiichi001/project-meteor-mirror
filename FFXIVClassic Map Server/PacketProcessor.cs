@@ -277,6 +277,9 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                         case 0x012F:
                             subpacket.debugPrintSubPacket();
+                            ParameterDataRequestPacket paramRequest = new ParameterDataRequestPacket(subpacket.data);
+                            if (paramRequest.paramName.Equals("charaWork/exp"))
+                                player.getActor().sendCharaExpInfo();
                             break;
                         /* RECRUITMENT */
                         //Start Recruiting

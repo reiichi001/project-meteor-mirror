@@ -20,6 +20,8 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         private ushort runningByteTotal = 0;
         private byte[] data = new byte[PACKET_SIZE - 0x20];
+
+        private bool isArrayMode = false;
         private bool isMore = false;
 
         string currentTarget;
@@ -93,6 +95,20 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             return true;
         }
 
+        public bool addBuffer(uint id, byte[] buffer, int index, int length, int page)
+        {
+            if (runningByteTotal + 5 + length + (1 + Encoding.ASCII.GetByteCount(currentTarget)) > MAXBYTES)
+                return false;
+
+            binWriter.Write((byte)(length + 1));
+            binWriter.Write((UInt32)id);
+            binWriter.Write(buffer, index, length);
+            binWriter.Write((byte)page);
+            runningByteTotal += (ushort)(6 + length);
+
+            return true;
+        }
+
         public bool addProperty(FFXIVClassic_Map_Server.Actors.Actor actor, string name)
         {
             string[] split = name.Split('.');
@@ -159,6 +175,11 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             }
         }
 
+        public void setIsArrayMode(bool flag)
+        {
+            isArrayMode = flag;
+        }
+
         public void setIsMore(bool flag)
         {
             isMore = flag;
@@ -171,7 +192,10 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
         public void addTarget()
         {
-            binWriter.Write((byte)(isMore ? 0x60 + currentTarget.Length : 0x82 + currentTarget.Length));
+            if (isArrayMode)
+                binWriter.Write((byte)(0xA4 + currentTarget.Length));
+            else
+                binWriter.Write((byte)(isMore ? 0x60 + currentTarget.Length : 0x82 + currentTarget.Length));
             binWriter.Write(Encoding.ASCII.GetBytes(currentTarget));
             runningByteTotal += (ushort)(1 + Encoding.ASCII.GetByteCount(currentTarget));
         }

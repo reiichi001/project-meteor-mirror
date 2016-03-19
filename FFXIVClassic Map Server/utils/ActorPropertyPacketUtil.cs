@@ -12,11 +12,11 @@ namespace FFXIVClassic_Map_Server.utils
 {
     class ActorPropertyPacketUtil
     {
-        Actor forActor;
-        uint playerActorId;
-        List<SubPacket> subPackets = new List<SubPacket>();
-        SetActorPropetyPacket currentActorPropertyPacket;
-        string currentTarget;
+        private Actor forActor;
+        private uint playerActorId;
+        private List<SubPacket> subPackets = new List<SubPacket>();
+        private SetActorPropetyPacket currentActorPropertyPacket;
+        private string currentTarget;
 
         public ActorPropertyPacketUtil(string firstTarget, Actor forActor, uint playerActorId)
         {

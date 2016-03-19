@@ -26,6 +26,27 @@ namespace FFXIVClassic_Map_Server.Actors
 {
     class Player : Character
     {
+        public const int CLASSID_PUG = 2;
+        public const int CLASSID_GLA = 3;
+        public const int CLASSID_MRD = 4;
+        public const int CLASSID_ARC = 7;
+        public const int CLASSID_LNC = 8;
+        public const int CLASSID_THM = 22;
+        public const int CLASSID_CNJ = 23;
+
+        public const int CLASSID_CRP = 29;
+        public const int CLASSID_BSM = 30;
+        public const int CLASSID_ARM = 31;
+        public const int CLASSID_GSM = 32;
+        public const int CLASSID_LTW = 33;
+        public const int CLASSID_WVR = 34;
+        public const int CLASSID_ALC = 35;
+        public const int CLASSID_CUL = 36;
+
+        public const int CLASSID_MIN = 39;
+        public const int CLASSID_BTN = 40;
+        public const int CLASSID_FSH = 41;
+
         public const int MAXSIZE_INVENTORY_NORMAL = 200;
         public const int MAXSIZE_INVENTORY_CURRANCY = 320;
         public const int MAXSIZE_INVENTORY_KEYITEMS = 500;
@@ -93,6 +114,10 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public uint achievementPoints;
 
+        //Property Array Request Stuff
+        private int lastPosition = 0;
+        private int lastStep = 0;
+
         public PlayerWork playerWork = new PlayerWork();
 
         public ConnectedPlayer playerSession;
@@ -112,6 +137,39 @@ namespace FFXIVClassic_Map_Server.Actors
             inventories[Inventory.LOOT] = new Inventory(this, MAXSIZE_INVENTORY_LOOT, Inventory.LOOT);
 
             equipment = new Equipment(this, inventories[Inventory.NORMAL], MAXSIZE_INVENTORY_EQUIPMENT, Inventory.EQUIPMENT);
+
+            //Set the Skill level caps of all FFXIV (classes)skills to 50
+            for (int i = 0; i < charaWork.battleSave.skillLevelCap.Length; i++)
+            {
+                if (i != CLASSID_PUG &&
+                    i != CLASSID_MRD &&
+                    i != CLASSID_GLA &&
+                    i != CLASSID_MRD &&
+                    i != CLASSID_ARC &&
+                    i != CLASSID_LNC &&
+                    i != CLASSID_THM &&
+                    i != CLASSID_CNJ &&
+                    i != CLASSID_CRP &&
+                    i != CLASSID_BSM &&
+                    i != CLASSID_ARM &&
+                    i != CLASSID_GSM &&
+                    i != CLASSID_LTW &&
+                    i != CLASSID_WVR &&
+                    i != CLASSID_ALC &&
+                    i != CLASSID_CUL &&
+                    i != CLASSID_MIN &&
+                    i != CLASSID_BTN &&
+                    i != CLASSID_FSH)
+                    charaWork.battleSave.skillLevelCap[i] = 0xFF;
+                else
+                    charaWork.battleSave.skillLevelCap[i] = 50;
+
+            }
+
+            charaWork.battleSave.skillLevel[CLASSID_GLA - 1] = 32;
+            charaWork.battleSave.skillLevel[CLASSID_PUG - 1] = 50;
+            charaWork.battleSave.skillLevel[CLASSID_THM - 1] = 5;
+            charaWork.battleSave.skillLevel[CLASSID_MRD - 1] = 42;
 
             charaWork.property[0] = 1;
             charaWork.property[1] = 1;
@@ -718,7 +776,67 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void sendCharaExpInfo()
         {
+            if (lastStep == 0)
+            {
+                int maxLength;
+                if ((sizeof(short) * charaWork.battleSave.skillLevel.Length)-lastPosition < 0x5E)
+                    maxLength = (sizeof(short) * charaWork.battleSave.skillLevel.Length) - lastPosition;
+                else
+                    maxLength = 0x5E;
 
+                byte[] skillLevelBuffer = new byte[maxLength];
+                Buffer.BlockCopy(charaWork.battleSave.skillLevel, 0, skillLevelBuffer, 0, skillLevelBuffer.Length);
+                SetActorPropetyPacket charaInfo1 = new SetActorPropetyPacket("charaWork/exp");
+
+                charaInfo1.setIsArrayMode(true);
+                if (maxLength == 0x5E)
+                {
+                    charaInfo1.addBuffer(Utils.MurmurHash2("charaWork.battleSave.skillLevel", 0), skillLevelBuffer, 0, skillLevelBuffer.Length, 0x0);
+                    lastPosition += maxLength;
+                }
+                else
+                {
+                    charaInfo1.addBuffer(Utils.MurmurHash2("charaWork.battleSave.skillLevel", 0), skillLevelBuffer, 0, skillLevelBuffer.Length, 0x3);
+                    lastPosition = 0;
+                    lastStep++;
+                }
+
+                charaInfo1.addTarget();
+
+                queuePacket(charaInfo1.buildPacket(actorId, actorId));
+            }
+            else if (lastStep == 1)
+            {
+                int maxLength;
+                if ((sizeof(short) * charaWork.battleSave.skillLevelCap.Length) - lastPosition < 0x5E)
+                    maxLength = (sizeof(short) * charaWork.battleSave.skillLevelCap.Length) - lastPosition;
+                else
+                    maxLength = 0x5E;
+
+                byte[] skillCapBuffer = new byte[maxLength];
+                Buffer.BlockCopy(charaWork.battleSave.skillLevelCap, lastPosition, skillCapBuffer, 0, skillCapBuffer.Length);
+                SetActorPropetyPacket charaInfo1 = new SetActorPropetyPacket("charaWork/exp");
+
+                
+                if (maxLength == 0x5E)
+                {
+                    charaInfo1.setIsArrayMode(true);
+                    charaInfo1.addBuffer(Utils.MurmurHash2("charaWork.battleSave.skillLevelCap", 0), skillCapBuffer, 0, skillCapBuffer.Length, 0x1);
+                    lastPosition += maxLength;
+                }
+                else
+                {
+                    charaInfo1.setIsArrayMode(false);
+                    charaInfo1.addBuffer(Utils.MurmurHash2("charaWork.battleSave.skillLevelCap", 0), skillCapBuffer, 0, skillCapBuffer.Length, 0x3);
+                    lastStep = 0;
+                    lastPosition = 0;
+                }
+
+                charaInfo1.addTarget();
+
+                queuePacket(charaInfo1.buildPacket(actorId, actorId));
+            }
+           
         }
 
         public InventoryItem[] getGearset(ushort classId)
