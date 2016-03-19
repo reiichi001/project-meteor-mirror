@@ -74,10 +74,9 @@ end
 
 function loadGearset(player, classId)	
 	player:getEquipment():ToggleDBWrite(false);
-	gearset = player:getGearset(classId);
+	local gearset = player:getGearset(classId);
 	
 	if gearset == nil then
-		player:getEquipment():ToggleDBWrite(true);
 		return;
 	end
 	
@@ -103,19 +102,50 @@ function loadGearset(player, classId)
 	
 	player:getEquipment():ToggleDBWrite(true);
 	
-	player:doClassChange(classId);
 end
 
 function equipItem(player, equipSlot, item)
 	if (item ~= nil) then	
-		worldMaster = getWorldMaster();
+		local classId = nil;
+		local worldMaster = getWorldMaster();
+		local gItem = getItemGamedata(item.itemId);
+		
+		--If it's the mainhand, begin class change based on weapon
+		if (equipSlot == EQUIPSLOT_MAINHAND) then
+			if 	   (gItem:IsNailWeapon()) then classId = 2;
+			elseif (gItem:IsSwordWeapon()) then classId = 3;
+			elseif (gItem:IsAxeWeapon()) then classId = 4;
+			elseif (gItem:IsBowWeapon()) then classId = 7;
+			elseif (gItem:IsLanceWeapon()) then classId = 8;
+			
+			elseif (gItem:IsThaumaturgeWeapon()) then classId = 22;
+			elseif (gItem:IsConjurerWeapon()) then classId = 23;
+			
+			elseif (gItem:IsCarpenterWeapon()) then classId = 29;
+			elseif (gItem:IsBlackSmithWeapon()) then classId = 30;
+			elseif (gItem:IsArmorerWeapon()) then classId = 31;
+			elseif (gItem:IsGoldSmithWeapon()) then classId = 32;
+			elseif (gItem:IsTannerWeapon()) then classId = 33;
+			elseif (gItem:IsWeaverWeapon()) then classId = 34;
+			elseif (gItem:IsAlchemistWeapon()) then classId = 35;
+			elseif (gItem:IsCulinarianWeapon()) then classId = 36;
+			
+			elseif (gItem:IsMinerWeapon()) then classId = 39;
+			elseif (gItem:IsBotanistWeapon()) then classId = 40;
+			elseif (gItem:IsFishingWeapon()) then classId = 41;
+			end	
+			
+			if (classId ~= nil) then
+				player:sendGameMessage(player, worldMaster, 30103, 0x20, 0, 0, player, classId); 
+				player:prepareClassChange(classId);
+			end
+				
+		end		
 		
 		--Item Equipped message
 		player:sendGameMessage(player, worldMaster, 30601, 0x20, equipSlot+1, item.itemId, item.quality, 0, 0, 1); 
 		
-		player:getEquipment():Equip(equipSlot, item);
-		
-		gItem = getItemGamedata(item.itemId);
+		player:getEquipment():Equip(equipSlot, item);		
 		
 		if 	   (equipSlot == EQUIPSLOT_MAINHAND and gItem:IsNailWeapon() == false and gItem:IsBowWeapon() == false) then graphicSlot = GRAPHICSLOT_MAINHAND;
 		elseif (equipSlot == EQUIPSLOT_OFFHAND) then graphicSlot = GRAPHICSLOT_OFFHAND;
@@ -144,33 +174,12 @@ function equipItem(player, equipSlot, item)
 			player:graphicChange(GRAPHICSLOT_L_EAR, item);
 		end
 	
-		--If it's the mainhand, begin class change based on weapon
-		if (equipSlot == EQUIPSLOT_MAINHAND) then
-			if 	   (gItem:IsNailWeapon()) then classId = 2;
-			elseif (gItem:IsSwordWeapon()) then classId = 3;
-			elseif (gItem:IsAxeWeapon()) then classId = 4;
-			elseif (gItem:IsBowWeapon()) then classId = 7;
-			elseif (gItem:IsLanceWeapon()) then classId = 8;
-			
-			elseif (gItem:IsThaumaturgeWeapon()) then classId = 22;
-			elseif (gItem:IsConjurerWeapon()) then classId = 23;
-			
-			elseif (gItem:IsCarpenterWeapon()) then classId = 29;
-			elseif (gItem:IsBlackSmithWeapon()) then classId = 30;
-			elseif (gItem:IsArmorerWeapon()) then classId = 31;
-			elseif (gItem:IsGoldSmithWeapon()) then classId = 32;
-			elseif (gItem:IsTannerWeapon()) then classId = 33;
-			elseif (gItem:IsWeaverWeapon()) then classId = 34;
-			elseif (gItem:IsAlchemistWeapon()) then classId = 35;
-			elseif (gItem:IsCulinarianWeapon()) then classId = 36;
-			
-			elseif (gItem:IsMinerWeapon()) then classId = 39;
-			elseif (gItem:IsBotanistWeapon()) then classId = 40;
-			elseif (gItem:IsFishingWeapon()) then classId = 41;
-			end
-			
+		--Load gearset for new class and begin class change
+		if (classId ~= nil) then			
 			loadGearset(player, classId);
+			player:doClassChange(classId);
 		end
+		
 	end
 end
 
