@@ -53,7 +53,13 @@ namespace FFXIVClassic_Map_Server.Actors
         public const int TIMER_BEHEST = 16;
         public const int TIMER_COMPANYBEHEST = 17;
         public const int TIMER_RETURN = 18;
-        public const int TIMER_SKIRMISH = 19;        
+        public const int TIMER_SKIRMISH = 19;
+
+        public static int[] MAXEXP = {570, 700, 880, 1100, 1500, 1800, 2300, 3200, 4300, 5000,                   //Level <= 10
+                                     5900, 6800, 7700, 8700, 9700, 11000, 12000, 13000, 15000, 16000,            //Level <= 20
+                                     20000, 22000, 23000, 25000, 27000, 29000, 31000, 33000, 35000, 38000,       //Level <= 30
+                                     45000, 47000, 50000, 53000, 56000, 59000, 62000, 65000, 68000, 71000,       //Level <= 40
+                                     74000, 78000, 81000, 85000, 89000, 92000, 96000, 100000, 100000, 110000};   //Level <= 50
 
         //Player Info
         public uint[] timers = new uint[20];
@@ -710,9 +716,21 @@ namespace FFXIVClassic_Map_Server.Actors
             broadcastPacket(createAppearancePacket(actorId), true);
         }
 
+        public void sendCharaExpInfo()
+        {
+
+        }
+
         public InventoryItem[] getGearset(ushort classId)
         {
             return Database.getEquipment(this, classId);
+        }
+
+        public void prepareClassChange(byte classId)
+        {            
+            //If new class, init abilties and level
+
+            sendCharaExpInfo();
         }
 
         public void doClassChange(byte classId)
@@ -755,7 +773,7 @@ namespace FFXIVClassic_Map_Server.Actors
             foreach (SubPacket packet in packets)
                 broadcastPacket(packet, true);
 
-            Log.info("Class change request to: " + classId);
+            Database.savePlayerCurrentClass(this);
         }
 
         public void graphicChange(int slot, InventoryItem invItem)
@@ -825,6 +843,14 @@ namespace FFXIVClassic_Map_Server.Actors
             queuePacket(InventoryBeginChangePacket.buildPacket(toBeExamined.actorId, actorId));
             toBeExamined.getEquipment().SendCheckEquipmentToPlayer(this);
             queuePacket(InventoryEndChangePacket.buildPacket(toBeExamined.actorId, actorId));
+        }
+
+        public void sendRequestedInfo(params object[] parameters)
+        {
+            List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
+            SubPacket spacket = InfoRequestResponsePacket.buildPacket(actorId, actorId, lParams);
+            spacket.debugPrintSubPacket();
+            queuePacket(spacket);
         }
 
         public void runEventFunction(string functionName, params object[] parameters)

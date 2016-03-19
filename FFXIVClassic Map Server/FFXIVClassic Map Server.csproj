@@ -180,6 +180,7 @@
     <Compile Include="packets\send\list\ListEndPacket.cs" />
     <Compile Include="packets\send\list\ListEntriesEndPacket.cs" />
     <Compile Include="packets\send\list\ListStartPacket.cs" />
+    <Compile Include="packets\send\player\InfoRequestResponsePacket.cs" />
     <Compile Include="packets\send\player\SendAchievementRatePacket.cs" />
     <Compile Include="packets\send\player\SetCurrentJobPacket.cs" />
     <Compile Include="packets\send\player\SetCurrentMountGoobbuePacket.cs" />

@@ -204,6 +204,40 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
+        public static void savePlayerCurrentClass(Player player)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    UPDATE characters_parametersave SET 
+                    mainSkill = @classId,
+                    mainSkillLevel = @classLevel
+                    WHERE characterId = @charaId
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
+                    cmd.Parameters.AddWithValue("@classLevel", player.charaWork.parameterSave.state_mainSkillLevel);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
         public static void savePlayerPosition(Player player)
         {
             string query;            
@@ -296,8 +330,7 @@ namespace FFXIVClassic_Lobby_Server
                     positionZ,
                     rotation,
                     actorState,
-                    currentZoneId,
-                    currentClassJob,                
+                    currentZoneId,             
                     gcCurrent,
                     gcLimsaRank,
                     gcGridaniaRank,
@@ -328,27 +361,25 @@ namespace FFXIVClassic_Lobby_Server
                             player.oldRotation = player.rotation = reader.GetFloat(4);
                             player.currentMainState = reader.GetUInt16(5);
                             player.zoneId = reader.GetUInt32(6);
-                            player.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte(7);
-                            player.gcCurrent = reader.GetByte(8);
-                            player.gcRankLimsa = reader.GetByte(9);
-                            player.gcRankGridania = reader.GetByte(10);
-                            player.gcRankUldah = reader.GetByte(11);
-                            player.currentTitle = reader.GetUInt32(12);
-                            player.playerWork.guardian = reader.GetByte(13);
-                            player.playerWork.birthdayDay = reader.GetByte(14);
-                            player.playerWork.birthdayMonth = reader.GetByte(15);
-                            player.playerWork.initialTown = reader.GetByte(16);
-                            player.playerWork.tribe = reader.GetByte(17);
-                            player.playerWork.restBonusExpRate = reader.GetInt32(19);
-                            player.achievementPoints = reader.GetUInt32(20);
-                            player.playTime = reader.GetUInt32(21);
+                            player.gcCurrent = reader.GetByte(7);
+                            player.gcRankLimsa = reader.GetByte(8);
+                            player.gcRankGridania = reader.GetByte(9);
+                            player.gcRankUldah = reader.GetByte(10);
+                            player.currentTitle = reader.GetUInt32(11);
+                            player.playerWork.guardian = reader.GetByte(12);
+                            player.playerWork.birthdayDay = reader.GetByte(13);
+                            player.playerWork.birthdayMonth = reader.GetByte(14);
+                            player.playerWork.initialTown = reader.GetByte(15);
+                            player.playerWork.tribe = reader.GetByte(16);
+                            player.playerWork.restBonusExpRate = reader.GetInt32(18);
+                            player.achievementPoints = reader.GetUInt32(19);
+                            player.playTime = reader.GetUInt32(20);
                         }
                     }
 
-                    player.charaWork.parameterSave.state_mainSkillLevel = 50;
 
                     /*
-                    //Get level of our classjob
+                    //Get level of our class
                     //Load appearance
                     query = @"
                         SELECT 
@@ -367,14 +398,16 @@ namespace FFXIVClassic_Lobby_Server
                     }
                     */
                    
-                    //Get level of our classjob
+                    //Get level of our class
                     //Load appearance
                     query = @"
                         SELECT 
                         hp,
                         hpMax,
                         mp,
-                        mpMax                        
+                        mpMax,
+                        mainSkill,
+                        mainSkillLevel
                         FROM characters_parametersave WHERE characterId = @charId";
 
                     cmd = new MySqlCommand(query, conn);
@@ -386,7 +419,10 @@ namespace FFXIVClassic_Lobby_Server
                             player.charaWork.parameterSave.hp[0] = reader.GetInt16(0);
                             player.charaWork.parameterSave.hpMax[0] = reader.GetInt16(1);
                             player.charaWork.parameterSave.mp = reader.GetInt16(2);
-                            player.charaWork.parameterSave.mpMax = reader.GetInt16(3);                            
+                            player.charaWork.parameterSave.mpMax = reader.GetInt16(3);
+
+                            player.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte(4);
+                            player.charaWork.parameterSave.state_mainSkillLevel = reader.GetUInt16(5);
                         }
                     }
                     

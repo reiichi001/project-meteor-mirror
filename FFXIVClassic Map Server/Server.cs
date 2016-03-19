@@ -348,7 +348,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public void testCodePacket(uint id, uint value, string target)
+        public void changeProperty(uint id, uint value, string target)
         {
             SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(target);
 
@@ -833,7 +833,17 @@ namespace FFXIVClassic_Lobby_Server
                 else if (split[0].Equals("property"))
                 {
                     if (split.Length == 4)
-                        testCodePacket(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
+                    {
+                        changeProperty(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
+                    }
+                    return true;
+                }
+                else if (split[0].Equals("property2"))
+                {
+                    if (split.Length == 4)
+                    {
+                        changeProperty(Convert.ToUInt32(split[1], 16), Convert.ToUInt32(split[2], 16), split[3]);
+                    }
                     return true;
                 }
             }
