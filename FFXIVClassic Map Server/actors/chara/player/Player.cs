@@ -166,11 +166,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
             }
 
-            charaWork.battleSave.skillLevel[CLASSID_GLA - 1] = 32;
-            charaWork.battleSave.skillLevel[CLASSID_PUG - 1] = 50;
-            charaWork.battleSave.skillLevel[CLASSID_THM - 1] = 5;
-            charaWork.battleSave.skillLevel[CLASSID_MRD - 1] = 42;
-
             charaWork.property[0] = 1;
             charaWork.property[1] = 1;
             charaWork.property[2] = 1;
@@ -876,6 +871,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //Set rested EXP
 
             charaWork.parameterSave.state_mainSkill[0] = classId;
+            charaWork.parameterSave.state_mainSkillLevel = charaWork.battleSave.skillLevel[classId-1];
 
             playerWork.restBonusExpRate = 0.0f;
 

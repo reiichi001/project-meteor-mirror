@@ -14,7 +14,7 @@ namespace FFXIVClassic_Map_Server.Actors.Chara
         public short mpMax;
 
         public byte[] state_mainSkill = new byte[4];
-        public ushort state_mainSkillLevel;
+        public short state_mainSkillLevel;
 
         public byte[] state_boostPointForSkill = new byte[4];
          

@@ -376,15 +376,32 @@ namespace FFXIVClassic_Lobby_Server
                             player.playTime = reader.GetUInt32(20);
                         }
                     }
-
-
-                    /*
-                    //Get level of our class
-                    //Load appearance
+                  
+                    //Get class levels
                     query = @"
                         SELECT 
-                        baseId
-                        FROM characters_appearance WHERE characterId = @charId";
+                        pug,
+                        gla,
+                        mrd,
+                        arc,
+                        lnc,
+
+                        thm,
+                        cnj,
+
+                        crp,
+                        bsm,
+                        arm,
+                        gsm,
+                        ltw,
+                        wvr,
+                        alc,
+                        cul,
+
+                        min,
+                        btn,
+                        fsh
+                        FROM characters_class_levels WHERE characterId = @charId";
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
@@ -392,22 +409,38 @@ namespace FFXIVClassic_Lobby_Server
                     {
                         if (reader.Read())
                         {
-                            
-                        }
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_PUG-1] = reader.GetInt16("pug");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_GLA - 1] = reader.GetInt16("gla");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_MRD - 1] = reader.GetInt16("mrd");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_ARC - 1] = reader.GetInt16("arc");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_LNC - 1] = reader.GetInt16("lnc");
 
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_THM - 1] = reader.GetInt16("thm");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_CNJ - 1] = reader.GetInt16("cnj");
+
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_CRP - 1] = reader.GetInt16("crp");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_BSM - 1] = reader.GetInt16("bsm");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_ARM - 1] = reader.GetInt16("arm");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_GSM - 1] = reader.GetInt16("gsm");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_LTW - 1] = reader.GetInt16("ltw");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_WVR - 1] = reader.GetInt16("wvr");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_ALC - 1] = reader.GetInt16("alc");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_CUL - 1] = reader.GetInt16("cul");
+
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_MIN - 1] = reader.GetInt16("min");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_BTN - 1] = reader.GetInt16("btn");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_FSH - 1] = reader.GetInt16("fsh");
+                        }
                     }
-                    */
-                   
-                    //Get level of our class
-                    //Load appearance
+
+                    //Load Saved Parameters
                     query = @"
                         SELECT 
                         hp,
                         hpMax,
                         mp,
                         mpMax,
-                        mainSkill,
-                        mainSkillLevel
+                        mainSkill
                         FROM characters_parametersave WHERE characterId = @charId";
 
                     cmd = new MySqlCommand(query, conn);
@@ -422,7 +455,7 @@ namespace FFXIVClassic_Lobby_Server
                             player.charaWork.parameterSave.mpMax = reader.GetInt16(3);
 
                             player.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte(4);
-                            player.charaWork.parameterSave.state_mainSkillLevel = reader.GetUInt16(5);
+                            player.charaWork.parameterSave.state_mainSkillLevel = player.charaWork.battleSave.skillLevel[reader.GetByte(4) - 1];
                         }
                     }
                     
