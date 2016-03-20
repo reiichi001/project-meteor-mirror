@@ -23,12 +23,13 @@ namespace FFXIVClassic_Lobby_Server
         public byte guardian;
         public byte birthMonth;
         public byte birthDay;
+
         public uint currentClass = 3;
         public uint currentJob = 0;
+        public int currentLevel = 1;
+
         public byte initialTown;
         public byte tribe;
-
-        public uint currentLevel = 1;
 
         public static CharaInfo EncodedToCharacter(String charaInfo)
         {

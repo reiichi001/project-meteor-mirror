@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Lobby_Server.utils;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -123,14 +124,13 @@ namespace FFXIVClassic_Lobby_Server
                                         birthDay=@birthDay,
                                         birthMonth=@birthMonth,
                                         initialTown=@initialTown,
-                                        tribe=@tribe,
-                                        currentClassJob=@currentClass
+                                        tribe=@tribe
                                         WHERE userId=@userId AND id=@cid;
             
                                         INSERT INTO characters_appearance
-                                        (characterId, baseId, size, voice, skinColor, hairStyle, hairColor, hairHighlightColor, eyeColor, faceType, faceEyebrows, faceEyeShape, faceIrisSize, faceNose, faceMouth, faceFeatures, ears, characteristics, characteristicsColor, mainhand, head, body, hands, legs, feet, waist)
+                                        (characterId, baseId, size, voice, skinColor, hairStyle, hairColor, hairHighlightColor, eyeColor, faceType, faceEyebrows, faceEyeShape, faceIrisSize, faceNose, faceMouth, faceFeatures, ears, characteristics, characteristicsColor, mainhand, offhand, head, body, hands, legs, feet, waist)
                                         VALUES
-                                        (@cid, 4294967295, @size, @voice, @skinColor, @hairStyle, @hairColor, @hairHighlightColor, @eyeColor, @faceType, @faceEyebrows, @faceEyeShape, @faceIrisSize, @faceNose, @faceMouth, @faceFeatures, @ears, @characteristics, @characteristicsColor, @mainhand, @head, @body, @hands, @legs, @feet, @waist)
+                                        (@cid, 4294967295, @size, @voice, @skinColor, @hairStyle, @hairColor, @hairHighlightColor, @eyeColor, @faceType, @faceEyebrows, @faceEyeShape, @faceIrisSize, @faceNose, @faceMouth, @faceFeatures, @ears, @characteristics, @characteristicsColor, @mainhand, @offhand, @head, @body, @hands, @legs, @feet, @waist)
                                         ";
                     cmd.Parameters.AddWithValue("@userId", accountId);
                     cmd.Parameters.AddWithValue("@cid", cid);
@@ -139,7 +139,6 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.Parameters.AddWithValue("@birthMonth", charaInfo.birthMonth);
                     cmd.Parameters.AddWithValue("@initialTown", charaInfo.initialTown);
                     cmd.Parameters.AddWithValue("@tribe", charaInfo.tribe);
-                    cmd.Parameters.AddWithValue("@currentClass", charaInfo.currentClass);
 
                     cmd.Parameters.AddWithValue("@zoneId", charaInfo.zoneId);
                     cmd.Parameters.AddWithValue("@x", charaInfo.x);
@@ -170,66 +169,52 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.Parameters.AddWithValue("@head", charaInfo.head);
                     cmd.Parameters.AddWithValue("@body", charaInfo.body);
                     cmd.Parameters.AddWithValue("@legs", charaInfo.legs);
-                    cmd.Parameters.AddWithValue("@hands", charaInfo.hands);                    
+                    cmd.Parameters.AddWithValue("@hands", charaInfo.hands);
                     cmd.Parameters.AddWithValue("@feet", charaInfo.feet);
                     cmd.Parameters.AddWithValue("@waist", charaInfo.belt);
-                    
+
                     cmd.ExecuteNonQuery();
 
                 }
                 catch (MySqlException e)
                 {
+                    conn.Dispose();
+                    return;
                 }
                 finally
                 {
-                    conn.Dispose();
                 }
 
-                Log.database(String.Format("CID={0} state updated to active(2).", cid));
-            }
 
-            //Create appearance entry
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
+                //Create Level and EXP entries
                 try
                 {
-                    conn.Open();
                     MySqlCommand cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = "INSERT INTO appearance(characterId, baseId, tribe, size, voice, skinColor, hairStyle, hairColor, hairHighlightColor, eyeColor, faceType, faceEyebrows, faceEyeShape, faceIrisSize, faceNose, faceMouth, faceFeatures, ears, characteristics, characteristicsColor, mainhand, offhand, head, body, hands, legs, feet, waist, leftFinger, rightFinger, leftEar, rightEar) VALUES(@characterId, @baseId, @tribe, @size, @voice, @skinColor, @hairStyle, @hairColor, @hairHighlightColor, @eyeColor, @faceType, @faceEyebrows, @faceEyeShape, @faceIrisSize, @faceNose, @faceMouth, @faceFeatures, @ears, @characteristics, @characteristicsColor, @mainhand, @offhand, @head, @body, @hands, @legs, @feet, @waist, @leftFinger, @rightFinger, @leftEar, @rightEar)";
+                    cmd.CommandText = String.Format("INSERT INTO characters_class_levels(characterId, {0}) VALUES(@characterId, 1); INSERT INTO characters_class_exp(characterId) VALUES(@characterId)", CharacterCreatorUtils.GetClassNameForId((short)charaInfo.currentClass));
                     cmd.Prepare();
 
                     cmd.Parameters.AddWithValue("@characterId", cid);
-                    cmd.Parameters.AddWithValue("@baseId", 0xFFFFFFFF);
-                    cmd.Parameters.AddWithValue("@size", charaInfo.appearance.size);
-                    cmd.Parameters.AddWithValue("@voice", charaInfo.appearance.voice);
-                    cmd.Parameters.AddWithValue("@skinColor", charaInfo.appearance.skinColor);
-                    cmd.Parameters.AddWithValue("@hairStyle", charaInfo.appearance.hairStyle);
-                    cmd.Parameters.AddWithValue("@hairColor", charaInfo.appearance.hairColor);
-                    cmd.Parameters.AddWithValue("@hairHighlightColor", charaInfo.appearance.hairHighlightColor);
-                    cmd.Parameters.AddWithValue("@eyeColor", charaInfo.appearance.eyeColor);
-                    cmd.Parameters.AddWithValue("@faceType", charaInfo.appearance.faceType);
-                    cmd.Parameters.AddWithValue("@faceEyebrows", charaInfo.appearance.faceEyebrows);
-                    cmd.Parameters.AddWithValue("@faceEyeShape", charaInfo.appearance.faceEyeShape);
-                    cmd.Parameters.AddWithValue("@faceIrisSize", charaInfo.appearance.faceIrisSize);
-                    cmd.Parameters.AddWithValue("@faceNose", charaInfo.appearance.faceNose);
-                    cmd.Parameters.AddWithValue("@faceMouth", charaInfo.appearance.faceMouth);
-                    cmd.Parameters.AddWithValue("@faceFeatures", charaInfo.appearance.faceFeatures);
-                    cmd.Parameters.AddWithValue("@characteristics", charaInfo.appearance.characteristics);
-                    cmd.Parameters.AddWithValue("@characteristicsColor", charaInfo.appearance.characteristicsColor);
 
-                    cmd.Parameters.AddWithValue("@mainhand", charaInfo.appearance.mainHand);
-                    cmd.Parameters.AddWithValue("@offhand", charaInfo.appearance.offHand);
-                    cmd.Parameters.AddWithValue("@head", charaInfo.appearance.head);
-                    cmd.Parameters.AddWithValue("@body", charaInfo.appearance.body);
-                    cmd.Parameters.AddWithValue("@hands", charaInfo.appearance.hands);
-                    cmd.Parameters.AddWithValue("@legs", charaInfo.appearance.legs);
-                    cmd.Parameters.AddWithValue("@feet", charaInfo.appearance.feet);
-                    cmd.Parameters.AddWithValue("@waist", charaInfo.appearance.waist);
-                    cmd.Parameters.AddWithValue("@leftFinger", charaInfo.appearance.leftFinger);
-                    cmd.Parameters.AddWithValue("@rightFinger", charaInfo.appearance.rightFinger);
-                    cmd.Parameters.AddWithValue("@leftEar", charaInfo.appearance.leftEar);
-                    cmd.Parameters.AddWithValue("@rightEar", charaInfo.appearance.rightEar);
+                    cmd.ExecuteNonQuery();
+
+                }
+                catch (MySqlException e)
+                {
+                    conn.Dispose();
+                    return;
+                }
+
+                //Create Parameter Save
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand();
+                    cmd.Connection = conn;
+                    cmd.CommandText = String.Format("INSERT INTO characters_parametersave(characterId, hp, hpMax, mp, mpMax, mainSkill, mainSkillLevel) VALUES(@characterId, 1, 1, 1, 1, @mainSkill, 1);", CharacterCreatorUtils.GetClassNameForId((short)charaInfo.currentClass));
+                    cmd.Prepare();
+
+                    cmd.Parameters.AddWithValue("@characterId", cid);
+                    cmd.Parameters.AddWithValue("@mainSkill", charaInfo.currentClass);
 
                     cmd.ExecuteNonQuery();
 
@@ -242,9 +227,9 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     conn.Dispose();
                 }
-
-                Log.database(String.Format("CID={0} state updated to active(2).", cid));
             }
+
+            Log.database(String.Format("CID={0} state updated to active(2).", cid));
         }
 
         public static bool renameCharacter(uint userId, uint characterId, uint serverId, String newName)
@@ -365,45 +350,115 @@ namespace FFXIVClassic_Lobby_Server
 
         public static List<Character> getCharacters(uint userId)
         {
+            List<Character> characters = new List<Character>();
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                List<Character> charaList = null;
-                try
-                {
-                    conn.Open();
-                    charaList = conn.Query<Character>("SELECT * FROM characters WHERE userId=@UserId AND state = 2 ORDER BY slot", new { UserId = userId }).ToList();
-                }
-                catch (MySqlException e)
-                { charaList = new List<Character>(); }
-                finally
-                {
-                    conn.Dispose();
-                }
-                return charaList;
-            }
-        }
+                conn.Open();
 
+                //Load basic info                  
+                string query = @"
+                    SELECT 
+                    id,            
+                    slot,
+                    serverId,
+                    name,
+                    isLegacy,
+                    doRename,
+                    currentZoneId,             
+                    guardian,
+                    birthMonth,
+                    birthDay,
+                    initialTown,
+                    tribe,
+                    mainSkill,
+                    mainSkillLevel
+                    FROM characters
+                    INNER JOIN characters_parametersave ON id = characters_parametersave.characterId
+                    WHERE userId = @userId AND state = 2
+                    ORDER BY slot";
+                MySqlCommand cmd = new MySqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@userId", userId);
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        Character chara = new Character();
+                        chara.id = reader.GetUInt32("id");
+                        chara.slot = reader.GetUInt16("slot");
+                        chara.serverId = reader.GetUInt16("serverId");
+                        chara.name = reader.GetString("name");
+                        chara.isLegacy = reader.GetBoolean("isLegacy");
+                        chara.doRename = reader.GetBoolean("doRename");
+                        chara.currentZoneId = reader.GetUInt32("currentZoneId");
+                        chara.guardian = reader.GetByte("guardian");
+                        chara.birthMonth = reader.GetByte("birthMonth");
+                        chara.birthDay = reader.GetByte("birthDay");
+                        chara.initialTown = reader.GetByte("initialTown");
+                        chara.tribe = reader.GetByte("tribe");
+                        chara.currentClass = reader.GetByte("mainSkill");
+                        //chara.currentJob = ???
+                        chara.currentLevel = reader.GetInt16("mainSkillLevel");
+                        characters.Add(chara);
+                    }
+                }
+
+            }
+            return characters;
+        }
 
         public static Character getCharacter(uint userId, uint charId)
         {
+            Character chara = null;
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                Character chara = null;
-                try
-                {
-                    conn.Open();
-                    chara = conn.Query<Character>("SELECT * FROM characters WHERE id=@CharaId and userId=@UserId", new { UserId = userId, CharaId = charId }).SingleOrDefault();
-                }
-                catch (MySqlException e)
-                {
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
+                conn.Open();
 
-                return chara;
+                string query = @"
+                    SELECT 
+                    id,            
+                    slot,
+                    serverId,
+                    name,
+                    isLegacy,
+                    doRename,
+                    currentZoneId,             
+                    guardian,
+                    birthMonth,
+                    birthDay,
+                    initialTown,
+                    tribe,
+                    mainSkill,
+                    mainSkillLevel
+                    FROM characters
+                    INNER JOIN characters_parametersave ON id = characters_parametersave.characterId
+                    WHERE id = @charId";
+
+                MySqlCommand cmd = new MySqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@charId", charId);
+                using (MySqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        chara = new Character();
+                        chara.id = reader.GetUInt32("id");
+                        chara.slot = reader.GetUInt16("slot");
+                        chara.serverId = reader.GetUInt16("serverId");
+                        chara.name = reader.GetString("name");
+                        chara.isLegacy = reader.GetBoolean("isLegacy");
+                        chara.doRename = reader.GetBoolean("doRename");
+                        chara.currentZoneId = reader.GetUInt32("currentZoneId");
+                        chara.guardian = reader.GetByte("guardian");
+                        chara.birthMonth = reader.GetByte("birthMonth");
+                        chara.birthDay = reader.GetByte("birthDay");
+                        chara.initialTown = reader.GetByte("initialTown");
+                        chara.tribe = reader.GetByte("tribe");
+                        chara.currentClass = reader.GetByte("mainSkill");
+                        //chara.currentJob = ???
+                        chara.currentLevel = reader.GetInt16("mainSkillLevel");
+                    }
+                }
             }
+            return chara;
         }
 
         public static Appearance getAppearance(uint charaId)

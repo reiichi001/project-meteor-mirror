@@ -230,11 +230,16 @@ namespace FFXIVClassic_Lobby_Server
                     CharaInfo info = CharaInfo.getFromNewCharRequest(charaReq.characterInfoEncoded);
 
                     //Set Initial Appearance (items will be loaded in by map server)                    
-                    uint[] classAppearance = CharacterCreatorUtils.getEquipmentForClass(info.currentClass);
+                    uint[] classAppearance = CharacterCreatorUtils.GetEquipmentForClass(info.currentClass);
                     info.weapon1 = classAppearance[0];
                     info.weapon2 = classAppearance[1];
                     info.head = classAppearance[7];
-                    info.body = classAppearance[8];
+
+                    if (classAppearance[8] != 0)
+                        info.body = classAppearance[8];
+                    else
+                        info.body = CharacterCreatorUtils.GetUndershirtForTribe(info.tribe);
+
                     info.legs = classAppearance[9];
                     info.hands = classAppearance[10];
                     info.feet = classAppearance[11];
