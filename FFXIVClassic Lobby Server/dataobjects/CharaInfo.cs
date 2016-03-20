@@ -76,7 +76,8 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     info.tribe = reader.ReadByte();
                     appearance.size = reader.ReadByte();
                     appearance.hairStyle = reader.ReadUInt16();
-                    appearance.hairHighlightColor = reader.ReadUInt16();
+                    appearance.hairHighlightColor = reader.ReadByte();
+                    appearance.hairVariation = reader.ReadByte();
                     appearance.faceType = reader.ReadByte();
                     appearance.characteristics = reader.ReadByte();
                     appearance.characteristicsColor = reader.ReadByte();
@@ -139,7 +140,6 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     faceInfo.irisSize = appearance.faceIrisSize;
                     faceInfo.mouth = appearance.faceMouth;
                     faceInfo.nose = appearance.faceNose;
-
 
                     string location1 = "prv0Inn01\0";
                     string location2 = "defaultTerritory\0";

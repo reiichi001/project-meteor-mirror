@@ -17,6 +17,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
         public ushort hairStyle = 0;
         public ushort hairColor = 0;
         public ushort hairHighlightColor = 0;
+        public ushort hairVariation = 0;
         public ushort eyeColor = 0;
         public byte characteristicsColor = 0;
 

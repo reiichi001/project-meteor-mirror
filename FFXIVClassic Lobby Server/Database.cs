@@ -128,9 +128,9 @@ namespace FFXIVClassic_Lobby_Server
                                         WHERE userId=@userId AND id=@cid;
             
                                         INSERT INTO characters_appearance
-                                        (characterId, baseId, size, voice, skinColor, hairStyle, hairColor, hairHighlightColor, eyeColor, faceType, faceEyebrows, faceEyeShape, faceIrisSize, faceNose, faceMouth, faceFeatures, ears, characteristics, characteristicsColor, mainhand, offhand, head, body, hands, legs, feet, waist)
+                                        (characterId, baseId, size, voice, skinColor, hairStyle, hairColor, hairHighlightColor, hairVariation, eyeColor, faceType, faceEyebrows, faceEyeShape, faceIrisSize, faceNose, faceMouth, faceFeatures, ears, characteristics, characteristicsColor, mainhand, offhand, head, body, hands, legs, feet, waist)
                                         VALUES
-                                        (@cid, 4294967295, @size, @voice, @skinColor, @hairStyle, @hairColor, @hairHighlightColor, @eyeColor, @faceType, @faceEyebrows, @faceEyeShape, @faceIrisSize, @faceNose, @faceMouth, @faceFeatures, @ears, @characteristics, @characteristicsColor, @mainhand, @offhand, @head, @body, @hands, @legs, @feet, @waist)
+                                        (@cid, 4294967295, @size, @voice, @skinColor, @hairStyle, @hairColor, @hairHighlightColor, @hairVariation, @eyeColor, @faceType, @faceEyebrows, @faceEyeShape, @faceIrisSize, @faceNose, @faceMouth, @faceFeatures, @ears, @characteristics, @characteristicsColor, @mainhand, @offhand, @head, @body, @hands, @legs, @feet, @waist)
                                         ";
                     cmd.Parameters.AddWithValue("@userId", accountId);
                     cmd.Parameters.AddWithValue("@cid", cid);
@@ -152,6 +152,7 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.Parameters.AddWithValue("@hairStyle", charaInfo.appearance.hairStyle);
                     cmd.Parameters.AddWithValue("@hairColor", charaInfo.appearance.hairColor);
                     cmd.Parameters.AddWithValue("@hairHighlightColor", charaInfo.appearance.hairHighlightColor);
+                    cmd.Parameters.AddWithValue("@hairVariation", charaInfo.appearance.hairVariation);
                     cmd.Parameters.AddWithValue("@eyeColor", charaInfo.appearance.eyeColor);
                     cmd.Parameters.AddWithValue("@faceType", charaInfo.appearance.faceType);
                     cmd.Parameters.AddWithValue("@faceEyebrows", charaInfo.appearance.faceEyebrows);
