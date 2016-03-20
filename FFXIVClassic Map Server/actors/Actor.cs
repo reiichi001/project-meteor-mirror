@@ -117,19 +117,19 @@ namespace FFXIVClassic_Map_Server.Actors
             if (eventConditions.talkEventConditions != null)
             {
                 foreach (EventList.TalkEventCondition condition in eventConditions.talkEventConditions)                
-                    subpackets.Add(SetTalkEventCondition.buildPacket(playerActorId, actorId, condition.unknown1, condition.unknown2, condition.conditionName));                
+                    subpackets.Add(SetTalkEventCondition.buildPacket(playerActorId, actorId, condition));                
             }
 
             if (eventConditions.noticeEventConditions != null)
             {
                 foreach (EventList.NoticeEventCondition condition in eventConditions.noticeEventConditions)
-                    subpackets.Add(SetNoticeEventCondition.buildPacket(playerActorId, actorId, condition.unknown1, condition.unknown2, condition.conditionName));
+                    subpackets.Add(SetNoticeEventCondition.buildPacket(playerActorId, actorId, condition));
             }
 
             if (eventConditions.emoteEventConditions != null)
             {
                 foreach (EventList.EmoteEventCondition condition in eventConditions.emoteEventConditions)
-                    subpackets.Add(SetEmoteEventCondition.buildPacket(playerActorId, actorId, condition.unknown1, condition.unknown2, condition.emoteId, condition.conditionName));
+                    subpackets.Add(SetEmoteEventCondition.buildPacket(playerActorId, actorId, condition));
             }
 
             if (eventConditions.pushWithCircleEventConditions != null)
