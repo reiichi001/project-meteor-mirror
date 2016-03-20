@@ -35,7 +35,9 @@ namespace FFXIVClassic_Map_Server
         public void LoadZoneList()
         {
             zoneList = new Dictionary<uint, Zone>();
-            int count = 0;
+            int count1 = 0;
+            int count2 = 0;
+
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
@@ -67,7 +69,7 @@ namespace FFXIVClassic_Map_Server
                         {
                             Zone zone = new Zone(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt16(2), reader.GetString(3), reader.GetUInt16(4), reader.GetUInt16(5), reader.GetUInt16(6), reader.GetBoolean(7), reader.GetBoolean(8), reader.GetBoolean(9), reader.GetBoolean(10), reader.GetBoolean(11));
                             zoneList[zone.actorId] = zone;
-                            count++;
+                            count1++;
                         }
                     }
                 }
@@ -79,7 +81,54 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Log.info(String.Format("Loaded {0} zones.", count));
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT 
+                                    id,
+                                    parentZoneId,
+                                    privateAreaName,
+                                    className,
+                                    dayMusic,
+                                    nightMusic,
+                                    battleMusic
+                                    FROM server_zones_privateareas
+                                    WHERE privateAreaName IS NOT NULL";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint parentZoneId = reader.GetUInt32("parentZoneId");
+
+                            if (zoneList.ContainsKey(parentZoneId))
+                            {
+                                Zone parent = zoneList[parentZoneId];
+                                PrivateArea privArea = new PrivateArea(parent, reader.GetUInt32("id"), reader.GetString("className"), reader.GetString("privateAreaName"), reader.GetUInt16("dayMusic"), reader.GetUInt16("nightMusic"), reader.GetUInt16("battleMusic"));
+                                parent.addPrivateArea(privArea);
+                            }
+                            else
+                                continue;
+      
+                            count2++;
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            Log.info(String.Format("Loaded {0} zones and {1} private areas.", count1, count2));
         }
 
         public void LoadZoneEntranceList()
@@ -100,7 +149,8 @@ namespace FFXIVClassic_Map_Server
                                     spawnX,
                                     spawnY,
                                     spawnZ,
-                                    spawnRotation
+                                    spawnRotation,
+                                    privateAreaName
                                     FROM server_zones_spawnlocations";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -110,7 +160,12 @@ namespace FFXIVClassic_Map_Server
                         while (reader.Read())
                         {
                             uint id = reader.GetUInt32(0);
-                            ZoneEntrance entance = new ZoneEntrance(reader.GetUInt32(1), reader.GetByte(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6));
+                            string privArea = null;
+
+                            if (!reader.IsDBNull(7))
+                                privArea = reader.GetString(7);
+
+                            ZoneEntrance entance = new ZoneEntrance(reader.GetUInt32(1), privArea, reader.GetByte(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6));
                             zoneEntranceList[id] = entance;
                             count++;
                         }
@@ -271,7 +326,7 @@ namespace FFXIVClassic_Map_Server
         //Moves the actor to the new zone if exists. No packets are sent nor position changed.
         public void DoSeamlessZoneChange(Player player, uint destinationZoneId)
         {
-            Zone oldZone;
+            Area oldZone;
 
             if (player.zone != null)
             {
@@ -301,13 +356,13 @@ namespace FFXIVClassic_Map_Server
             }
 
             ZoneEntrance ze = zoneEntranceList[zoneEntrance];
-            DoZoneChange(player, destinationZoneId, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
+            DoZoneChange(player, destinationZoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
         }
 
         //Moves actor to new zone, and sends packets to spawn at the given coords.
-        public void DoZoneChange(Player player, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
+        public void DoZoneChange(Player player, uint destinationZoneId, string destinationPrivateArea, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
         {
-            Zone oldZone;
+            Area oldZone;
 
             //Remove player from currentZone if transfer else it's login
             if (player.zone != null)
@@ -317,17 +372,22 @@ namespace FFXIVClassic_Map_Server
             }
 
             //Add player to new zone and update
-            Zone newZone = GetZone(destinationZoneId);
+            Area newArea;
+            
+            if (destinationPrivateArea == null)
+                newArea = GetZone(destinationZoneId);
+            else
+                newArea = GetZone(destinationZoneId).getPrivateArea(destinationPrivateArea, 0);
 
             //This server does not contain that zoneId
-            if (newZone == null)
+            if (newArea == null)
                 return;
 
-            newZone.addActorToZone(player);
+            newArea.addActorToZone(player);
             
             //Update player actor's properties
-            player.zoneId = newZone.actorId;
-            player.zone = newZone;
+            player.zoneId = newArea.actorId;
+            player.zone = newArea;
             player.positionX = spawnX;
             player.positionY = spawnY;
             player.positionZ = spawnZ;
@@ -432,15 +492,17 @@ namespace FFXIVClassic_Map_Server
         public class ZoneEntrance
         {
             public uint zoneId;
+            public string privateAreaName;
             public byte spawnType;
             public float spawnX;
             public float spawnY;
             public float spawnZ;
             public float spawnRotation;
 
-            public ZoneEntrance(uint zoneId, byte spawnType, float x, float y, float z, float rot)
+            public ZoneEntrance(uint zoneId, string privateAreaName, byte spawnType, float x, float y, float z, float rot)
             {
                 this.zoneId = zoneId;
+                this.privateAreaName = privateAreaName;
                 this.spawnType = spawnType;
                 this.spawnX = x;
                 this.spawnY = y;

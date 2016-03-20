@@ -33,7 +33,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public float[] moveSpeeds = new float[5];
 
         public uint zoneId;
-        public Zone zone = null;
+        public Area zone = null;
         public bool isZoning = false;
 
         public bool spawnedFirstTime = false;
@@ -132,6 +132,24 @@ namespace FFXIVClassic_Map_Server.Actors
                     subpackets.Add(SetEmoteEventCondition.buildPacket(playerActorId, actorId, condition.unknown1, condition.unknown2, condition.emoteId, condition.conditionName));
             }
 
+            if (eventConditions.pushWithCircleEventConditions != null)
+            {
+                foreach (EventList.PushCircleEventCondition condition in eventConditions.pushWithCircleEventConditions)
+                    subpackets.Add(SetPushEventConditionWithCircle.buildPacket(playerActorId, actorId, condition));
+            }
+
+            if (eventConditions.pushWithFanEventConditions != null)
+            {
+                foreach (EventList.PushFanEventCondition condition in eventConditions.pushWithFanEventConditions)
+                    subpackets.Add(SetPushEventConditionWithFan.buildPacket(playerActorId, actorId, condition));
+            }
+
+            if (eventConditions.pushWithBoxEventConditions != null)
+            {
+                foreach (EventList.PushBoxEventCondition condition in eventConditions.pushWithBoxEventConditions)
+                    subpackets.Add(SetPushEventConditionWithTriggerBox.buildPacket(playerActorId, actorId, condition));
+            }
+
             return subpackets;
         }
 
@@ -159,6 +177,24 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 foreach (EventList.EmoteEventCondition condition in eventConditions.emoteEventConditions)
                     subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 1, condition.conditionName));
+            }
+
+            if (eventConditions.pushWithCircleEventConditions != null)
+            {
+                foreach (EventList.PushCircleEventCondition condition in eventConditions.pushWithCircleEventConditions)
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 2, condition.conditionName));
+            }
+
+            if (eventConditions.pushWithFanEventConditions != null)
+            {
+                foreach (EventList.PushFanEventCondition condition in eventConditions.pushWithFanEventConditions)
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 2, condition.conditionName));
+            }
+
+            if (eventConditions.pushWithBoxEventConditions != null)
+            {
+                foreach (EventList.PushBoxEventCondition condition in eventConditions.pushWithBoxEventConditions)
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 2, condition.conditionName));
             }
 
             return BasePacket.createPacket(subpackets, true, false);

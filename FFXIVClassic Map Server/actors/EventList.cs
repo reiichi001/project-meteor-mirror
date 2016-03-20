@@ -39,30 +39,26 @@ namespace FFXIVClassic_Map_Server.actors
 
         public class PushCircleEventCondition
         {
-            public byte unknown1;
-            public byte unknown2;
-            public byte unknown4;
-            public byte emoteId;
-            public float radius;
-            public int unknown5;
-            public float unknown6;
-            public string conditionName;
+            public string conditionName = "";
+            public float radius = 30.0f;
+            public bool outwards = false;
+            public bool silent = true;
         }
 
         public class PushFanEventCondition
         {
-            byte unknown1;
-            byte unknown2;
-            byte emoteId;
-            string conditionName;
+            public string conditionName;
+            public float radius = 30.0f;
+            public bool outwards = false;
+            public bool silent = true;
         }
 
         public class PushBoxEventCondition
         {
-            byte unknown1;
-            byte unknown2;
-            byte emoteId;
-            string conditionName;
+            public string conditionName = "";
+            public float size = 30.0f;
+            public bool outwards = false;
+            public bool silent = true;
         }
     }
 }

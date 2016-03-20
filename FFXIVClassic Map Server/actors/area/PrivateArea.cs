@@ -22,11 +22,22 @@ namespace FFXIVClassic_Map_Server.actors.area
             this.privateAreaName = privateAreaName;
         }
 
+        public string getPrivateAreaName()
+        {
+            return privateAreaName;
+        }
+
+        public Zone getParentZone()
+        {
+            return parentZone;
+        }
+
         public override SubPacket createScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
-            lParams = LuaUtils.createLuaParamList("/Area/PrivateArea/" + className, false, true, zoneName, privateAreaName, 0xE1, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, false, false, false);
+            lParams = LuaUtils.createLuaParamList("/Area/PrivateArea/" + className, false, true, zoneName, privateAreaName, 0x9E, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, false, false, false);
             return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
         }
+        
     }
 }

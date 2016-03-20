@@ -408,17 +408,17 @@ namespace FFXIVClassic_Lobby_Server
                 return;
 
             if (client != null)
-                mWorldManager.DoZoneChange(client.getActor(), ze.zoneId, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, 0.0f);
+                mWorldManager.DoZoneChange(client.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, 0.0f);
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    mWorldManager.DoZoneChange(entry.Value.getActor(), ze.zoneId, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, 0.0f);
+                    mWorldManager.DoZoneChange(entry.Value.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, 0.0f);
                 }
             }
         }
 
-        public void doWarp(ConnectedPlayer client, string zone, string sx, string sy, string sz)
+        public void doWarp(ConnectedPlayer client, string zone, string privateArea, string sx, string sy, string sz)
         {
             uint zoneId;
             float x,y,z;
@@ -427,7 +427,7 @@ namespace FFXIVClassic_Lobby_Server
                 zoneId = Convert.ToUInt32(zone, 16);
             else
                 zoneId = Convert.ToUInt32(zone);
-            
+
             if (mWorldManager.GetZone(zoneId) == null)
             {
                 if (client != null)
@@ -440,12 +440,12 @@ namespace FFXIVClassic_Lobby_Server
             z = Single.Parse(sz);
 
             if (client != null)
-                mWorldManager.DoZoneChange(client.getActor(), zoneId, 0x2, x, y, z, 0.0f);
+                mWorldManager.DoZoneChange(client.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, 0x2, x, y, z, 0.0f);
+                    mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
                 }
             }
         }
@@ -827,7 +827,9 @@ namespace FFXIVClassic_Lobby_Server
                     if (split.Length == 2)                    
                         doWarp(client, split[1]);
                     else if (split.Length == 5)
-                        doWarp(client, split[1], split[2], split[3], split[4]);
+                        doWarp(client, split[1], null, split[2], split[3], split[4]);
+                    else if (split.Length == 6)
+                        doWarp(client, split[1], split[2], split[3], split[4], split[5]);
                     return true;
                 }
                 else if (split[0].Equals("property"))

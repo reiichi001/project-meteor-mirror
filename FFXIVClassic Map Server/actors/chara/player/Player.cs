@@ -636,7 +636,7 @@ namespace FFXIVClassic_Map_Server.Actors
             Log.info(String.Format("{0} has been logged out and saved.", this.customDisplayName));
         }
 
-        public Zone getZone()
+        public Area getZone()
         {
             return zone;
         }

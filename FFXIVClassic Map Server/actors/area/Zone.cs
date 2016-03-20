@@ -20,6 +20,17 @@ namespace FFXIVClassic_Map_Server.actors.area
 
         }
 
+        public void addPrivateArea(PrivateArea pa)
+        {
+            if (privateAreas.ContainsKey(pa.getPrivateAreaName()))
+                privateAreas[pa.getPrivateAreaName()][0] = pa;
+            else
+            {
+                privateAreas[pa.getPrivateAreaName()] = new Dictionary<uint, PrivateArea>();
+                privateAreas[pa.getPrivateAreaName()][0] = pa;
+            }
+        }
+
         public PrivateArea getPrivateArea(string type, uint number)
         {
             if (privateAreas.ContainsKey(type))
