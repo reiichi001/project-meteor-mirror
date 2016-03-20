@@ -117,7 +117,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 if (item == null)
                     continue;
 
-                Database.equipItem(owner, slots[i], itemSlots[i]);
+                Database.equipItem(owner, slots[i], item.uniqueId);
                 list[slots[i]] = normalInventory.getItemBySlot(itemSlots[i]);
             }
 
