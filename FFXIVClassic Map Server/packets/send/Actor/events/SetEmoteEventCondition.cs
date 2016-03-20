@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.actors;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,7 +14,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.events
         public const ushort OPCODE = 0x016C;
         public const uint PACKET_SIZE = 0x48;
 
-        public static SubPacket buildPacket(uint playerActorID, uint sourceActorID, byte unknown1, byte unknown2, ushort emoteId, string conditionName)
+        public static SubPacket buildPacket(uint playerActorID, uint sourceActorID, EventList.EmoteEventCondition condition)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -21,10 +22,10 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.events
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    binWriter.Write((Byte)unknown1);
-                    binWriter.Write((Byte)unknown2);
-                    binWriter.Write((UInt16)emoteId);
-                    binWriter.Write(Encoding.ASCII.GetBytes(conditionName), 0, Encoding.ASCII.GetByteCount(conditionName) >= 0x24 ? 0x24 : Encoding.ASCII.GetByteCount(conditionName));
+                    binWriter.Write((Byte)condition.unknown1);
+                    binWriter.Write((Byte)condition.unknown2);
+                    binWriter.Write((UInt16)condition.emoteId);
+                    binWriter.Write(Encoding.ASCII.GetBytes(condition.conditionName), 0, Encoding.ASCII.GetByteCount(condition.conditionName) >= 0x24 ? 0x24 : Encoding.ASCII.GetByteCount(condition.conditionName));
                 }
             }
 
