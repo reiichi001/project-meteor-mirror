@@ -2,7 +2,7 @@ function onInstantiate(npc)
 	return "/Chara/Npc/Object/ObjectBed", false, false, false, false, false, 0x1250FB, false, false, 0, 1, "TEST";	
 end
 
-function onEventStarted(player, npc)
+function onEventStarted(player, npc, triggerName)
 	player:runEventFunction("askLogout", player);
 end
 

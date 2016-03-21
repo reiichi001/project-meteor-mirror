@@ -16,7 +16,7 @@ Confirm Menu:	2
 
 --]]
 
-function onEventStarted(player, actor, isTeleport)
+function onEventStarted(player, actor, triggerName, isTeleport)
 	if (isTeleport == 0) then
 		player:setCurrentMenuId(0);
 		player:runEventFunction("delegateCommand", actor, "eventRegion", 100);

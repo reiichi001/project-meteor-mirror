@@ -20,7 +20,7 @@ function onEventStarted(player, command)
 	player:runEventFunction("delegateCommand", command, "eventConfirm");
 end
 
-function onEventUpdate(player, command, step, arg1, arg2)
+function onEventUpdate(player, command, triggerName, step, arg1, arg2)
 
 	currentMenuId = player:getCurrentMenuId();
 

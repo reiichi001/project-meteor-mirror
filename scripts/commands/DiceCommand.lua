@@ -4,7 +4,7 @@ DiceCommand Script
 
 --]]
 
-function onEventStarted(player, actor, maxNumber)	
+function onEventStarted(player, actor, triggerName, maxNumber)	
 	
 	if (maxNumber == nil) then
 		maxNumber = 999;

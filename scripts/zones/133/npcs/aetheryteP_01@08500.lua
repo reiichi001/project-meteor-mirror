@@ -24,7 +24,7 @@ function onInstantiate(npc)
 	return "/Chara/Npc/Object/Aetheryte/AetheryteParent", false, false, false, false, false, npc.getActorClassId(), false, false, 0, 1, "TEST";	
 end
 
-function onEventStarted(player, npc)
+function onEventStarted(player, npc, triggerName)
 	player:runEventFunction("eventAetheryteParentSelect", 0x0, false, 0x61, 0x0,0,0,0,0);
 end
 

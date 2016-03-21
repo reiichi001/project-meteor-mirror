@@ -6,7 +6,7 @@ Switches between active and passive mode states
 
 --]]
 
-function onEventStarted(player, actor)	
+function onEventStarted(player, actor, triggerName)	
 
 	if (player:getState() == 0) then
 		player:changeState(2);

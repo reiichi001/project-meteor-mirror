@@ -6,7 +6,7 @@ Handles mounting and dismounting the Chocobo and Goobbue
 
 --]]
 
-function onEventStarted(player, actor, isGoobbue)
+function onEventStarted(player, actor, triggerName, isGoobbue)
 
 	if (player:getState() == 0) then		
 				
