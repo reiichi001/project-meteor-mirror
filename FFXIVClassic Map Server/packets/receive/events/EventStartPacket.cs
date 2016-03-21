@@ -26,7 +26,7 @@ namespace FFXIVClassic_Map_Server.packets.receive.events
         public uint errorNum;
         public string error = null;
 
-        public string eventStarter;
+        public string triggerName;
 
         public List<LuaParam> luaParams;
 
@@ -62,7 +62,7 @@ namespace FFXIVClassic_Map_Server.packets.receive.events
                         {
                             strList.Add(curByte);
                         }
-                        eventStarter = Encoding.ASCII.GetString(strList.ToArray());
+                        triggerName = Encoding.ASCII.GetString(strList.ToArray());
 
                         binReader.BaseStream.Seek(0x31, SeekOrigin.Begin);
 

@@ -18,7 +18,7 @@ namespace FFXIVClassic_Map_Server.actors
         public class TalkEventCondition
         {
             public byte unknown1;
-            public byte unknown2;
+            public bool isDisabled = false;
             public string conditionName;
         }
 

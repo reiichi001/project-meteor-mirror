@@ -178,7 +178,7 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x0002:
 
                             client.queuePacket(SendMessagePacket.buildPacket(player.actorID, player.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "-------- Login Message --------\nWelcome to the 1.0 Dev Server"), true, false);
-                            mServer.GetWorldManager().DoLogin(player.getActor());
+                            Server.GetWorldManager().DoLogin(player.getActor());
 
 
                             break;
@@ -239,23 +239,23 @@ namespace FFXIVClassic_Lobby_Server
                             }
                             */
                             player.getActor().eventCurrentOwner = eventStart.scriptOwnerActorID;
-                            player.getActor().eventCurrentStarter = eventStart.eventStarter;
+                            player.getActor().eventCurrentStarter = eventStart.triggerName;
 
                             //Is it a static actor? If not look in the player's instance
                             Actor ownerActor = Server.getStaticActors(player.getActor().eventCurrentOwner);
                             if (ownerActor == null)
                             {
-                                ownerActor = mServer.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
+                                ownerActor = Server.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
                                 if (ownerActor == null)
                                 {
-                                    Log.debug(String.Format("\n===Event START===\nCould not find actor 0x{0:X} for event started by caller: 0x{1:X}\nEvent Starter: {2}\nParams: {3}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.eventStarter, LuaUtils.dumpParams(eventStart.luaParams)));
+                                    Log.debug(String.Format("\n===Event START===\nCould not find actor 0x{0:X} for event started by caller: 0x{1:X}\nEvent Starter: {2}\nParams: {3}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.triggerName, LuaUtils.dumpParams(eventStart.luaParams)));
                                     break;
                                 }                                    
                             }
                             
                             LuaEngine.doActorOnEventStarted(player.getActor(), ownerActor, eventStart);
 
-                            Log.debug(String.Format("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.val1, eventStart.val2, eventStart.eventStarter, LuaUtils.dumpParams(eventStart.luaParams)));
+                            Log.debug(String.Format("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.val1, eventStart.val2, eventStart.triggerName, LuaUtils.dumpParams(eventStart.luaParams)));
                             break;
                         //Event Result
                         case 0x012E:
@@ -267,7 +267,7 @@ namespace FFXIVClassic_Lobby_Server
                             Actor updateOwnerActor = Server.getStaticActors(player.getActor().eventCurrentOwner);
                             if (updateOwnerActor == null)
                             {
-                                updateOwnerActor = mServer.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
+                                updateOwnerActor = Server.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
                                 if (updateOwnerActor == null)
                                     break;
                             }
