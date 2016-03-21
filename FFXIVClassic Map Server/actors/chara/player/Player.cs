@@ -118,6 +118,10 @@ namespace FFXIVClassic_Map_Server.Actors
         private int lastPosition = 0;
         private int lastStep = 0;
 
+        //Quest Actors (MUST MATCH playerWork.questScenario/questGuildleve)
+        public Quest[] questScenario = new Quest[16];
+        public Quest[] questGuildleve = new Quest[8];
+
         public PlayerWork playerWork = new PlayerWork();
 
         public ConnectedPlayer playerSession;
