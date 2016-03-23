@@ -3,6 +3,7 @@ using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.actors.chara.player;
+using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
@@ -121,6 +122,8 @@ namespace FFXIVClassic_Map_Server.Actors
         //Quest Actors (MUST MATCH playerWork.questScenario/questGuildleve)
         public Quest[] questScenario = new Quest[16];
         public Quest[] questGuildleve = new Quest[8];
+
+        public Director currentDirector;
 
         public PlayerWork playerWork = new PlayerWork();
 
@@ -518,9 +521,17 @@ namespace FFXIVClassic_Map_Server.Actors
             BasePacket areaMasterSpawn = zone.getSpawnPackets(actorId);
             BasePacket debugSpawn = world.GetDebugActor().getSpawnPackets(actorId);
             BasePacket worldMasterSpawn = world.GetActor().getSpawnPackets(actorId);
+            BasePacket directorSpawn = null;
+            
+            if (currentDirector != null)
+                directorSpawn = currentDirector.getSpawnPackets(actorId);
+
             playerSession.queuePacket(areaMasterSpawn);
             playerSession.queuePacket(debugSpawn);
             playerSession.queuePacket(worldMasterSpawn);
+
+           // if (directorSpawn != null)
+            //    queuePacket(directorSpawn);
 
             #region hardcode
             BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door created
@@ -950,6 +961,44 @@ namespace FFXIVClassic_Map_Server.Actors
             return equipment;
         }
 
+        public Quest getQuest(uint id)
+        {
+            for (int i = 0; i < questScenario.Length; i++)
+            {
+                if (questScenario[i] != null && questScenario[i].actorId == (0xA0F00000 | id))
+                    return questScenario[i];
+            }
+
+            return null;
+        }
+
+        public bool hasQuest(uint id)
+        {
+            for (int i = 0; i < questScenario.Length; i++)
+            {
+                if (questScenario[i] != null && questScenario[i].actorId == (0xA0F00000 | id))
+                    return true;
+            }
+
+            return false;
+        }
+
+        public void setDirector(string directorType)
+        {
+            if (directorType.Equals("openingDirector"))
+            {
+                currentDirector = new OpeningDirector(0x5FF80004);                
+            }
+
+            queuePacket(RemoveActorPacket.buildPacket(actorId, 0x5FF80004));
+            queuePacket(currentDirector.getSpawnPackets(actorId));
+        }
+
+        public Director getDirector()
+        {
+            return currentDirector;
+        }
+
         public void examinePlayer(Actor examinee)
         {
             Player toBeExamined;
@@ -967,6 +1016,14 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
             SubPacket spacket = InfoRequestResponsePacket.buildPacket(actorId, actorId, lParams);
+            spacket.debugPrintSubPacket();
+            queuePacket(spacket);
+        }
+
+        public void kickEvent(Actor actor, string conditionName, params object[] parameters)
+        {
+            List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
+            SubPacket spacket = KickEventPacket.buildPacket(actorId, actor.actorId, conditionName, lParams);
             spacket.debugPrintSubPacket();
             queuePacket(spacket);
         }
