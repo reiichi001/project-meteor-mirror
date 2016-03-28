@@ -177,6 +177,7 @@ namespace FFXIVClassic_Lobby_Server
                         //Unknown
                         case 0x0002:
 
+                            subpacket.debugPrintSubPacket();
                             client.queuePacket(SendMessagePacket.buildPacket(player.actorID, player.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "-------- Login Message --------\nWelcome to the 1.0 Dev Server"), true, false);
                             Server.GetWorldManager().DoLogin(player.getActor());
 
@@ -197,8 +198,15 @@ namespace FFXIVClassic_Lobby_Server
                             player.getActor().broadcastPacket(SendMessagePacket.buildPacket(player.actorID, player.actorID, chatMessage.logType, player.getActor().customDisplayName, chatMessage.message), false);
 
                             break;
+                        //Langauge Code
+                        case 0x0006:
+                            LangaugeCodePacket langCode = new LangaugeCodePacket(subpacket.data);
+                            player.languageCode = langCode.languageCode;
+                            break;
                         //Unknown
                         case 0x0007:
+                            subpacket.debugPrintSubPacket();
+                            _0x07Packet unknown07 = new _0x07Packet(subpacket.data);
                             break;
                         //Update Position
                         case 0x00CA:
@@ -207,6 +215,10 @@ namespace FFXIVClassic_Lobby_Server
                             UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
                             player.updatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
                             player.getActor().sendInstanceUpdate();
+
+                            if (player.getActor().isInZoneChange())
+                                player.getActor().setZoneChanging(false);
+
                             break;
                         //Set Target 
                         case 0x00CD:
@@ -245,17 +257,27 @@ namespace FFXIVClassic_Lobby_Server
                             Actor ownerActor = Server.getStaticActors(player.getActor().eventCurrentOwner);
                             if (ownerActor == null)
                             {
+                                //Is it a instance actor?
                                 ownerActor = Server.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
                                 if (ownerActor == null)
                                 {
-                                    Log.debug(String.Format("\n===Event START===\nCould not find actor 0x{0:X} for event started by caller: 0x{1:X}\nEvent Starter: {2}\nParams: {3}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.triggerName, LuaUtils.dumpParams(eventStart.luaParams)));
-                                    break;
+                                    //Is it a Director?
+                                    if (player.getActor().currentDirector != null && player.getActor().eventCurrentOwner == player.getActor().currentDirector.actorId)
+                                        ownerActor = player.getActor().currentDirector;
+                                    else
+                                    {
+                                        Log.debug(String.Format("\n===Event START===\nCould not find actor 0x{0:X} for event started by caller: 0x{1:X}\nEvent Starter: {2}\nParams: {3}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.triggerName, LuaUtils.dumpParams(eventStart.luaParams)));
+                                        break;
+                                    }
                                 }                                    
                             }
                             
                             LuaEngine.doActorOnEventStarted(player.getActor(), ownerActor, eventStart);
 
                             Log.debug(String.Format("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.val1, eventStart.val2, eventStart.triggerName, LuaUtils.dumpParams(eventStart.luaParams)));
+                            break;
+                        //Unknown, happens at npc spawn and cutscene play????
+                        case 0x00CE:
                             break;
                         //Event Result
                         case 0x012E:

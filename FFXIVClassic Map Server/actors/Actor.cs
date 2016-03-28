@@ -94,8 +94,6 @@ namespace FFXIVClassic_Map_Server.Actors
             //return SetActorPositionPacket.buildPacket(actorId, playerActorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
             spawnedFirstTime = true;
 
-            spawnPacket.debugPrintSubPacket();
-
             return spawnPacket;
         }
 
@@ -227,7 +225,7 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         public virtual BasePacket getSpawnPackets(uint playerActorId)
-        {
+        {            
             return getSpawnPackets(playerActorId, 0x1);
         }
 

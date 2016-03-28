@@ -90,6 +90,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint playTime;
         public uint lastPlayTimeUpdate;
         public bool isGM = false;
+        public bool isZoneChanging = true;
 
         //Inventory        
         private Dictionary<ushort, Inventory> inventories = new Dictionary<ushort, Inventory>();
@@ -480,11 +481,14 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void sendZoneInPackets(WorldManager world, ushort spawnType)
         {            
-            queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId));            
+            queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId));
+          //  queuePacket(_0x2Packet.buildPacket(actorId));
             queuePacket(SetMusicPacket.buildPacket(actorId, zone.bgmDay, 0x01));
             queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR));
 
             queuePacket(getSpawnPackets(actorId, spawnType));
+
+            //getSpawnPackets(actorId, spawnType).debugPrintPacket();
 
             #region grouptest
             //Retainers
@@ -530,9 +534,12 @@ namespace FFXIVClassic_Map_Server.Actors
             playerSession.queuePacket(debugSpawn);
             playerSession.queuePacket(worldMasterSpawn);
 
-           // if (directorSpawn != null)
-            //    queuePacket(directorSpawn);
-
+            if (directorSpawn != null)
+            {
+                //directorSpawn.debugPrintPacket();
+                queuePacket(directorSpawn);
+            }
+  
             #region hardcode
             BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door created
             BasePacket reply11 = new BasePacket("./packets/login/login11.bin"); //NPC Create ??? Final init
@@ -956,6 +963,19 @@ namespace FFXIVClassic_Map_Server.Actors
             return null;
         }
 
+        public void setZoneChanging(bool flag)
+        {
+            isZoneChanging = flag;
+
+            if (!isZoneChanging)
+                LuaEngine.onZoneIn(this);
+        }
+
+        public bool isInZoneChange()
+        {
+            return isZoneChanging;
+        }
+
         public Equipment getEquipment()
         {
             return equipment;
@@ -987,11 +1007,15 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (directorType.Equals("openingDirector"))
             {
-                currentDirector = new OpeningDirector(0x5FF80004);                
+                currentDirector = new OpeningDirector(0x46080012);                
             }
 
-            queuePacket(RemoveActorPacket.buildPacket(actorId, 0x5FF80004));
+            queuePacket(RemoveActorPacket.buildPacket(actorId, 0x46080012));
             queuePacket(currentDirector.getSpawnPackets(actorId));
+            queuePacket(currentDirector.getInitPackets(actorId));
+           // queuePacket(currentDirector.getSetEventStatusPackets(actorId));
+           // currentDirector.getSpawnPackets(actorId).debugPrintPacket();
+           // currentDirector.getInitPackets(actorId).debugPrintPacket();
         }
 
         public Director getDirector()
@@ -1022,6 +1046,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void kickEvent(Actor actor, string conditionName, params object[] parameters)
         {
+            if (actor == null)
+                return;
+
             List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
             SubPacket spacket = KickEventPacket.buildPacket(actorId, actor.actorId, conditionName, lParams);
             spacket.debugPrintSubPacket();

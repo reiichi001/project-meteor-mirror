@@ -24,9 +24,14 @@ namespace FFXIVClassic_Map_Server.packets.send.events
                 {
                     binWriter.Write((UInt32)playerActorId);
                     binWriter.Write((UInt32)targetActorId);
-                    binWriter.Write((UInt32)0);
-                    binWriter.Write((UInt32)0);
+                    binWriter.Write((Byte)0x5);
+                    binWriter.Write((UInt32)0x0175DC87);
+                    binWriter.Write((Byte)0x0);
+                    binWriter.Write((Byte)0x0);
+                    binWriter.Write((Byte)0x3c);
                     binWriter.Write(Encoding.ASCII.GetBytes(conditionName), 0, Encoding.ASCII.GetByteCount(conditionName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(conditionName));
+
+                    binWriter.Seek(0x30, SeekOrigin.Begin);
 
                     LuaUtils.writeLuaParams(binWriter, luaParams);
                 }

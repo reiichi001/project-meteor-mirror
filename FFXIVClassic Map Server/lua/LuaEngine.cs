@@ -1,5 +1,6 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.receive.events;
@@ -22,6 +23,7 @@ namespace FFXIVClassic_Map_Server.lua
         const string FILEPATH_PLAYER = "./scripts/player.lua";
         const string FILEPATH_ZONE = "./scripts/zones/{0}/zone.lua";
         const string FILEPATH_COMMANDS = "./scripts/commands/{0}.lua";
+        const string FILEPATH_DIRECTORS = "./scripts/directors/{0}.lua";
         const string FILEPATH_NPCS = "./scripts/zones/{0}/npcs/{1}.lua";
 
         public LuaEngine()
@@ -68,6 +70,10 @@ namespace FFXIVClassic_Map_Server.lua
             if (target is Command)
             {
                 luaPath = String.Format(FILEPATH_COMMANDS, target.getName());
+            }
+            else if (target is Director)
+            {
+                luaPath = String.Format(FILEPATH_DIRECTORS, target.getName());
             }
             else 
                 luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.getName());
