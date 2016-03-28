@@ -482,7 +482,6 @@ namespace FFXIVClassic_Map_Server.Actors
         public void sendZoneInPackets(WorldManager world, ushort spawnType)
         {            
             queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId));
-          //  queuePacket(_0x2Packet.buildPacket(actorId));
             queuePacket(SetMusicPacket.buildPacket(actorId, zone.bgmDay, 0x01));
             queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR));
 

@@ -178,7 +178,8 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x0002:
 
                             subpacket.debugPrintSubPacket();
-                            client.queuePacket(SendMessagePacket.buildPacket(player.actorID, player.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "-------- Login Message --------\nWelcome to the 1.0 Dev Server"), true, false);
+                            client.queuePacket(_0x2Packet.buildPacket(player.actorID), true, false);
+
                             Server.GetWorldManager().DoLogin(player.getActor());
 
 

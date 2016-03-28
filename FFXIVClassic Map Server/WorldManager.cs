@@ -457,9 +457,7 @@ namespace FFXIVClassic_Map_Server
             player.zone = zone;
             zone.addActorToZone(player);
             
-            //Send packets
-            player.playerSession.queuePacket(DeleteAllActorsPacket.buildPacket(player.actorId), true, false);
-            player.playerSession.queuePacket(_0x2Packet.buildPacket(player.actorId), true, false);
+            //Send packets            
             player.sendZoneInPackets(this, 0x1);
             player.playerSession.clearInstance();
             player.sendInstanceUpdate();
