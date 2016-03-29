@@ -1,0 +1,107 @@
+{
+	0: {
+		"name": "Axe",
+		"weapon1": 147850240,
+		"weapon2": 0,
+	},
+	1: {
+		"name": "Bow & Arrow",
+		"weapon1": 210766878,
+		"weapon2": 236979210,
+	},
+	2: {
+		"name": "Fists",
+		"weapon1": 58723358,
+		"weapon2": 59771934,
+	},
+	3: {
+		"name": "Lance",
+		"weapon1": 168826880,
+		"weapon2": 0,
+	},
+	4: {
+		"name": "Sword & Shield",
+		"weapon1": 79692880,
+		"weapon2": 32513024,
+	},
+	5: {
+		"name": "Wand (Conjurer)",
+		"weapon1": 331351052,
+		"weapon2": 0,
+	},
+	6: {
+		"name": "Wand (Thaumaturge)",
+		"weapon1": 294652958,
+		"weapon2": 0,
+	},
+	7: {
+		"name": "Ifrit's Battleaxe",
+		"weapon1": 147857408,
+		"weapon2": 0,
+	},
+	8: {
+		"name": "Ifrit's Bow",
+		"weapon1": 210768896,
+		"weapon2": 0,
+	},
+	9: {
+		"name": "Ifrit's Claws",
+		"weapon1": 62915584,
+		"weapon2": 63964160,
+	},
+	10: {
+		"name": "Ifrit's Harpoon",
+		"weapon1": 175113216,
+		"weapon2": 0,
+	},
+	11: {
+		"name": "Ifrit's Blade",
+		"weapon1": 81789952,
+		"weapon2": 0,
+	},
+	12: {
+		"name": "Ifrit's Cane",
+		"weapon1": 347086848,
+		"weapon2": 0,
+	},
+	13: {
+		"name": "Ifrit's Cudgel",
+		"weapon1": 294653952,
+		"weapon2": 0,
+	},
+	14: {
+		"name": "Bravura",
+		"weapon1": 147856384,
+		"weapon2": 0,
+	},
+	15: {
+		"name": "Artemis Bow",
+		"weapon1": 212861952,
+		"weapon2": 0,
+	},
+	16: {
+		"name": "Sphairai",
+		"weapon1": 65012736,
+		"weapon2": 66061312,
+	},
+	17: {
+		"name": "Gae Bolg",
+		"weapon1": 173016064,
+		"weapon2": 0,
+	},
+	18: {
+		"name": "Curtana & Holy Shield",
+		"weapon1": 79702016,
+		"weapon2": 32517120,
+	},
+	19: {
+		"name": "Thyrus",
+		"weapon1": 347084800,
+		"weapon2": 0,
+	},
+	20: {
+		"name": "Stardust Rod",
+		"weapon1": 310380544,
+		"weapon2": 0,
+	},
+};
