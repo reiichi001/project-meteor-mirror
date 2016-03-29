@@ -86,7 +86,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
                     binWriter.Write((Byte)sNpcSkin);
                     binWriter.Write((Byte)sNpcPersonality);
 
-                    binWriter.Seek(0x108, SeekOrigin.Begin);
+                    binWriter.Seek(0x109, SeekOrigin.Begin);
                     binWriter.Write(Encoding.ASCII.GetBytes(sNpcName), 0, Encoding.ASCII.GetByteCount(sNpcName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(sNpcName));
                 }
             }
