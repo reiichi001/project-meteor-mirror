@@ -124,7 +124,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public Quest[] questScenario = new Quest[16];
         public Quest[] questGuildleve = new Quest[8];
 
-        public Director currentDirector;
+        public Director currentDirector = new OpeningDirector(0x46080012);
 
         public PlayerWork playerWork = new PlayerWork();
 
@@ -531,14 +531,25 @@ namespace FFXIVClassic_Map_Server.Actors
 
             playerSession.queuePacket(areaMasterSpawn);
             playerSession.queuePacket(debugSpawn);
-            playerSession.queuePacket(worldMasterSpawn);
-
             if (directorSpawn != null)
             {
-                //directorSpawn.debugPrintPacket();
+                directorSpawn.debugPrintPacket();
                 queuePacket(directorSpawn);
             }
-  
+            playerSession.queuePacket(worldMasterSpawn);
+
+            if (zone.isInn)
+            {
+                SetCutsceneBookPacket cutsceneBookPacket = new SetCutsceneBookPacket();
+                for (int i = 64; i < 1200; i++)
+                    cutsceneBookPacket.cutsceneFlags[i] = true;
+
+                SubPacket packet = cutsceneBookPacket.buildPacket(actorId, "Test PathCompanion", 11, 1, 1);
+
+                packet.debugPrintSubPacket();
+                queuePacket(packet);
+            }
+
             #region hardcode
             BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door created
             BasePacket reply11 = new BasePacket("./packets/login/login11.bin"); //NPC Create ??? Final init
@@ -965,9 +976,6 @@ namespace FFXIVClassic_Map_Server.Actors
         public void setZoneChanging(bool flag)
         {
             isZoneChanging = flag;
-
-            if (!isZoneChanging)
-                LuaEngine.onZoneIn(this);
         }
 
         public bool isInZoneChange()
