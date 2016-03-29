@@ -1,7 +1,17 @@
-# FFXIV Classic Server #
+FFXIV Classic Server
+========
 
-A FFXIV 1.0 server emulator.
+Welcome to the FFXIV 1.0 server project.
+If you wish to discuss and help please visit the IRC channel.
 
-### Important ###
+**IRC Channel**
+ * **Server:** irc.ffochat.com
+ * **Channel:** #ffxivclassic
 
-The original lobby server repo was deleted and the project was merged under the same solution as the map server. All work will be now done in this repo.
+Pull Requests
+========
+Commits should contain a descriptive name for what you are modifying
+
+Remember to check back for any feedback, and drop a comment once requested changes have been made (if there are any).
+
+Please *test your code* before committing changes/submitting a pull request.
