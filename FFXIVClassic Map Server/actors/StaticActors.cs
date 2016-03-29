@@ -15,14 +15,48 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public StaticActors(string path)
         {
-            loadStaticActors(path);
+            byte[] data = File.ReadAllBytes(path);
+
+            if (data[0] == 's' && data[1] == 'a' && data[2] == 'n' && data[3] == 'e')
+                data = DecryptStaticActorsFile(data);
+                
+            loadStaticActors(data);
         }
-        
-        public bool loadStaticActors(string path) 
+
+        private byte[] DecryptStaticActorsFile(byte[] encoded)
+        {
+            byte[] decoded = new byte[encoded.Length - 13];
+
+            MemoryStream sIn = new MemoryStream(encoded);
+            MemoryStream sOut = new MemoryStream(decoded);
+
+            BinaryReader binReader = new BinaryReader(sIn);
+            BinaryWriter binWriter = new BinaryWriter(sOut);
+
+            binReader.BaseStream.Seek(13, SeekOrigin.Begin);
+
+            while (true)
+            {
+                try
+                {
+                    byte byteIn = binReader.ReadByte();
+                    byte byteOut = (Byte)(byteIn ^ 0x73);
+                    binWriter.Write((Byte)byteOut);
+                }
+                catch (EndOfStreamException e) { break; }
+            }
+
+            binReader.Close();
+            binWriter.Close();
+
+            return decoded;
+        }
+
+        private bool loadStaticActors(byte[] data) 
         {
             try
             {
-                using (MemoryStream s = new MemoryStream(File.ReadAllBytes(path)))
+                using (MemoryStream s = new MemoryStream(data))
                 {
                     using (BinaryReader binReader = new BinaryReader(s))
                     {
