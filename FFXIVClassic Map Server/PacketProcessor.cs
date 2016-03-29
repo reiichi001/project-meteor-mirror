@@ -54,8 +54,6 @@ namespace FFXIVClassic_Lobby_Server
             if (packet.header.isCompressed == 0x01)                       
                 BasePacket.decryptPacket(client.blowfish, ref packet);
 
-          // packet.debugPrintPacket();
-
             List<SubPacket> subPackets = packet.getSubpackets();
             foreach (SubPacket subpacket in subPackets)
             {
@@ -204,9 +202,9 @@ namespace FFXIVClassic_Lobby_Server
                             LangaugeCodePacket langCode = new LangaugeCodePacket(subpacket.data);
                             player.languageCode = langCode.languageCode;
                             break;
-                        //Unknown
+                        //Unknown - Happens a lot at login, then once every time player zones
                         case 0x0007:
-                            subpacket.debugPrintSubPacket();
+                            //subpacket.debugPrintSubPacket();
                             _0x07Packet unknown07 = new _0x07Packet(subpacket.data);
                             break;
                         //Update Position

@@ -459,8 +459,6 @@ namespace FFXIVClassic_Map_Server
             
             //Send packets            
             player.sendZoneInPackets(this, 0x1);
-            player.playerSession.clearInstance();
-            player.sendInstanceUpdate();
 
             LuaEngine.onLogin(player);
             LuaEngine.onZoneIn(player);

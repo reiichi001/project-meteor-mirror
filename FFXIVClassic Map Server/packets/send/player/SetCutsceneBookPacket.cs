@@ -64,7 +64,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
 
         public bool[] cutsceneFlags = new bool[2432];
 
-        public SubPacket buildPacket(uint playerActorID)
+        public SubPacket buildPacket(uint playerActorID, string sNpcName, short sNpcActorIdOffset, byte sNpcSkin, byte sNpcPersonality)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -77,6 +77,17 @@ namespace FFXIVClassic_Map_Server.packets.send.player
                         binWriter.Write(binStream);
                     else
                         Log.error("Failed making SetCutsceneBook packet. Bin Stream was too big!");
+
+                    //Temp Path Companion SNPC Stuff
+                    binWriter.Seek(0x01 ,SeekOrigin.Begin);
+                    binWriter.Write((Int16)2);
+                    binWriter.Write((Byte)0);
+                    binWriter.Write((Int16)sNpcActorIdOffset);
+                    binWriter.Write((Byte)sNpcSkin);
+                    binWriter.Write((Byte)sNpcPersonality);
+
+                    binWriter.Seek(0x108, SeekOrigin.Begin);
+                    binWriter.Write(Encoding.ASCII.GetBytes(sNpcName), 0, Encoding.ASCII.GetByteCount(sNpcName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(sNpcName));
                 }
             }
 
