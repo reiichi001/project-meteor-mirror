@@ -76,6 +76,7 @@ namespace FFXIVClassic_Lobby_Server
 
         public void disconnect()
         {
+            socket.Shutdown(SocketShutdown.Both);
             socket.Disconnect(false);
         }
     }

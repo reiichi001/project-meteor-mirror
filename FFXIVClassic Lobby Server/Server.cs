@@ -51,9 +51,9 @@ namespace FFXIVClassic_Lobby_Server
         #region Socket Handling
         public bool startServer()
         {
-            cleanupThread = new Thread(new ThreadStart(socketCleanup));
-            cleanupThread.Name = "LobbyThread:Cleanup";
-            cleanupThread.Start();
+            //cleanupThread = new Thread(new ThreadStart(socketCleanup));
+            //cleanupThread.Name = "LobbyThread:Cleanup";
+            //cleanupThread.Start();
 
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), FFXIV_LOBBY_PORT);
            
@@ -147,7 +147,7 @@ namespace FFXIVClassic_Lobby_Server
 
                 bytesRead += conn.lastPartialSize;
 
-                if (bytesRead >= 0)
+                if (bytesRead > 0)
                 {
                     int offset = 0;
 
@@ -187,6 +187,7 @@ namespace FFXIVClassic_Lobby_Server
 
                     lock (mConnectionList)
                     {
+                        conn.disconnect();
                         mConnectionList.Remove(conn);
                     }
                 }
