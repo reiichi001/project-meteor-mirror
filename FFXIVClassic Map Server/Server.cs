@@ -658,10 +658,10 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 else if (split[0].Equals("resetzone"))
-                {
-                    Log.info(String.Format("Got request to reset zone: {0}", client.getActor().zoneId));
+                {                    
                     if (client != null)
                     {
+                        Log.info(String.Format("Got request to reset zone: {0}", client.getActor().zoneId));
                         client.getActor().zone.clear();
                         client.getActor().zone.addActorToZone(client.getActor());
                         client.getActor().sendInstanceUpdate();

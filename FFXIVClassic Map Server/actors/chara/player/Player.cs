@@ -534,7 +534,10 @@ namespace FFXIVClassic_Map_Server.Actors
             if (directorSpawn != null)
             {
                 directorSpawn.debugPrintPacket();
+                currentDirector.getInitPackets(actorId).debugPrintPacket();
                 queuePacket(directorSpawn);
+                queuePacket(currentDirector.getInitPackets(actorId));
+                //queuePacket(currentDirector.getSetEventStatusPackets(actorId));
             }
             playerSession.queuePacket(worldMasterSpawn);
 
@@ -555,10 +558,11 @@ namespace FFXIVClassic_Map_Server.Actors
             BasePacket reply11 = new BasePacket("./packets/login/login11.bin"); //NPC Create ??? Final init
             reply10.replaceActorID(actorId);
             reply11.replaceActorID(actorId);
-            playerSession.queuePacket(reply10);
-            playerSession.queuePacket(reply11);
+            //playerSession.queuePacket(reply10);
+           // playerSession.queuePacket(reply11);
             #endregion
-            
+
+            kickEvent(currentDirector, "noticeEvent", "noticeEvent");
         }
 
         private void sendRemoveInventoryPackets(List<ushort> slots)

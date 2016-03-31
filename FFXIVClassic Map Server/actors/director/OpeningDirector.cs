@@ -14,9 +14,9 @@ namespace FFXIVClassic_Map_Server.actors.director
         public OpeningDirector(uint id) : base(id)
         {
             this.displayNameId = 0;
-            this.customDisplayName = "openingDire_ocn0Btl02_0h";
+            this.customDisplayName = "openingDire";
 
-            this.actorName = "openingDire_ocn0Btl02_0h@0C100";
+            this.actorName = "openingDire";
             this.className = "OpeningDirector";
 
             this.eventConditions = new EventList();

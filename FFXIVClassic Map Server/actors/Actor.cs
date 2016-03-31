@@ -67,8 +67,8 @@ namespace FFXIVClassic_Map_Server.Actors
         } 
 
         public SubPacket createNamePacket(uint playerActorId)
-        {            
-            return SetActorNamePacket.buildPacket(actorId, playerActorId,  displayNameId, displayNameId == 0xFFFFFFFF ? customDisplayName : "");
+        {
+            return SetActorNamePacket.buildPacket(actorId, playerActorId, displayNameId, displayNameId == 0xFFFFFFFF | displayNameId == 0x0 ? customDisplayName : "");
         }        
 
         public SubPacket createSpeedPacket(uint playerActorId)
