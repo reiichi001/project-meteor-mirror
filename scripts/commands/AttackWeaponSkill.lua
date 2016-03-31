@@ -8,7 +8,7 @@ Finds the correct weaponskill subscript to fire when a weaponskill actor is acti
 
 
 
-function onEventStarted(player, actor)	
+function onEventStarted(player, actor, triggerName)	
 
 	worldMaster = getWorldMaster();
 

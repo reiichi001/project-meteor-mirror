@@ -53,7 +53,7 @@ GRAPHICSLOT_L_RINGFINGER	= 24;
 GRAPHICSLOT_R_INDEXFINGER 	= 25;
 GRAPHICSLOT_L_INDEXFINGER 	= 26;
 
-function onEventStarted(player, actor, invActionInfo, param1, param2, param3, param4, param5, param6, param7, equipSlot, itemDBIds)
+function onEventStarted(player, actor, triggerName, invActionInfo, param1, param2, param3, param4, param5, param6, param7, equipSlot, itemDBIds)
 	equipSlot = equipSlot-1;
 	
 	--Equip Item

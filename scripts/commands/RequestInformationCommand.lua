@@ -8,6 +8,6 @@ function onEventStarted(player, actor, questId)
 --	player:sendRequestedInfo("requestedData", "glHist", 10, 0x1D4F2, 1009, 12464, 11727, 12485, 12526);
 end
 
-function onEventUpdate(player, actor, step, arg1)
+function onEventUpdate(player, actor, triggerName, step, arg1)
 
 end

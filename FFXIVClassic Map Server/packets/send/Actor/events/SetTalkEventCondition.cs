@@ -22,8 +22,9 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.events
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
+                    condition.unknown1 = 4;
                     binWriter.Write((Byte)condition.unknown1);
-                    binWriter.Write((Byte)condition.unknown2);
+                    binWriter.Write((Byte)(condition.isDisabled ? 0x1 : 0x0));
                     binWriter.Write(Encoding.ASCII.GetBytes(condition.conditionName), 0, Encoding.ASCII.GetByteCount(condition.conditionName) >= 0x24 ? 0x24 : Encoding.ASCII.GetByteCount(condition.conditionName));
                 }
             }

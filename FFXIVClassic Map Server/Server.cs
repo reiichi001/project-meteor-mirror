@@ -37,7 +37,7 @@ namespace FFXIVClassic_Lobby_Server
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private LuaEngine mLuaEngine = new LuaEngine();
 
-        private WorldManager mWorldManager;
+        private static WorldManager mWorldManager;
         private static Dictionary<uint, Item> gamedataItems;
         private static StaticActors mStaticActors;
 
@@ -450,7 +450,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public WorldManager GetWorldManager()
+        public static WorldManager GetWorldManager()
         {
             return mWorldManager;
         }

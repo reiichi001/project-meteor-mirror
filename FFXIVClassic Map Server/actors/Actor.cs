@@ -93,6 +93,22 @@ namespace FFXIVClassic_Map_Server.Actors
 
             //return SetActorPositionPacket.buildPacket(actorId, playerActorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
             spawnedFirstTime = true;
+
+            spawnPacket.debugPrintSubPacket();
+
+            return spawnPacket;
+        }
+
+        public SubPacket createSpawnTeleportPacket(uint playerActorId, uint spawnType)
+        {
+            SubPacket spawnPacket;
+
+                spawnPacket = SetActorPositionPacket.buildPacket(actorId, playerActorId, 0xFFFFFFFF, positionX, positionY, positionZ, rotation, spawnType, false);
+       
+            //return SetActorPositionPacket.buildPacket(actorId, playerActorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
+            
+            spawnPacket.debugPrintSubPacket();
+
             return spawnPacket;
         }
 
@@ -176,7 +192,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (eventConditions.emoteEventConditions != null)
             {
                 foreach (EventList.EmoteEventCondition condition in eventConditions.emoteEventConditions)
-                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 1, condition.conditionName));
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 3, condition.conditionName));
             }
 
             if (eventConditions.pushWithCircleEventConditions != null)

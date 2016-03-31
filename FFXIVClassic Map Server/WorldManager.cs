@@ -403,6 +403,46 @@ namespace FFXIVClassic_Map_Server
             LuaEngine.onZoneIn(player);
         }
 
+        //Moves actor within zone to spawn position
+        public void DoPlayerMoveInZone(Player player, uint zoneEntrance)
+        {
+            if (!zoneEntranceList.ContainsKey(zoneEntrance))
+            {
+                Log.error("Given zone entrance was not found: " + zoneEntrance);
+                return;
+            }
+
+            ZoneEntrance ze = zoneEntranceList[zoneEntrance];
+
+            if (ze.zoneId != player.zoneId)
+                return;
+
+            DoPlayerMoveInZone(player, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
+        }
+
+        //Moves actor within the zone
+        public void DoPlayerMoveInZone(Player player, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
+        {            
+            //Remove player from currentZone if transfer else it's login
+            if (player.zone != null)
+            {
+                player.zone.removeActorFromZone(player);
+                player.zone.addActorToZone(player);
+
+                //Update player actor's properties;
+                player.positionX = spawnX;
+                player.positionY = spawnY;
+                player.positionZ = spawnZ;
+                player.rotation = spawnRotation;
+
+                //Send packets
+                player.playerSession.queuePacket(_0xE2Packet.buildPacket(player.actorId, 0x0), true, false);
+                player.playerSession.queuePacket(player.createSpawnTeleportPacket(player.actorId, 0x0f), true, false);
+                player.sendInstanceUpdate();
+
+            }            
+        }
+
         //Login Zone In
         public void DoLogin(Player player)
         {
