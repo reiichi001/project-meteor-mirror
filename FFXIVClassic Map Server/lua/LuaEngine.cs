@@ -93,7 +93,9 @@ namespace FFXIVClassic_Map_Server.lua
                 objects.Add(player);
                 objects.Add(target);
                 objects.Add(eventStart.triggerName);
-                objects.AddRange(LuaUtils.createLuaParamObjectList(eventStart.luaParams));
+
+                if (eventStart.luaParams != null)
+                    objects.AddRange(LuaUtils.createLuaParamObjectList(eventStart.luaParams));
 
                 //Run Script
                 DynValue result = script.Call(script.Globals["onEventStarted"], objects.ToArray());
@@ -110,12 +112,14 @@ namespace FFXIVClassic_Map_Server.lua
 
         public static void doActorOnEventUpdated(Player player, Actor target, EventUpdatePacket eventUpdate)
         {
-            string luaPath;
+            string luaPath; 
 
             if (target is Command)            
                 luaPath = String.Format(FILEPATH_COMMANDS, target.getName());
+            else if (target is Director)
+                luaPath = String.Format(FILEPATH_DIRECTORS, target.getName());            
             else
-                 luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.getName());
+                luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.getName());
 
             if (File.Exists(luaPath))
             {

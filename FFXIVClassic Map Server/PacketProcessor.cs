@@ -63,7 +63,7 @@ namespace FFXIVClassic_Lobby_Server
                     byte[] reply1Data = {
                                             0x01, 0x00, 0x00, 0x00, 0x28, 0x0, 0x01, 0x0, 0x0, 0x0, 0x0, 0x0, 0x00, 0x00, 0x00, 0x00,
                                             0x18, 0x00, 0x07, 0x00, 0x00, 0x0, 0x00, 0x0, 0x0, 0x0, 0x0, 0x0, 0x7F, 0xFD, 0xFF, 0xFF,
-                                            0x43, 0xEC, 0x00, 0xE0, 0x00, 0x0, 0x00, 0x0
+                                            0xE5, 0x6E, 0x01, 0xE0, 0x00, 0x0, 0x00, 0x0
                                         };
 
                     BasePacket reply1 = new BasePacket(reply1Data);
@@ -289,6 +289,10 @@ namespace FFXIVClassic_Lobby_Server
                             if (updateOwnerActor == null)
                             {
                                 updateOwnerActor = Server.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
+
+                                if (player.getActor().currentDirector != null && player.getActor().eventCurrentOwner == player.getActor().currentDirector.actorId)
+                                    updateOwnerActor = player.getActor().currentDirector;
+
                                 if (updateOwnerActor == null)
                                     break;
                             }

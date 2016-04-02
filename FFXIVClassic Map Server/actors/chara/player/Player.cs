@@ -9,6 +9,7 @@ using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.packets.send.actor.events;
 using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.events;
@@ -124,7 +125,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public Quest[] questScenario = new Quest[16];
         public Quest[] questGuildleve = new Quest[8];
 
-        public Director currentDirector = new OpeningDirector(0x46080012);
+        public Director currentDirector;// = new OpeningDirector(0x46080012);
 
         public PlayerWork playerWork = new PlayerWork();
 
@@ -254,7 +255,10 @@ namespace FFXIVClassic_Map_Server.Actors
             List<LuaParam> lParams;
             if (isMyPlayer(playerActorId))
             {
-                lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, false, true, 0, false, timers, true);
+                if (currentDirector != null)
+                    lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, true, currentDirector, 0, false, timers, true);
+                else
+                    lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, false, true, 0, false, timers, true);
             }
             else
                 lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
@@ -480,13 +484,12 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         public void sendZoneInPackets(WorldManager world, ushort spawnType)
-        {            
+        {
             queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId));
             queuePacket(SetMusicPacket.buildPacket(actorId, zone.bgmDay, 0x01));
             queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR));
 
-            queuePacket(getSpawnPackets(actorId, spawnType));
-
+            queuePacket(getSpawnPackets(actorId, spawnType));            
             //getSpawnPackets(actorId, spawnType).debugPrintPacket();
 
             #region grouptest
@@ -561,8 +564,6 @@ namespace FFXIVClassic_Map_Server.Actors
             //playerSession.queuePacket(reply10);
            // playerSession.queuePacket(reply11);
             #endregion
-
-            kickEvent(currentDirector, "noticeEvent", "noticeEvent");
         }
 
         private void sendRemoveInventoryPackets(List<ushort> slots)
@@ -587,32 +588,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
         }
 
-        /*
-        private void sendEquipmentPackets(List<int> indexes)
-        {
-            int currentIndex = 0;
-
-            InventorySetBeginPacket.buildPacket(actorId, MAXSIZE_INVENTORY_EQUIPMENT, InventorySetBeginPacket.CODE_EQUIPMENT);
-
-            while (true)
-            {
-                if (indexes.Count - currentIndex >= 64)
-                    queuePacket(EquipmentListX64Packet.buildPacket(actorId, indexes, ref currentIndex));
-                else if (indexes.Count - currentIndex >= 32)
-                    queuePacket(EquipmentListX32Packet.buildPacket(actorId, indexes, ref currentIndex));
-                else if (indexes.Count - currentIndex >= 16)
-                    queuePacket(EquipmentListX16Packet.buildPacket(actorId, indexes, ref currentIndex));
-                else if (indexes.Count - currentIndex >= 8)
-                    queuePacket(EquipmentListX08Packet.buildPacket(actorId, indexes, ref currentIndex));
-                else if (indexes.Count - currentIndex == 1)
-                    queuePacket(EquipmentListX01Packet.buildPacket(actorId, indexes[currentIndex]));
-                else
-                    break;
-            }
-
-            InventorySetEndPacket.buildPacket(actorId);
-        }
-        */
         public bool isMyPlayer(uint otherActorId)
         {
             return actorId == otherActorId;
@@ -1066,6 +1041,11 @@ namespace FFXIVClassic_Map_Server.Actors
             queuePacket(spacket);
         }
 
+        public void setEventStatus(Actor actor, string conditionName, bool enabled, byte unknown)
+        {
+            queuePacket(SetEventStatus.buildPacket(actorId, actor.actorId, enabled, unknown, conditionName));
+        }
+
         public void runEventFunction(string functionName, params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
@@ -1077,6 +1057,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void endEvent()
         {
             SubPacket p = EndEventPacket.buildPacket(actorId, eventCurrentOwner, eventCurrentStarter);
+            p.debugPrintSubPacket();
             queuePacket(p);
 
             eventCurrentOwner = 0;
