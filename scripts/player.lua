@@ -7,7 +7,11 @@ function onLogin(player)
 		player:sendMessage(0x1D,"",">PlayTime == 0, new player!");
 		
 		initClassItems(player);
-		initRaceItems(player);
+		initRaceItems(player);		
+	end
+		
+	if (player:hasQuest(110001) == true or player:hasQuest(110005) == true or player:hasQuest(110009) == true) then
+		--player:setDirector("openingDirector");
 	end
 	
 end
