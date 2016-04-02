@@ -50,7 +50,7 @@ namespace FFXIVClassic_Map_Server.Actors
             List<LuaParam> lParams;
 
             Player player = Server.GetWorldManager().GetPCInWorld(playerActorId);
-            lParams = LuaEngine.doActorOnInstantiate(player, this);
+            lParams = LuaEngine.doActorInstantiate(player, this);
 
             if (lParams == null)
             {

@@ -965,6 +965,17 @@ namespace FFXIVClassic_Map_Server.Actors
             return null;
         }
 
+        public Quest getQuest(string name)
+        {
+            for (int i = 0; i < questScenario.Length; i++)
+            {
+                if (questScenario[i] != null && questScenario[i].actorName.Equals(name))
+                    return questScenario[i];
+            }
+
+            return null;
+        }
+
         public bool hasQuest(uint id)
         {
             for (int i = 0; i < questScenario.Length; i++)

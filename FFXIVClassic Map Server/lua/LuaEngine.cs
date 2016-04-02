@@ -31,7 +31,7 @@ namespace FFXIVClassic_Map_Server.lua
             UserData.RegistrationPolicy = InteropRegistrationPolicy.Automatic;
         }
 
-        public static List<LuaParam> doActorOnInstantiate(Player player, Actor target)
+        public static List<LuaParam> doActorInstantiate(Player player, Actor target)
         {
             string luaPath;
 
@@ -39,14 +39,10 @@ namespace FFXIVClassic_Map_Server.lua
             {
                 luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.getName());
                 if (File.Exists(luaPath))
-                {
-                    Script script = new Script();
-                    ((ScriptLoaderBase)script.Options.ScriptLoader).ModulePaths = new string[] { "./scripts/?", "./scripts/?.lua" };
-                    script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
-                    script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
-                    script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.getItemGamedata;
-                    script.DoFile(luaPath);
-                    DynValue result = script.Call(script.Globals["onInstantiate"], target);
+                {                    
+                    Script script = loadScript(luaPath);
+
+                    DynValue result = script.Call(script.Globals["init"], target);
                     List<LuaParam> lparams = LuaUtils.createLuaParamList(result);
                     return lparams;
                 }
@@ -80,13 +76,7 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (File.Exists(luaPath))
             {
-                Script script = new Script();
-                ((ScriptLoaderBase)script.Options.ScriptLoader).ModulePaths = new string[] { "./scripts/?", "./scripts/?.lua" };
-                script.Globals["getWorldManager"] = (Func<WorldManager>)Server.GetWorldManager;
-                script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
-                script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
-                script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.getItemGamedata;
-                script.DoFile(luaPath);
+                Script script = loadScript(luaPath);
 
                 //Have to do this to combine LuaParams
                 List<Object> objects = new List<Object>();
@@ -98,7 +88,8 @@ namespace FFXIVClassic_Map_Server.lua
                     objects.AddRange(LuaUtils.createLuaParamObjectList(eventStart.luaParams));
 
                 //Run Script
-                DynValue result = script.Call(script.Globals["onEventStarted"], objects.ToArray());
+                if (!script.Globals.Get("onEventStarted").IsNil())
+                    script.Call(script.Globals["onEventStarted"], objects.ToArray());
             }
             else
             {
@@ -108,6 +99,28 @@ namespace FFXIVClassic_Map_Server.lua
                 player.playerSession.queuePacket(BasePacket.createPacket(sendError, true, false));
             }
            
+        }
+
+        public static void doActorOnSpawn(Player player, Npc target)
+        {
+            string luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.getName());
+
+            if (File.Exists(luaPath))
+            {
+                Script script = loadScript(luaPath);
+               
+                //Run Script
+                if (!script.Globals.Get("onSpawn").IsNil())
+                    script.Call(script.Globals["onSpawn"], player, target);
+            }
+            else
+            {
+                List<SubPacket> sendError = new List<SubPacket>();
+                sendError.Add(EndEventPacket.buildPacket(player.actorId, player.eventCurrentOwner, player.eventCurrentStarter));
+                player.sendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", String.Format("ERROR: Could not find script for actor {0}.", target.getName()));
+                player.playerSession.queuePacket(BasePacket.createPacket(sendError, true, false));
+            }
+
         }
 
         public static void doActorOnEventUpdated(Player player, Actor target, EventUpdatePacket eventUpdate)
@@ -123,13 +136,7 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (File.Exists(luaPath))
             {
-                Script script = new Script();
-                ((ScriptLoaderBase)script.Options.ScriptLoader).ModulePaths = new string[] { "./scripts/?", "./scripts/?.lua" };
-                script.Globals["getWorldManager"] = (Func<WorldManager>)Server.GetWorldManager;
-                script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
-                script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
-                script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.getItemGamedata;
-                script.DoFile(luaPath);
+                Script script = loadScript(luaPath);
 
                 //Have to do this to combine LuaParams
                 List<Object> objects = new List<Object>();
@@ -139,7 +146,8 @@ namespace FFXIVClassic_Map_Server.lua
                 objects.AddRange(LuaUtils.createLuaParamObjectList(eventUpdate.luaParams));
 
                 //Run Script
-                DynValue result = script.Call(script.Globals["onEventUpdate"], objects.ToArray());
+                if (!script.Globals.Get("onEventUpdate").IsNil())
+                    script.Call(script.Globals["onEventUpdate"], objects.ToArray());
             }
             else
             {
@@ -156,16 +164,11 @@ namespace FFXIVClassic_Map_Server.lua
           
             if (File.Exists(luaPath))
             {
-                Script script = new Script();
-                ((ScriptLoaderBase)script.Options.ScriptLoader).ModulePaths = new string[] { "./scripts/?", "./scripts/?.lua" };
-                script.Globals["getWorldManager"] = (Func<WorldManager>)Server.GetWorldManager;
-                script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
-                script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
-                script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.getItemGamedata;
-                script.DoFile(luaPath);
+                Script script = loadScript(luaPath);
                 
                 //Run Script
-                DynValue result = script.Call(script.Globals["onZoneIn"], player);
+                if (!script.Globals.Get("onZoneIn").IsNil())
+                    script.Call(script.Globals["onZoneIn"], player);
             }            
         }
 
@@ -173,17 +176,24 @@ namespace FFXIVClassic_Map_Server.lua
         {
             if (File.Exists(FILEPATH_PLAYER))
             {
-                Script script = new Script();
-                ((ScriptLoaderBase)script.Options.ScriptLoader).ModulePaths = new string[] { "./scripts/?", "./scripts/?.lua" };
-                script.Globals["getWorldManager"] = (Func<WorldManager>)Server.GetWorldManager;
-                script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
-                script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
-                script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.getItemGamedata;
-                script.DoFile(FILEPATH_PLAYER);
+                Script script = loadScript(FILEPATH_PLAYER);
 
                 //Run Script
-                DynValue result = script.Call(script.Globals["onLogin"], player);
+                if (!script.Globals.Get("onZoneIn").IsNil())
+                    script.Call(script.Globals["onZoneIn"], player);
             }
+        }
+
+        private static Script loadScript(string filename)
+        {
+            Script script = new Script();
+            ((FileSystemScriptLoader)script.Options.ScriptLoader).ModulePaths = FileSystemScriptLoader.UnpackStringPaths("./scripts/?;./scripts/?.lua");
+            script.Globals["getWorldManager"] = (Func<WorldManager>)Server.GetWorldManager;
+            script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
+            script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
+            script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.getItemGamedata;
+            script.DoFile(filename);
+            return script;
         }
 
     }
