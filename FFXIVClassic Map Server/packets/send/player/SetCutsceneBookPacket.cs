@@ -62,7 +62,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
         public const ushort OPCODE = 0x01A3;
         public const uint PACKET_SIZE = 0x150;
 
-        public bool[] cutsceneFlags = new bool[2432];
+        public bool[] cutsceneFlags = new bool[2048];
 
         public SubPacket buildPacket(uint playerActorID, string sNpcName, short sNpcActorIdOffset, byte sNpcSkin, byte sNpcPersonality)
         {
@@ -73,11 +73,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
                     byte[] binStream = Utils.ConvertBoolArrayToBinaryStream(cutsceneFlags);
-                    if (binStream.Length <= PACKET_SIZE - 0x20)
-                        binWriter.Write(binStream);
-                    else
-                        Log.error("Failed making SetCutsceneBook packet. Bin Stream was too big!");
-
+                    
                     //Temp Path Companion SNPC Stuff
                     binWriter.Seek(0x01 ,SeekOrigin.Begin);
                     binWriter.Write((Int16)2);
@@ -86,8 +82,14 @@ namespace FFXIVClassic_Map_Server.packets.send.player
                     binWriter.Write((Byte)sNpcSkin);
                     binWriter.Write((Byte)sNpcPersonality);
 
+                    if (binStream.Length <= PACKET_SIZE - 0x20)
+                        binWriter.Write(binStream);
+                    else
+                        Log.error("Failed making SetCutsceneBook packet. Bin Stream was too big!");
+
                     binWriter.Seek(0x109, SeekOrigin.Begin);
                     binWriter.Write(Encoding.ASCII.GetBytes(sNpcName), 0, Encoding.ASCII.GetByteCount(sNpcName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(sNpcName));
+
                 }
             }
 
