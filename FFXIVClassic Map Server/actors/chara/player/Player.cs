@@ -314,20 +314,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 subpackets.Add(SetAchievementPointsPacket.buildPacket(playerActorId, achievementPoints));
                 subpackets.Add(Database.getLatestAchievements(this));
-                subpackets.Add(Database.getAchievementsPacket(this));
-
-                /*
-                if (isInn)
-                {
-                    SetCutsceneBookPacket book = new SetCutsceneBookPacket();
-                    for (int i = 0; i < book.cutsceneFlags.Length; i++)
-                        book.cutsceneFlags[i] = true;
-                    client.queuePacket(book.buildPacket(player.actorID), true, false); 
-                 
-                    //
-                    //subpackets.Add(SetPlayerDreamPacket.buildPacket(playerActorId, );
-                }
-                 */
+                subpackets.Add(Database.getAchievementsPacket(this));                
             }
 
             return subpackets;
@@ -547,10 +534,10 @@ namespace FFXIVClassic_Map_Server.Actors
             if (zone.isInn)
             {
                 SetCutsceneBookPacket cutsceneBookPacket = new SetCutsceneBookPacket();
-                for (int i = 64; i < 1200; i++)
+                for (int i = 0; i < 2048; i++)
                     cutsceneBookPacket.cutsceneFlags[i] = true;
 
-                SubPacket packet = cutsceneBookPacket.buildPacket(actorId, "Test PathCompanion", 11, 1, 1);
+                SubPacket packet = cutsceneBookPacket.buildPacket(actorId, "<Path Companion>", 11, 1, 1);
 
                 packet.debugPrintSubPacket();
                 queuePacket(packet);
