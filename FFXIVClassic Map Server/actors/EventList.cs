@@ -27,6 +27,13 @@ namespace FFXIVClassic_Map_Server.actors
             public byte unknown1;
             public byte unknown2;
             public string conditionName;
+
+            public NoticeEventCondition(string name, byte unk1, byte unk2)
+            {
+                conditionName = name;
+                unknown1 = unk1;
+                unknown2 = unk2;
+            }
         }
 
         public class EmoteEventCondition

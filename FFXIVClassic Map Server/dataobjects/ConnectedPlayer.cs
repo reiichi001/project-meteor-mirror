@@ -16,7 +16,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public uint actorID = 0;
         Player playerActor;
         public List<Actor> actorInstanceList = new List<Actor>();
-        
+
+        public uint languageCode = 1;
+
         private ClientConnection zoneConnection;
         private ClientConnection chatConnection;
 
@@ -95,7 +97,6 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void updatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
         {            
-
             playerActor.oldPositionX = playerActor.positionX;
             playerActor.oldPositionY = playerActor.positionY;
             playerActor.oldPositionZ = playerActor.positionZ;

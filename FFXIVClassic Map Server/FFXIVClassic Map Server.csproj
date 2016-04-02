@@ -70,6 +70,8 @@
     <Compile Include="actors\chara\player\Inventory.cs" />
     <Compile Include="actors\chara\Work.cs" />
     <Compile Include="actors\debug\Debug.cs" />
+    <Compile Include="actors\director\Director.cs" />
+    <Compile Include="actors\director\OpeningDirector.cs" />
     <Compile Include="actors\director\WeatherDirector.cs" />
     <Compile Include="actors\EventList.cs" />
     <Compile Include="actors\judge\Judge.cs" />
@@ -115,6 +117,7 @@
     <Compile Include="packets\receive\events\EventUpdatePacket.cs" />
     <Compile Include="packets\receive\events\EventStartPacket.cs" />
     <Compile Include="packets\receive\HandshakePacket.cs" />
+    <Compile Include="packets\receive\LangaugeCodePacket.cs" />
     <Compile Include="packets\receive\ParameterDataRequestPacket.cs" />
     <Compile Include="packets\receive\recruitment\RecruitmentDetailsRequestPacket.cs" />
     <Compile Include="packets\receive\recruitment\RecruitmentSearchRequestPacket.cs" />
@@ -127,6 +130,8 @@
     <Compile Include="packets\receive\supportdesk\FaqListRequestPacket.cs" />
     <Compile Include="packets\receive\supportdesk\GMSupportTicketPacket.cs" />
     <Compile Include="packets\receive\supportdesk\GMTicketIssuesRequestPacket.cs" />
+    <Compile Include="packets\receive\_0x02ReceivePacket.cs" />
+    <Compile Include="packets\receive\_0x07Packet.cs" />
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />
     <Compile Include="packets\send\actor\BattleAction1Packet.cs" />
@@ -172,6 +177,7 @@
     <Compile Include="packets\send\actor\SetActorStatusPacket.cs" />
     <Compile Include="packets\send\actor\_0xFPacket.cs" />
     <Compile Include="packets\send\events\EndEventPacket.cs" />
+    <Compile Include="packets\send\events\KickEventPacket.cs" />
     <Compile Include="packets\send\events\RunEventFunctionPacket.cs" />
     <Compile Include="packets\send\GameMessagePacket.cs" />
     <Compile Include="packets\send\list\ListEntry.cs" />
@@ -236,6 +242,7 @@
     <Compile Include="packets\send\supportdesk\FaqListResponsePacket.cs" />
     <Compile Include="packets\send\supportdesk\GMTicketPacket.cs" />
     <Compile Include="packets\send\supportdesk\GMTicketSentResponsePacket.cs" />
+    <Compile Include="packets\send\_0x02Packet.cs" />
     <Compile Include="packets\send\_0xE2Packet.cs" />
     <Compile Include="packets\SubPacket.cs" />
     <Compile Include="packets\receive\PingPacket.cs" />
