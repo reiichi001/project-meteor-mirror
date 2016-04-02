@@ -23,7 +23,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
                 {
                     binWriter.Write((UInt32)displayNameID);
 
-                    if (displayNameID == 0 || displayNameID == 0xFFFFFFFF)
+                    if (customName != null && (displayNameID == 0 || displayNameID == 0xFFFFFFFF))
                     {
                         binWriter.Write(Encoding.ASCII.GetBytes(customName), 0, Encoding.ASCII.GetByteCount(customName) >= 0x20 ? 0x19 : Encoding.ASCII.GetByteCount(customName));
                     }

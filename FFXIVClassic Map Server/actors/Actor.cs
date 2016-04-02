@@ -67,8 +67,8 @@ namespace FFXIVClassic_Map_Server.Actors
         } 
 
         public SubPacket createNamePacket(uint playerActorId)
-        {            
-            return SetActorNamePacket.buildPacket(actorId, playerActorId,  displayNameId, displayNameId == 0xFFFFFFFF ? customDisplayName : "");
+        {
+            return SetActorNamePacket.buildPacket(actorId, playerActorId, displayNameId, displayNameId == 0xFFFFFFFF | displayNameId == 0x0 ? customDisplayName : "");
         }        
 
         public SubPacket createSpeedPacket(uint playerActorId)
@@ -93,8 +93,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
             //return SetActorPositionPacket.buildPacket(actorId, playerActorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
             spawnedFirstTime = true;
-
-            spawnPacket.debugPrintSubPacket();
 
             return spawnPacket;
         }
@@ -180,37 +178,37 @@ namespace FFXIVClassic_Map_Server.Actors
             if (eventConditions.talkEventConditions != null)
             {
                 foreach (EventList.TalkEventCondition condition in eventConditions.talkEventConditions)                
-                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 1, condition.conditionName)); 
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, true, 1, condition.conditionName)); 
             }
 
             if (eventConditions.noticeEventConditions != null)
             {
                 foreach (EventList.NoticeEventCondition condition in eventConditions.noticeEventConditions)
-                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 1, condition.conditionName));
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, true, 1, condition.conditionName));
             }
 
             if (eventConditions.emoteEventConditions != null)
             {
                 foreach (EventList.EmoteEventCondition condition in eventConditions.emoteEventConditions)
-                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 3, condition.conditionName));
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, true, 3, condition.conditionName));
             }
 
             if (eventConditions.pushWithCircleEventConditions != null)
             {
                 foreach (EventList.PushCircleEventCondition condition in eventConditions.pushWithCircleEventConditions)
-                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 2, condition.conditionName));
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, true, 2, condition.conditionName));
             }
 
             if (eventConditions.pushWithFanEventConditions != null)
             {
                 foreach (EventList.PushFanEventCondition condition in eventConditions.pushWithFanEventConditions)
-                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 2, condition.conditionName));
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, true, 2, condition.conditionName));
             }
 
             if (eventConditions.pushWithBoxEventConditions != null)
             {
                 foreach (EventList.PushBoxEventCondition condition in eventConditions.pushWithBoxEventConditions)
-                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, 1, 2, condition.conditionName));
+                    subpackets.Add(SetEventStatus.buildPacket(playerActorId, actorId, true, 2, condition.conditionName));
             }
 
             return BasePacket.createPacket(subpackets, true, false);
@@ -227,7 +225,7 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         public virtual BasePacket getSpawnPackets(uint playerActorId)
-        {
+        {            
             return getSpawnPackets(playerActorId, 0x1);
         }
 

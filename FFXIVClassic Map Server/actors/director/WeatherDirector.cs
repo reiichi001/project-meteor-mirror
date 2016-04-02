@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
@@ -10,12 +11,12 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
-    class WeatherDirector : Actor
+    class WeatherDirector : Director
     {
         private uint weatherId;
 
         public WeatherDirector(uint weatherId)
-            : base(0x5FF80002)
+            : base(0x5FF80003)
         {
             this.weatherId = weatherId;
 

@@ -88,7 +88,6 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(createStatePacket(playerActorId));
             subpackets.Add(createIsZoneingPacket(playerActorId));
             subpackets.Add(createScriptBindPacket(playerActorId));
-            subpackets[6].debugPrintSubPacket();
             return BasePacket.createPacket(subpackets, true, false);
         }
 

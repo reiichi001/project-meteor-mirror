@@ -638,6 +638,9 @@ namespace FFXIVClassic_Lobby_Server
                         {
                             int index = reader.GetUInt16(0);
                             player.playerWork.questScenario[index] = 0xA0F00000 | reader.GetUInt32(1);
+
+                            string questName = Server.getStaticActors(player.playerWork.questScenario[index]).actorName;
+                            player.questScenario[index] = new Quest(player.playerWork.questScenario[index], questName);
                         }
                     }
 
