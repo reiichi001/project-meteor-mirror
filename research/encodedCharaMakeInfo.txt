@@ -1,0 +1,38 @@
+===Encoded CharaMake Info=== By Ioncannon
+-Based on chara info array in Seventh Umbral
+
+0x00: Unknown... Version?	Int32;
+0x04: Unknown - Weird #1	Int32;
+0x08: Tribe
+0x09: Size
+0x0A: Hair Style		Short
+0x0C: Highlight Hair Color	Short;
+0x0E: Face
+0x0F: Characteristics
+0x10: Characteristics Color	Short;
+0x12: Unknown - Weird #2	Int32;
+0x15: Eyebrows
+0x16: Eye Size
+0x17: Eye Shape
+0x18: Nose
+0x19: Feature
+0x1A: Mouth
+0x1B: Ears
+0x1C: Hair Color		Short;
+0x1E: Unknown - Weird #3	Int32;
+0x22: Skin Color		Short
+0x24: Eye Color			Short;
+0x26: Voice
+0x27: Guardian
+0x28: Month
+0x29: Day
+0x2A: Start Class		Short;
+0x2C: Unknown			Int32;
+0x30: Unknown			Int32;
+0x34: Unknown			Int32;
+
+0x38: 0x10 bytes of 0s
+
+0x48: Start Nation
+
+0x49: 0xC bytes of 0s
