@@ -460,14 +460,14 @@ namespace FFXIVClassic_Lobby_Server
             if (client != null)
             {
                 Player p = client.getActor();
-                client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Position: {1}, {2}, {3}, {4}", p.customDisplayName, p.positionX, p.positionY, p.positionZ, p.rotation)), true, false));
+                client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation)), true, false));
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    Log.info(String.Format("{0} position: {1}, {2}, {3}, {4}", p.customDisplayName, p.positionX, p.positionY, p.positionZ, p.rotation));
+                    Log.info(String.Format("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation));
                 }
             }
         }
@@ -642,10 +642,139 @@ namespace FFXIVClassic_Lobby_Server
                 input = input.Substring(1);
 
             String[] split = input.Split(' ');
+            split = split.Select(temp => temp.ToLower()).ToArray(); // Ignore case on commands
+
+
+            // Debug
+//            if (client != null)
+//                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+//                string.Join(",", split)
+//            ));
 
             if (split.Length >= 1)
             {
-                if (split[0].Equals("mypos"))
+               
+                if (split[0].Equals("help"))
+                {
+                    if (split.Length == 1)
+                    {
+                        if (client != null)
+                            client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                             "Use !help (command) for details\n\nAvailable commands:\nStandard: mypos, music, warp\nServer Administration: givecurrency, giveitem, givekeyitem, removecurrency, removekeyitem, reloaditems, resetzone\nDebug: property, property2, sendpacket, setgraphic"
+                            ));
+                    }
+                    if (split.Length == 2)
+                    {
+                        if (split[1].Equals("mypos"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Prints out your current location\n\n*Note: The X/Y/Z coordinates do not correspond to the coordinates listed in the in-game map, they are based on the underlying game data"
+                            ));
+                        }
+                        else if (split[1].Equals("music"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Changes the currently playing background music\n\n*Syntax: music <music id>\n<music id> is the key item's specific id as defined in the server database"
+                            ));
+                        }
+                        else if (split[1].Equals("warp"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Teleports the player to the specified location\n\n*Syntax:\twarp <location list>\n\twarp <zone id> <X coordinate> <Y coordinate> <Z coordinate>\n\twarp <zone id> <instance> <X coordinate> <Y coordinate> <Z coordinate>\n<location list> is a pre-defined list of locations from the server database\n<instance> is an instanced copy of the desired zone that's only visible to the current player"
+                            ));
+                        }
+                        else if (split[1].Equals("givecurrency"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Adds the specified currency to the current player's inventory\n\n*Syntax:\tgivecurrency <quantity>\n\tgivecurrency <quantity> <type>\n<type> is the specific type of currency desired, defaults to gil if no type specified"
+                            ));
+                        }
+                        else if (split[1].Equals("giveitem"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Adds the specified items to the current player's inventory\n\n*Syntax:\tgiveitem <item id>\n\tgiveitem <item id> <quantity>\n\tgiveitem <item id> <quantity> <type>\n<item id> is the item's specific id as defined in the server database\n<type> is the type as defined in the server database (defaults to gil if not specified)"
+                            ));
+                        }
+                        else if (split[1].Equals("givekeyitem"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Adds the specified key item to the current player's inventory\n\n*Syntax: givekeyitem <item id>\n<item id> is the key item's specific id as defined in the server database"
+                            ));
+                        }
+                        else if (split[1].Equals("removecurrency"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Removes the specified currency from the current player's inventory\n\n*Syntax:\tremovecurrency <quantity>\n\tremovecurrency <quantity> <type>\n<type> is the specific type of currency desired, defaults to gil if no type specified"
+                            ));
+                        }
+                        else if (split[1].Equals("removeitem"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Removes the specified items to the current player's inventory\n\n*Syntax:\tremoveitem <itemid>\n\tremoveitem <itemid> <quantity>\n<item id> is the item's specific id as defined in the server database"
+                            ));
+                        }
+                        else if (split[1].Equals("removekeyitem"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Removes the specified key item to the current player's inventory\n\n*Syntax: removekeyitem <itemid>\n<item id> is the key item's specific id as defined in the server database"
+                            ));
+                        }
+                        else if (split[1].Equals("reloaditems"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Reloads the current item data from the database"
+                            ));
+                        }
+                        else if (split[1].Equals("resetzone"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Reloads the current zone data from the server files"
+                            ));
+                        }
+                        else if (split[1].Equals("property"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "\n*Syntax: property <value 1> <value 2> <value 3>"
+                            ));
+                        }
+                        else if (split[1].Equals("property2"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "\n*Syntax: property2 <value 1> <value 2> <value 3>"
+                            ));
+                        }
+                        else if (split[1].Equals("sendpacket"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Server sends a special packet to the client\n\n*Syntax: sendpacket <path to packet>\n<Path to packet> is the path to the packet, starting in <map server install location>\\packet"
+                            ));
+                        }
+                        else if (split[1].Equals("setgraphic"))
+                        {
+                            if (client != null)
+                                client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "",
+                                "Overrides the currently displayed character equipment in a specific slot\n\n*Note: Similar to Glamours in FFXIV:ARR, the overridden graphics are purely cosmetic, they do not affect the underlying stats of whatever is equipped on that slot\n\n*Syntax: sendpacket <slot> <wid> <eid> <vid> <cid>\n<w/e/v/c id> are as defined in the client game data"
+                            ));
+                        }
+                    } 
+
+                    return true;
+                }
+                else if (split[0].Equals("mypos"))
                 {
                     try
                     {
@@ -665,7 +794,7 @@ namespace FFXIVClassic_Lobby_Server
                         client.getActor().zone.clear();
                         client.getActor().zone.addActorToZone(client.getActor());
                         client.getActor().sendInstanceUpdate();
-                        client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Resting zone {0}...", client.getActor().zoneId)), true, false));
+                        client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Reseting zone {0}...", client.getActor().zoneId)), true, false));
                     }
                     mWorldManager.reloadZone(client.getActor().zoneId);
                     return true;
@@ -775,7 +904,7 @@ namespace FFXIVClassic_Lobby_Server
                         Log.error("Could not remove keyitem.");
                     }
                 }
-                else if (split[0].Equals("givecurrancy"))
+                else if (split[0].Equals("givecurrency"))
                 {
                     try
                     {
@@ -786,10 +915,10 @@ namespace FFXIVClassic_Lobby_Server
                     }
                     catch (Exception e)
                     {
-                        Log.error("Could not give currancy.");
+                        Log.error("Could not give currency.");
                     }
                 }
-                else if (split[0].Equals("removecurrancy"))
+                else if (split[0].Equals("removecurrency"))
                 {
                     if (split.Length < 2)
                         return false;
@@ -804,7 +933,7 @@ namespace FFXIVClassic_Lobby_Server
                     }
                     catch (Exception e)
                     {
-                        Log.error("Could not remove currancy.");
+                        Log.error("Could not remove currency.");
                     }
                 }
                 else if (split[0].Equals("music"))
