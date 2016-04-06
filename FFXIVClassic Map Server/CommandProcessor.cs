@@ -26,6 +26,10 @@ namespace FFXIVClassic_Lobby_Server
         private static WorldManager mWorldManager = Server.getWorldManager();
         private static Dictionary<uint, Item> gamedataItems = Server.getItemGamedataList();
 
+        // For the moment, this is the only predefined item
+        // TODO: make a list/enum in the future so that items can be given by name, instead of by id
+        const UInt32 ITEM_GIL = 1000001;
+
         public CommandProcessor(Dictionary<uint, ConnectedPlayer> playerList)
         {
             mConnectedPlayerList = playerList;
@@ -606,7 +610,7 @@ namespace FFXIVClassic_Lobby_Server
                     try
                     {
                         if (split.Length == 2)
-                            giveCurrency(client, UInt32.Parse(split[1]), 1);
+                            giveCurrency(client, ITEM_GIL, Int32.Parse(split[1]));
                         else if (split.Length == 3)
                             giveCurrency(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
                     }
@@ -623,7 +627,7 @@ namespace FFXIVClassic_Lobby_Server
                     try
                     {
                         if (split.Length == 2)
-                            removeCurrency(client, UInt32.Parse(split[1]), 1);
+                            removeCurrency(client, ITEM_GIL, Int32.Parse(split[1]));
                         else if (split.Length == 3)
                             removeCurrency(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
                         return true;
