@@ -264,36 +264,36 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        private void giveCurrancy(ConnectedPlayer client, uint itemId, int quantity)
+        private void giveCurrency(ConnectedPlayer client, uint itemId, int quantity)
         {
             if (client != null)
             {
                 Player p = client.getActor();
-                p.getInventory(Inventory.CURRANCY).addItem(itemId, quantity);
+                p.getInventory(Inventory.CURRENCY).addItem(itemId, quantity);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.CURRANCY).addItem(itemId, quantity);
+                    p.getInventory(Inventory.CURRENCY).addItem(itemId, quantity);
                 }
             }
         }
 
-        private void removeCurrancy(ConnectedPlayer client, uint itemId, int quantity)
+        private void removeCurrency(ConnectedPlayer client, uint itemId, int quantity)
         {
             if (client != null)
             {
                 Player p = client.getActor();
-                p.getInventory(Inventory.CURRANCY).removeItem(itemId, quantity);
+                p.getInventory(Inventory.CURRENCY).removeItem(itemId, quantity);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.CURRANCY).removeItem(itemId, quantity);
+                    p.getInventory(Inventory.CURRENCY).removeItem(itemId, quantity);
                 }
             }
         }
@@ -606,9 +606,9 @@ namespace FFXIVClassic_Lobby_Server
                     try
                     {
                         if (split.Length == 2)
-                            giveCurrancy(client, UInt32.Parse(split[1]), 1);
+                            giveCurrency(client, UInt32.Parse(split[1]), 1);
                         else if (split.Length == 3)
-                            giveCurrancy(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
+                            giveCurrency(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
                     }
                     catch (Exception e)
                     {
@@ -623,9 +623,9 @@ namespace FFXIVClassic_Lobby_Server
                     try
                     {
                         if (split.Length == 2)
-                            removeCurrancy(client, UInt32.Parse(split[1]), 1);
+                            removeCurrency(client, UInt32.Parse(split[1]), 1);
                         else if (split.Length == 3)
-                            removeCurrancy(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
+                            removeCurrency(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
                         return true;
                     }
                     catch (Exception e)
