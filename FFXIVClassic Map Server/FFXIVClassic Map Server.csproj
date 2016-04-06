@@ -79,6 +79,7 @@
     <Compile Include="actors\StaticActors.cs" />
     <Compile Include="actors\world\WorldMaster.cs" />
     <Compile Include="ClientConnection.cs" />
+    <Compile Include="CommandProcessor.cs" />
     <Compile Include="common\Bitfield.cs" />
     <Compile Include="common\Blowfish.cs" />
     <Compile Include="common\EfficientHashTables.cs" />
