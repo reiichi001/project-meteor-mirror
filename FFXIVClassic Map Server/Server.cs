@@ -330,17 +330,17 @@ namespace FFXIVClassic_Lobby_Server
 
         #endregion
 
-        public static WorldManager GetWorldManager()
+        public static WorldManager getWorldManager()
         {
             return mWorldManager;
         }
 
-        public Dictionary<uint, ConnectedPlayer> GetConnectedPlayerList()
+        public Dictionary<uint, ConnectedPlayer> getConnectedPlayerList()
         {
             return mConnectedPlayerList;
         }
 
-        public static Dictionary<uint, Item> GetGamedataItems()
+        public static Dictionary<uint, Item> getItemGamedataList()
         {
             return gamedataItems;
         }

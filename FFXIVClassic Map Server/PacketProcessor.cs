@@ -188,7 +188,7 @@ namespace FFXIVClassic_Lobby_Server
                             subpacket.debugPrintSubPacket();
                             client.queuePacket(_0x2Packet.buildPacket(player.actorID), true, false);
 
-                            Server.GetWorldManager().DoLogin(player.getActor());
+                            Server.getWorldManager().DoLogin(player.getActor());
 
 
                             break;
@@ -267,7 +267,7 @@ namespace FFXIVClassic_Lobby_Server
                             if (ownerActor == null)
                             {
                                 //Is it a instance actor?
-                                ownerActor = Server.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
+                                ownerActor = Server.getWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
                                 if (ownerActor == null)
                                 {
                                     //Is it a Director?
@@ -298,7 +298,7 @@ namespace FFXIVClassic_Lobby_Server
                             Actor updateOwnerActor = Server.getStaticActors(player.getActor().eventCurrentOwner);
                             if (updateOwnerActor == null)
                             {
-                                updateOwnerActor = Server.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
+                                updateOwnerActor = Server.getWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
 
                                 if (player.getActor().currentDirector != null && player.getActor().eventCurrentOwner == player.getActor().currentDirector.actorId)
                                     updateOwnerActor = player.getActor().currentDirector;

@@ -68,7 +68,7 @@ namespace FFXIVClassic_Lobby_Server
             if (startServer)
             {
                 Server server = new Server();
-                CommandProcessor cp = new CommandProcessor(server.GetConnectedPlayerList());
+                CommandProcessor cp = new CommandProcessor(server.getConnectedPlayerList());
                 server.startServer();
 
                 while (true)

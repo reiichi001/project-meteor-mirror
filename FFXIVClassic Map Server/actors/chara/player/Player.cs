@@ -702,34 +702,34 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (msgParams.Length == 0)
             {
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, sourceActor.actorId, textIdOwner.actorId, textId, log));
+                queuePacket(GameMessagePacket.buildPacket(Server.getWorldManager().GetActor().actorId, actorId, sourceActor.actorId, textIdOwner.actorId, textId, log));
             }
             else
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, sourceActor.actorId, textIdOwner.actorId, textId, log, LuaUtils.createLuaParamList(msgParams)));
+                queuePacket(GameMessagePacket.buildPacket(Server.getWorldManager().GetActor().actorId, actorId, sourceActor.actorId, textIdOwner.actorId, textId, log, LuaUtils.createLuaParamList(msgParams)));
         }
 
         public void sendGameMessage(Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
         {
             if (msgParams.Length == 0)
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log));
+                queuePacket(GameMessagePacket.buildPacket(Server.getWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log));
             else
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log, LuaUtils.createLuaParamList(msgParams)));
+                queuePacket(GameMessagePacket.buildPacket(Server.getWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log, LuaUtils.createLuaParamList(msgParams)));
         }
 
         public void sendGameMessage(Actor textIdOwner, ushort textId, byte log, string customSender, params object[] msgParams)
         {
             if (msgParams.Length == 0)
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log));
+                queuePacket(GameMessagePacket.buildPacket(Server.getWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log));
             else
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log, LuaUtils.createLuaParamList(msgParams)));
+                queuePacket(GameMessagePacket.buildPacket(Server.getWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log, LuaUtils.createLuaParamList(msgParams)));
         }
 
         public void sendGameMessage(Actor textIdOwner, ushort textId, byte log, uint displayId, params object[] msgParams)
         {
             if (msgParams.Length == 0)
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log));
+                queuePacket(GameMessagePacket.buildPacket(Server.getWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log));
             else
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log, LuaUtils.createLuaParamList(msgParams)));
+                queuePacket(GameMessagePacket.buildPacket(Server.getWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log, LuaUtils.createLuaParamList(msgParams)));
         }
 
         public void broadcastWorldMessage(ushort worldMasterId, params object[] msgParams)

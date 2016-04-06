@@ -23,8 +23,8 @@ namespace FFXIVClassic_Lobby_Server
     class CommandProcessor
     {
         private Dictionary<uint, ConnectedPlayer> mConnectedPlayerList;
-        private static WorldManager mWorldManager = Server.GetWorldManager();
-        private static Dictionary<uint, Item> gamedataItems = Server.GetGamedataItems();
+        private static WorldManager mWorldManager = Server.getWorldManager();
+        private static Dictionary<uint, Item> gamedataItems = Server.getItemGamedataList();
 
         public CommandProcessor(Dictionary<uint, ConnectedPlayer> playerList)
         {
