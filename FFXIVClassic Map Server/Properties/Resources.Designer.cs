@@ -240,9 +240,11 @@ namespace FFXIVClassic_Map_Server.Properties {
         ///   Looks up a localized string similar to Teleports the player to the specified location
         ///
         ///*Syntax:	warp &lt;location list&gt;
+        ///		warp &lt;X coordinate&gt; &lt;Y coordinate&gt; &lt;Z coordinate&gt;
         ///		warp &lt;zone id&gt; &lt;X coordinate&gt; &lt;Y coordinate&gt; &lt;Z coordinate&gt;
         ///		warp &lt;zone id&gt; &lt;instance&gt; &lt;X coordinate&gt; &lt;Y coordinate&gt; &lt;Z coordinate&gt;
         ///&lt;location list&gt; is a pre-defined list of locations from the server database
+        ///&lt;zone id&gt; is the zone&apos;s id as defined in the server database
         ///&lt;instance&gt; is an instanced copy of the desired zone that&apos;s only visible to the current player.
         /// </summary>
         public static string CPwarp {
