@@ -551,8 +551,8 @@ namespace FFXIVClassic_Map_Server.Actors
             //playerSession.queuePacket(reply10);
            // playerSession.queuePacket(reply11);
             #endregion      
-        }
 */
+        }
         private void sendRemoveInventoryPackets(List<ushort> slots)
         {
             int currentIndex = 0;
