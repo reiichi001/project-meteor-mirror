@@ -95,6 +95,11 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
+        /// <summary>
+        /// Teleports player to a location on a predefined list
+        /// </summary>
+        /// <param name="client">The current player</param>
+        /// <param name="entranceId">Predefined list: &lt;ffxiv_database&gt;\server_zones_spawnlocations</param>
         public void doWarp(ConnectedPlayer client, string entranceId)
         {
             uint id;
@@ -130,29 +135,37 @@ namespace FFXIVClassic_Lobby_Server
             uint zoneId;
             float x,y,z;
 
-            if (zone.ToLower().StartsWith("0x"))
-                zoneId = Convert.ToUInt32(zone, 16);
-            else
-                zoneId = Convert.ToUInt32(zone);
-
-            if (mWorldManager.GetZone(zoneId) == null)
-            {
-                if (client != null)
-                    client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Zone does not exist or setting isn't valid."), true, false));
-                Log.error("Zone does not exist or setting isn't valid.");
-            }
-
             x = Single.Parse(sx);
             y = Single.Parse(sy);
             z = Single.Parse(sz);
 
-            if (client != null)
-                mWorldManager.DoZoneChange(client.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
+            if (zone == null)
+            {
+                if (client != null)
+                    mWorldManager.DoZoneChange(client.getActor(), 0, privateArea, 0x2, x, y, z, 0.0f);
+            }
             else
             {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                if (zone.ToLower().StartsWith("0x"))
+                    zoneId = Convert.ToUInt32(zone, 16);
+                else
+                    zoneId = Convert.ToUInt32(zone);
+
+                if (mWorldManager.GetZone(zoneId) == null)
                 {
-                    mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
+                    if (client != null)
+                        client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Zone does not exist or setting isn't valid."), true, false));
+                    Log.error("Zone does not exist or setting isn't valid.");
+                }
+
+                if (client != null)
+                    mWorldManager.DoZoneChange(client.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
+                else
+                {
+                    foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                    {
+                        mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
+                    }
                 }
             }
         }
@@ -361,9 +374,10 @@ namespace FFXIVClassic_Lobby_Server
 
             // Debug
             //sendMessage(client, string.Join(",", split));
-
+            
             if (split.Length >= 1)
             {
+                #region !help
                 if (split[0].Equals("help"))
                 {
                     if (split.Length == 1)
@@ -408,6 +422,9 @@ namespace FFXIVClassic_Lobby_Server
 
                     return true;
                 }
+                #endregion
+
+                #region !mypos
                 else if (split[0].Equals("mypos"))
                 {
                     try
@@ -420,6 +437,9 @@ namespace FFXIVClassic_Lobby_Server
                         Log.error("Could not load packet: " + e);
                     }
                 }
+                #endregion
+
+                #region !reloadzones
                 else if (split[0].Equals("reloadzones"))
                 {
                     if (client != null)
@@ -433,6 +453,9 @@ namespace FFXIVClassic_Lobby_Server
                     mWorldManager.reloadZone(client.getActor().zoneId);
                     return true;
                 }
+                #endregion
+
+                #region !reloaditems
                 else if (split[0].Equals("reloaditems"))
                 {
                     Log.info(String.Format("Got request to reload item gamedata"));
@@ -445,6 +468,9 @@ namespace FFXIVClassic_Lobby_Server
                         client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Loaded {0} items.", gamedataItems.Count)));
                     return true;
                 }
+                #endregion
+
+                #region !sendpacket
                 else if (split[0].Equals("sendpacket"))
                 {
                     if (split.Length < 2)
@@ -460,6 +486,9 @@ namespace FFXIVClassic_Lobby_Server
                         Log.error("Could not load packet: " + e);
                     }
                 }
+                #endregion
+
+                #region !graphic
                 else if (split[0].Equals("graphic"))
                 {
                     try
@@ -473,6 +502,9 @@ namespace FFXIVClassic_Lobby_Server
                         Log.error("Could not give item.");
                     }
                 }
+                #endregion
+
+                #region !giveitem
                 else if (split[0].Equals("giveitem"))
                 {
                     try
@@ -490,6 +522,9 @@ namespace FFXIVClassic_Lobby_Server
                         Log.error("Could not give item.");
                     }
                 }
+                #endregion
+
+                #region !removeitem
                 else if (split[0].Equals("removeitem"))
                 {
                     if (split.Length < 2)
@@ -510,6 +545,9 @@ namespace FFXIVClassic_Lobby_Server
                         Log.error("Could not remove item.");
                     }
                 }
+                #endregion
+
+                #region !givekeyitem
                 else if (split[0].Equals("givekeyitem"))
                 {
                     try
@@ -522,6 +560,9 @@ namespace FFXIVClassic_Lobby_Server
                         Log.error("Could not give keyitem.");
                     }
                 }
+                #endregion
+
+                #region !removekeyitem
                 else if (split[0].Equals("removekeyitem"))
                 {
                     if (split.Length < 2)
@@ -538,6 +579,9 @@ namespace FFXIVClassic_Lobby_Server
                         Log.error("Could not remove keyitem.");
                     }
                 }
+                #endregion
+
+                #region !givecurrency
                 else if (split[0].Equals("givecurrency"))
                 {
                     try
@@ -552,6 +596,9 @@ namespace FFXIVClassic_Lobby_Server
                         Log.error("Could not give currency.");
                     }
                 }
+                #endregion
+
+                #region !removecurrency
                 else if (split[0].Equals("removecurrency"))
                 {
                     if (split.Length < 2)
@@ -570,6 +617,9 @@ namespace FFXIVClassic_Lobby_Server
                         Log.error("Could not remove currency.");
                     }
                 }
+                #endregion
+
+                #region !music
                 else if (split[0].Equals("music"))
                 {
                     if (split.Length < 2)
@@ -585,16 +635,24 @@ namespace FFXIVClassic_Lobby_Server
                         Log.error("Could not change music: " + e);
                     }
                 }
+                #endregion
+
+                #region !warp
                 else if (split[0].Equals("warp"))
                 {
-                    if (split.Length == 2)
+                    if (split.Length == 2) // Predefined list
                         doWarp(client, split[1]);
-                    else if (split.Length == 5)
+                    else if (split.Length == 4) // X/Y/Z
+                        doWarp(client, null, null, split[1], split[2], split[3]);
+                    else if (split.Length == 5) // Zone + X/Y/Z
                         doWarp(client, split[1], null, split[2], split[3], split[4]);
-                    else if (split.Length == 6)
+                    else if (split.Length == 6) // Zone + instance + X/Y/Z
                         doWarp(client, split[1], split[2], split[3], split[4], split[5]);
                     return true;
                 }
+                #endregion
+
+                #region !property
                 else if (split[0].Equals("property"))
                 {
                     if (split.Length == 4)
@@ -603,6 +661,9 @@ namespace FFXIVClassic_Lobby_Server
                     }
                     return true;
                 }
+                #endregion
+
+                #region !property2
                 else if (split[0].Equals("property2"))
                 {
                     if (split.Length == 4)
@@ -611,6 +672,7 @@ namespace FFXIVClassic_Lobby_Server
                     }
                     return true;
                 }
+                #endregion
             }
             return false;
         }
