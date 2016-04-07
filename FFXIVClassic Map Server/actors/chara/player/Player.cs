@@ -542,7 +542,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 packet.debugPrintSubPacket();
                 queuePacket(packet);
             }
-
+/*
             #region hardcode
             BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door created
             BasePacket reply11 = new BasePacket("./packets/login/login11.bin"); //NPC Create ??? Final init
@@ -552,7 +552,7 @@ namespace FFXIVClassic_Map_Server.Actors
            // playerSession.queuePacket(reply11);
             #endregion      
         }
-
+*/
         private void sendRemoveInventoryPackets(List<ushort> slots)
         {
             int currentIndex = 0;
