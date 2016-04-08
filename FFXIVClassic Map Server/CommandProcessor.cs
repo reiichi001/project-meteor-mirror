@@ -351,6 +351,64 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
+        private void parseWarp(ConnectedPlayer client, string[] split)
+        {
+            //bool relx = false,
+            //     rely = false, 
+            //     relz = false;
+            float x = 0,
+                  y = 0,
+                  z = 0;
+
+            if (split.Length == 2) // Predefined list
+                doWarp(client, split[1]);
+            else if (split.Length == 4) // X/Y/Z
+            {
+                #region relativewarp
+                if (split[1].StartsWith("@"))
+                {
+                    //relx = true;
+                    split[1] = split[1].Replace("@", string.Empty);
+
+                    if (String.IsNullOrEmpty(split[1]))
+                        split[1] = "0";
+
+                    x = Single.Parse(split[1]) + client.getActor().positionX;
+                    split[1] = x.ToString();         
+                }
+                if (split[2].StartsWith("@"))
+                {
+                    //rely = true;
+                    split[2] = split[2].Replace("@", string.Empty);
+
+                    if (String.IsNullOrEmpty(split[2]))
+                        split[2] = "0";
+
+                    y = Single.Parse(split[2]) + client.getActor().positionY;
+                    split[2] = y.ToString();  
+                }
+                if (split[3].StartsWith("@"))
+                {
+                    //relz = true;
+                    split[3] = split[3].Replace("@", string.Empty);
+
+                    if (String.IsNullOrEmpty(split[3]))
+                        split[3] = "0";
+
+                    z = Single.Parse(split[3]) + client.getActor().positionZ;
+                    split[3] = z.ToString();
+                }
+                #endregion
+                //sendMessage(client, String.Format("relx: {0}, rely: {1}, relz: {2}, x: {3}, y: {4}, z: {5}, fx: {6}, fy: {7}, fz: {8}", relx, rely, relz, split[1], split[2], split[3], x, y ,z));
+                sendMessage(client, String.Format("Warping to: X: {0}, Y: {1}, Z: {2}", split[1], split[2], split[3]));
+                doWarp(client, null, null, split[1], split[2], split[3]);
+            }
+            else if (split.Length == 5) // Zone + X/Y/Z
+                doWarp(client, split[1], null, split[2], split[3], split[4]);
+            else if (split.Length == 6) // Zone + instance + X/Y/Z
+                doWarp(client, split[1], split[2], split[3], split[4], split[5]);
+        }
+
         /// <summary>
         /// We only use the default options for SendMessagePacket.
         /// May as well make it less unwieldly to view
@@ -639,14 +697,7 @@ namespace FFXIVClassic_Lobby_Server
                 #region !warp
                 else if (split[0].Equals("warp"))
                 {
-                    if (split.Length == 2) // Predefined list
-                        doWarp(client, split[1]);
-                    else if (split.Length == 4) // X/Y/Z
-                        doWarp(client, null, null, split[1], split[2], split[3]);
-                    else if (split.Length == 5) // Zone + X/Y/Z
-                        doWarp(client, split[1], null, split[2], split[3], split[4]);
-                    else if (split.Length == 6) // Zone + instance + X/Y/Z
-                        doWarp(client, split[1], split[2], split[3], split[4], split[5]);
+                    parseWarp(client, split);
                     return true;
                 }
                 #endregion

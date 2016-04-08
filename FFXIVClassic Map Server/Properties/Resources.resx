@@ -206,6 +206,8 @@ Server Administration: givecurrency, giveitem, givekeyitem, removecurrency, remo
   <data name="CPwarp" xml:space="preserve">
     <value>Teleports the player to the specified location
 
+*Note: You teleport relative to your current position by putting a @ in front of a value, cannot be combined with a zone id or instance name
+
 *Syntax:	warp &lt;location list&gt;
 		warp &lt;X coordinate&gt; &lt;Y coordinate&gt; &lt;Z coordinate&gt;
 		warp &lt;zone id&gt; &lt;X coordinate&gt; &lt;Y coordinate&gt; &lt;Z coordinate&gt;
