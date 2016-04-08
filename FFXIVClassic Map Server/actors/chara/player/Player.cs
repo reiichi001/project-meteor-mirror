@@ -125,7 +125,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public Quest[] questScenario = new Quest[16];
         public Quest[] questGuildleve = new Quest[8];
 
-        public Director currentDirector;// = new OpeningDirector(0x46080012);
+        public Director currentDirector = new OpeningDirector(0x46080012);
 
         public PlayerWork playerWork = new PlayerWork();
 
@@ -590,6 +590,12 @@ namespace FFXIVClassic_Map_Server.Actors
             playerSession.queuePacket(packet, true, false);
         }
 
+        public void queuePackets(List<SubPacket> packets)
+        {
+            foreach (SubPacket subpacket in packets)
+                playerSession.queuePacket(subpacket, true, false);
+        }
+
         public void broadcastPacket(SubPacket packet, bool sendToSelf)
         {
             if (sendToSelf)            
@@ -969,7 +975,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             for (int i = 0; i < questScenario.Length; i++)
             {
-                if (questScenario[i] != null && questScenario[i].actorName.Equals(name))
+                if (questScenario[i] != null && questScenario[i].actorName.ToLower().Equals(name.ToLower()))
                     return questScenario[i];
             }
 
@@ -991,7 +997,11 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (directorType.Equals("openingDirector"))
             {
-                currentDirector = new OpeningDirector(0x46080012);                
+                currentDirector = new OpeningDirector(0x46080012);
+            }
+            else if (directorType.Equals("QuestDirectorMan0l001"))
+            {
+                currentDirector = new QuestDirectorMan0l001(0x46080012);
             }
 
             queuePacket(RemoveActorPacket.buildPacket(actorId, 0x46080012));
@@ -1077,12 +1087,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
            
             //Update Instance
-            List<BasePacket> instanceUpdatePackets = playerSession.updateInstance(zone.getActorsAroundActor(this, 50));
-            foreach (BasePacket bp in instanceUpdatePackets)
-            {
-                //    bp.debugPrintPacket();
-                queuePacket(bp);
-            }
+            playerSession.updateInstance(zone.getActorsAroundActor(this, 50));            
         
         }
 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.actor
 {
-    class ActorSpecialGraphicPacket
+    class SetActorQuestGraphicPacket
     {
         public const int NONE            = 0x0;
         public const int QUEST           = 0x2;

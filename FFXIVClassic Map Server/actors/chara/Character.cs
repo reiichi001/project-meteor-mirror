@@ -81,11 +81,9 @@ namespace FFXIVClassic_Map_Server.Actors
             return SetActorIdleAnimationPacket.buildPacket(actorId, playerActorId, animationId);
         }
 
-        public void setQuestIcon(Player player, bool hasIcon)
+        public void setQuestGraphic(Player player, int graphicNum)
         {
-            ActorSpecialGraphicPacket.buildPacket(player.actorId, actorId, hasIcon ? ActorSpecialGraphicPacket.QUEST : 0x0).debugPrintSubPacket();
-            //player.queuePacket(ActorSpecialGraphicPacket.buildPacket(player.actorId, actorId, hasIcon ? ActorSpecialGraphicPacket.QUEST : 0x0));
-
+            player.queuePacket(SetActorQuestGraphicPacket.buildPacket(player.actorId, actorId, graphicNum));
         }
 
     }

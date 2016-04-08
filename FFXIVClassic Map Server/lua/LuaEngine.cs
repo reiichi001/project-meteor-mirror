@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server;
+using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.Actors;
@@ -42,16 +43,16 @@ namespace FFXIVClassic_Map_Server.lua
                 {                    
                     Script script = loadScript(luaPath);
 
+                    if (script == null)
+                        return null;
+
                     DynValue result = script.Call(script.Globals["init"], target);
                     List<LuaParam> lparams = LuaUtils.createLuaParamList(result);
                     return lparams;
                 }
                 else
                 {
-                    List<SubPacket> sendError = new List<SubPacket>();
-                    sendError.Add(EndEventPacket.buildPacket(player.actorId, player.eventCurrentOwner, player.eventCurrentStarter));
-                    player.sendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", String.Format("ERROR: Could not find script for actor {0}.", target.getName()));
-                    player.playerSession.queuePacket(BasePacket.createPacket(sendError, true, false));
+                    SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.getName()));
                     return null;
                 }
             }
@@ -78,6 +79,9 @@ namespace FFXIVClassic_Map_Server.lua
             {
                 Script script = loadScript(luaPath);
 
+                if (script == null)
+                    return;
+
                 //Have to do this to combine LuaParams
                 List<Object> objects = new List<Object>();
                 objects.Add(player);
@@ -93,10 +97,7 @@ namespace FFXIVClassic_Map_Server.lua
             }
             else
             {
-                List<SubPacket> sendError = new List<SubPacket>();
-                sendError.Add(EndEventPacket.buildPacket(player.actorId, player.eventCurrentOwner, player.eventCurrentStarter));
-                player.sendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", String.Format("ERROR: Could not find script for actor {0}.", target.getName()));
-                player.playerSession.queuePacket(BasePacket.createPacket(sendError, true, false));
+                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.getName()));
             }
            
         }
@@ -108,17 +109,17 @@ namespace FFXIVClassic_Map_Server.lua
             if (File.Exists(luaPath))
             {
                 Script script = loadScript(luaPath);
-               
+
+                if (script == null)
+                    return;
+
                 //Run Script
                 if (!script.Globals.Get("onSpawn").IsNil())
                     script.Call(script.Globals["onSpawn"], player, target);
             }
             else
             {
-                List<SubPacket> sendError = new List<SubPacket>();
-                sendError.Add(EndEventPacket.buildPacket(player.actorId, player.eventCurrentOwner, player.eventCurrentStarter));
-                player.sendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", String.Format("ERROR: Could not find script for actor {0}.", target.getName()));
-                player.playerSession.queuePacket(BasePacket.createPacket(sendError, true, false));
+                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.getName()));
             }
 
         }
@@ -138,11 +139,14 @@ namespace FFXIVClassic_Map_Server.lua
             {
                 Script script = loadScript(luaPath);
 
+                if (script == null)
+                    return;
+
                 //Have to do this to combine LuaParams
                 List<Object> objects = new List<Object>();
                 objects.Add(player);
                 objects.Add(target);
-                objects.Add(eventUpdate.step);
+                objects.Add(eventUpdate.val2);
                 objects.AddRange(LuaUtils.createLuaParamObjectList(eventUpdate.luaParams));
 
                 //Run Script
@@ -151,10 +155,7 @@ namespace FFXIVClassic_Map_Server.lua
             }
             else
             {
-                List<SubPacket> sendError = new List<SubPacket>();
-                sendError.Add(EndEventPacket.buildPacket(player.actorId, player.eventCurrentOwner, player.eventCurrentStarter));
-                player.sendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", String.Format("ERROR: Could not find script for actor {0}.", target.getName()));
-                player.playerSession.queuePacket(BasePacket.createPacket(sendError, true, false));
+                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.getName()));
             }                  
         }
 
@@ -165,7 +166,10 @@ namespace FFXIVClassic_Map_Server.lua
             if (File.Exists(luaPath))
             {
                 Script script = loadScript(luaPath);
-                
+
+                if (script == null)
+                    return;
+
                 //Run Script
                 if (!script.Globals.Get("onZoneIn").IsNil())
                     script.Call(script.Globals["onZoneIn"], player);
@@ -177,6 +181,9 @@ namespace FFXIVClassic_Map_Server.lua
             if (File.Exists(FILEPATH_PLAYER))
             {
                 Script script = loadScript(FILEPATH_PLAYER);
+
+                if (script == null)
+                    return;
 
                 //Run Script
                 if (!script.Globals.Get("onZoneIn").IsNil())
@@ -192,8 +199,25 @@ namespace FFXIVClassic_Map_Server.lua
             script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
             script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
             script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.getItemGamedata;
-            script.DoFile(filename);
+
+            try
+            {
+                script.DoFile(filename);
+            }
+            catch(SyntaxErrorException e)
+            {
+                Log.error(String.Format("LUAERROR: {0}.", e.DecoratedMessage));
+                return null;
+            }
             return script;
+        }
+
+        private static void SendError(Player player, string message)
+        {
+            List<SubPacket> sendError = new List<SubPacket>();
+            sendError.Add(EndEventPacket.buildPacket(player.actorId, player.eventCurrentOwner, player.eventCurrentStarter));
+            player.sendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", message);
+            player.playerSession.queuePacket(BasePacket.createPacket(sendError, true, false));
         }
 
     }
