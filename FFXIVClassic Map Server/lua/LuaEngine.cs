@@ -43,7 +43,7 @@ namespace FFXIVClassic_Map_Server.lua
                     Script script = new Script();
                     ((ScriptLoaderBase)script.Options.ScriptLoader).ModulePaths = new string[] { "./scripts/?", "./scripts/?.lua" };
                     script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
-                    script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
+                    script.Globals["getWorldMaster"] = (Func<Actor>)Server.getWorldManager().GetActor;
                     script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.getItemGamedata;
                     script.DoFile(luaPath);
                     DynValue result = script.Call(script.Globals["onInstantiate"], target);
@@ -82,9 +82,9 @@ namespace FFXIVClassic_Map_Server.lua
             {
                 Script script = new Script();
                 ((ScriptLoaderBase)script.Options.ScriptLoader).ModulePaths = new string[] { "./scripts/?", "./scripts/?.lua" };
-                script.Globals["getWorldManager"] = (Func<WorldManager>)Server.GetWorldManager;
+                script.Globals["getWorldManager"] = (Func<WorldManager>)Server.getWorldManager;
                 script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
-                script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
+                script.Globals["getWorldMaster"] = (Func<Actor>)Server.getWorldManager().GetActor;
                 script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.getItemGamedata;
                 script.DoFile(luaPath);
 
@@ -125,9 +125,9 @@ namespace FFXIVClassic_Map_Server.lua
             {
                 Script script = new Script();
                 ((ScriptLoaderBase)script.Options.ScriptLoader).ModulePaths = new string[] { "./scripts/?", "./scripts/?.lua" };
-                script.Globals["getWorldManager"] = (Func<WorldManager>)Server.GetWorldManager;
+                script.Globals["getWorldManager"] = (Func<WorldManager>)Server.getWorldManager;
                 script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
-                script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
+                script.Globals["getWorldMaster"] = (Func<Actor>)Server.getWorldManager().GetActor;
                 script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.getItemGamedata;
                 script.DoFile(luaPath);
 
@@ -158,9 +158,9 @@ namespace FFXIVClassic_Map_Server.lua
             {
                 Script script = new Script();
                 ((ScriptLoaderBase)script.Options.ScriptLoader).ModulePaths = new string[] { "./scripts/?", "./scripts/?.lua" };
-                script.Globals["getWorldManager"] = (Func<WorldManager>)Server.GetWorldManager;
+                script.Globals["getWorldManager"] = (Func<WorldManager>)Server.getWorldManager;
                 script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
-                script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
+                script.Globals["getWorldMaster"] = (Func<Actor>)Server.getWorldManager().GetActor;
                 script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.getItemGamedata;
                 script.DoFile(luaPath);
                 
@@ -175,9 +175,9 @@ namespace FFXIVClassic_Map_Server.lua
             {
                 Script script = new Script();
                 ((ScriptLoaderBase)script.Options.ScriptLoader).ModulePaths = new string[] { "./scripts/?", "./scripts/?.lua" };
-                script.Globals["getWorldManager"] = (Func<WorldManager>)Server.GetWorldManager;
+                script.Globals["getWorldManager"] = (Func<WorldManager>)Server.getWorldManager;
                 script.Globals["getStaticActor"] = (Func<string, Actor>)Server.getStaticActors;
-                script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
+                script.Globals["getWorldMaster"] = (Func<Actor>)Server.getWorldManager().GetActor;
                 script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.getItemGamedata;
                 script.DoFile(FILEPATH_PLAYER);
 

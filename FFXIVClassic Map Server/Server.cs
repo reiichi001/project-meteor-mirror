@@ -22,9 +22,9 @@ namespace FFXIVClassic_Lobby_Server
 {
     class Server
     {
-        public const int FFXIV_MAP_PORT     = 54992;
-        public const int BUFFER_SIZE        = 0xFFFF; //Max basepacket size is 0xFFFF
-        public const int BACKLOG            = 100;
+        public const int FFXIV_MAP_PORT = 54992;
+        public const int BUFFER_SIZE = 0xFFFF; //Max basepacket size is 0xFFFF
+        public const int BACKLOG = 100;
         public const int HEALTH_THREAD_SLEEP_TIME = 5;
 
         public const string STATIC_ACTORS_PATH = "./staticactors.bin";
@@ -33,7 +33,7 @@ namespace FFXIVClassic_Lobby_Server
 
         private Socket mServerSocket;
 
-        private Dictionary<uint,ConnectedPlayer> mConnectedPlayerList = new Dictionary<uint,ConnectedPlayer>();
+        private Dictionary<uint, ConnectedPlayer> mConnectedPlayerList = new Dictionary<uint, ConnectedPlayer>();
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private LuaEngine mLuaEngine = new LuaEngine();
 
@@ -84,9 +84,9 @@ namespace FFXIVClassic_Lobby_Server
             //mConnectionHealthThread.Start();
 
             mStaticActors = new StaticActors(STATIC_ACTORS_PATH);
-            
+
             gamedataItems = Database.getItemGamedata();
-            Log.info(String.Format("Loaded {0} items.",gamedataItems.Count));
+            Log.info(String.Format("Loaded {0} items.", gamedataItems.Count));
 
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneList();
@@ -95,8 +95,9 @@ namespace FFXIVClassic_Lobby_Server
 
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), FFXIV_MAP_PORT);
 
-            try{
-                mServerSocket = new System.Net.Sockets.Socket(serverEndPoint.Address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);         
+            try
+            {
+                mServerSocket = new System.Net.Sockets.Socket(serverEndPoint.Address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             }
             catch (Exception e)
             {
@@ -146,7 +147,7 @@ namespace FFXIVClassic_Lobby_Server
         {
             ClientConnection conn = null;
             Socket socket = (System.Net.Sockets.Socket)result.AsyncState;
-           
+
             try
             {
 
@@ -169,7 +170,7 @@ namespace FFXIVClassic_Lobby_Server
             {
                 if (conn != null)
                 {
-                
+
                     lock (mConnectionList)
                     {
                         mConnectionList.Remove(conn);
@@ -180,7 +181,7 @@ namespace FFXIVClassic_Lobby_Server
             catch (Exception)
             {
                 if (conn != null)
-                {                   
+                {
                     lock (mConnectionList)
                     {
                         mConnectionList.Remove(conn);
@@ -224,7 +225,7 @@ namespace FFXIVClassic_Lobby_Server
                 lock (mConnectionList)
                 {
                     mConnectionList.Remove(conn);
-                } 
+                }
                 if (conn.connType == BasePacket.TYPE_ZONE)
                     Log.conn(String.Format("{0} has disconnected.", conn.owner == 0 ? conn.getAddress() : "User " + conn.owner));
                 return;
@@ -241,17 +242,17 @@ namespace FFXIVClassic_Lobby_Server
                     int offset = 0;
 
                     //Build packets until can no longer or out of data
-                    while(true)
-                    {                        
+                    while (true)
+                    {
                         BasePacket basePacket = buildPacket(ref offset, conn.buffer, bytesRead);
-                        
+
                         //If can't build packet, break, else process another
-                        if (basePacket == null)                        
-                            break;                        
-                        else                        
-                            mProcessor.processPacket(conn, basePacket);                        
+                        if (basePacket == null)
+                            break;
+                        else
+                            mProcessor.processPacket(conn, basePacket);
                     }
-                    
+
                     //Not all bytes consumed, transfer leftover to beginning
                     if (offset < bytesRead)
                         Array.Copy(conn.buffer, offset, conn.buffer, 0, bytesRead - offset);
@@ -260,18 +261,18 @@ namespace FFXIVClassic_Lobby_Server
 
                     //Build any queued subpackets into basepackets and send
                     conn.flushQueuedSendPackets();
-                    
-                    if (offset < bytesRead)                    
+
+                    if (offset < bytesRead)
                         //Need offset since not all bytes consumed
                         conn.socket.BeginReceive(conn.buffer, bytesRead - offset, conn.buffer.Length - (bytesRead - offset), SocketFlags.None, new AsyncCallback(receiveCallback), conn);
-                    else                        
+                    else
                         //All bytes consumed, full buffer available
                         conn.socket.BeginReceive(conn.buffer, 0, conn.buffer.Length, SocketFlags.None, new AsyncCallback(receiveCallback), conn);
                 }
                 else
                 {
                     Log.conn(String.Format("{0} has disconnected.", conn.owner == 0 ? conn.getAddress() : "User " + conn.owner));
-                  
+
                     lock (mConnectionList)
                     {
                         mConnectionList.Remove(conn);
@@ -279,15 +280,15 @@ namespace FFXIVClassic_Lobby_Server
                 }
             }
             catch (SocketException)
-            {                
+            {
                 if (conn.socket != null)
                 {
                     Log.conn(String.Format("{0} has disconnected.", conn.owner == 0 ? conn.getAddress() : "User " + conn.owner));
-                    
+
                     lock (mConnectionList)
                     {
                         mConnectionList.Remove(conn);
-                    }          
+                    }
                 }
             }
         }
@@ -329,528 +330,19 @@ namespace FFXIVClassic_Lobby_Server
 
         #endregion
 
-        public void sendPacket(ConnectedPlayer client, string path)
-        {
-            BasePacket packet = new BasePacket(path);
-    
-            if (client != null)
-            {
-                packet.replaceActorID(client.actorID);
-                client.queuePacket(packet);
-            }
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    packet.replaceActorID(entry.Value.actorID);
-                    entry.Value.queuePacket(packet);
-                }
-            }
-        }
-
-        public void changeProperty(uint id, uint value, string target)
-        {
-            SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(target);
-
-            changeProperty.setTarget(target);
-            changeProperty.addInt(id, value);
-            changeProperty.addTarget();
-
-            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-            {
-                SubPacket changePropertyPacket = changeProperty.buildPacket((entry.Value.actorID), (entry.Value.actorID));
-                
-                BasePacket packet = BasePacket.createPacket(changePropertyPacket, true, false);
-                packet.debugPrintPacket();
-
-                entry.Value.queuePacket(packet);               
-            }
-        }
-
-        public void doMusic(ConnectedPlayer client, string music)
-        {
-            ushort musicId;
-            
-            if (music.ToLower().StartsWith("0x"))
-                musicId = Convert.ToUInt16(music, 16);
-            else
-                musicId = Convert.ToUInt16(music);
-
-            if (client != null)
-                client.queuePacket(BasePacket.createPacket(SetMusicPacket.buildPacket(client.actorID, musicId, 1), true, false));
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    BasePacket musicPacket = BasePacket.createPacket(SetMusicPacket.buildPacket(entry.Value.actorID, musicId, 1), true, false);
-                    entry.Value.queuePacket(musicPacket);
-                }
-            }
-        }
-
-        public void doWarp(ConnectedPlayer client, string entranceId)
-        {            
-            uint id;
-
-            try
-            {
-                if (entranceId.ToLower().StartsWith("0x"))
-                    id = Convert.ToUInt32(entranceId, 16);
-                else
-                    id = Convert.ToUInt32(entranceId);
-            }
-            catch(FormatException e)
-            {return;}
-
-            FFXIVClassic_Map_Server.WorldManager.ZoneEntrance ze = mWorldManager.getZoneEntrance(id);
-
-            if (ze == null)
-                return;
-
-            if (client != null)
-                mWorldManager.DoZoneChange(client.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, 0.0f);
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    mWorldManager.DoZoneChange(entry.Value.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, 0.0f);
-                }
-            }
-        }
-
-        public void doWarp(ConnectedPlayer client, string zone, string privateArea, string sx, string sy, string sz)
-        {
-            uint zoneId;
-            float x,y,z;
-
-            if (zone.ToLower().StartsWith("0x"))
-                zoneId = Convert.ToUInt32(zone, 16);
-            else
-                zoneId = Convert.ToUInt32(zone);
-
-            if (mWorldManager.GetZone(zoneId) == null)
-            {
-                if (client != null)
-                    client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Zone does not exist or setting isn't valid."), true, false));
-                Log.error("Zone does not exist or setting isn't valid.");
-            }
-
-            x = Single.Parse(sx);
-            y = Single.Parse(sy);
-            z = Single.Parse(sz);
-
-            if (client != null)
-                mWorldManager.DoZoneChange(client.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
-                }
-            }
-        }
-
-        public static WorldManager GetWorldManager()
+        public static WorldManager getWorldManager()
         {
             return mWorldManager;
         }
 
-        public void printPos(ConnectedPlayer client)
+        public Dictionary<uint, ConnectedPlayer> getConnectedPlayerList()
         {
-            if (client != null)
-            {
-                Player p = client.getActor();
-                client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Position: {1}, {2}, {3}, {4}", p.customDisplayName, p.positionX, p.positionY, p.positionZ, p.rotation)), true, false));
-            }
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    Player p = entry.Value.getActor();
-                    Log.info(String.Format("{0} position: {1}, {2}, {3}, {4}", p.customDisplayName, p.positionX, p.positionY, p.positionZ, p.rotation));
-                }
-            }
+            return mConnectedPlayerList;
         }
 
-        private void setGraphic(ConnectedPlayer client, uint slot, uint wId, uint eId, uint vId, uint cId)
+        public static Dictionary<uint, Item> getItemGamedataList()
         {
-            if (client != null)
-            {
-                Player p = client.getActor();
-                p.graphicChange(slot, wId, eId, vId, cId);
-                p.sendAppearance();
-            }
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    Player p = entry.Value.getActor();
-                    p.graphicChange(slot, wId, eId, vId, cId);
-                    p.sendAppearance();
-                }
-            }
-        }
-
-        private void giveItem(ConnectedPlayer client, uint itemId, int quantity)
-        {
-            if (client != null)
-            {
-                Player p = client.getActor();
-                p.getInventory(Inventory.NORMAL).addItem(itemId, quantity);
-            }
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.NORMAL).addItem(itemId, quantity);
-                }
-            }
-        }
-
-        private void giveItem(ConnectedPlayer client, uint itemId, int quantity, ushort type)
-        {
-            if (client != null)
-            {
-                Player p = client.getActor();
-
-                if (p.getInventory(type) != null)
-                    p.getInventory(type).addItem(itemId, quantity);
-            }
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    Player p = entry.Value.getActor();
-
-                    if (p.getInventory(type) != null)
-                        p.getInventory(type).addItem(itemId, quantity);
-                }
-            }
-        }
-
-        private void removeItem(ConnectedPlayer client, uint itemId, int quantity)        
-        {
-            if (client != null)
-            {
-                Player p = client.getActor();
-                p.getInventory(Inventory.NORMAL).removeItem(itemId, quantity);
-            }
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.NORMAL).removeItem(itemId, quantity);
-                }
-            }
-        }
-
-        private void removeItem(ConnectedPlayer client, uint itemId, int quantity, ushort type)
-        {
-            if (client != null)
-            {
-                Player p = client.getActor();
-
-                if (p.getInventory(type) != null)
-                    p.getInventory(type).removeItem(itemId, quantity);
-            }
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    Player p = entry.Value.getActor();
-
-                    if (p.getInventory(type) != null)
-                        p.getInventory(type).removeItem(itemId, quantity);
-                }
-            }
-        }
-
-        private void giveCurrancy(ConnectedPlayer client, uint itemId, int quantity)
-        {
-            if (client != null)
-            {
-                Player p = client.getActor();
-                p.getInventory(Inventory.CURRANCY).addItem(itemId, quantity);
-            }
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.CURRANCY).addItem(itemId, quantity);
-                }
-            }
-        }
-
-        private void removeCurrancy(ConnectedPlayer client, uint itemId, int quantity)
-        {
-            if (client != null)
-            {
-                Player p = client.getActor();
-                p.getInventory(Inventory.CURRANCY).removeItem(itemId, quantity);
-            }
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.CURRANCY).removeItem(itemId, quantity);
-                }
-            }
-        }
-
-        private void giveKeyItem(ConnectedPlayer client, uint itemId)
-        {
-            if (client != null)
-            {
-                Player p = client.getActor();
-                p.getInventory(Inventory.KEYITEMS).addItem(itemId, 1);
-            }
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.KEYITEMS).addItem(itemId, 1);
-                }
-            }
-        }
-
-        private void removeKeyItem(ConnectedPlayer client, uint itemId)
-        {
-            if (client != null)
-            {
-                Player p = client.getActor();
-                p.getInventory(Inventory.KEYITEMS).removeItem(itemId, 1);
-            }
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.KEYITEMS).removeItem(itemId, 1);
-                }
-            }
-        }
-
-        internal bool doCommand(string input, ConnectedPlayer client)
-        {
-            input.Trim();
-            if (input.StartsWith("!"))
-                input = input.Substring(1);
-
-            String[] split = input.Split(' ');
-
-            if (split.Length >= 1)
-            {
-                if (split[0].Equals("mypos"))
-                {
-                    try
-                    {
-                        printPos(client);
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        Log.error("Could not load packet: " + e);
-                    }
-                }
-                else if (split[0].Equals("resetzone"))
-                {                    
-                    if (client != null)
-                    {
-                        Log.info(String.Format("Got request to reset zone: {0}", client.getActor().zoneId));
-                        client.getActor().zone.clear();
-                        client.getActor().zone.addActorToZone(client.getActor());
-                        client.getActor().sendInstanceUpdate();
-                        client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Resting zone {0}...", client.getActor().zoneId)), true, false));
-                    }
-                    mWorldManager.reloadZone(client.getActor().zoneId);
-                    return true;
-                }
-                else if (split[0].Equals("reloaditems"))
-                {
-                    Log.info(String.Format("Got request to reload item gamedata"));
-                    if (client != null)                    
-                        client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Reloading Item Gamedata..."));                    
-                    gamedataItems.Clear();
-                    gamedataItems = Database.getItemGamedata();
-                    Log.info(String.Format("Loaded {0} items.", gamedataItems.Count));
-                    if (client != null)
-                        client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Loaded {0} items.", gamedataItems.Count)));                    
-                    return true;
-                }
-                else if (split[0].Equals("sendpacket"))
-                {
-                    if (split.Length < 2)
-                        return false;
-
-                    try
-                    {
-                        sendPacket(client, "./packets/" + split[1]);
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        Log.error("Could not load packet: " + e);
-                    }
-                }
-                else if (split[0].Equals("graphic"))
-                {
-                    try
-                    {
-                        if (split.Length == 6)
-                            setGraphic(client, UInt32.Parse(split[1]), UInt32.Parse(split[2]), UInt32.Parse(split[3]), UInt32.Parse(split[4]), UInt32.Parse(split[5]));
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        Log.error("Could not give item.");
-                    }
-                }
-                else if (split[0].Equals("giveitem"))
-                {                    
-                    try
-                    {
-                        if (split.Length == 2)
-                            giveItem(client, UInt32.Parse(split[1]), 1);
-                        else if (split.Length == 3)
-                            giveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
-                        else if (split.Length == 4)
-                            giveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]), UInt16.Parse(split[3]));
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        Log.error("Could not give item.");
-                    }
-                }
-                else if (split[0].Equals("removeitem"))
-                {
-                    if (split.Length < 2)
-                        return false;
-
-                    try
-                    {
-                        if (split.Length == 2)
-                            removeItem(client, UInt32.Parse(split[1]), 1);
-                        else if (split.Length == 3)
-                            removeItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
-                        else if (split.Length == 4)
-                            removeItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]), UInt16.Parse(split[3]));
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        Log.error("Could not remove item.");
-                    }
-                }
-                else if (split[0].Equals("givekeyitem"))
-                {
-                    try
-                    {
-                        if (split.Length == 2)
-                            giveKeyItem(client, UInt32.Parse(split[1]));                       
-                    }
-                    catch (Exception e)
-                    {
-                        Log.error("Could not give keyitem.");
-                    }
-                }
-                else if (split[0].Equals("removekeyitem"))
-                {
-                    if (split.Length < 2)
-                        return false;
-
-                    try
-                    {
-                        if (split.Length == 2)
-                            removeKeyItem(client, UInt32.Parse(split[1]));
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        Log.error("Could not remove keyitem.");
-                    }
-                }
-                else if (split[0].Equals("givecurrancy"))
-                {
-                    try
-                    {
-                        if (split.Length == 2)
-                            giveCurrancy(client, UInt32.Parse(split[1]), 1);
-                        else if (split.Length == 3)
-                            giveCurrancy(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
-                    }
-                    catch (Exception e)
-                    {
-                        Log.error("Could not give currancy.");
-                    }
-                }
-                else if (split[0].Equals("removecurrancy"))
-                {
-                    if (split.Length < 2)
-                        return false;
-
-                    try
-                    {
-                        if (split.Length == 2)
-                            removeCurrancy(client, UInt32.Parse(split[1]), 1);
-                        else if (split.Length == 3)
-                            removeCurrancy(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        Log.error("Could not remove currancy.");
-                    }
-                }
-                else if (split[0].Equals("music"))
-                {
-                    if (split.Length < 2)
-                        return false;
-
-                    try
-                    {
-                        doMusic(client, split[1]);
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        Log.error("Could not change music: " + e);
-                    }
-                }
-                else if (split[0].Equals("warp"))
-                {
-                    if (split.Length == 2)                    
-                        doWarp(client, split[1]);
-                    else if (split.Length == 5)
-                        doWarp(client, split[1], null, split[2], split[3], split[4]);
-                    else if (split.Length == 6)
-                        doWarp(client, split[1], split[2], split[3], split[4], split[5]);
-                    return true;
-                }
-                else if (split[0].Equals("property"))
-                {
-                    if (split.Length == 4)
-                    {
-                        changeProperty(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
-                    }
-                    return true;
-                }
-                else if (split[0].Equals("property2"))
-                {
-                    if (split.Length == 4)
-                    {
-                        changeProperty(Convert.ToUInt32(split[1], 16), Convert.ToUInt32(split[2], 16), split[3]);
-                    }
-                    return true;
-                }
-            }
-            return false;
+            return gamedataItems;
         }
     }
-
 }
