@@ -347,7 +347,7 @@ namespace FFXIVClassic_Map_Server
         }
 
         //Moves actor to new zone, and sends packets to spawn at the given zone entrance
-        public void DoZoneChange(Player player, uint destinationZoneId, uint zoneEntrance)
+        public void DoZoneChange(Player player, uint zoneEntrance)
         {
             if (!zoneEntranceList.ContainsKey(zoneEntrance))
             {
@@ -356,7 +356,7 @@ namespace FFXIVClassic_Map_Server
             }
 
             ZoneEntrance ze = zoneEntranceList[zoneEntrance];
-            DoZoneChange(player, destinationZoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
+            DoZoneChange(player, ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
         }
 
         //Moves actor to new zone, and sends packets to spawn at the given coords.
