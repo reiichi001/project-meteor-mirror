@@ -299,6 +299,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
+        // TODO:  make removeCurrency() remove all quantity of a currency if quantity_to_remove > quantity_in_inventory instead of silently failing
         private void removeCurrency(ConnectedPlayer client, uint itemId, int quantity)
         {
             if (client != null)
@@ -370,7 +371,7 @@ namespace FFXIVClassic_Lobby_Server
 
             String[] split = input.Split(' ');
             split = split.Select(temp => temp.ToLower()).ToArray(); // Ignore case on commands
-
+            split = split.Where(temp => temp != "").ToArray(); // strips extra whitespace from commands
 
             // Debug
             //sendMessage(client, string.Join(",", split));
@@ -459,13 +460,11 @@ namespace FFXIVClassic_Lobby_Server
                 else if (split[0].Equals("reloaditems"))
                 {
                     Log.info(String.Format("Got request to reload item gamedata"));
-                    if (client != null)
-                        client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Reloading Item Gamedata..."));
+                    sendMessage(client, "Reloading Item Gamedata...");
                     gamedataItems.Clear();
                     gamedataItems = Database.getItemGamedata();
                     Log.info(String.Format("Loaded {0} items.", gamedataItems.Count));
-                    if (client != null)
-                        client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Loaded {0} items.", gamedataItems.Count)));
+                    sendMessage(client, String.Format("Loaded {0} items.", gamedataItems.Count));
                     return true;
                 }
                 #endregion
