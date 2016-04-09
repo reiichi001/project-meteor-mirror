@@ -24,8 +24,8 @@ namespace FFXIVClassic_Lobby_Server
     class CommandProcessor
     {
         private Dictionary<uint, ConnectedPlayer> mConnectedPlayerList;
-        private static WorldManager mWorldManager = Server.getWorldManager();
-        private static Dictionary<uint, Item> gamedataItems = Server.getItemGamedataList();
+        private static WorldManager mWorldManager = Server.GetWorldManager();
+        private static Dictionary<uint, Item> gamedataItems = Server.GetGamedataItems();
 
         // For the moment, this is the only predefined item
         // TODO: make a list/enum in the future so that items can be given by name, instead of by id
@@ -99,73 +99,41 @@ namespace FFXIVClassic_Lobby_Server
         /// Teleports player to a location on a predefined list
         /// </summary>
         /// <param name="client">The current player</param>
-        /// <param name="entranceId">Predefined list: &lt;ffxiv_database&gt;\server_zones_spawnlocations</param>
-        public void doWarp(ConnectedPlayer client, string entranceId)
+        /// <param name="id">Predefined list: &lt;ffxiv_database&gt;\server_zones_spawnlocations</param>
+        public void doWarp(ConnectedPlayer client, uint id)
         {
-            uint id;
-
-            try
-            {
-                if (entranceId.ToLower().StartsWith("0x"))
-                    id = Convert.ToUInt32(entranceId, 16);
-                else
-                    id = Convert.ToUInt32(entranceId);
-            }
-            catch(FormatException e)
-            {return;}
-
             FFXIVClassic_Map_Server.WorldManager.ZoneEntrance ze = mWorldManager.getZoneEntrance(id);
 
             if (ze == null)
                 return;
 
             if (client != null)
-                mWorldManager.DoZoneChange(client.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, 0.0f);
+                mWorldManager.DoZoneChange(client.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    mWorldManager.DoZoneChange(entry.Value.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, 0.0f);
+                    mWorldManager.DoZoneChange(entry.Value.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
                 }
             }
         }
 
-        public void doWarp(ConnectedPlayer client, string zone, string privateArea, string sx, string sy, string sz)
+        public void doWarp(ConnectedPlayer client, uint zoneId, string privateArea, float x, float y, float z, float r)
         {
-            uint zoneId;
-            float x,y,z;
-
-            x = Single.Parse(sx);
-            y = Single.Parse(sy);
-            z = Single.Parse(sz);
-
-            if (zone == null)
+            if (mWorldManager.GetZone(zoneId) == null)
             {
                 if (client != null)
-                    mWorldManager.DoZoneChange(client.getActor(), 0, privateArea, 0x2, x, y, z, 0.0f);
+                    client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Zone does not exist or setting isn't valid."), true, false));
+                Log.error("Zone does not exist or setting isn't valid.");
             }
+
+            if (client != null)
+                mWorldManager.DoZoneChange(client.getActor(), zoneId, privateArea, 0x2, x, y, z, r);
             else
             {
-                if (zone.ToLower().StartsWith("0x"))
-                    zoneId = Convert.ToUInt32(zone, 16);
-                else
-                    zoneId = Convert.ToUInt32(zone);
-
-                if (mWorldManager.GetZone(zoneId) == null)
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    if (client != null)
-                        client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Zone does not exist or setting isn't valid."), true, false));
-                    Log.error("Zone does not exist or setting isn't valid.");
-                }
-
-                if (client != null)
-                    mWorldManager.DoZoneChange(client.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
-                else
-                {
-                    foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                    {
-                        mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
-                    }
+                    mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, 0x2, x, y, z, r);
                 }
             }
         }
@@ -349,6 +317,141 @@ namespace FFXIVClassic_Lobby_Server
                     p.getInventory(Inventory.KEYITEMS).removeItem(itemId, 1);
                 }
             }
+        }
+
+        private void parseWarp(ConnectedPlayer client, string[] split)
+        {
+            float x = 0, y = 0, z = 0, r = 0.0f;
+            uint zoneId = 0;
+            string privatearea = null;
+
+            if (split.Length == 2) // Predefined list
+            {
+                // TODO: Handle !warp Playername
+                #region !warp (predefined list)
+                try
+                {
+                    if (split[1].ToLower().StartsWith("0x"))
+                        zoneId = Convert.ToUInt32(split[1], 16);
+                    else
+                        zoneId = Convert.ToUInt32(split[1]);
+                }
+                catch{return;}
+                #endregion
+
+                doWarp(client, zoneId);
+            }
+            else if (split.Length == 4)
+            {
+                #region !warp X Y Z
+                if (split[1].StartsWith("@"))
+                {
+                    split[1] = split[1].Replace("@", string.Empty);
+
+                    if (String.IsNullOrEmpty(split[1]))
+                        split[1] = "0";
+
+                    try { x = Single.Parse(split[1]) + client.getActor().positionX; }
+                    catch{return;}
+
+                    split[1] = x.ToString();
+                }
+                if (split[2].StartsWith("@"))
+                {
+                    split[2] = split[2].Replace("@", string.Empty);
+
+                    if (String.IsNullOrEmpty(split[2]))
+                        split[2] = "0";
+
+                    try { y = Single.Parse(split[2]) + client.getActor().positionY; }
+                    catch{return;}
+
+                    split[2] = y.ToString();
+                }
+                if (split[3].StartsWith("@"))
+                {
+                    split[3] = split[3].Replace("@", string.Empty);
+
+                    if (String.IsNullOrEmpty(split[3]))
+                        split[3] = "0";
+
+                    try { z = Single.Parse(split[3]) + client.getActor().positionZ; }
+                    catch{return;}
+
+                    split[3] = z.ToString();
+                }
+
+                try
+                {
+                    x = Single.Parse(split[1]);
+                    y = Single.Parse(split[2]);
+                    z = Single.Parse(split[3]);
+                }
+                catch{return;}
+
+                zoneId = client.getActor().zoneId;
+                r = client.getActor().rotation;
+                #endregion
+
+                sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, x, y));
+                doWarp(client, zoneId, privatearea, x, y, z, r);
+            }
+            else if (split.Length == 5)
+            {
+                #region !warp Zone X Y Z
+                try
+                {
+                    x = Single.Parse(split[2]);
+                    y = Single.Parse(split[3]);
+                    z = Single.Parse(split[4]);
+                }
+                catch{return;}
+
+                if (split[1].ToLower().StartsWith("0x"))
+                {
+                    try { zoneId = Convert.ToUInt32(split[1], 16); }
+                    catch{return;}
+                }
+                else
+                {
+                    try { zoneId = Convert.ToUInt32(split[1]); }
+                    catch{return;}
+                }
+                #endregion
+
+                sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, x, y));
+                doWarp(client, zoneId, privatearea, x, y, z, r);
+            }
+            else if (split.Length == 6)
+            {
+                #region !warp Zone Instance X Y Z
+                try
+                {
+                    x = Single.Parse(split[3]);
+                    y = Single.Parse(split[4]);
+                    z = Single.Parse(split[5]);
+                }
+                catch{return;}
+
+                if (split[1].ToLower().StartsWith("0x"))
+                {
+                    try { zoneId = Convert.ToUInt32(split[1], 16); }
+                    catch{return;}
+                }
+                else
+                {
+                    try { zoneId = Convert.ToUInt32(split[1]); }
+                    catch{return;}
+                }
+
+                privatearea = split[2];
+                #endregion
+
+                sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, x, y));
+                doWarp(client, zoneId, privatearea, x, y, z, r);
+            }
+            else
+                return; // catch any invalid warps here
         }
 
         /// <summary>
@@ -639,14 +742,7 @@ namespace FFXIVClassic_Lobby_Server
                 #region !warp
                 else if (split[0].Equals("warp"))
                 {
-                    if (split.Length == 2) // Predefined list
-                        doWarp(client, split[1]);
-                    else if (split.Length == 4) // X/Y/Z
-                        doWarp(client, null, null, split[1], split[2], split[3]);
-                    else if (split.Length == 5) // Zone + X/Y/Z
-                        doWarp(client, split[1], null, split[2], split[3], split[4]);
-                    else if (split.Length == 6) // Zone + instance + X/Y/Z
-                        doWarp(client, split[1], split[2], split[3], split[4], split[5]);
+                    parseWarp(client, split);
                     return true;
                 }
                 #endregion
