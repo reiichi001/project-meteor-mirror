@@ -393,7 +393,7 @@ namespace FFXIVClassic_Lobby_Server
                 r = client.getActor().rotation;
                 #endregion
 
-                sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, x, y));
+                sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
                 doWarp(client, zoneId, privatearea, x, y, z, r);
             }
             else if (split.Length == 5)
@@ -419,7 +419,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 #endregion
 
-                sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, x, y));
+                sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
                 doWarp(client, zoneId, privatearea, x, y, z, r);
             }
             else if (split.Length == 6)
@@ -447,7 +447,7 @@ namespace FFXIVClassic_Lobby_Server
                 privatearea = split[2];
                 #endregion
 
-                sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, x, y));
+                sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
                 doWarp(client, zoneId, privatearea, x, y, z, r);
             }
             else
