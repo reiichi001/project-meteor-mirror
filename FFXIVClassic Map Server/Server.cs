@@ -330,7 +330,7 @@ namespace FFXIVClassic_Lobby_Server
 
         #endregion
 
-        public static WorldManager getWorldManager()
+        public static WorldManager GetWorldManager()
         {
             return mWorldManager;
         }
