@@ -25,7 +25,7 @@ namespace FFXIVClassic_Lobby_Server
     {
         private Dictionary<uint, ConnectedPlayer> mConnectedPlayerList;
         private static WorldManager mWorldManager = Server.GetWorldManager();
-        private static Dictionary<uint, Item> gamedataItems = Server.getItemGamedataList();
+        private static Dictionary<uint, Item> gamedataItems = Server.GetGamedataItems();
 
         // For the moment, this is the only predefined item
         // TODO: make a list/enum in the future so that items can be given by name, instead of by id
