@@ -373,18 +373,17 @@ namespace FFXIVClassic_Map_Server
 
             //Add player to new zone and update
             Area newArea;
-            
+
             if (destinationPrivateArea == null)
                 newArea = GetZone(destinationZoneId);
             else
                 newArea = GetZone(destinationZoneId).getPrivateArea(destinationPrivateArea, 0);
-
             //This server does not contain that zoneId
             if (newArea == null)
                 return;
 
             newArea.addActorToZone(player);
-            
+
             //Update player actor's properties
             player.zoneId = newArea.actorId;
             player.zone = newArea;

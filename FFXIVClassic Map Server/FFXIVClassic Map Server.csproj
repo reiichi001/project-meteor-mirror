@@ -79,6 +79,7 @@
     <Compile Include="actors\StaticActors.cs" />
     <Compile Include="actors\world\WorldMaster.cs" />
     <Compile Include="ClientConnection.cs" />
+    <Compile Include="CommandProcessor.cs" />
     <Compile Include="common\Bitfield.cs" />
     <Compile Include="common\Blowfish.cs" />
     <Compile Include="common\EfficientHashTables.cs" />
@@ -250,6 +251,11 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="lua\LuaUtils.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Server.cs" />
     <Compile Include="utils\ActorPropertyPacketUtil.cs" />
     <Compile Include="utils\CharacterUtils.cs" />
@@ -261,7 +267,12 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(SolutionDir)data" "$(SolutionDir)$(ProjectName)\$(OutDir)" /E /C /D</PostBuildEvent>

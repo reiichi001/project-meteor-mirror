@@ -18,7 +18,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         public const ushort LOOT = 0x0004; //Max 0xA
         public const ushort MELDREQUEST = 0x0005; //Max 0x04
         public const ushort BAZAAR = 0x0007; //Max 0x0A
-        public const ushort CURRANCY = 0x0063; //Max 0x140
+        public const ushort CURRENCY = 0x0063; //Max 0x140
         public const ushort KEYITEMS = 0x0064; //Max 0x500
         public const ushort EQUIPMENT = 0x00FE; //Max 0x23
         public const ushort EQUIPMENT_OTHERPLAYER = 0x00F9; //Max 0x23
@@ -132,7 +132,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             {
                 Database.setQuantity(owner, slot, inventoryCode, list[slot].quantity);
 
-                if (inventoryCode != CURRANCY && inventoryCode != KEYITEMS)
+                if (inventoryCode != CURRENCY && inventoryCode != KEYITEMS)
                     sendInventoryPackets(list[slot]);
             }
 
@@ -144,13 +144,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 
                 list.Add(addedItem);
 
-                if (inventoryCode != CURRANCY && inventoryCode != KEYITEMS)
+                if (inventoryCode != CURRENCY && inventoryCode != KEYITEMS)
                     sendInventoryPackets(addedItem);
 
                 quantityCount -= gItem.maxStack;
             }
 
-            if (inventoryCode == CURRANCY || inventoryCode == KEYITEMS)
+            if (inventoryCode == CURRENCY || inventoryCode == KEYITEMS)
                 sendFullInventory();
 
             owner.queuePacket(InventorySetEndPacket.buildPacket(owner.actorId));

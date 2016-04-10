@@ -708,7 +708,7 @@ namespace FFXIVClassic_Lobby_Server
 
                     player.getInventory(Inventory.NORMAL).initList(getInventory(player, 0, Inventory.NORMAL));
                     player.getInventory(Inventory.KEYITEMS).initList(getInventory(player, 0, Inventory.KEYITEMS));
-                    player.getInventory(Inventory.CURRANCY).initList(getInventory(player, 0, Inventory.CURRANCY));
+                    player.getInventory(Inventory.CURRENCY).initList(getInventory(player, 0, Inventory.CURRENCY));
                     player.getInventory(Inventory.BAZAAR).initList(getInventory(player, 0, Inventory.BAZAAR));
                     player.getInventory(Inventory.MELDREQUEST).initList(getInventory(player, 0, Inventory.MELDREQUEST));
                     player.getInventory(Inventory.LOOT).initList(getInventory(player, 0, Inventory.LOOT));

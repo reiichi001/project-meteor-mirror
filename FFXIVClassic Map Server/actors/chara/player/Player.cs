@@ -140,7 +140,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             inventories[Inventory.NORMAL] = new Inventory(this, MAXSIZE_INVENTORY_NORMAL, Inventory.NORMAL);
             inventories[Inventory.KEYITEMS] = new Inventory(this, MAXSIZE_INVENTORY_KEYITEMS, Inventory.KEYITEMS);
-            inventories[Inventory.CURRANCY] = new Inventory(this, MAXSIZE_INVENTORY_CURRANCY, Inventory.CURRANCY);
+            inventories[Inventory.CURRENCY] = new Inventory(this, MAXSIZE_INVENTORY_CURRANCY, Inventory.CURRENCY);
             inventories[Inventory.MELDREQUEST] = new Inventory(this, MAXSIZE_INVENTORY_MELDREQUEST, Inventory.MELDREQUEST);
             inventories[Inventory.BAZAAR] = new Inventory(this, MAXSIZE_INVENTORY_BAZAAR, Inventory.BAZAAR);
             inventories[Inventory.LOOT] = new Inventory(this, MAXSIZE_INVENTORY_LOOT, Inventory.LOOT);
@@ -500,7 +500,7 @@ namespace FFXIVClassic_Map_Server.Actors
             #region Inventory & Equipment
             queuePacket(InventoryBeginChangePacket.buildPacket(actorId));
             inventories[Inventory.NORMAL].sendFullInventory();
-            inventories[Inventory.CURRANCY].sendFullInventory();
+            inventories[Inventory.CURRENCY].sendFullInventory();
             inventories[Inventory.KEYITEMS].sendFullInventory();
             inventories[Inventory.BAZAAR].sendFullInventory();
             inventories[Inventory.MELDREQUEST].sendFullInventory();
