@@ -993,6 +993,17 @@ namespace FFXIVClassic_Map_Server.Actors
             return false;
         }
 
+        public int getQuestSlot(uint id)
+        {
+            for (int i = 0; i < questScenario.Length; i++)
+            {
+                if (questScenario[i] != null && questScenario[i].actorId == (0xA0F00000 | id))
+                    return i;
+            }
+
+            return -1;
+        }
+
         public void setDirector(string directorType)
         {
             if (directorType.Equals("openingDirector"))

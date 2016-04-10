@@ -310,6 +310,56 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
+        public static void saveQuest(Player player, Quest quest)
+        {
+            int slot = player.getQuestSlot(quest.actorId);
+            if (slot == -1)
+            {
+                Log.error(String.Format("Tried saving quest player didn't have: Player: {0:x}, QuestId: {0:x}", player.actorId, quest.actorId));
+                return;
+            }
+            else
+                saveQuest(player, quest, slot);
+        }
+
+        public static void saveQuest(Player player, Quest quest, int slot)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO characters_quest_scenario 
+                    (characterId, slot, questId, questData, questFlags)
+                    VALUES
+                    (@charaId, @slot, @questId, @questData, @questFlags)
+                    ON DUPLICATE KEY UPDATE
+                    questData = @questData, questFlags = @questFlags
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@slot", slot);
+                    cmd.Parameters.AddWithValue("@questId", quest.actorId);
+                    cmd.Parameters.AddWithValue("@questData", quest.GetSerializedQuestData());
+                    cmd.Parameters.AddWithValue("@questFlags", quest.GetQuestFlags());
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
         public static void loadPlayerCharacter(Player player)
         {            
             string query;
@@ -627,7 +677,9 @@ namespace FFXIVClassic_Lobby_Server
                     query = @"
                         SELECT 
                         slot,
-                        questId                       
+                        questId,
+                        questData,
+                        questFlags
                         FROM characters_quest_scenario WHERE characterId = @charId";
                    
                     cmd = new MySqlCommand(query, conn);
@@ -638,9 +690,21 @@ namespace FFXIVClassic_Lobby_Server
                         {
                             int index = reader.GetUInt16(0);
                             player.playerWork.questScenario[index] = 0xA0F00000 | reader.GetUInt32(1);
+                            string questData = null;
+                            uint questFlags = 0;
+
+                            if (!reader.IsDBNull(2))
+                                questData = reader.GetString(2);
+                            else
+                                questData = "{}";
+
+                            if (!reader.IsDBNull(3))
+                                questFlags = reader.GetUInt32(3);
+                            else
+                                questFlags = 0;
 
                             string questName = Server.getStaticActors(player.playerWork.questScenario[index]).actorName;
-                            player.questScenario[index] = new Quest(player.playerWork.questScenario[index], questName);
+                            player.questScenario[index] = new Quest(player, player.playerWork.questScenario[index], questName, questData, questFlags);
                         }
                     }
 

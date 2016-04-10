@@ -1,4 +1,6 @@
-﻿using FFXIVClassic_Lobby_Server.common;
+﻿using FFXIVClassic_Lobby_Server;
+using FFXIVClassic_Lobby_Server.common;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
@@ -6,6 +8,7 @@ namespace FFXIVClassic_Map_Server.Actors
 {
     class Quest : Actor
     {
+        private Player owner;
         private int currentPhase = 0;
         private uint questFlags = 0;
         private Dictionary<string, Object> questData = new Dictionary<string, object>();
@@ -13,17 +16,22 @@ namespace FFXIVClassic_Map_Server.Actors
         public Quest(uint actorID, string name)
             : base(actorID)
         {
-            actorName = name;
+            actorName = name;            
         }
 
-        public void InitQuestData(string dataName, object initialValue)
+        public Quest(Player owner, uint actorID, string name, string questDataJson, uint questFlags)
+            : base(actorID)
         {
-            questData[dataName] = initialValue;
+            this.owner = owner;
+            actorName = name;            
+            this.questFlags = questFlags;
+            this.questData = JsonConvert.DeserializeObject<Dictionary<string, Object>>(questDataJson);
+            if (questData == null)
+                questData = new Dictionary<string, object>();
         }
-
-        public void UpdateQuestData(string dataName, object data)
-        {
-            if (questData.ContainsKey(dataName))
+       
+        public void SetQuestData(string dataName, object data)
+        {            
                 questData[dataName] = data;
 
             //Inform update
@@ -79,6 +87,21 @@ namespace FFXIVClassic_Map_Server.Actors
         public void NextPhase()
         {
             currentPhase++;
+        }
+
+        public uint GetQuestFlags()
+        {
+            return questFlags;
+        }
+
+        public string GetSerializedQuestData()
+        {
+            return JsonConvert.SerializeObject(questData, Formatting.Indented);
+        }
+
+        public void SaveData()
+        {
+            Database.saveQuest(owner, this);
         }
 
     }
