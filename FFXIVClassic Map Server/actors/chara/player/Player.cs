@@ -125,7 +125,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public Quest[] questScenario = new Quest[16];
         public Quest[] questGuildleve = new Quest[8];
 
-        public Director currentDirector = new OpeningDirector(0x46080012);
+        public Director currentDirector;// = new OpeningDirector(0x46080012);
 
         public PlayerWork playerWork = new PlayerWork();
 
@@ -1004,9 +1004,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 currentDirector = new QuestDirectorMan0l001(0x46080012);
             }
 
-            queuePacket(RemoveActorPacket.buildPacket(actorId, 0x46080012));
-            queuePacket(currentDirector.getSpawnPackets(actorId));
-            queuePacket(currentDirector.getInitPackets(actorId));
+           // queuePacket(RemoveActorPacket.buildPacket(actorId, 0x46080012));
+           // queuePacket(currentDirector.getSpawnPackets(actorId));
+           // queuePacket(currentDirector.getInitPackets(actorId));
            // queuePacket(currentDirector.getSetEventStatusPackets(actorId));
            // currentDirector.getSpawnPackets(actorId).debugPrintPacket();
            // currentDirector.getInitPackets(actorId).debugPrintPacket();
