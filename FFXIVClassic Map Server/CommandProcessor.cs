@@ -118,7 +118,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public void doWarp(ConnectedPlayer client, uint zoneId, string privateArea, float x, float y, float z, float r)
+        public void doWarp(ConnectedPlayer client, uint zoneId, string privateArea, byte spawnType, float x, float y, float z, float r)
         {
             if (mWorldManager.GetZone(zoneId) == null)
             {
@@ -128,12 +128,12 @@ namespace FFXIVClassic_Lobby_Server
             }
 
             if (client != null)
-                mWorldManager.DoZoneChange(client.getActor(), zoneId, privateArea, 0x2, x, y, z, r);
+                mWorldManager.DoZoneChange(client.getActor(), zoneId, privateArea, spawnType, x, y, z, r);
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, 0x2, x, y, z, r);
+                    mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, spawnType, x, y, z, r);
                 }
             }
         }
@@ -394,7 +394,7 @@ namespace FFXIVClassic_Lobby_Server
                 #endregion
 
                 sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
-                doWarp(client, zoneId, privatearea, x, y, z, r);
+                doWarp(client, zoneId, privatearea, 0x00, x, y, z, r);
             }
             else if (split.Length == 5)
             {
@@ -420,7 +420,7 @@ namespace FFXIVClassic_Lobby_Server
                 #endregion
 
                 sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
-                doWarp(client, zoneId, privatearea, x, y, z, r);
+                doWarp(client, zoneId, privatearea, 0x2, x, y, z, r);
             }
             else if (split.Length == 6)
             {
@@ -448,7 +448,7 @@ namespace FFXIVClassic_Lobby_Server
                 #endregion
 
                 sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
-                doWarp(client, zoneId, privatearea, x, y, z, r);
+                doWarp(client, zoneId, privatearea, 0x2, x, y, z, r);
             }
             else
                 return; // catch any invalid warps here
