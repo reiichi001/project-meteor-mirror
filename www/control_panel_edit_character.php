@@ -61,12 +61,12 @@ $g_htmlToDbFieldMapping = array(
 	"characterSkinColor" => "skinColor",
 	"characterHairStyle" => "hairStyle",
 	"characterHairColor" => "hairColor",
-	"characterHairOption" => "hairOption",
+	"characterHairOption" => "hairVariation",
 	"characterEyeColor" => "eyeColor",
 	"characterFaceType" => "faceType",
-	"characterFaceBrow" => "faceBrow",
-	"characterFaceEye" => "faceEye",
-	"characterFaceIris" => "faceIris",
+	"characterFaceBrow" => "faceEyebrows",
+	"characterFaceEye" => "faceEyeShape",
+	"characterFaceIris" => "faceIrisSize",
 	"characterFaceNose" => "faceNose",
 	"characterFaceMouth" => "faceMouth",
 	"characterFaceJaw" => "faceJaw",
@@ -76,7 +76,7 @@ $g_htmlToDbFieldMapping = array(
 	"characterGuardian" => "guardian",
 	"characterBirthMonth" => "birthMonth",
 	"characterBirthDay" => "birthDay",
-	"characterAllegiance" => "allegiance",
+	"characterAllegiance" => "initialTown",
 	"characterWeapon1" => "weapon1",
 	"characterWeapon2" => "weapon2",
 	"characterHeadGear" => "headGear",
@@ -90,6 +90,58 @@ $g_htmlToDbFieldMapping = array(
 	"characterRightFingerGear" => "rightFingerGear",
 	"characterLeftFingerGear" => "leftFingerGear"
 );
+
+$g_profileMapping = array(
+	"characterName" => "name",
+/*
+	"characterIsLegacy" => "islegacy",
+	"characterPlayTime" => "playTime",
+	"characterPositionX" => "positionX",
+	"characterPositionY" => "positionY",
+	"characterPositionZ" => "positionZ",
+	"characterPositionR" => "rotation",
+	"characterCurrentZoneId" => "currentZoneId",
+*/
+	"characterGuardian" => "guardian",
+	"characterBirthDay" => "birthDay",
+	"characterBirthMonth" => "birthMonth",
+	"characterAllegiance" => "initialTown",
+	"characterTribe" => "tribe"
+/*
+	"characterGcCurrent" => "gcCurrent",
+	"characterGcLimsaRank" => "gcLimsaRank",
+	"characterGcGridaniaRank" => "gcGridaniaRank",
+	"characterGcUldahRank" => "gcUldahRank",
+	"characterCurrentTitle" => "currentTitle",
+	"characterRestBonus" => "restBonus",
+	"characterAchievementPoints" => "achievementPoints",
+*/
+);
+
+$g_appearanceMapping = array(
+/*
+	"characterBaseId" => "baseId",
+*/
+	"characterSize" => "size",
+	"characterVoice" => "voice",
+	"characterSkinColor" => "skinColor",
+	"characterHairStyle" => "hairStyle",
+	"characterHairColor" => "hairColor",
+/*	"characterHairHighlightColor" => "hairHighlightColor", */
+	"characterHairOption" => "hairVariation",
+	"characterEyeColor" => "eyeColor",
+	"characterFaceType" => "faceType",
+	"characterFaceBrow" => "faceEyebrows",
+	"characterFaceEye" => "faceEyeShape",
+	"characterFaceIris" => "faceIrisSize",
+	"characterFaceNose" => "faceNose",
+	"characterFaceMouth" => "faceMouth",	
+	"characterFaceJaw" => "faceFeatures",
+	"characterFaceCheek" => "ears",
+	"characterFaceOption1" => "characteristics",
+	"characterFaceOption2" => "characteristicsColor"
+);
+
 
 function SaveCharacter($databaseConnection, $htmlFieldMapping, $characterId)
 {
@@ -140,6 +192,7 @@ if(isset($_POST["save"]))
 try
 {
 	$g_characterInfo = GetCharacterInfo($g_databaseConnection, $g_userId, $g_characterId);
+	$g_characterAppearance = GetCharacterAppearance($g_databaseConnection, $g_userId, $g_characterId);
 }
 catch(Exception $e)
 {
@@ -364,7 +417,7 @@ catch(Exception $e)
 						<td colspan="4">Name:</td>
 					</tr>
 					<tr>
-						<td colspan="4"><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterName", 20); ?></td>
+						<td colspan="4"><?php echo GenerateTextField($g_characterInfo, $g_profileMapping, "characterName", 20); ?></td>
 					</tr>
 					<tr>
 						<td>Guardian:</td>
@@ -373,10 +426,10 @@ catch(Exception $e)
 						<td>Allegiance:</td>
 					</tr>
 					<tr>
-						<td><?php echo GenerateSelectField($g_characterInfo, $g_htmlToDbFieldMapping, $g_guardians, "characterGuardian"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterBirthMonth"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterBirthDay"); ?></td>
-						<td><?php echo GenerateSelectField($g_characterInfo, $g_htmlToDbFieldMapping, $g_allegiances, "characterAllegiance"); ?></td>
+						<td><?php echo GenerateSelectField($g_characterInfo, $g_profileMapping, $g_guardians, "characterGuardian"); ?></td>
+						<td><?php echo GenerateTextField($g_characterInfo, $g_profileMapping, "characterBirthMonth"); ?></td>
+						<td><?php echo GenerateTextField($g_characterInfo, $g_profileMapping, "characterBirthDay"); ?></td>
+						<td><?php echo GenerateSelectField($g_characterInfo, $g_profileMapping, $g_allegiances, "characterAllegiance"); ?></td>
 					</tr>
 				</table>
 				<br />
@@ -389,7 +442,7 @@ catch(Exception $e)
 						<td colspan="4">Tribe:</td>
 					</tr>
 					<tr>
-						<td colspan="4"><?php echo GenerateSelectField($g_characterInfo, $g_htmlToDbFieldMapping, $g_tribes, "characterTribe"); ?></td>
+						<td colspan="4"><?php echo GenerateSelectField($g_characterInfo, $g_profileMapping, $g_tribes, "characterTribe"); ?></td>
 					</tr>
 					<tr>
 						<td>Size:</td>
@@ -398,10 +451,10 @@ catch(Exception $e)
 						<td>Hair Style:</td>
 					</tr>
 					<tr>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterSize"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterVoice"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterSkinColor"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterHairStyle"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterSize"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterVoice"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterSkinColor"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterHairStyle"); ?></td>
 					</tr>
 					<tr>
 						<td>Hair Color:</td>
@@ -410,10 +463,10 @@ catch(Exception $e)
 						<td>Face Type:</td>
 					</tr>
 					<tr>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterHairColor"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterHairOption"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterEyeColor"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterFaceType"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterHairColor"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterHairOption"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterEyeColor"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceType"); ?></td>
 					</tr>
 					<tr>
 						<td>Face Brow:</td>
@@ -422,10 +475,10 @@ catch(Exception $e)
 						<td>Face Nose:</td>
 					</tr>
 					<tr>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterFaceBrow"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterFaceEye"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterFaceIris"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterFaceNose"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceBrow"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceEye"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceIris"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceNose"); ?></td>
 					</tr>
 					<tr>
 						<td>Face Mouth:</td>
@@ -434,10 +487,10 @@ catch(Exception $e)
 						<td>Face Option 1:</td>
 					</tr>
 					<tr>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterFaceMouth"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterFaceJaw"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterFaceCheek"); ?></td>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterFaceOption1"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceMouth"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceJaw"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceCheek"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceOption1"); ?></td>
 					</tr>
 					<tr>
 						<td>Face Option 2:</td>
@@ -446,9 +499,10 @@ catch(Exception $e)
 						<td></td>
 					</tr>
 					<tr>
-						<td><?php echo GenerateTextField($g_characterInfo, $g_htmlToDbFieldMapping, "characterFaceOption2"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceOption2"); ?></td>
 						<td></td>
 						<td></td>
+						<!--
 						<td>
 							<script>
 								function onImportAppearanceButtonClick()
@@ -462,10 +516,12 @@ catch(Exception $e)
 								document.getElementById('importAppearance').addEventListener('change', importAppearanceFromFile, false);
 							</script>
 						</td>
+						-->
 					</tr>
 				</table>
 				<br />
 				<hr />
+				<!--
 				<table class="editForm">
 					<tr>
 						<th colspan="4">Gear</th>
@@ -535,6 +591,8 @@ catch(Exception $e)
 				</table>
 				<br />
 				<hr />
+				-->
+				<!--
 				<table class="infoForm">
 					<tr>
 						<td>
@@ -543,6 +601,7 @@ catch(Exception $e)
 						</td>
 					</tr>
 				</table>
+				-->
 			</form>
 		</div>
 		<div>
