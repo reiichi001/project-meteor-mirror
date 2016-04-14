@@ -360,6 +360,44 @@ function GetCharacterAppearance($dataConnection, $userId, $characterId)
 	return $row;
 }
 
+function GetCharacterChocobo($dataConnection, $userId, $characterId)
+{
+	$query = sprintf("SELECT * FROM characters_chocobo INNER JOIN characters ON characters_chocobo.characterId = characters.id WHERE characters.userId = '%d' AND characters.Id='%d'", 
+		$userId, $characterId);
+	$result = $dataConnection->query($query);
+	if(!$result)
+	{
+			throw new Exception(__FUNCTION__ . " failed: " . $dataConnection->error);
+	}
+	
+	$row = $result->fetch_assoc();
+	if(!$row)
+	{
+			throw new Exception(__FUNCTION__ . " failed: " . $dataConnection->error);
+	}
+	
+	return $row;
+}
+
+function GetCharacterClassLevels($dataConnection, $userId, $characterId)
+{
+	$query = sprintf("SELECT * FROM characters_class_levels INNER JOIN characters ON characters_class_levels.characterId = characters.id WHERE characters.userId = '%d' AND characters.Id='%d'", 
+		$userId, $characterId);
+	$result = $dataConnection->query($query);
+	if(!$result)
+	{
+			throw new Exception(__FUNCTION__ . " failed: " . $dataConnection->error);
+	}
+	
+	$row = $result->fetch_assoc();
+	if(!$row)
+	{
+			throw new Exception(__FUNCTION__ . " failed: " . $dataConnection->error);
+	}
+	
+	return $row;
+}
+
 function UpdateCharacterInfo($dataConnection, $characterId, $characterInfo)
 {
 	$statement = $dataConnection->prepare("UPDATE ffxiv_characters SET

@@ -53,6 +53,7 @@ $g_allegiances = array(
 	3 => "Ul'dah",
 );
 
+/*
 $g_htmlToDbFieldMapping = array(
 	"characterName" => "name",
 	"characterTribe" => "tribe",
@@ -90,12 +91,35 @@ $g_htmlToDbFieldMapping = array(
 	"characterRightFingerGear" => "rightFingerGear",
 	"characterLeftFingerGear" => "leftFingerGear"
 );
+*/
+
+$g_height = array(
+	0 => "Shortest",
+	1 => "Short",
+	2 => "Average",
+	3 => "Tall",
+	4 => "Tallest"
+);
+
+$g_yesno = array(
+	0 => "No",
+	1 => "Yes"
+);
+
+$g_grandcompany = array(
+	0 => "None",
+	/* TODO: Find correct order for 1+ */
+	1 => "Maelstrom", 
+	2 => "Order of the Twin Adder ",
+	3 => "Immortal Flames"
+);
 
 $g_profileMapping = array(
 	"characterName" => "name",
-/*
-	"characterIsLegacy" => "islegacy",
+	"characterCreationDate" => "creationDate",
+	"characterIsLegacy" => "isLegacy",
 	"characterPlayTime" => "playTime",
+/*
 	"characterPositionX" => "positionX",
 	"characterPositionY" => "positionY",
 	"characterPositionZ" => "positionZ",
@@ -106,29 +130,29 @@ $g_profileMapping = array(
 	"characterBirthDay" => "birthDay",
 	"characterBirthMonth" => "birthMonth",
 	"characterAllegiance" => "initialTown",
-	"characterTribe" => "tribe"
-/*
+	"characterTribe" => "tribe",
 	"characterGcCurrent" => "gcCurrent",
 	"characterGcLimsaRank" => "gcLimsaRank",
 	"characterGcGridaniaRank" => "gcGridaniaRank",
 	"characterGcUldahRank" => "gcUldahRank",
+/*
 	"characterCurrentTitle" => "currentTitle",
 	"characterRestBonus" => "restBonus",
-	"characterAchievementPoints" => "achievementPoints",
 */
+	"characterAchievementPoints" => "achievementPoints",
 );
 
 $g_appearanceMapping = array(
 /*
-	"characterBaseId" => "baseId",
+	"characterBaseId" => "baseId", // Basic appearance?
 */
 	"characterSize" => "size",
 	"characterVoice" => "voice",
 	"characterSkinColor" => "skinColor",
 	"characterHairStyle" => "hairStyle",
 	"characterHairColor" => "hairColor",
-/*	"characterHairHighlightColor" => "hairHighlightColor", */
-	"characterHairOption" => "hairVariation",
+	"characterHairHighlightColor" => "hairHighlightColor",
+	"characterHairVariation" => "hairVariation",
 	"characterEyeColor" => "eyeColor",
 	"characterFaceType" => "faceType",
 	"characterFaceBrow" => "faceEyebrows",
@@ -136,12 +160,39 @@ $g_appearanceMapping = array(
 	"characterFaceIris" => "faceIrisSize",
 	"characterFaceNose" => "faceNose",
 	"characterFaceMouth" => "faceMouth",	
-	"characterFaceJaw" => "faceFeatures",
-	"characterFaceCheek" => "ears",
-	"characterFaceOption1" => "characteristics",
-	"characterFaceOption2" => "characteristicsColor"
+	"characterFaceFeatures" => "faceFeatures",
+	"characterFaceEars" => "ears",
+	"characterFaceCharacteristics" => "characteristics",
+	"characterFaceCharacteristicsColor" => "characteristicsColor"
 );
 
+$g_chocoboMapping = array(
+	"characterHasChocobo" => "hasChocobo",
+	"characterHasGoobbue" => "hasGoobbue",
+	"characterChocoboAppearance" => "chocoboAppearance",
+	"characterChocoboName" => "chocoboName"
+);
+
+$g_classLevels = array(
+	"characterGla" => "gla",
+	"characterPug" => "pug",
+	"characterMrd" => "mrd",
+	"characterLnc" => "lnc",
+	"characterArc" => "arc",
+	"characterCnj" => "cnj",
+	"characterThm" => "thm",
+	"characterCrp" => "crp",
+	"characterBsm" => "bsm",
+	"characterArm" => "arm",
+	"characterGsm" => "gsm",
+	"characterLtw" => "ltw",
+	"characterWvr" => "wvr",
+	"characterAlc" => "alc",
+	"characterCul" => "cul",
+	"characterMin" => "min",
+	"characterBtn" => "btn",
+	"characterFsh" => "fsh"
+);
 
 function SaveCharacter($databaseConnection, $htmlFieldMapping, $characterId)
 {
@@ -156,7 +207,7 @@ function SaveCharacter($databaseConnection, $htmlFieldMapping, $characterId)
 function GenerateTextField($characterInfo, $htmlFieldMapping, $htmlFieldName, $fieldMaxLength = null)
 {
 	$inputMaxLength = ($fieldMaxLength === null) ? "" : sprintf("maxlength=\"%d\"", $fieldMaxLength);
-	return sprintf("<input id=\"%s\" name=\"%s\" type=\"text\" value=\"%s\" %s />",
+	return sprintf("<input id=\"%s\" name=\"%s\" type=\"text\" value=\"%s\" %s readonly=\"readonly\" />",
 		$htmlFieldName, $htmlFieldName, $characterInfo[$htmlFieldMapping[$htmlFieldName]], $inputMaxLength);
 }
 
@@ -193,6 +244,8 @@ try
 {
 	$g_characterInfo = GetCharacterInfo($g_databaseConnection, $g_userId, $g_characterId);
 	$g_characterAppearance = GetCharacterAppearance($g_databaseConnection, $g_userId, $g_characterId);
+/*	$g_characterChocobo = GetCharacterChocobo($g_databaseConnection, $g_userId, $g_characterId); */
+	$g_characterClassLevels = GetCharacterClassLevels($g_databaseConnection, $g_userId, $g_characterId);
 }
 catch(Exception $e)
 {
@@ -205,14 +258,13 @@ catch(Exception $e)
 <html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
 		<meta charset="UTF-8">
-		<title>Seventh Umbral Server</title>
+		<title>Character Info</title>
 		<link rel="stylesheet" type="text/css" href="css/reset.css" />
 		<link rel="stylesheet" type="text/css" href="css/global.css" />
 		<script type="application/ecmascript">
-		
 			var weaponPresets = <?php echo require_once("presets_weapon.json"); ?>; 
 			var armorPresets = <?php echo require_once("presets_armor.json"); ?>;
-			
+
 			function loadPresetsInSelect(presets, selectName)
 			{
 				var select = document.getElementById(selectName);
@@ -389,9 +441,14 @@ catch(Exception $e)
 		<?php include("header.php"); ?>
 		<?php include("control_panel_header.php"); ?>
 		<div class="edit">
-			<h2>Edit Character (<a href="#" onclick="toggleDisplay('guideDiv');">Help</a>)</h2>
+			<h2>Character Info (<a href="#" onclick="toggleDisplay('guideDiv');">Help</a>)</h2>
 			<div id="guideDiv" style="background-color: white; display: none;">
-				<h3>General Notes</h3>
+				<h3>Character Appearance Notes:</h3>
+				<p style="text-align: left">
+					Any value that is a bare number without any other description before or after it does 
+					not correlate to the values selected in the ingame character creator.
+				</p>
+				<!--
 				<p style="text-align: left">
 					All values here are editable, so change them at your own risk. Just keep in mind that
 					you can always import an appearance from a character creation data file and equip presetted
@@ -405,19 +462,26 @@ catch(Exception $e)
 					located in the "C:\Users\{Username}\Documents\My Games\FINAL FANTASY XIV\user\00000000" folder 
 					and have a '.CMB' extension.
 				</p>
+				-->
 			</div>
 			<br />
 			
 			<form method="post" autocomplete="off">
 				<table class="editForm">
 					<tr>
-						<th colspan="4">General Information</th>
+						<th colspan="4">Profile</th>
 					</tr>
 					<tr>
-						<td colspan="4">Name:</td>
+						<td>Name:</td>
+						<td>Legacy Character:</td>
+						<td>Creation Date:</td>
+						<td>Play Time:</td>
 					</tr>
 					<tr>
-						<td colspan="4"><?php echo GenerateTextField($g_characterInfo, $g_profileMapping, "characterName", 20); ?></td>
+						<td><?php echo GenerateTextField($g_characterInfo, $g_profileMapping, "characterName", 20); ?></td>
+						<td><?php echo GenerateSelectField($g_characterInfo, $g_profileMapping, $g_yesno, "characterIsLegacy"); ?></td>
+						<td><?php echo GenerateTextField($g_characterInfo, $g_profileMapping, "characterCreationDate", 20); ?></td>
+						<td><?php echo GenerateTextField($g_characterInfo, $g_profileMapping, "characterPlayTime"); ?></td>
 					</tr>
 					<tr>
 						<td>Guardian:</td>
@@ -431,78 +495,158 @@ catch(Exception $e)
 						<td><?php echo GenerateTextField($g_characterInfo, $g_profileMapping, "characterBirthDay"); ?></td>
 						<td><?php echo GenerateSelectField($g_characterInfo, $g_profileMapping, $g_allegiances, "characterAllegiance"); ?></td>
 					</tr>
+					<tr>
+						<td>Current GC:</td>
+						<td>Maelstrom Rank:</td>
+						<td>Twin Adder Rank:</td>
+						<td>Immortal Flame Rank:</td>
+					</tr>
+					<tr>
+						<td><?php echo GenerateSelectField($g_characterInfo, $g_profileMapping, $g_grandcompany, "characterGcCurrent"); ?></td>
+						<td><?php echo GenerateTextField($g_characterInfo, $g_profileMapping, "characterGcLimsaRank"); ?></td>
+						<td><?php echo GenerateTextField($g_characterInfo, $g_profileMapping, "characterGcGridaniaRank"); ?></td>
+						<td><?php echo GenerateTextField($g_characterInfo, $g_profileMapping, "characterGcUldahRank"); ?></td>
+					</tr>
+					<!--
+					<tr>
+						<td>Chocobo Unlocked:</td>
+						<td>Goobbue Unlocked:</td>
+						<td>Chocobo Appearance:</td>
+						<td>Chocobo Name:</td>
+					</tr>
+					<tr>
+						<td><?php echo GenerateSelectField($g_characterChocobo, $g_chocoboMapping, $g_yesno, "characterHasChocobo"); ?></td>
+						<td><?php echo GenerateSelectField($g_characterChocobo, $g_chocoboMapping, $g_yesno, "characterHasGoobbue"); ?></td>
+						<td><?php echo GenerateTextField($g_characterChocobo, $g_chocoboMapping, "characterChocoboAppearance"); ?></td>
+						<td><?php echo GenerateTextField($g_characterChocobo, $g_chocoboMapping, "characterChocoboName"); ?></td>
+					</tr>
+					-->
+					<tr>
+						<td>GLA:</td>
+						<td>PUG:</td>
+						<td>MRD:</td>
+						<td>LNC:</td>
+					</tr>
+					<tr>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterGla"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterPug"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterMrd"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterLnc"); ?></td>
+					</tr>
+					<tr>
+						<td>ARC:</td>
+						<td>CNJ:</td>
+						<td>THM:</td>
+					</tr>
+					<tr>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterArc"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterCnj"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterThm"); ?></td>
+					</tr>
+					<tr>
+						<td>CRP:</td>
+						<td>BSM:</td>
+						<td>ARM:</td>
+						<td>GSM:</td>
+					</tr>
+					<tr>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterCrp"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterBsm"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterArm"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterGsm"); ?></td>
+					</tr>
+					<tr>
+						<td>LTW:</td>
+						<td>WVR:</td>
+						<td>ALC:</td>
+						<td>CUL:</td>
+					</tr>
+					<tr>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterLtw"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterWvr"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterAlc"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterCul"); ?></td>
+					</tr>
+					<tr>
+						<td>MIN:</td>
+						<td>BTN:</td>
+						<td>FSH:</td>
+					</tr>
+					<tr>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterMin"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterBtn"); ?></td>
+						<td><?php echo GenerateTextField($g_characterClassLevels, $g_classLevels, "characterFsh"); ?></td>
+					</tr>
 				</table>
 				<br />
 				<hr />
 				<table class="editForm">
 					<tr>
-						<th colspan="4">Appearance</th>
+						<th colspan="5">Appearance</th>
 					</tr>
 					<tr>
-						<td colspan="4">Tribe:</td>
-					</tr>
-					<tr>
-						<td colspan="4"><?php echo GenerateSelectField($g_characterInfo, $g_profileMapping, $g_tribes, "characterTribe"); ?></td>
-					</tr>
-					<tr>
-						<td>Size:</td>
+						<td colspan="2">Race/Tribe:</td>
+						<td>Height:</td>
 						<td>Voice:</td>
-						<td>Skin Color:</td>
-						<td>Hair Style:</td>
+						<td>Skin Tone:</td>
 					</tr>
 					<tr>
-						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterSize"); ?></td>
+						<td colspan="2"><?php echo GenerateSelectField($g_characterInfo, $g_profileMapping, $g_tribes, "characterTribe"); ?></td>
+						<td><?php echo GenerateSelectField($g_characterAppearance, $g_appearanceMapping, $g_height, "characterSize"); ?></td>
 						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterVoice"); ?></td>
 						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterSkinColor"); ?></td>
-						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterHairStyle"); ?></td>
 					</tr>
 					<tr>
+						<td>Hairstyle:</td>
+						<td>Variation:</td>
 						<td>Hair Color:</td>
-						<td>Hair Option:</td>
-						<td>Eye Color:</td>
-						<td>Face Type:</td>
+						<td>Highlights:</td>
 					</tr>
 					<tr>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterHairStyle"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterHairVariation"); ?></td>
 						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterHairColor"); ?></td>
-						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterHairOption"); ?></td>
-						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterEyeColor"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterHairHighlightColor"); ?></td>
+					</tr>
+					<tr>
+						<td>Face Type:</td>
+						<td>Eyebrows:</td>
+						<td>Eye Shape:</td>
+						<td>Iris Size:</td>
+					</tr>
+					<tr>
+						<td>Eye Color:</td>
+						<td>Nose:</td>
+						<td>Face Mouth:</td>
+						<td>Features:</td>						
+					</tr>
+					<tr>
 						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceType"); ?></td>
-					</tr>
-					<tr>
-						<td>Face Brow:</td>
-						<td>Face Eye:</td>
-						<td>Face Iris:</td>
-						<td>Face Nose:</td>
-					</tr>
-					<tr>
 						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceBrow"); ?></td>
 						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceEye"); ?></td>
 						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceIris"); ?></td>
+					</tr>
+					<tr>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterEyeColor"); ?></td>
 						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceNose"); ?></td>
-					</tr>
-					<tr>
-						<td>Face Mouth:</td>
-						<td>Face Jaw:</td>
-						<td>Face Cheek:</td>
-						<td>Face Option 1:</td>
-					</tr>
-					<tr>
 						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceMouth"); ?></td>
-						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceJaw"); ?></td>
-						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceCheek"); ?></td>
-						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceOption1"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceFeatures"); ?></td>
+					</tr>
+					<tr>						
+						<td>Characteristic:</td>
+						<td>Color:</td>
+						<td>Ears:</td>
 					</tr>
 					<tr>
-						<td>Face Option 2:</td>
-						<td></td>
-						<td></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceCharacteristics"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceCharacteristicsColor"); ?></td>
+						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceEars"); ?></td>
+					</tr>
+					<!--
+					<tr>
 						<td></td>
 					</tr>
 					<tr>
-						<td><?php echo GenerateTextField($g_characterAppearance, $g_appearanceMapping, "characterFaceOption2"); ?></td>
-						<td></td>
-						<td></td>
-						<!--
 						<td>
 							<script>
 								function onImportAppearanceButtonClick()
@@ -516,8 +660,8 @@ catch(Exception $e)
 								document.getElementById('importAppearance').addEventListener('change', importAppearanceFromFile, false);
 							</script>
 						</td>
-						-->
 					</tr>
+					-->
 				</table>
 				<br />
 				<hr />
