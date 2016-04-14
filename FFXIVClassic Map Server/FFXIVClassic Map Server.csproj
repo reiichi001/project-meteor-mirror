@@ -102,6 +102,7 @@
     <Compile Include="actors\chara\ParameterSave.cs" />
     <Compile Include="actors\chara\player\PlayerWork.cs" />
     <Compile Include="dataobjects\DBWorld.cs" />
+    <Compile Include="dataobjects\Event.cs" />
     <Compile Include="dataobjects\InventoryItem.cs" />
     <Compile Include="dataobjects\ConnectedPlayer.cs" />
     <Compile Include="dataobjects\Item.cs" />
@@ -244,6 +245,7 @@
     <Compile Include="packets\send\supportdesk\FaqListResponsePacket.cs" />
     <Compile Include="packets\send\supportdesk\GMTicketPacket.cs" />
     <Compile Include="packets\send\supportdesk\GMTicketSentResponsePacket.cs" />
+    <Compile Include="packets\send\_0x10Packet.cs" />
     <Compile Include="packets\send\_0x02Packet.cs" />
     <Compile Include="packets\send\_0xE2Packet.cs" />
     <Compile Include="packets\SubPacket.cs" />

@@ -45,9 +45,19 @@ namespace FFXIVClassic_Map_Server.Actors
                 return null;
         }
 
+        public void ClearQuestData()
+        {
+            questData.Clear();
+        }
+
         public uint GetQuestId()
         {
             return actorId;
+        }
+
+        public void ClearQuestFlags()
+        {
+            questFlags = 0;
         }
 
         public void SetQuestFlag(int bitIndex, bool value)

@@ -418,15 +418,21 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public void doWarp(ConnectedPlayer client, string zone, string privateArea, string sx, string sy, string sz)
+        public void doWarp(ConnectedPlayer client, string zone, string privateArea, string sx, string sy, string sz, string spawnType)
         {
             uint zoneId;
             float x,y,z;
+            byte sType; 
 
             if (zone.ToLower().StartsWith("0x"))
                 zoneId = Convert.ToUInt32(zone, 16);
             else
                 zoneId = Convert.ToUInt32(zone);
+
+            if (spawnType.ToLower().StartsWith("0x"))
+                sType = Convert.ToByte(spawnType, 16);
+            else
+                sType = Convert.ToByte(spawnType);
 
             if (mWorldManager.GetZone(zoneId) == null)
             {
@@ -440,12 +446,20 @@ namespace FFXIVClassic_Lobby_Server
             z = Single.Parse(sz);
 
             if (client != null)
-                mWorldManager.DoZoneChange(client.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
+            {
+                if (zoneId == client.getActor().zoneId)
+                    mWorldManager.DoPlayerMoveInZone(client.getActor(), x, y, z, 0.0f, sType);
+                else
+                    mWorldManager.DoZoneChange(client.getActor(), zoneId, privateArea, sType, x, y, z, 0.0f);
+            }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
+                    if (zoneId == entry.Value.getActor().zoneId)
+                        mWorldManager.DoPlayerMoveInZone(entry.Value.getActor(), x, y, z, 0.0f, 0x0);
+                    else
+                        mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, 0x2, x, y, z, 0.0f);
                 }
             }
         }
@@ -826,10 +840,10 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     if (split.Length == 2)                    
                         doWarp(client, split[1]);
-                    else if (split.Length == 5)
-                        doWarp(client, split[1], null, split[2], split[3], split[4]);
                     else if (split.Length == 6)
-                        doWarp(client, split[1], split[2], split[3], split[4], split[5]);
+                        doWarp(client, split[1], null, split[2], split[3], split[4], split[5]);
+                    else if (split.Length == 7)
+                        doWarp(client, split[1], split[2], split[3], split[4], split[5], split[6]);
                     return true;
                 }
                 else if (split[0].Equals("property"))

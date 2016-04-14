@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
@@ -11,7 +12,8 @@ namespace FFXIVClassic_Map_Server.actors.director
 {
     class QuestDirectorMan0l001 : Director
     {
-        public QuestDirectorMan0l001(uint id) : base(id)
+        public QuestDirectorMan0l001(Player player, uint id)
+            : base(player, id)
         {
             this.displayNameId = 0;
             this.customDisplayName = "questDirect_ocn0Btl02_01";

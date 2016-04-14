@@ -417,11 +417,11 @@ namespace FFXIVClassic_Map_Server
             if (ze.zoneId != player.zoneId)
                 return;
 
-            DoPlayerMoveInZone(player, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
+            DoPlayerMoveInZone(player, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation, ze.spawnType);
         }
 
         //Moves actor within the zone
-        public void DoPlayerMoveInZone(Player player, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
+        public void DoPlayerMoveInZone(Player player, float spawnX, float spawnY, float spawnZ, float spawnRotation, byte spawnType = 0xF)
         {            
             //Remove player from currentZone if transfer else it's login
             if (player.zone != null)
@@ -437,7 +437,7 @@ namespace FFXIVClassic_Map_Server
 
                 //Send packets
                 player.playerSession.queuePacket(_0xE2Packet.buildPacket(player.actorId, 0x0), true, false);
-                player.playerSession.queuePacket(player.createSpawnTeleportPacket(player.actorId, 0x0f), true, false);
+                player.playerSession.queuePacket(player.createSpawnTeleportPacket(player.actorId, spawnType), true, false);
                 player.sendInstanceUpdate();
 
             }            
@@ -455,6 +455,9 @@ namespace FFXIVClassic_Map_Server
 
             //Set the current zone and add player
             player.zone = zone;
+
+            LuaEngine.onBeginLogin(player);
+            
             zone.addActorToZone(player);
             
             //Send packets            

@@ -15,8 +15,8 @@ namespace FFXIVClassic_Map_Server.Actors
     {
         private uint weatherId;
 
-        public WeatherDirector(uint weatherId)
-            : base(0x5FF80003)
+        public WeatherDirector(Player player, uint weatherId)
+            : base(player, 0x5FF80003)
         {
             this.weatherId = weatherId;
 

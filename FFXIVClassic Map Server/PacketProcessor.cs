@@ -249,19 +249,27 @@ namespace FFXIVClassic_Lobby_Server
                                 break;
                             }
                             */
-                            player.getActor().eventCurrentOwner = eventStart.scriptOwnerActorID;
-                            player.getActor().eventCurrentStarter = eventStart.triggerName;
 
-                            //Is it a static actor? If not look in the player's instance
-                            Actor ownerActor = Server.getStaticActors(player.getActor().eventCurrentOwner);
+                            Actor ownerActor = Server.getStaticActors(eventStart.scriptOwnerActorID);
+                            if (ownerActor != null && ownerActor is Command)
+                            {
+                                player.getActor().currentCommand = eventStart.scriptOwnerActorID;
+                                player.getActor().currentCommandName = eventStart.triggerName;
+                            }
+                            else
+                            {
+                                player.getActor().currentEventOwner = eventStart.scriptOwnerActorID;
+                                player.getActor().currentEventName = eventStart.triggerName;
+                            }
+
                             if (ownerActor == null)
                             {
                                 //Is it a instance actor?
-                                ownerActor = Server.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
+                                ownerActor = Server.GetWorldManager().GetActorInWorld(player.getActor().currentEventOwner);
                                 if (ownerActor == null)
                                 {
                                     //Is it a Director?
-                                    if (player.getActor().currentDirector != null && player.getActor().eventCurrentOwner == player.getActor().currentDirector.actorId)
+                                    if (player.getActor().currentDirector != null && player.getActor().currentEventOwner == player.getActor().currentDirector.actorId)
                                         ownerActor = player.getActor().currentDirector;
                                     else
                                     {
@@ -285,12 +293,12 @@ namespace FFXIVClassic_Lobby_Server
                             Log.debug(String.Format("\n===Event UPDATE===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nStep: 0x{4:X}\nParams: {5}", eventUpdate.actorID, eventUpdate.scriptOwnerActorID, eventUpdate.val1, eventUpdate.val2, eventUpdate.step, LuaUtils.dumpParams(eventUpdate.luaParams)));
 
                             //Is it a static actor? If not look in the player's instance
-                            Actor updateOwnerActor = Server.getStaticActors(player.getActor().eventCurrentOwner);
+                            Actor updateOwnerActor = Server.getStaticActors(player.getActor().currentEventOwner);
                             if (updateOwnerActor == null)
                             {
-                                updateOwnerActor = Server.GetWorldManager().GetActorInWorld(player.getActor().eventCurrentOwner);
+                                updateOwnerActor = Server.GetWorldManager().GetActorInWorld(player.getActor().currentEventOwner);
 
-                                if (player.getActor().currentDirector != null && player.getActor().eventCurrentOwner == player.getActor().currentDirector.actorId)
+                                if (player.getActor().currentDirector != null && player.getActor().currentEventOwner == player.getActor().currentDirector.actorId)
                                     updateOwnerActor = player.getActor().currentDirector;
 
                                 if (updateOwnerActor == null)
