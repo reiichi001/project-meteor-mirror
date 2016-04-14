@@ -35,17 +35,17 @@ function onEventUpdate(player, actor, step, arg1)
 			player:setCurrentMenuId(1);
 			player:runEventFunction("delegateCommand", actor, "eventAetheryte", arg1, 2, 2, 2, 4, 4, 4);
 		else
-			player:endEvent();
+			player:endCommand();
 		end
 	elseif (menuId == 1) then --Aetheryte
 		if (arg1 == nil) then
-			player:endEvent();
+			player:endCommand();
 			return;
 		end
 		player:setCurrentMenuId(2);
 		player:runEventFunction("delegateCommand", actor, "eventConfirm", false, false, 1, 138824, false);
 	elseif (menuId == 2) then --Confirm
-		player:endEvent();	
+		player:endCommand();	
 	end
 	
 end

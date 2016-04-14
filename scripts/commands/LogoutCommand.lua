@@ -16,8 +16,9 @@ Countdown: 	1
 --]]
 
 function onEventStarted(player, command)
-	player:setCurrentMenuId(0);
-	player:runEventFunction("delegateCommand", command, "eventConfirm");
+	--player:setCurrentMenuId(0);
+	--player:runEventFunction("delegateCommand", command, "eventConfirm");
+	player:logout();
 end
 
 function onEventUpdate(player, command, triggerName, step, arg1, arg2)
@@ -28,23 +29,23 @@ function onEventUpdate(player, command, triggerName, step, arg1, arg2)
 	if (currentMenuId == 0) then
 		if (arg1 == 1) then --Exit	
 			player:quitGame();
-			player:endEvent();	
+			player:endCommand();	
 		elseif (arg1 == 2) then --Character Screen
 			player:logout();
-			player:endEvent();
+			player:endCommand();
 			--player:setCurrentMenuId(1);
 			--player:runEventFunction("delegateCommand", command, "eventCountDown");
 		elseif (arg1 == 3) then --Cancel
-			player:endEvent();
+			player:endCommand();
 		end
 	--Countdown Dialog
 	elseif (currentMenuId == 1) then
 	
 		if (arg2 == 1) then --Logout Complete
 			player:logout();
-			player:endEvent();			
+			player:endCommand();			
 		elseif (arg2 == 2) then --Cancel Pressed
-			player:endEvent();
+			player:endCommand();
 		end
 		
 	end
