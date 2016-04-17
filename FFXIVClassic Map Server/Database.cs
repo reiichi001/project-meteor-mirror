@@ -345,7 +345,7 @@ namespace FFXIVClassic_Lobby_Server
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charaId", player.actorId);
                     cmd.Parameters.AddWithValue("@slot", slot);
-                    cmd.Parameters.AddWithValue("@questId", quest.actorId);
+                    cmd.Parameters.AddWithValue("@questId", 0xFFFFF & quest.actorId);
                     cmd.Parameters.AddWithValue("@questData", quest.GetSerializedQuestData());
                     cmd.Parameters.AddWithValue("@questFlags", quest.GetQuestFlags());
 

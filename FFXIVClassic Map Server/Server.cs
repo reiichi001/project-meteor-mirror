@@ -432,6 +432,7 @@ namespace FFXIVClassic_Lobby_Server
             if (spawnType.ToLower().StartsWith("0x"))
                 sType = Convert.ToByte(spawnType, 16);
             else
+                
                 sType = Convert.ToByte(spawnType);
 
             if (mWorldManager.GetZone(zoneId) == null)

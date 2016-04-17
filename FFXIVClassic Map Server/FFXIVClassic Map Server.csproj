@@ -72,6 +72,8 @@
     <Compile Include="actors\debug\Debug.cs" />
     <Compile Include="actors\director\Director.cs" />
     <Compile Include="actors\director\OpeningDirector.cs" />
+    <Compile Include="actors\director\quest\QuestDirectorMan0u001.cs" />
+    <Compile Include="actors\director\quest\QuestDirectorMan0g001.cs" />
     <Compile Include="actors\director\quest\QuestDirectorMan0l001..cs" />
     <Compile Include="actors\director\WeatherDirector.cs" />
     <Compile Include="actors\EventList.cs" />
@@ -102,7 +104,6 @@
     <Compile Include="actors\chara\ParameterSave.cs" />
     <Compile Include="actors\chara\player\PlayerWork.cs" />
     <Compile Include="dataobjects\DBWorld.cs" />
-    <Compile Include="dataobjects\Event.cs" />
     <Compile Include="dataobjects\InventoryItem.cs" />
     <Compile Include="dataobjects\ConnectedPlayer.cs" />
     <Compile Include="dataobjects\Item.cs" />

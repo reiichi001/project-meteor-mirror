@@ -10,18 +10,16 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.actors.director
 {
-    class OpeningDirector : Director
+    class QuestDirectorMan0u001 : Director
     {
-        public OpeningDirector(Player player, uint id) : base(player, id)
+        public QuestDirectorMan0u001(Player player, uint id)
+            : base(player, id)
         {
             this.displayNameId = 0;
-            this.customDisplayName = String.Format("openingDire_{0}_{1}", player.zone.zoneName, "04");
+            this.customDisplayName = "questDirect_wil0Btl01_01";
 
-            this.actorName = String.Format("openingDire_{0}_{1}@{2:x3}{3:x2}", player.zone.zoneName, "04", player.zoneId, 0);
-
-            this.actorName = this.actorName.Replace("Battle", "Btl");
-
-            this.className = "OpeningDirector";
+            this.actorName = "questDirect_wil0Btl01_01@0A615";
+            this.className = "QuestDirectorMan0u001";
 
             this.eventConditions = new EventList();
 
@@ -36,7 +34,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         public override SubPacket createScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
-            lParams = LuaUtils.createLuaParamList("/Director/OpeningDirector", false, false, false, false, 0x13881);
+            lParams = LuaUtils.createLuaParamList("/Director/Quest/QuestDirectorMan0u001", false, false, false, false, false, 0x757F);
             return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
         }
     }

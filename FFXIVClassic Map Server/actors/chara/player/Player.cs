@@ -966,6 +966,47 @@ namespace FFXIVClassic_Map_Server.Actors
         public Equipment getEquipment()
         {
             return equipment;
+        }     
+
+        public byte getInitialTown()
+        {
+            return playerWork.initialTown;
+        }
+
+        public int getFreeQuestSlot()
+        {
+            for (int i = 0; i < questScenario.Length; i++)
+            {
+                if (questScenario[i] == null)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        public void addQuest(uint id)
+        {
+            Actor actor = Server.getStaticActors((0xA0F00000 | id));
+            addQuest(actor.actorName);
+        }
+
+        public void addQuest(string name)
+        {
+            Actor actor = Server.getStaticActors(name);
+
+            if (actor == null)
+                return;
+
+            uint id = actor.actorId;
+
+            int freeSlot = getFreeQuestSlot();
+
+            if (freeSlot == -1)
+                return;
+
+            playerWork.questScenario[freeSlot] = id;
+            questScenario[freeSlot] = new Quest(this, playerWork.questScenario[freeSlot], name, null, 0);
+            Database.saveQuest(this, questScenario[freeSlot]);
         }
 
         public Quest getQuest(uint id)
@@ -1032,6 +1073,14 @@ namespace FFXIVClassic_Map_Server.Actors
             else if (directorType.Equals("QuestDirectorMan0l001"))
             {
                 currentDirector = new QuestDirectorMan0l001(this, 0x46080012);
+            }
+            else if (directorType.Equals("QuestDirectorMan0g001"))  
+            {
+                currentDirector = new QuestDirectorMan0g001(this, 0x46080012);
+            }
+            else if (directorType.Equals("QuestDirectorMan0u001"))
+            {
+                currentDirector = new QuestDirectorMan0u001(this, 0x46080012);
             }
 
             if (sendPackets)

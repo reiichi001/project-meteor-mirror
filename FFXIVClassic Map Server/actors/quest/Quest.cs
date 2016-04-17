@@ -25,7 +25,12 @@ namespace FFXIVClassic_Map_Server.Actors
             this.owner = owner;
             actorName = name;            
             this.questFlags = questFlags;
-            this.questData = JsonConvert.DeserializeObject<Dictionary<string, Object>>(questDataJson);
+
+            if (questDataJson != null)
+                this.questData = JsonConvert.DeserializeObject<Dictionary<string, Object>>(questDataJson);
+            else
+                questData = null;
+
             if (questData == null)
                 questData = new Dictionary<string, object>();
         }

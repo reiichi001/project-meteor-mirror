@@ -26,8 +26,7 @@ function onEventStarted(player, npc, triggerName)
 			player:runEventFunction("delegateEvent", player, man0l0Quest, "processTtrMini003", nil, nil, nil);
 			npc:setQuestGraphic(player, 0x0);
 			man0l0Quest:SetQuestFlag(MAN0L0_FLAG_MINITUT_DONE3, true);
-			man0l0Quest:SaveData();
-			
+			man0l0Quest:SaveData();		
 			player:getDirector():onTalked(npc);
 		else
 			player:runEventFunction("delegateEvent", player, man0l0Quest, "processEvent000_8", nil, nil, nil);

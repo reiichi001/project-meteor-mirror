@@ -14,18 +14,18 @@ function onBeginLogin(player)
 		player:getQuest(110001):ClearQuestFlags();
 	elseif (player:hasQuest(110005) == true) then 
 		player:setDirector("openingDirector", false);
-		player.positionX = 356.09;
-		player.positionY = 3.74;
-		player.positionZ = -701.62;
-		player.rotation = -1.4;
+		player.positionX = 369.5434;
+		player.positionY = 4.21;
+		player.positionZ = -706.1074;
+		player.rotation = -1.26721;
 		player:getQuest(110005):ClearQuestData();
 		player:getQuest(110005):ClearQuestFlags();
 	elseif (player:hasQuest(110009) == true) then
 		player:setDirector("openingDirector", false);
-		player.positionX = 12.63;
-		player.positionY = 196.05;
-		player.positionZ = 131.01;
-		player.rotation = -1.34;
+		player.positionX = 5.364327;
+		player.positionY = 196.0;
+		player.positionZ = 133.6561;
+		player.rotation = -2.849384;
 		player:getQuest(110009):ClearQuestData();
 		player:getQuest(110009):ClearQuestFlags();
 	end

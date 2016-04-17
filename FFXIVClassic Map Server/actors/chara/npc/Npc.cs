@@ -2,6 +2,7 @@
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.actors;
+using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
@@ -19,6 +20,8 @@ namespace FFXIVClassic_Map_Server.Actors
     class Npc : Character
     {
         private uint actorClassId;
+
+        public NpcWork npcWork = new NpcWork();
 
         public Npc(uint id, string actorName, uint zoneId, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, uint displayNameId, string customDisplayName, string className)
             : base(id)
@@ -38,6 +41,26 @@ namespace FFXIVClassic_Map_Server.Actors
             this.zoneId = zoneId;
 
             loadNpcTemplate(id);
+
+            charaWork.battleSave.potencial = 1.0f;
+
+            charaWork.parameterSave.state_mainSkill[0] = 3;
+            charaWork.parameterSave.state_mainSkill[2] = 3;
+            charaWork.parameterSave.state_mainSkillLevel = 2;
+
+            charaWork.parameterSave.hp[0] = 500;
+            charaWork.parameterSave.hpMax[0] = 500;
+            charaWork.property[0] = 1;
+            charaWork.property[1] = 1;
+
+            if (className.Equals("JellyfishScenarioLimsaLv00"))
+            {
+                charaWork.property[2] = 1;
+                npcWork.hateType = 1;
+            }
+
+            charaWork.property[3] = 1;
+            charaWork.property[4] = 1;
         }
 
         public SubPacket createAddActorPacket(uint playerActorId)
@@ -78,6 +101,54 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(createScriptBindPacket(playerActorId));            
 
             return BasePacket.createPacket(subpackets, true, false);
+        }
+
+        public override BasePacket getInitPackets(uint playerActorId)
+        {
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this, playerActorId);
+
+            //Properties
+            for (int i = 0; i < charaWork.property.Length; i++)
+            {
+                if (charaWork.property[i] != 0)
+                    propPacketUtil.addProperty(String.Format("charaWork.property[{0}]", i));
+            }
+
+            //Parameters
+            propPacketUtil.addProperty("charaWork.parameterSave.hp[0]");
+            propPacketUtil.addProperty("charaWork.parameterSave.hpMax[0]");
+            propPacketUtil.addProperty("charaWork.parameterSave.mp");
+            propPacketUtil.addProperty("charaWork.parameterSave.mpMax");
+            propPacketUtil.addProperty("charaWork.parameterTemp.tp");
+
+            if (charaWork.parameterSave.state_mainSkill[0] != 0)
+                propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[0]");
+            if (charaWork.parameterSave.state_mainSkill[1] != 0)
+                propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[1]");
+            if (charaWork.parameterSave.state_mainSkill[2] != 0)
+                propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[2]");
+            if (charaWork.parameterSave.state_mainSkill[3] != 0)
+                propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[3]");
+
+            propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkillLevel");
+
+            //Status Times
+            for (int i = 0; i < charaWork.statusShownTime.Length; i++)
+            {
+                if (charaWork.statusShownTime[i] != 0xFFFFFFFF)
+                    propPacketUtil.addProperty(String.Format("charaWork.statusShownTime[{0}]", i));
+            }
+
+            //General Parameters
+            for (int i = 3; i < charaWork.battleTemp.generalParameter.Length; i++)
+            {
+                if (charaWork.battleTemp.generalParameter[i] != 0)
+                    propPacketUtil.addProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
+            }
+
+            propPacketUtil.addProperty("npcWork.hateType");
+
+            return BasePacket.createPacket(propPacketUtil.done(), true, false);
         }
 
         public uint getActorClassId()

@@ -4,6 +4,7 @@ function onZoneInit(zone)
 end
 
 function onZoneIn(player)
+
 	openingQuest = player:getQuest(110001);
 	
 	--Opening Quest
