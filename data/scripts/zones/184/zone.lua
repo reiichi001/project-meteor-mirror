@@ -5,7 +5,7 @@ end
 
 function onZoneIn(player)
 
-	openingQuest = player:getQuest(110005);
+	openingQuest = player:getQuest(110009);
 	
 	--Opening Quest
 	if (openingQuest ~= nil) then
@@ -13,7 +13,7 @@ function onZoneIn(player)
 			player:kickEvent(player:getDirector(), "noticeEvent");
 		end
 	end	
-
+	
 end
 
 function onZoneOut(zone, player)

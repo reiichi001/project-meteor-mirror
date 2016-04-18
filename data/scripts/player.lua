@@ -2,6 +2,20 @@ local initClassItems, initRaceItems;
 
 function onBeginLogin(player)
 		
+	--New character, set the initial quest
+	if (player:getPlayTime(false) == 0) then
+		initialTown = player:getInitialTown();
+		
+		if (initialTown == 1 and player:hasQuest(110001) == false) then
+			player:addQuest(110001);			
+		elseif (initialTown == 2 and player:hasQuest(110005) == false) then
+			player:addQuest(110005);
+		elseif (initialTown == 3 and player:hasQuest(110009) == false) then
+			player:addQuest(110009);
+		end
+		
+	end
+			
 	--For Opening. Set Director and reset position incase d/c
 	if	   (player:hasQuest(110001) == true) then
 		--player:setDirector("openingDirector", false);
@@ -41,6 +55,7 @@ function onLogin(player)
 		
 		initClassItems(player);
 		initRaceItems(player);		
+	end	
 	
 end
 

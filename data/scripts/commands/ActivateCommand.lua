@@ -13,15 +13,13 @@ function onEventStarted(player, command, triggerName)
 	elseif (player:getState() == 2) then
 		player:changeState(0); 
 	end
-				
-	player:endCommand();
 		
+	player:endCommand();
+	
 	--For Opening Tutorial
 	if (player:hasQuest("Man0l0") or player:hasQuest("Man0g0") or player:hasQuest("Man0u0")) then
-		player:getDirector():onCommand(command);		
+		player:getDirector():onCommand(command);
+	
 	end	
 	
-end
-
-function onEventUpdate(player, npc)
 end

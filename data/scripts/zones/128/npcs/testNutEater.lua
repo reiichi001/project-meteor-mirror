@@ -1,3 +1,3 @@
 function init(npc)
-	return "/Chara/Npc/Monster/Lemming/NuteaterStandard", false, false, false, false, false, npc.getActorClassId(), false, false, 10, 1, 4, false, false, false, false, false, false, false, false, 2;
+	return "/Chara/Npc/Monster/Lemming/NuteaterStandard", false, false, false, false, false, npc.getActorClassId(), true, true, 10, 1, 4, true, true, true, true, true, true, true, true, 2;
 end
