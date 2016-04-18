@@ -280,7 +280,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)data" "$(SolutionDir)$(ProjectName)\$(OutDir)" /E /C /D</PostBuildEvent>
+    <PostBuildEvent>robocopy "$(SolutionDir)data" "$(SolutionDir)$(ProjectName)\$(OutDir)." /XO  2&gt;nul 1&gt;nul
+EXIT 0</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
