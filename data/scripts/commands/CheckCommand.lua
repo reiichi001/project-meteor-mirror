@@ -14,6 +14,6 @@ function onEventStarted(player, commandactor, triggerName, arg1, arg2, arg3, arg
 		player:examinePlayer(actor);
 	end
 	
-	player:endEvent();
+	player:endCommand();
 	
 end

@@ -15,7 +15,7 @@ function onEventStarted(player, actor, triggerName, maxNumber)
 	worldMaster = getWorldMaster();
 	player:sendGameMessage(player, worldMaster, 25342, 0x20, result, maxNumber);
 				
-	player:endEvent();
+	player:endCommand();
 	
 end
 

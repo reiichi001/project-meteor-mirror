@@ -1,5 +1,38 @@
 local initClassItems, initRaceItems;
 
+function onBeginLogin(player)
+		
+	--For Opening. Set Director and reset position incase d/c
+	if	   (player:hasQuest(110001) == true) then
+		--player:setDirector("openingDirector", false);
+		player.positionX = 0.016;
+		player.positionY = 10.35;
+		--player.positionZ = -36.91;
+		player.positionZ = -20.91;
+		player.rotation = 0.025;
+		player:getQuest(110001):ClearQuestData();
+		player:getQuest(110001):ClearQuestFlags();
+	elseif (player:hasQuest(110005) == true) then 
+		player:setDirector("openingDirector", false);
+		player.positionX = 369.5434;
+		player.positionY = 4.21;
+		player.positionZ = -706.1074;
+		player.rotation = -1.26721;
+		player:getQuest(110005):ClearQuestData();
+		player:getQuest(110005):ClearQuestFlags();
+	elseif (player:hasQuest(110009) == true) then
+		player:setDirector("openingDirector", false);
+		player.positionX = 5.364327;
+		player.positionY = 196.0;
+		player.positionZ = 133.6561;
+		player.rotation = -2.849384;
+		player:getQuest(110009):ClearQuestData();
+		player:getQuest(110009):ClearQuestFlags();
+	end
+	
+	
+end
+
 function onLogin(player)
 	player:sendMessage(0x1D,"",">Callback \"onLogin\" for player script running.");
 	
@@ -8,11 +41,6 @@ function onLogin(player)
 		
 		initClassItems(player);
 		initRaceItems(player);		
-	end
-		
-	if (player:hasQuest(110001) == true or player:hasQuest(110005) == true or player:hasQuest(110009) == true) then
-		--player:setDirector("openingDirector");
-	end
 	
 end
 

@@ -1,5 +1,6 @@
 ﻿using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.Actors;
+using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,12 @@ using System.Threading.Tasks;
 namespace FFXIVClassic_Map_Server.actors.director
 {
     class Director : Actor
-    {            
-        public Director(uint id) : base(id)
-        {
+    {
+        Player owner;
 
+        public Director(Player owner, uint id) : base(id)
+        {
+            this.owner = owner;
         }
 
         public virtual BasePacket getSpawnPackets(uint playerActorId, uint spawnType)
@@ -35,6 +38,16 @@ namespace FFXIVClassic_Map_Server.actors.director
             SetActorPropetyPacket initProperties = new SetActorPropetyPacket("/_init");
             initProperties.addTarget();
             return BasePacket.createPacket(initProperties.buildPacket(playerActorId, actorId), true, false);
+        }
+
+        public void onTalked(Npc npc)
+        {
+            LuaEngine.doDirectorOnTalked(this, owner, npc);
+        }
+
+        public void onCommand(Command command)
+        {
+            LuaEngine.doDirectorOnCommand(this, owner, command);
         }
 
     }    

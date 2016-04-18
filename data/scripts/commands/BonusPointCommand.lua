@@ -18,6 +18,6 @@ function onEventUpdate(player, actor, step, arg1)
 
 	--Submit
 	
-	player:endEvent();
+	player:endCommand();
 	
 end

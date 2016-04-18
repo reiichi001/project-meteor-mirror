@@ -121,7 +121,11 @@ namespace FFXIVClassic_Map_Server
         {
             foreach (LuaParam l in luaParams)
             {           
-                writer.Write((Byte)l.typeID);
+                if (l.typeID == 0x1)
+                    writer.Write((Byte)0);
+                else
+                    writer.Write((Byte)l.typeID);
+
                 switch (l.typeID)
                 {
                     case 0x0: //Int32                        
