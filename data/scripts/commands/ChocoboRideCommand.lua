@@ -42,9 +42,6 @@ function onEventStarted(player, actor, triggerName, isGoobbue)
 		player:changeState(0); 
 	end
 	
-	player:endEvent();
+	player:endCommand();
 	
-end
-
-function onEventUpdate(player, npc)
 end

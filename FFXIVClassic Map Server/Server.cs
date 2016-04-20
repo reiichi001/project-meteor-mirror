@@ -330,6 +330,7 @@ namespace FFXIVClassic_Lobby_Server
 
         #endregion
 
+
         public static WorldManager GetWorldManager()
         {
             return mWorldManager;
@@ -344,5 +345,6 @@ namespace FFXIVClassic_Lobby_Server
         {
             return gamedataItems;
         }
+
     }
 }

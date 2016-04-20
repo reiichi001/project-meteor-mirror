@@ -47,8 +47,7 @@ namespace FFXIVClassic_Lobby_Server
                 BasePacket packet = sendPacketQueue.Take();                
 
                 byte[] packetBytes = packet.getPacketBytes();
-                byte[] buffer = new byte[0xFFFF];
-                Array.Copy(packetBytes, buffer, packetBytes.Length);
+
                 try
                 {
                     socket.Send(packetBytes);
