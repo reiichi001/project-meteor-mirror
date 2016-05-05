@@ -15,7 +15,7 @@ function onEventStarted(player, actor, triggerName, emoteId)
 		player:doEmote(emoteId);
 	end
 	
-	player:endEvent();
+	player:endCommand();
 	
 end
 

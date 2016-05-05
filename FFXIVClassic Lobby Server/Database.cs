@@ -228,6 +228,8 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     conn.Dispose();
                 }
+
+                
             }
 
             Log.database(String.Format("CID={0} state updated to active(2).", cid));

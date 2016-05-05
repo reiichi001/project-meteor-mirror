@@ -81,6 +81,11 @@ namespace FFXIVClassic_Map_Server.Actors
             return SetActorIdleAnimationPacket.buildPacket(actorId, playerActorId, animationId);
         }
 
+        public void setQuestGraphic(Player player, int graphicNum)
+        {
+            player.queuePacket(SetActorQuestGraphicPacket.buildPacket(player.actorId, actorId, graphicNum));
+        }
+
     }
 
 }

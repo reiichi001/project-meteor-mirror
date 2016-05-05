@@ -20,7 +20,7 @@ Menu Ids:
 
 --]]
 
-function onInstantiate(npc)
+function init(npc)
 	return "/Chara/Npc/Populace/PopulaceGuildlevePublisher", false, false, false, false, false, npc.getActorClassId(), false, false, 0, 1, "TEST";	
 end
 

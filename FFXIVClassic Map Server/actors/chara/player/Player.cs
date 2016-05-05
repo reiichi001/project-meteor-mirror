@@ -84,6 +84,15 @@ namespace FFXIVClassic_Map_Server.Actors
                                      45000, 47000, 50000, 53000, 56000, 59000, 62000, 65000, 68000, 71000,       //Level <= 40
                                      74000, 78000, 81000, 85000, 89000, 92000, 96000, 100000, 100000, 110000};   //Level <= 50
 
+        //Event Related
+        public uint currentEventOwner = 0;
+        public string currentEventName = "";
+
+        public uint currentCommand = 0;
+        public string currentCommandName = "";
+        
+        public uint eventMenuId = 0;
+
         //Player Info
         public uint[] timers = new uint[20];
         public ushort currentJob;
@@ -108,12 +117,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public bool hasGoobbue;
         public byte chocoboAppearance;
         public string chocoboName;
-        public byte mountState = 0;
-
-        //Event Related
-        public uint eventCurrentOwner = 0;
-        public string eventCurrentStarter = "";
-        public uint eventMenuId = 0;
+        public byte mountState = 0;        
 
         public uint achievementPoints;
 
@@ -125,7 +129,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public Quest[] questScenario = new Quest[16];
         public Quest[] questGuildleve = new Quest[8];
 
-        public Director currentDirector;// = new OpeningDirector(0x46080012);
+        public Director currentDirector;
 
         public PlayerWork playerWork = new PlayerWork();
 
@@ -256,7 +260,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (isMyPlayer(playerActorId))
             {
                 if (currentDirector != null)
-                    lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, true, currentDirector, 0, false, timers, true);
+                    lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, true, currentDirector, true, 0, false, timers, true);
                 else
                     lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, false, true, 0, false, timers, true);
             }
@@ -472,12 +476,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void sendZoneInPackets(WorldManager world, ushort spawnType)
         {
-            queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId));
+            queuePacket(SetActorIsZoningPacket.buildPacket(actorId, actorId, false));
+            queuePacket(_0x10Packet.buildPacket(actorId, 0xFF));
             queuePacket(SetMusicPacket.buildPacket(actorId, zone.bgmDay, 0x01));
             queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR));
+            
+            queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId));
 
             queuePacket(getSpawnPackets(actorId, spawnType));            
-            //getSpawnPackets(actorId, spawnType).debugPrintPacket();
+            getSpawnPackets(actorId, spawnType).debugPrintPacket();
 
             #region grouptest
             //Retainers
@@ -511,6 +518,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             playerSession.queuePacket(getInitPackets(actorId));
 
+
             BasePacket areaMasterSpawn = zone.getSpawnPackets(actorId);
             BasePacket debugSpawn = world.GetDebugActor().getSpawnPackets(actorId);
             BasePacket worldMasterSpawn = world.GetActor().getSpawnPackets(actorId);
@@ -523,8 +531,8 @@ namespace FFXIVClassic_Map_Server.Actors
             playerSession.queuePacket(debugSpawn);
             if (directorSpawn != null)
             {
-                directorSpawn.debugPrintPacket();
-                currentDirector.getInitPackets(actorId).debugPrintPacket();
+                //directorSpawn.debugPrintPacket();
+               // currentDirector.getInitPackets(actorId).debugPrintPacket();
                 queuePacket(directorSpawn);
                 queuePacket(currentDirector.getInitPackets(actorId));
                 //queuePacket(currentDirector.getSetEventStatusPackets(actorId));
@@ -589,6 +597,12 @@ namespace FFXIVClassic_Map_Server.Actors
         public void queuePacket(SubPacket packet)
         {
             playerSession.queuePacket(packet, true, false);
+        }
+
+        public void queuePackets(List<SubPacket> packets)
+        {
+            foreach (SubPacket subpacket in packets)
+                playerSession.queuePacket(subpacket, true, false);
         }
 
         public void broadcastPacket(SubPacket packet, bool sendToSelf)
@@ -953,6 +967,47 @@ namespace FFXIVClassic_Map_Server.Actors
         public Equipment getEquipment()
         {
             return equipment;
+        }     
+
+        public byte getInitialTown()
+        {
+            return playerWork.initialTown;
+        }
+
+        public int getFreeQuestSlot()
+        {
+            for (int i = 0; i < questScenario.Length; i++)
+            {
+                if (questScenario[i] == null)
+                    return i;
+            }
+
+            return -1;
+        }
+
+        public void addQuest(uint id)
+        {
+            Actor actor = Server.getStaticActors((0xA0F00000 | id));
+            addQuest(actor.actorName);
+        }
+
+        public void addQuest(string name)
+        {
+            Actor actor = Server.getStaticActors(name);
+
+            if (actor == null)
+                return;
+
+            uint id = actor.actorId;
+
+            int freeSlot = getFreeQuestSlot();
+
+            if (freeSlot == -1)
+                return;
+
+            playerWork.questScenario[freeSlot] = id;
+            questScenario[freeSlot] = new Quest(this, playerWork.questScenario[freeSlot], name, null, 0);
+            Database.saveQuest(this, questScenario[freeSlot]);
         }
 
         public Quest getQuest(uint id)
@@ -966,6 +1021,28 @@ namespace FFXIVClassic_Map_Server.Actors
             return null;
         }
 
+        public Quest getQuest(string name)
+        {
+            for (int i = 0; i < questScenario.Length; i++)
+            {
+                if (questScenario[i] != null && questScenario[i].actorName.ToLower().Equals(name.ToLower()))
+                    return questScenario[i];
+            }
+
+            return null;
+        }
+
+        public bool hasQuest(string name)
+        {
+            for (int i = 0; i < questScenario.Length; i++)
+            {
+                if (questScenario[i] != null && questScenario[i].actorName.ToLower().Equals(name.ToLower()))
+                    return true;
+            }
+
+            return false;
+        }
+
         public bool hasQuest(uint id)
         {
             for (int i = 0; i < questScenario.Length; i++)
@@ -977,19 +1054,46 @@ namespace FFXIVClassic_Map_Server.Actors
             return false;
         }
 
-        public void setDirector(string directorType)
+        public int getQuestSlot(uint id)
+        {
+            for (int i = 0; i < questScenario.Length; i++)
+            {
+                if (questScenario[i] != null && questScenario[i].actorId == (0xA0F00000 | id))
+                    return i;
+            }
+
+            return -1;
+        }
+
+        public void setDirector(string directorType, bool sendPackets)
         {
             if (directorType.Equals("openingDirector"))
             {
-                currentDirector = new OpeningDirector(0x46080012);                
+                currentDirector = new OpeningDirector(this, 0x46080012);
+            }
+            else if (directorType.Equals("QuestDirectorMan0l001"))
+            {
+                currentDirector = new QuestDirectorMan0l001(this, 0x46080012);
+            }
+            else if (directorType.Equals("QuestDirectorMan0g001"))  
+            {
+                currentDirector = new QuestDirectorMan0g001(this, 0x46080012);
+            }
+            else if (directorType.Equals("QuestDirectorMan0u001"))
+            {
+                currentDirector = new QuestDirectorMan0u001(this, 0x46080012);
             }
 
-            queuePacket(RemoveActorPacket.buildPacket(actorId, 0x46080012));
-            queuePacket(currentDirector.getSpawnPackets(actorId));
-            queuePacket(currentDirector.getInitPackets(actorId));
-           // queuePacket(currentDirector.getSetEventStatusPackets(actorId));
-           // currentDirector.getSpawnPackets(actorId).debugPrintPacket();
-           // currentDirector.getInitPackets(actorId).debugPrintPacket();
+            if (sendPackets)
+            {
+                queuePacket(RemoveActorPacket.buildPacket(actorId, 0x46080012));
+                queuePacket(currentDirector.getSpawnPackets(actorId));
+                queuePacket(currentDirector.getInitPackets(actorId));
+                //queuePacket(currentDirector.getSetEventStatusPackets(actorId));
+                //currentDirector.getSpawnPackets(actorId).debugPrintPacket();
+                //currentDirector.getInitPackets(actorId).debugPrintPacket();
+            }
+
         }
 
         public Director getDirector()
@@ -1037,20 +1141,30 @@ namespace FFXIVClassic_Map_Server.Actors
         public void runEventFunction(string functionName, params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
-            SubPacket spacket = RunEventFunctionPacket.buildPacket(actorId, eventCurrentOwner, eventCurrentStarter, functionName, lParams);
+            SubPacket spacket = RunEventFunctionPacket.buildPacket(actorId, currentEventOwner, currentEventName, functionName, lParams);
             spacket.debugPrintSubPacket();
             queuePacket(spacket);
         }
 
         public void endEvent()
         {
-            SubPacket p = EndEventPacket.buildPacket(actorId, eventCurrentOwner, eventCurrentStarter);
+            SubPacket p = EndEventPacket.buildPacket(actorId, currentEventOwner, currentEventName);
             p.debugPrintSubPacket();
             queuePacket(p);
 
-            eventCurrentOwner = 0;
-            eventCurrentStarter = "";
+            currentEventOwner = 0;
+            currentEventName = "";
             eventMenuId = 0;
+        }
+
+        public void endCommand()
+        {
+            SubPacket p = EndEventPacket.buildPacket(actorId, currentCommand, currentCommandName);
+            p.debugPrintSubPacket();
+            queuePacket(p);
+
+            currentCommand = 0;
+            currentCommandName = "";
         }
 
         public void setCurrentMenuId(uint id)
@@ -1067,12 +1181,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
            
             //Update Instance
-            List<BasePacket> instanceUpdatePackets = playerSession.updateInstance(zone.getActorsAroundActor(this, 50));
-            foreach (BasePacket bp in instanceUpdatePackets)
-            {
-                //    bp.debugPrintPacket();
-                queuePacket(bp);
-            }
+            playerSession.updateInstance(zone.getActorsAroundActor(this, 50));            
         
         }
 

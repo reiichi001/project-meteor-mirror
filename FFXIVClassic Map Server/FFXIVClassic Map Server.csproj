@@ -72,6 +72,9 @@
     <Compile Include="actors\debug\Debug.cs" />
     <Compile Include="actors\director\Director.cs" />
     <Compile Include="actors\director\OpeningDirector.cs" />
+    <Compile Include="actors\director\quest\QuestDirectorMan0g001.cs" />
+    <Compile Include="actors\director\quest\QuestDirectorMan0l001.cs" />
+    <Compile Include="actors\director\quest\QuestDirectorMan0u001.cs" />
     <Compile Include="actors\director\WeatherDirector.cs" />
     <Compile Include="actors\EventList.cs" />
     <Compile Include="actors\judge\Judge.cs" />
@@ -135,6 +138,7 @@
     <Compile Include="packets\receive\_0x07Packet.cs" />
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />
+    <Compile Include="packets\send\actor\ActorSpecialGraphicPacket.cs" />
     <Compile Include="packets\send\actor\BattleAction1Packet.cs" />
     <Compile Include="packets\send\actor\battle\BattleAction.cs" />
     <Compile Include="packets\send\actor\battle\BattleActionX00Packet.cs" />
@@ -244,6 +248,7 @@
     <Compile Include="packets\send\supportdesk\GMTicketPacket.cs" />
     <Compile Include="packets\send\supportdesk\GMTicketSentResponsePacket.cs" />
     <Compile Include="packets\send\_0x02Packet.cs" />
+    <Compile Include="packets\send\_0x10Packet.cs" />
     <Compile Include="packets\send\_0xE2Packet.cs" />
     <Compile Include="packets\SubPacket.cs" />
     <Compile Include="packets\receive\PingPacket.cs" />
@@ -275,7 +280,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)data" "$(SolutionDir)$(ProjectName)\$(OutDir)" /E /C /D</PostBuildEvent>
+    <PostBuildEvent>robocopy "$(SolutionDir)data" "$(SolutionDir)$(ProjectName)\$(OutDir)." /XO  2&gt;nul 1&gt;nul
+EXIT 0</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -253,21 +253,21 @@ namespace FFXIVClassic_Lobby_Server
                             info.x = 0.016f;
                             info.y = 10.35f;
                             info.z = -36.91f;
-                            info.rot = 0.025f;
+                            info.rot = 0.025f;  
                             break;
                         case 2: //fst0Battle03 (Gridania)
                             info.zoneId = 166;
-                            info.x = 356.09f;
-                            info.y = 3.74f;
-                            info.z = -701.62f;
-                            info.rot = -1.4f;
+                            info.x = 369.5434f;
+                            info.y = 4.21f;
+                            info.z = -706.1074f;
+                            info.rot = -1.26721f;
                             break;
                         case 3: //wil0Battle01 (Ul'dah)
                             info.zoneId = 184;
-                            info.x = 12.63f;
-                            info.y = 196.05f;
-                            info.z = 131.01f;
-                            info.rot = -1.34f;
+                            info.x = 5.364327f;
+                            info.y = 196.0f;
+                            info.z = 133.6561f;
+                            info.rot = -2.849384f;
                             break;
                     }
 

@@ -2,6 +2,7 @@
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Map_Server.Actors;
+using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
 using System.Collections.Generic;
@@ -112,7 +113,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
              
         }            
         
-        public List<BasePacket> updateInstance(List<Actor> list)
+        public void updateInstance(List<Actor> list)
         {            
             List<BasePacket> basePackets = new List<BasePacket>();
             List<SubPacket> removeActorSubpackets = new List<SubPacket>();
@@ -123,13 +124,10 @@ namespace FFXIVClassic_Map_Server.dataobjects
             {
                 if (!list.Contains(actorInstanceList[i]))
                 {
-                    removeActorSubpackets.Add(RemoveActorPacket.buildPacket(playerActor.actorId, actorInstanceList[i].actorId));
+                    getActor().queuePacket(RemoveActorPacket.buildPacket(playerActor.actorId, actorInstanceList[i].actorId));
                     actorInstanceList.RemoveAt(i);                    
                 }
             }
-
-            if (removeActorSubpackets.Count != 0)
-                basePackets.Add(BasePacket.createPacket(removeActorSubpackets, true, false));
 
             //Add new actors or move
             for (int i = 0; i < list.Count; i++)
@@ -141,21 +139,22 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
                 if (actorInstanceList.Contains(actor))
                 {
-                    posUpdateSubpackets.Add(actor.createPositionUpdatePacket(playerActor.actorId));
+                    getActor().queuePacket(actor.createPositionUpdatePacket(playerActor.actorId));
                 }
                 else
                 {
-                    basePackets.Add(actor.getSpawnPackets(playerActor.actorId, 1));
-                    basePackets.Add(actor.getInitPackets(playerActor.actorId));
-                    basePackets.Add(actor.getSetEventStatusPackets(playerActor.actorId));
+                    getActor().queuePacket(actor.getSpawnPackets(playerActor.actorId, 1));
+                    getActor().queuePacket(actor.getInitPackets(playerActor.actorId));
+                    getActor().queuePacket(actor.getSetEventStatusPackets(playerActor.actorId));                   
                     actorInstanceList.Add(actor);
+
+                    if (actor is Npc)
+                    {
+                        LuaEngine.doActorOnSpawn(getActor(), (Npc)actor);
+                    }
                 }
             }
 
-            if (posUpdateSubpackets.Count > 0)
-                basePackets.Add(BasePacket.createPacket(posUpdateSubpackets, true, false));
-
-            return basePackets;
         }
 
 

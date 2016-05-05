@@ -1,5 +1,5 @@
-function onInstantiate(npc)
-	return "/Chara/Npc/Object/OpeningStoperF0B1", false, false, false, false, false, 0x10A350, false, false, 0, 1, "TEST";	
+function init(npc)
+	return "/Chara/Npc/Object/OpeningStoperF0B1", false, false, false, false, false, npc.getActorClassId(), false, false, 0, 1, "TEST";	
 end
 
 function onEventStarted(player, npc, triggerName)

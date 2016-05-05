@@ -35,7 +35,14 @@ namespace FFXIVClassic_Map_Server.actors.area
         public override SubPacket createScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
-            lParams = LuaUtils.createLuaParamList("/Area/PrivateArea/" + className, false, true, zoneName, privateAreaName, 0x9E, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, false, false, false);
+
+            string path = className;
+
+            if (className.ToLower().Contains("content"))
+                path = "Content/" + className;
+
+            lParams = LuaUtils.createLuaParamList("/Area/PrivateArea/" + path, false, true, zoneName, privateAreaName, 0x9E, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, false, false, false);
+            ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams).debugPrintSubPacket();
             return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
         }
         
