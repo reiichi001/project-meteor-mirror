@@ -144,13 +144,14 @@
 
 Available commands: 
 Standard: mypos, music, warp
-Server Administration: givecurrency, giveitem, givekeyitem, removecurrency, removekeyitem, reloaditems, reloadzones</value>
+Server Administration: givecurrency, giveitem, givekeyitem, removecurrency, removekeyitem, reloaditems, reloadzones
+Test: test weather</value>
   </data>
   <data name="CPmusic" xml:space="preserve">
     <value>Changes the currently playing background music
 
 *Syntax:	music &lt;music id&gt;
-&lt;music id&gt; is the key item's specific id as defined in the server database</value>
+&lt;music id&gt; is the music's specific id as defined in the client</value>
   </data>
   <data name="CPmypos" xml:space="preserve">
     <value>Prints out your current location
@@ -202,6 +203,12 @@ Server Administration: givecurrency, giveitem, givekeyitem, removecurrency, remo
 
 *Syntax:	sendpacket &lt;slot&gt; &lt;wid&gt; &lt;eid&gt; &lt;vid&gt; &lt;cid&gt;
 &lt;w/e/v/c id&gt; are as defined in the client game data</value>
+  </data>
+  <data name="CPtestweather" xml:space="preserve">
+    <value>Changes the current weather
+
+*Syntax:	test weather &lt;weather id&gt;
+&lt;weather id&gt; is the weather's specific id as defined in the client</value>
   </data>
   <data name="CPwarp" xml:space="preserve">
     <value>Teleports the player to the specified location

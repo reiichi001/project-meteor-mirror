@@ -554,7 +554,15 @@ namespace FFXIVClassic_Lobby_Server
                         else if (split[1].Equals("setgraphic"))
                                sendMessage(client, Resources.CPsetgraphic);
                         */
-        }
+					 }
+					if (split.Length == 3)
+					{
+						if(split[1].Equals("test"))
+						{
+							if (split[2].Equals("weather"))
+								sendMessage(client, Resources.CPtestweather);
+						}
+					}
 
                     return true;
                 }
