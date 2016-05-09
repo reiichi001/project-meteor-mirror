@@ -64,7 +64,7 @@ namespace FFXIVClassic_Map_Server.Properties {
         ///   Looks up a localized string similar to Adds the specified currency to the current player&apos;s inventory
         ///
         ///*Syntax:	givecurrency &lt;quantity&gt;
-        ///		givecurrency &lt;quantity&gt; &lt;type&gt;
+        ///		givecurrency  &lt;type&gt; &lt;quantity&gt;
         ///&lt;type&gt; is the specific type of currency desired, defaults to gil if no type specified.
         /// </summary>
         public static string CPgivecurrency {
@@ -176,7 +176,7 @@ namespace FFXIVClassic_Map_Server.Properties {
         ///   Looks up a localized string similar to Removes the specified currency from the current player&apos;s inventory
         ///
         ///*Syntax:	removecurrency &lt;quantity&gt;
-        ///		removecurrency &lt;quantity&gt; &lt;type&gt;
+        ///		removecurrency &lt;type&gt; &lt;quantity&gt;
         ///&lt;type&gt; is the specific type of currency desired, defaults to gil if no type specified.
         /// </summary>
         public static string CPremovecurrency {

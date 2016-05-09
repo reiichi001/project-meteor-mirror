@@ -121,7 +121,7 @@
     <value>Adds the specified currency to the current player's inventory
 
 *Syntax:	givecurrency &lt;quantity&gt;
-		givecurrency &lt;quantity&gt; &lt;type&gt;
+		givecurrency  &lt;type&gt; &lt;quantity&gt;
 &lt;type&gt; is the specific type of currency desired, defaults to gil if no type specified</value>
   </data>
   <data name="CPgiveitem" xml:space="preserve">
@@ -173,7 +173,7 @@ Server Administration: givecurrency, giveitem, givekeyitem, removecurrency, remo
     <value>Removes the specified currency from the current player's inventory
 
 *Syntax:	removecurrency &lt;quantity&gt;
-		removecurrency &lt;quantity&gt; &lt;type&gt;
+		removecurrency &lt;type&gt; &lt;quantity&gt;
 &lt;type&gt; is the specific type of currency desired, defaults to gil if no type specified</value>
   </data>
   <data name="CPremoveitem" xml:space="preserve">
