@@ -146,7 +146,7 @@ namespace FFXIVClassic_Lobby_Server
                 client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation)), true, false));
             }
             else
-            {
+            { 
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
@@ -454,6 +454,38 @@ namespace FFXIVClassic_Lobby_Server
                 return; // catch any invalid warps here
         }
 
+        private void doWeather(ConnectedPlayer client, string weatherID)
+        {
+            
+
+            long weather = Convert.ToInt64(weatherID);
+
+            if (client != null)
+            {
+                client.queuePacket(BasePacket.createPacket(SetWeatherPacket.buildPacket(client.actorID, weather), true, false));
+            }
+
+            /*
+             * WIP: Change weather serverside, currently only clientside
+             * 
+            uint currentZoneID;
+            if (client != null)
+            {
+                currentZoneID = client.getActor().zoneId;
+
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    // Change the weather for everyone in the same zone
+                    if (currentZoneID == entry.Value.getActor().zoneId)
+                    {
+                        BasePacket weatherPacket = BasePacket.createPacket(SetWeatherPacket.buildPacket(entry.Value.actorID, weather), true, false);
+                        entry.Value.queuePacket(weatherPacket);
+                    }                    
+                }
+            }
+            */
+        }
+
         /// <summary>
         /// We only use the default options for SendMessagePacket.
         /// May as well make it less unwieldly to view
@@ -522,9 +554,29 @@ namespace FFXIVClassic_Lobby_Server
                         else if (split[1].Equals("setgraphic"))
                                sendMessage(client, Resources.CPsetgraphic);
                         */
-                    }
+        }
 
                     return true;
+                }
+                #endregion
+
+                #region !dev
+                else if (split[0].Equals("test"))
+                {
+                    #region !test weather
+                    if (split[1].Equals("weather"))
+                    {
+                        try
+                        {
+                            doWeather(client, split[2]);
+                            return true;
+                        }
+                        catch (Exception e)
+                        {
+                            Log.error("Could not change weather: " + e);
+                        }     
+                    }
+                    #endregion
                 }
                 #endregion
 
