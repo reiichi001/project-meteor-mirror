@@ -30,7 +30,7 @@ namespace FFXIVClassic_Map_Server.packets.send
                                                                 // 8018 - 8026 / 73554 - 73562 - NOT SUPPORTED in v1.23b
         public const uint WEATHER_SEASONAL          = 0x011F5B; // 8027 / 73563 - Snow in Black Shroud, nothing elsewhere
         public const uint WEATHER_PRIMAL            = 0x011F5C; // 8028 / 73564 - Howling Eye and Thornmarch Weather
-                                                                // 8029 / 73565 - Not supported
+                                                                // 8029 / 73565 - NOT SUPPOPORTED in v1.23b
         public const uint WEATHER_DALAMUD           = 0x011F5E; // 8030 / 73566
         public const uint WEATHER_AURORA            = 0x011F5F; // 8031 / 73567
         public const uint WEATHER_DALAMUDTHUNDER    = 0x011F60; // 8032 / 73568

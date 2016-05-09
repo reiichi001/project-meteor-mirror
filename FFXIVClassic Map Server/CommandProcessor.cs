@@ -456,8 +456,6 @@ namespace FFXIVClassic_Lobby_Server
 
         private void doWeather(ConnectedPlayer client, string weatherID)
         {
-            
-
             long weather = Convert.ToInt64(weatherID);
 
             if (client != null)
@@ -554,37 +552,46 @@ namespace FFXIVClassic_Lobby_Server
                         else if (split[1].Equals("setgraphic"))
                                sendMessage(client, Resources.CPsetgraphic);
                         */
-					 }
-					if (split.Length == 3)
-					{
-						if(split[1].Equals("test"))
-						{
-							if (split[2].Equals("weather"))
-								sendMessage(client, Resources.CPtestweather);
-						}
-					}
+                     }
+                    if (split.Length == 3)
+                    {
+                        if(split[1].Equals("test"))
+                        {
+                            if (split[2].Equals("weather"))
+                                sendMessage(client, Resources.CPtestweather);
+                        }
+                    }
 
                     return true;
                 }
                 #endregion
 
-                #region !dev
+                #region !test
                 else if (split[0].Equals("test"))
                 {
-                    #region !test weather
-                    if (split[1].Equals("weather"))
+                    if (split.Length == 1)
                     {
-                        try
-                        {
-                            doWeather(client, split[2]);
-                            return true;
-                        }
-                        catch (Exception e)
-                        {
-                            Log.error("Could not change weather: " + e);
-                        }     
+                        // catch invalid commands
+                        sendMessage(client, Resources.CPhelp);
                     }
-                    #endregion
+                    else if (split.Length >= 2)
+                    {
+                        #region !test weather
+                        if (split[1].Equals("weather"))
+                        {
+                            try
+                            {
+                                doWeather(client, split[2]);
+                                return true;
+                            }
+                            catch (Exception e)
+                            {
+                                Log.error("Could not change weather: " + e);
+                            }
+                        }
+                        #endregion
+                    }
+
                 }
                 #endregion
 
