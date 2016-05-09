@@ -33,7 +33,7 @@ namespace FFXIVClassic_Map_Server.packets.send
                                                                 // 8029 / 73565 - Not supported
         public const uint WEATHER_DALAMUD           = 0x011F5E; // 8030 / 73566
         public const uint WEATHER_AURORA            = 0x011F5F; // 8031 / 73567
-        public const uint WEATHER_DALAMUDTHUNDER	= 0x011F60; // 8032 / 73568
+        public const uint WEATHER_DALAMUDTHUNDER    = 0x011F60; // 8032 / 73568
 
         public const ushort OPCODE = 0x000D;
         public const uint PACKET_SIZE = 0x28;
