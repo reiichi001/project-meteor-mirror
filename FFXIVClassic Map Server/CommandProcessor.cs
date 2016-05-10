@@ -24,7 +24,6 @@ namespace FFXIVClassic_Lobby_Server
     class CommandProcessor
     {
         private Dictionary<uint, ConnectedPlayer> mConnectedPlayerList;
-        private static WorldManager mWorldManager = Server.GetWorldManager();
         private static Dictionary<uint, Item> gamedataItems = Server.GetGamedataItems();
 
         // For the moment, this is the only predefined item
@@ -102,25 +101,27 @@ namespace FFXIVClassic_Lobby_Server
         /// <param name="id">Predefined list: &lt;ffxiv_database&gt;\server_zones_spawnlocations</param>
         public void doWarp(ConnectedPlayer client, uint id)
         {
-            FFXIVClassic_Map_Server.WorldManager.ZoneEntrance ze = mWorldManager.getZoneEntrance(id);
+            WorldManager worldManager = Server.GetWorldManager();
+            FFXIVClassic_Map_Server.WorldManager.ZoneEntrance ze = worldManager.getZoneEntrance(id);
 
             if (ze == null)
                 return;
 
             if (client != null)
-                mWorldManager.DoZoneChange(client.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
+                worldManager.DoZoneChange(client.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    mWorldManager.DoZoneChange(entry.Value.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
+                    worldManager.DoZoneChange(entry.Value.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
                 }
             }
         }
 
         public void doWarp(ConnectedPlayer client, uint zoneId, string privateArea, byte spawnType, float x, float y, float z, float r)
         {
-            if (mWorldManager.GetZone(zoneId) == null)
+            WorldManager worldManager = Server.GetWorldManager();
+            if (worldManager.GetZone(zoneId) == null)
             {
                 if (client != null)
                     client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Zone does not exist or setting isn't valid."), true, false));
@@ -128,12 +129,12 @@ namespace FFXIVClassic_Lobby_Server
             }
 
             if (client != null)
-                mWorldManager.DoZoneChange(client.getActor(), zoneId, privateArea, spawnType, x, y, z, r);
+                worldManager.DoZoneChange(client.getActor(), zoneId, privateArea, spawnType, x, y, z, r);
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    mWorldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, spawnType, x, y, z, r);
+                    worldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, spawnType, x, y, z, r);
                 }
             }
         }
@@ -621,7 +622,7 @@ namespace FFXIVClassic_Lobby_Server
                         client.getActor().sendInstanceUpdate();
                         client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Reseting zone {0}...", client.getActor().zoneId)), true, false));
                     }
-                    mWorldManager.reloadZone(client.getActor().zoneId);
+                    Server.GetWorldManager().reloadZone(client.getActor().zoneId);
                     return true;
                 }
                 #endregion
