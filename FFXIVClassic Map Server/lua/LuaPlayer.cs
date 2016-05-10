@@ -26,9 +26,9 @@ namespace FFXIVClassic_Map_Server.lua
             player.playerSession.queuePacket(SetMusicPacket.buildPacket(player.actorId, musicID, playMode), true, false);
         }
 
-        public void setWeather(uint weatherID)
+        public void setWeather(ushort weatherID)
         {
-            player.playerSession.queuePacket(SetWeatherPacket.buildPacket(player.actorId, weatherID, true), true, false);
+            player.playerSession.queuePacket(SetWeatherPacket.buildPacket(player.actorId, weatherID, 1), true, false);
         }
 
         public void getParameter(string paramName)

@@ -455,13 +455,13 @@ namespace FFXIVClassic_Lobby_Server
                 return; // catch any invalid warps here
         }
 
-        private void doWeather(ConnectedPlayer client, string weatherID)
+        private void doWeather(ConnectedPlayer client, string weatherID, string value)
         {
-            long weather = Convert.ToInt64(weatherID);
+            ushort weather = Convert.ToUInt16(weatherID);
 
             if (client != null)
             {
-                client.queuePacket(BasePacket.createPacket(SetWeatherPacket.buildPacket(client.actorID, weather, true), true, false));
+                client.queuePacket(BasePacket.createPacket(SetWeatherPacket.buildPacket(client.actorID, weather, Convert.ToUInt16(value)), true, false));
             }
 
             /*
@@ -582,7 +582,7 @@ namespace FFXIVClassic_Lobby_Server
                         {
                             try
                             {
-                                doWeather(client, split[2]);
+                                doWeather(client, split[2], split[3]);
                                 return true;
                             }
                             catch (Exception e)
