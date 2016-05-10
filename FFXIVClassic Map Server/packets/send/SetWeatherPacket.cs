@@ -9,28 +9,34 @@ namespace FFXIVClassic_Map_Server.packets.send
 {
     class SetWeatherPacket
     {
-        //TODO: Fix these ids!
-        public const uint WEATHER_CLEAR = 0x011F41;
-		public const uint WEATHER_FINE = 0x011F42;
-		public const uint WEATHER_CLOUDY = 0x011F3;
-		public const uint WEATHER_FOGGY = 0x011F4;
-		public const uint WEATHER_WINDY = 0x011F5;			//NOT SUPPORTED in v1.23
-		public const uint WEATHER_BLUSTERY = 0x011F6;
-		public const uint WEATHER_RAINY = 0x011F7;
-		public const uint WEATHER_SHOWERY = 0x011F8;			//NOT SUPPORTED in v1.23
-		public const uint WEATHER_THUNDERY = 0x011F9;			//NOT SUPPORTED in v1.23
-		public const uint WEATHER_STORMY = 0x011FA;
-		public const uint WEATHER_DUSTY = 0x011FB;				//NOT SUPPORTED in v1.23
-		public const uint WEATHER_SANDY = 0x011FC;
-		public const uint WEATHER_IFRIT	= 0x011F4E;
-		public const uint WEATHER_GARUDA  = 0x011F5C;
-		public const uint WEATHER_BLISTERIN = 0x011FD;			//NOT SUPPORTED in v1.23
-		public const uint WEATHER_SNOWY = 0x011FE;				//NOT SUPPORTED in v1.23
-		public const uint WEATHER_WINTRY = 0x011FF;				//NOT SUPPORTED in v1.23
-		public const uint WEATHER_GLOOMY = 0x01200;
-		public const uint WEATHER_PREDALAMUD = 0x011F5F;
-		public const uint WEATHER_DALAMUD	= 0x011F5E;
-		public const uint WEATHER_SCARYDALAMUD = 0x011F60;
+        // Use the first value to change without a transition, the second value to do a standard transition
+        public const uint WEATHER_CLEAR                 = 0x011F41; // 8001 / 73537
+        public const uint WEATHER_FAIR                  = 0x011F42; // 8002 / 73538
+        public const uint WEATHER_CLOUDY                = 0x011F43; // 8003 / 73539
+        public const uint WEATHER_FOGGY                 = 0x011F44; // 8004 / 73540
+        public const uint WEATHER_WINDY                 = 0x011F45; // 8005 / 73541 - NOT SUPPORTED in v1.23b
+        public const uint WEATHER_BLUSTERY              = 0x011F46; // 8006 / 73542
+        public const uint WEATHER_RAINY                 = 0x011F47; // 8007 / 73543
+        public const uint WEATHER_SHOWERY               = 0x011F48; // 8008 / 73544 - NOT SUPPORTED in v1.23b
+        public const uint WEATHER_THUNDERY              = 0x011F49; // 8009 / 73545 - NOT SUPPORTED in v1.23b
+        public const uint WEATHER_STORMY                = 0x011F4A; // 8010 / 73546
+        public const uint WEATHER_DUSTY                 = 0x011F4B; // 8011 / 73547 - NOT SUPPORTED in v1.23b
+        public const uint WEATHER_SANDY                 = 0x011F4C; // 8012 / 73548
+        public const uint WEATHER_HOT                   = 0x011F4D; // 8013 / 73549 - NOT SUPPORTED in v1.23b
+        public const uint WEATHER_BLISTERING            = 0x011F4E; // 8014 / 73550 - Bowl Of Embers Weather
+        public const uint WEATHER_SNOWY                 = 0x011F4F; // 8015 / 73551 - NOT SUPPORTED in v1.23b
+        public const uint WEATHER_WINTRY                = 0x011F50; // 8016 / 73552 - NOT SUPPORTED in v1.23b
+        public const uint WEATHER_GLOOMY                = 0x011F51; // 8017 / 73553
+                                                                    // 8018 - 8026 / 73554 - 73562 - NOT SUPPORTED in v1.23b
+        public const uint WEATHER_SEASONAL              = 0x011F5B; // 8027 / 73563 - Snow in Black Shroud, nothing elsewhere
+        public const uint WEATHER_PRIMAL                = 0x011F5C; // 8028 / 73564 - Howling Eye and Thornmarch Weather
+        public const uint WEATHER_SEASONAL_FIREWORKS    = 0x011F5D; // 8029 / 73565 - Plays fireworks between 20:00 - 21:00 ET
+        public const uint WEATHER_DALAMUD               = 0x011F5E; // 8030 / 73566
+        public const uint WEATHER_AURORA                = 0x011F5F; // 8031 / 73567
+        public const uint WEATHER_DALAMUD_THUNDER       = 0x011F60; // 8032 / 73568
+                                                                    // 8033 - 8064 / 73569 - 73600 - NOT SUPPORTED in v1.23b
+        public const uint WEATHER_DAY                   = 0x011F81; // 8065 / 73601 - Force skybox to show Day + Fair regardless of current ET
+        public const uint WEATHER_TWILIGHT              = 0x011F82; // 8066 / 73602 - Force skybox to show Twilight + Clear regardless of current ET
 
         public const ushort OPCODE = 0x000D;
         public const uint PACKET_SIZE = 0x28;
