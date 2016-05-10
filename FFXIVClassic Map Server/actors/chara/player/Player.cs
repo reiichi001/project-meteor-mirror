@@ -479,7 +479,7 @@ namespace FFXIVClassic_Map_Server.Actors
             queuePacket(SetActorIsZoningPacket.buildPacket(actorId, actorId, false));
             queuePacket(_0x10Packet.buildPacket(actorId, 0xFF));
             queuePacket(SetMusicPacket.buildPacket(actorId, zone.bgmDay, 0x01));
-            queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR));
+            queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR, true));
             
             queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId));
 

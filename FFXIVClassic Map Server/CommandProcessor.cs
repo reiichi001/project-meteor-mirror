@@ -460,7 +460,7 @@ namespace FFXIVClassic_Lobby_Server
 
             if (client != null)
             {
-                client.queuePacket(BasePacket.createPacket(SetWeatherPacket.buildPacket(client.actorID, weather), true, false));
+                client.queuePacket(BasePacket.createPacket(SetWeatherPacket.buildPacket(client.actorID, weather, true), true, false));
             }
 
             /*
