@@ -91,7 +91,9 @@ namespace FFXIVClassic_Lobby_Server
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneList();
             mWorldManager.LoadZoneEntranceList();
-            mWorldManager.LoadNPCs();
+            mWorldManager.LoadActorClasses();
+            mWorldManager.LoadSpawnLocations();
+            mWorldManager.spawnAllActors();
 
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), FFXIV_MAP_PORT);
 

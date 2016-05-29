@@ -18,7 +18,7 @@ using System.Text;
 namespace FFXIVClassic_Map_Server.Actors
 {
     class Actor
-    {        
+    {               
         public uint actorId;
         public string actorName;
 
@@ -306,6 +306,53 @@ namespace FFXIVClassic_Map_Server.Actors
             moveSpeeds[3] = speedRun;
             SubPacket changeSpeedPacket = SetActorSpeedPacket.buildPacket(actorId, actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2]);
             zone.broadcastPacketAroundActor(this, changeSpeedPacket);
+        }
+        
+        public void generateActorName(int actorNumber)
+        {
+            //Format Class Name
+            string className = this.className.Replace("Populace", "Ppl")
+                                             .Replace("Monster", "Mon")
+                                             .Replace("Crowd", "Crd")
+                                             .Replace("MapObj", "Map")
+                                             .Replace("Object", "Obj")
+                                             .Replace("Retainer", "Rtn")
+                                             .Replace("Standard", "Std");            
+            className = Char.ToLowerInvariant(className[0]) + className.Substring(1);
+
+            //Format Zone Name
+            string zoneName = zone.zoneName.Replace("Field", "Fld")
+                                           .Replace("Dungeon", "Dgn")
+                                           .Replace("Town", "Twn")
+                                           .Replace("Battle", "Btl")
+                                           .Replace("Test", "Tes")
+                                           .Replace("Event", "Evt")
+                                           .Replace("Ship", "Shp")
+                                           .Replace("Office", "Ofc");
+            if (zone is PrivateArea)
+            {
+                //Check if "normal"
+                zoneName = zoneName.Remove(zoneName.Length - 1, 1) + "P";
+            }
+            zoneName = Char.ToLowerInvariant(zoneName[0]) + zoneName.Substring(1);
+
+            try
+            {
+                className = className.Substring(0, 20 - zoneName.Length);
+            }
+            catch (ArgumentOutOfRangeException e)
+            {}
+
+            //Convert actor number to base 63
+            string classNumber = Utils.ToStringBase63(actorNumber);
+
+            //Get stuff after @
+            uint zoneId = zone.actorId;
+            uint privLevel = 0;
+            if (zone is PrivateArea)
+                privLevel = ((PrivateArea)zone).getPrivateAreaLevel();
+
+            actorName = String.Format("{0}_{1}_{2}@{3:X3}{4:X2}", className, zoneName, classNumber, zoneId, privLevel);
         }
 
     }

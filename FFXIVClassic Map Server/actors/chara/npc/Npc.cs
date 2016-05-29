@@ -23,11 +23,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public NpcWork npcWork = new NpcWork();
 
-        public Npc(uint id, string actorName, uint zoneId, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, uint displayNameId, string customDisplayName, string className)
-            : base(id)
+        public Npc(int actorNumber, uint classId, uint zoneId, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, uint displayNameId, string customDisplayName, string classPath)
+            : base((4 << 28 | zoneId << 19 | (uint)actorNumber))  
         {
-            this.actorName = actorName;
-            this.actorClassId = id;
             this.positionX = posX;
             this.positionY = posY;
             this.positionZ = posZ;
@@ -39,8 +37,11 @@ namespace FFXIVClassic_Map_Server.Actors
             this.customDisplayName = customDisplayName;
 
             this.zoneId = zoneId;
+            this.zone = Server.GetWorldManager().GetZone(zoneId);
 
-            loadNpcTemplate(id);
+            loadNpcAppearance(classId);
+
+            className = classPath.Substring(classPath.LastIndexOf("/")+1);
 
             charaWork.battleSave.potencial = 1.0f;
 
@@ -61,6 +62,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.property[3] = 1;
             charaWork.property[4] = 1;
+
+            generateActorName((int)actorNumber);
         }
 
         public SubPacket createAddActorPacket(uint playerActorId)
@@ -156,7 +159,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return actorClassId;
         }
 
-        public void loadNpcTemplate(uint id)
+        public void loadNpcAppearance(uint id)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {

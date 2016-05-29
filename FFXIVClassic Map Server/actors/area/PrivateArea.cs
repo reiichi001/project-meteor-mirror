@@ -14,17 +14,24 @@ namespace FFXIVClassic_Map_Server.actors.area
     {
         private Zone parentZone;
         private string privateAreaName;
+        private uint privateAreaLevel;
 
-        public PrivateArea(Zone parent, uint id, string className, string privateAreaName,ushort bgmDay, ushort bgmNight, ushort bgmBattle)
+        public PrivateArea(Zone parent, uint id, string className, string privateAreaName, uint privateAreaLevel, ushort bgmDay, ushort bgmNight, ushort bgmBattle)
             : base(id, parent.zoneName, parent.regionId, className, bgmDay, bgmNight, bgmBattle, parent.isIsolated, parent.isInn, parent.canRideChocobo, parent.canStealth, true)
         {
             this.parentZone = parent;
             this.privateAreaName = privateAreaName;
+            this.privateAreaLevel = privateAreaLevel;
         }
 
         public string getPrivateAreaName()
         {
             return privateAreaName;
+        }
+
+        public uint getPrivateAreaLevel()
+        {
+            return privateAreaLevel;
         }
 
         public Zone getParentZone()
@@ -45,6 +52,17 @@ namespace FFXIVClassic_Map_Server.actors.area
             ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams).debugPrintSubPacket();
             return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
         }
-        
+
+
+        public void addSpawnLocation(SpawnLocation spawn)
+        {
+            mSpawnLocations.Add(spawn);
+        }
+
+        public void spawnAllActors()
+        {
+            foreach (SpawnLocation spawn in mSpawnLocations)
+                spawnActor(spawn);
+        }
     }
 }
