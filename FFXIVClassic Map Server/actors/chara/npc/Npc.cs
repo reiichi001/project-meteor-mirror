@@ -5,12 +5,15 @@ using FFXIVClassic_Map_Server.actors;
 using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
+using FFXIVClassic_Map_Server.packets.receive.events;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.utils;
+using MoonSharp.Interpreter;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,6 +22,7 @@ namespace FFXIVClassic_Map_Server.Actors
 {
     class Npc : Character
     {
+        private Script actorScript;
         private uint actorClassId;
 
         public NpcWork npcWork = new NpcWork();
@@ -31,7 +35,6 @@ namespace FFXIVClassic_Map_Server.Actors
             this.positionZ = posZ;
             this.rotation = rot;
             this.animationId = animationId;
-            this.className = className;
 
             this.displayNameId = displayNameId;
             this.customDisplayName = customDisplayName;
@@ -41,6 +44,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             loadNpcAppearance(classId);
 
+            this.classPath = classPath;
             className = classPath.Substring(classPath.LastIndexOf("/")+1);
 
             charaWork.battleSave.potencial = 1.0f;
@@ -63,7 +67,7 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.property[3] = 1;
             charaWork.property[4] = 1;
 
-            generateActorName((int)actorNumber);
+            generateActorName((int)actorNumber);            
         }
 
         public SubPacket createAddActorPacket(uint playerActorId)
@@ -73,17 +77,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override SubPacket createScriptBindPacket(uint playerActorId)
         {
-            List<LuaParam> lParams;
-
-            Player player = Server.GetWorldManager().GetPCInWorld(playerActorId);
-            lParams = LuaEngine.doActorInstantiate(player, this);
-
-            if (lParams == null)
-            {
-                className = "PopulaceStandard";
-                lParams = LuaUtils.createLuaParamList("/Chara/Npc/Populace/PopulaceStandard", false, false, false, false, false, 0xF47F6, false, false, 0, 1, "TEST");
-            }
-
+            List<LuaParam> lParams = LuaUtils.createLuaParamList(classPath, false, false, false, false, false, actorClassId, false, false, 0, 1, "TEST");
+            
             return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
         }
 
@@ -257,6 +252,71 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             EventList conditions = JsonConvert.DeserializeObject<EventList>(eventConditions);
             this.eventConditions = conditions;
+        }
+
+        public void DoEventStart(Player player, EventStartPacket eventStart)
+        {
+            if (File.Exists("./scripts" + classPath + ".lua"))
+                actorScript = LuaEngine.loadScript("./scripts" + classPath + ".lua");
+
+            if (actorScript == null)
+            { 
+                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", getName()));
+                return;
+            }
+
+            //Have to do this to combine LuaParams
+            List<Object> objects = new List<Object>();
+            objects.Add(player);
+            objects.Add(this);
+            objects.Add(eventStart.triggerName);
+
+            if (eventStart.luaParams != null)
+                objects.AddRange(LuaUtils.createLuaParamObjectList(eventStart.luaParams));
+
+            //Run Script
+            if (!actorScript.Globals.Get("onEventStarted").IsNil())
+                actorScript.Call(actorScript.Globals["onEventStarted"], objects.ToArray());
+        
+        }
+
+        public void DoEventUpdate(Player player, EventUpdatePacket eventUpdate)
+        {
+            if (File.Exists("./scripts" + classPath + ".lua"))
+                actorScript = LuaEngine.loadScript("./scripts" + classPath + ".lua");
+
+            if (actorScript == null)
+            {
+                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", getName()));
+                return;
+            }
+
+            //Have to do this to combine LuaParams
+            List<Object> objects = new List<Object>();
+            objects.Add(player);
+            objects.Add(this);
+            objects.Add(eventUpdate.val2);
+            objects.AddRange(LuaUtils.createLuaParamObjectList(eventUpdate.luaParams));
+
+            //Run Script
+            if (!actorScript.Globals.Get("onEventUpdate").IsNil())
+                actorScript.Call(actorScript.Globals["onEventUpdate"], objects.ToArray());
+        }
+
+        internal void DoOnActorSpawn(Player player)
+        {
+            if (File.Exists("./scripts" + classPath + ".lua"))
+                actorScript = LuaEngine.loadScript("./scripts" + classPath + ".lua");
+
+            if (actorScript == null)
+            {
+                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", getName()));
+                return;
+            }
+               
+            //Run Script
+            if (!actorScript.Globals.Get("onSpawn").IsNil())
+                actorScript.Call(actorScript.Globals["onSpawn"], player, this);            
         }
     }
 }

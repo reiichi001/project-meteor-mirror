@@ -38,6 +38,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public bool spawnedFirstTime = false;
 
+        public string classPath;
         public string className;
         public List<LuaParam> classParams;
 

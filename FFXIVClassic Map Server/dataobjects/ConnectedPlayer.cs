@@ -150,7 +150,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
                     if (actor is Npc)
                     {
-                        LuaEngine.doActorOnSpawn(getActor(), (Npc)actor);
+                        ((Npc)actor).DoOnActorSpawn(playerActor);
                     }
                 }
             }
