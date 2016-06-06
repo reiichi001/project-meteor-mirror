@@ -3,10 +3,11 @@ FFXIV Classic Server
 Compile and install instructions: http://ffxivclassic.fragmenterworks.com/wiki/index.php/Setting_up_the_project
 
 Welcome to the FFXIV 1.0 server project.
-If you wish to discuss and help please visit the IRC channel.
+If you wish to discuss and help please join the Discord server.
 
 **Discord Server Invite**
- * https://discord.gg/0ynLxiEl0zWhpKOW 
+
+https://discord.gg/0ynLxiEl0zWhpKOW 
 
 Pull Requests
 ========
