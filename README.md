@@ -5,9 +5,8 @@ Compile and install instructions: http://ffxivclassic.fragmenterworks.com/wiki/i
 Welcome to the FFXIV 1.0 server project.
 If you wish to discuss and help please visit the IRC channel.
 
-**IRC Channel**
- * **Server:** irc.ffochat.com
- * **Channel:** #ffxivclassic
+**Discord Server Invite**
+ * https://discord.gg/0ynLxiEl0zWhpKOW 
 
 Pull Requests
 ========
