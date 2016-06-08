@@ -1,13 +1,9 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
+﻿using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.actors.director;
-using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.Actors
 {

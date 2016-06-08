@@ -1,7 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.packets;
-using FFXIVClassic_Map_Server.actors.area;
+﻿using FFXIVClassic_Map_Server.common;
+using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.dataobjects;
@@ -10,19 +8,13 @@ using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.actor.events;
-using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.events;
 using FFXIVClassic_Map_Server.packets.send.list;
-using FFXIVClassic_Map_Server.packets.send.login;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.utils;
-using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.Actors
 {

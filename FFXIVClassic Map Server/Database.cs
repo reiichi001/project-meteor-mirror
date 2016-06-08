@@ -1,24 +1,17 @@
 ﻿using MySql.Data.MySqlClient;
 using Dapper;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Map_Server.common;
 using FFXIVClassic_Map_Server.utils;
-using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.packets.send.player;
-using FFXIVClassic_Lobby_Server.dataobjects;
-using FFXIVClassic_Map_Server;
-using FFXIVClassic_Map_Server.common.EfficientHashTables;
-using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
+using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.actors.chara.player;
 
-namespace FFXIVClassic_Lobby_Server
+namespace FFXIVClassic_Map_Server
 {
 
     class Database
@@ -43,7 +36,9 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -63,7 +58,8 @@ namespace FFXIVClassic_Lobby_Server
                     world = conn.Query<DBWorld>("SELECT * FROM servers WHERE id=@ServerId", new {ServerId = serverId}).SingleOrDefault();                  
                 }
                 catch (MySqlException e)
-                {                    
+                {
+                    Log.error(e.ToString());
                 }
                 finally
                 {
@@ -86,6 +82,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Log.error(e.ToString());
                 }
                 finally
                 {
@@ -140,7 +137,9 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -196,7 +195,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -230,7 +231,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -270,7 +273,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -302,7 +307,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -352,7 +359,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -780,7 +789,9 @@ namespace FFXIVClassic_Lobby_Server
                     player.getEquipment().SetEquipment(getEquipment(player, player.charaWork.parameterSave.state_mainSkill[0]));
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -822,7 +833,9 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -858,7 +871,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -889,7 +904,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -958,7 +975,9 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -1012,7 +1031,9 @@ namespace FFXIVClassic_Lobby_Server
                     insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.getInventory(type).getNextEmptySlot(), itemType, quality, durability, 0, 0, 0, 0, 0, 0);
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -1045,7 +1066,9 @@ namespace FFXIVClassic_Lobby_Server
 
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -1083,7 +1106,9 @@ namespace FFXIVClassic_Lobby_Server
 
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -1122,7 +1147,9 @@ namespace FFXIVClassic_Lobby_Server
 
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -1160,7 +1187,9 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -1204,7 +1233,9 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();

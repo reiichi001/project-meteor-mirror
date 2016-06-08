@@ -1,12 +1,6 @@
-﻿using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.packets;
-using FFXIVClassic_Map_Server.lua;
-using System;
+﻿using FFXIVClassic_Map_Server.lua;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.player
 {

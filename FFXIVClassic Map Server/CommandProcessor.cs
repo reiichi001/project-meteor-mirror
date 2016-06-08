@@ -1,25 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Net;
-using System.Net.Sockets;
-using System.Threading.Tasks;
-using System.Threading;
-using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Map_Server.common;
 using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Lobby_Server.packets;
-using System.IO;
+using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using FFXIVClassic_Map_Server;
 using FFXIVClassic_Map_Server.packets.send;
-using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.Actors;
-using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.Properties;
 
-namespace FFXIVClassic_Lobby_Server
+namespace FFXIVClassic_Map_Server
 {
     class CommandProcessor
     {

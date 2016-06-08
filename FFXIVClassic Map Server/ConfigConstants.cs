@@ -1,18 +1,16 @@
-﻿using FFXIVClassic_Lobby_Server.common;
-using STA.Settings;
+﻿using STA.Settings;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace FFXIVClassic_Lobby_Server
+namespace FFXIVClassic_Map_Server
 {
     class ConfigConstants
     {
         public static String OPTIONS_BINDIP;
+        public static String OPTIONS_PORT;
         public static bool   OPTIONS_TIMESTAMP = false;
+        public static String OPTIONS_LOGPATH;
+        public static String OPTIONS_LOGFILE;
 
         public static uint   DATABASE_WORLDID;
         public static String DATABASE_HOST;
@@ -23,20 +21,23 @@ namespace FFXIVClassic_Lobby_Server
 
         public static bool load()
         {
-            Console.Write("Loading config.ini file... ");
+            Console.Write("Loading map_config.ini file... ");
 
-            if (!File.Exists("./config.ini"))
+            if (!File.Exists("./map_config.ini"))
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("[FILE NOT FOUND]");
+                Console.WriteLine(String.Format("[FILE NOT FOUND]"));
                 Console.ForegroundColor = ConsoleColor.Gray;
                 return false;
             }
 
-            INIFile configIni = new INIFile("./config.ini");
+            INIFile configIni = new INIFile("./map_config.ini");
 
             ConfigConstants.OPTIONS_BINDIP =        configIni.GetValue("General", "server_ip", "127.0.0.1");
+            ConfigConstants.OPTIONS_PORT =          configIni.GetValue("General", "server_port", "54992");
             ConfigConstants.OPTIONS_TIMESTAMP =     configIni.GetValue("General", "showtimestamp", "true").ToLower().Equals("true");
+            ConfigConstants.OPTIONS_LOGPATH =       configIni.GetValue("General", "log_path", "./logs/");
+            ConfigConstants.OPTIONS_LOGFILE =       configIni.GetValue("General", "log_file_name", String.Format("map_{0}_{1}.log", OPTIONS_BINDIP, OPTIONS_PORT));
 
             ConfigConstants.DATABASE_WORLDID =      configIni.GetValue("Database", "worldid", (uint)0);
             ConfigConstants.DATABASE_HOST =         configIni.GetValue("Database", "host", "");
@@ -46,7 +47,7 @@ namespace FFXIVClassic_Lobby_Server
             ConfigConstants.DATABASE_PASSWORD =     configIni.GetValue("Database", "password", "");
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("[OK]");
+            Console.WriteLine(String.Format("[OK]"));
             Console.ForegroundColor = ConsoleColor.Gray;
 
             return true;

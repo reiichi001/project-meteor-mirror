@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using System.Threading;
-using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Lobby_Server.common;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -28,7 +25,7 @@ namespace FFXIVClassic_Lobby_Server
 
         private void socketCleanup()
         {
-            Console.WriteLine("Cleanup thread started; it will run every {0} seconds.", CLEANUP_THREAD_SLEEP_TIME);
+            Log.debug(String.Format("Cleanup thread started; it will run every {0} seconds.", CLEANUP_THREAD_SLEEP_TIME));
             while (!killCleanupThread)
             {
                 int count = 0;
@@ -55,7 +52,7 @@ namespace FFXIVClassic_Lobby_Server
             //cleanupThread.Name = "LobbyThread:Cleanup";
             //cleanupThread.Start();
 
-            IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), FFXIV_LOBBY_PORT);
+            IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), int.Parse(ConfigConstants.OPTIONS_PORT));
            
             try{
                 mServerSocket = new System.Net.Sockets.Socket(serverEndPoint.Address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);                
@@ -82,9 +79,8 @@ namespace FFXIVClassic_Lobby_Server
                 throw new ApplicationException("Error occured starting listeners, check inner exception", e);
             }
 
-            Console.Write("Server has started @ ");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("{0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
+            Log.debug(String.Format("Lobby Server has started @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port));
             Console.ForegroundColor = ConsoleColor.Gray;
 
             mProcessor = new PacketProcessor();

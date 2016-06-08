@@ -1,5 +1,4 @@
-﻿using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.common;
+﻿using FFXIVClassic_Map_Server.common;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

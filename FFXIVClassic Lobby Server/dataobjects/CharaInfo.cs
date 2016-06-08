@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic_Lobby_Server.common;
 using System.IO;
 
@@ -231,7 +227,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
         {
             byte[] bytes = File.ReadAllBytes("./packets/charaappearance.bin");
 
-            Console.WriteLine(Utils.ByteArrayToHex(bytes));
+            Log.debug(Utils.ByteArrayToHex(bytes));
 
             return Convert.ToBase64String(bytes).Replace('+', '-').Replace('/', '_');
         }

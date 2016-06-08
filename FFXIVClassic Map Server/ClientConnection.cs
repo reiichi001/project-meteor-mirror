@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net.Sockets;
-using FFXIVClassic_Lobby_Server.packets;
-using System.Diagnostics;
-using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Map_Server.packets;
+using FFXIVClassic_Map_Server.common;
 using System.Collections.Concurrent;
-using System.IO;
-using Cyotek.Collections.Generic;
 using System.Net;
 
-namespace FFXIVClassic_Lobby_Server
+namespace FFXIVClassic_Map_Server
 {
     class ClientConnection
     {

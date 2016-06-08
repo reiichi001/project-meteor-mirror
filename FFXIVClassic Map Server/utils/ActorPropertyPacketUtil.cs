@@ -1,11 +1,6 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
+﻿using FFXIVClassic_Map_Server.packets;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.Actors;
 
 namespace FFXIVClassic_Map_Server.utils

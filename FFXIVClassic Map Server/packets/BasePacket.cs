@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Map_Server.common;
 using System.IO;
 
-namespace FFXIVClassic_Lobby_Server.packets
-{    
-   
+namespace FFXIVClassic_Map_Server.packets
+{
+
     [StructLayout(LayoutKind.Sequential)]
     public struct BasePacketHeader
     {
@@ -336,8 +333,8 @@ namespace FFXIVClassic_Lobby_Server.packets
         {
 #if DEBUG
             Console.BackgroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine("IsAuthed: {0}, IsEncrypted: {1}, Size: 0x{2:X}, Num Subpackets: {3}", header.isAuthenticated, header.isCompressed, header.packetSize, header.numSubpackets);            
-            Console.WriteLine("{0}", Utils.ByteArrayToHex(getHeaderBytes()));
+            Log.debug(String.Format("IsAuthed: {0}, IsEncrypted: {1}, Size: 0x{2:X}, Num Subpackets: {3}", header.isAuthenticated, header.isCompressed, header.packetSize, header.numSubpackets));            
+            Log.debug(String.Format("{0}", Utils.ByteArrayToHex(getHeaderBytes())));
             foreach (SubPacket sub in getSubpackets())
                 sub.debugPrintSubPacket();
             Console.BackgroundColor = ConsoleColor.Black;

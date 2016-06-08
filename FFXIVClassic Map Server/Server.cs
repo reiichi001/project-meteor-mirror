@@ -1,24 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading.Tasks;
 using System.Threading;
-using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Lobby_Server.packets;
-using System.IO;
-using FFXIVClassic_Map_Server.packets.send.actor;
-using FFXIVClassic_Map_Server;
-using FFXIVClassic_Map_Server.packets.send;
-using FFXIVClassic_Map_Server.dataobjects.chara;
+using FFXIVClassic_Map_Server.packets;
+using FFXIVClassic_Map_Server.common;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
-using FFXIVClassic_Map_Server.actors.chara.player;
 
-namespace FFXIVClassic_Lobby_Server
+namespace FFXIVClassic_Map_Server
 {
     class Server
     {
@@ -93,7 +84,7 @@ namespace FFXIVClassic_Lobby_Server
             mWorldManager.LoadZoneEntranceList();
             mWorldManager.LoadNPCs();
 
-            IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), FFXIV_MAP_PORT);
+            IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), int.Parse(ConfigConstants.OPTIONS_PORT));
 
             try
             {
@@ -121,9 +112,8 @@ namespace FFXIVClassic_Lobby_Server
                 throw new ApplicationException("Error occured starting listeners, check inner exception", e);
             }
 
-            Console.Write("Game server has started @ ");
             Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine("{0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
+            Log.debug(String.Format("Map Server has started @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port));
             Console.ForegroundColor = ConsoleColor.Gray;
 
             mProcessor = new PacketProcessor(this, mConnectedPlayerList, mConnectionList);

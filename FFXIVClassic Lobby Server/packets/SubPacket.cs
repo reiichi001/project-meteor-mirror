@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
-using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
 
 namespace FFXIVClassic_Lobby_Server.packets
@@ -146,14 +141,14 @@ namespace FFXIVClassic_Lobby_Server.packets
         {
 #if DEBUG
             Console.BackgroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine("Size: 0x{0:X}", header.subpacketSize);
+            Log.debug(String.Format("Size: 0x{0:X}", header.subpacketSize));
             if (header.type == 0x03)
-                Console.WriteLine("Opcode: 0x{0:X}", gameMessage.opcode);
-            Console.WriteLine("{0}", Utils.ByteArrayToHex(getHeaderBytes()));
+                Log.debug(String.Format("Opcode: 0x{0:X}", gameMessage.opcode));
+            Log.debug(String.Format("{0}", Utils.ByteArrayToHex(getHeaderBytes())));
             if (header.type == 0x03)
-                Console.WriteLine("{0}", Utils.ByteArrayToHex(getGameMessageBytes()));
+                Log.debug(String.Format("{0}", Utils.ByteArrayToHex(getGameMessageBytes())));
             Console.BackgroundColor = ConsoleColor.DarkMagenta;
-            Console.WriteLine("{0}", Utils.ByteArrayToHex(data));
+            Log.debug(String.Format("{0}", Utils.ByteArrayToHex(data)));
             Console.BackgroundColor = ConsoleColor.Black;
 #endif
         }

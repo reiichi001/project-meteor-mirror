@@ -1,14 +1,11 @@
 ﻿using FFXIVClassic_Lobby_Server.dataobjects;
 using MySql.Data.MySqlClient;
 using Dapper;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.utils;
+using FFXIVClassic_Lobby_Server.common;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -35,7 +32,10 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+
+                }
                 finally
                 {
                     conn.Dispose();
@@ -88,6 +88,10 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Log.error(e.ToString());
+                   
+                    Log.error(e.ToString());
+                   
                     pid = 0;
                     cid = 0;
                 }
@@ -179,6 +183,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Log.error(e.ToString());
+                   
                     conn.Dispose();
                     return;
                 }
@@ -202,6 +208,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Log.error(e.ToString());
+                   
                     conn.Dispose();
                     return;
                 }
@@ -222,6 +230,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Log.error(e.ToString());
+                   
 
                 }
                 finally
@@ -267,6 +277,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Log.error(e.ToString());
+                   
 
                 }
                 finally
@@ -298,6 +310,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Log.error(e.ToString());
+                   
 
                 }
                 finally
@@ -320,7 +334,9 @@ namespace FFXIVClassic_Lobby_Server
                     worldList = conn.Query<World>("SELECT * FROM servers WHERE isActive=true").ToList();                                       
                 }
                 catch (MySqlException e)
-                { worldList = new List<World>(); }
+                {
+                    Log.error(e.ToString());
+                    worldList = new List<World>(); }
                 finally
                 {                    
                     conn.Dispose();
@@ -340,7 +356,9 @@ namespace FFXIVClassic_Lobby_Server
                     world = conn.Query<World>("SELECT * FROM servers WHERE id=@ServerId", new {ServerId = serverId}).SingleOrDefault();                  
                 }
                 catch (MySqlException e)
-                {                    
+                {
+                    Log.error(e.ToString());
+                                       
                 }
                 finally
                 {
@@ -476,6 +494,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Log.error(e.ToString());
+                   
                 }
                 finally
                 {
@@ -497,7 +517,9 @@ namespace FFXIVClassic_Lobby_Server
                     nameList = conn.Query<String>("SELECT name FROM reserved_names WHERE userId=@UserId", new { UserId = userId }).ToList();
                 }
                 catch (MySqlException e)
-                { nameList = new List<String>(); }
+                {
+                    Log.error(e.ToString());
+                    nameList = new List<String>(); }
                 finally
                 {
                     conn.Dispose();
@@ -517,7 +539,9 @@ namespace FFXIVClassic_Lobby_Server
                     retainerList = conn.Query<Retainer>("SELECT * FROM retainers WHERE id=@UserId ORDER BY characterId, slot", new { UserId = userId }).ToList();
                 }
                 catch (MySqlException e)
-                { retainerList = new List<Retainer>(); }
+                {
+                    Log.error(e.ToString());
+                    retainerList = new List<Retainer>(); }
                 finally
                 {
                     conn.Dispose();

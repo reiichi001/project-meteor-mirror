@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using FFXIVClassic_Lobby_Server.common;
@@ -338,8 +335,8 @@ namespace FFXIVClassic_Lobby_Server.packets
         {
 #if DEBUG
             Console.BackgroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine("IsAuthed: {0}, IsEncrypted: {1}, Size: 0x{2:X}, Num Subpackets: {3}", header.isAuthenticated, header.isEncrypted, header.packetSize, header.numSubpackets);
-            Console.WriteLine("{0}", Utils.ByteArrayToHex(getHeaderBytes()));
+            Log.debug(String.Format("IsAuthed: {0}, IsEncrypted: {1}, Size: 0x{2:X}, Num Subpackets: {3}", header.isAuthenticated, header.isEncrypted, header.packetSize, header.numSubpackets));
+            Log.debug(String.Format("{0}", Utils.ByteArrayToHex(getHeaderBytes())));
             foreach (SubPacket sub in getSubpackets())
                 sub.debugPrintSubPacket();
             Console.BackgroundColor = ConsoleColor.Black;

@@ -1,40 +1,25 @@
-﻿using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.packets;
-using MySql.Data.MySqlClient;
+﻿using FFXIVClassic_Map_Server.common;
+using FFXIVClassic_Map_Server.packets;
 using System;
 using System.Collections.Generic;
-using System.Threading;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.packets.receive;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.login;
-using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
-using FFXIVClassic_Map_Server.packets.send.Actor;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using FFXIVClassic_Map_Server;
-using FFXIVClassic_Map_Server.packets.send.player;
-using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.packets.send.supportdesk;
 using FFXIVClassic_Map_Server.packets.receive.social;
 using FFXIVClassic_Map_Server.packets.send.social;
 using FFXIVClassic_Map_Server.packets.receive.supportdesk;
 using FFXIVClassic_Map_Server.packets.receive.recruitment;
 using FFXIVClassic_Map_Server.packets.send.recruitment;
-using FFXIVClassic_Map_Server.packets.send.list;
 using FFXIVClassic_Map_Server.packets.receive.events;
-using FFXIVClassic_Map_Server.packets.send.events;
 using FFXIVClassic_Map_Server.lua;
-using System.Net;
-using FFXIVClassic_Map_Server.common.EfficientHashTables;
 using FFXIVClassic_Map_Server.Actors;
 
-namespace FFXIVClassic_Lobby_Server
+namespace FFXIVClassic_Map_Server
 {
     class PacketProcessor
     {

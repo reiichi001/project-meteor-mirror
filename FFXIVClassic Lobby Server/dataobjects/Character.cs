@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.dataobjects;
 
@@ -37,9 +33,9 @@ namespace FFXIVClassic_Lobby_Server
             charaInfo.Replace("/", "_");
             byte[] data = System.Convert.FromBase64String(charaInfo);
 
-            Console.WriteLine("------------Base64 printout------------------");
-            Console.WriteLine(Utils.ByteArrayToHex(data));
-            Console.WriteLine("------------Base64 printout------------------");
+            Log.debug("------------Base64 printout------------------");
+            Log.debug(Utils.ByteArrayToHex(data));
+            Log.debug("------------Base64 printout------------------");
 
             CharaInfo chara = new CharaInfo();
 

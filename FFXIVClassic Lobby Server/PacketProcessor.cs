@@ -3,16 +3,11 @@ using FFXIVClassic_Lobby_Server.dataobjects;
 using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic_Lobby_Server.packets.receive;
 using FFXIVClassic_Lobby_Server.utils;
-using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Lobby_Server
 {

@@ -1,20 +1,12 @@
-﻿using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.common;
+﻿using FFXIVClassic_Map_Server.common;
 using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.Actors;
-using FFXIVClassic_Map_Server.common.EfficientHashTables;
-using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using FFXIVClassic_Map_Server.packets.send.login;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -74,7 +66,10 @@ namespace FFXIVClassic_Map_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+
+                }
                 finally
                 {
                     conn.Dispose();
@@ -121,7 +116,9 @@ namespace FFXIVClassic_Map_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -172,7 +169,9 @@ namespace FFXIVClassic_Map_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -242,7 +241,9 @@ namespace FFXIVClassic_Map_Server
                    
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -313,7 +314,9 @@ namespace FFXIVClassic_Map_Server
 
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Log.error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
