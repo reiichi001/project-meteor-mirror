@@ -22,7 +22,7 @@ namespace FFXIVClassic_Map_Server.Actors
 {
     class Npc : Character
     {
-        private Script actorScript;
+        //private Script actorScript;
         private uint actorClassId;
 
         public NpcWork npcWork = new NpcWork();
@@ -41,6 +41,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             this.zoneId = zoneId;
             this.zone = Server.GetWorldManager().GetZone(zoneId);
+
+            this.actorClassId = classId;
 
             loadNpcAppearance(classId);
 
@@ -67,6 +69,9 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.property[3] = 1;
             charaWork.property[4] = 1;
 
+            npcWork.pushCommand = 0x271D;
+            npcWork.pushCommandPriority = 1;
+
             generateActorName((int)actorNumber);            
         }
 
@@ -75,10 +80,22 @@ namespace FFXIVClassic_Map_Server.Actors
             return AddActorPacket.buildPacket(actorId, playerActorId, 8);
         }
 
+        // actorClassId, [], [], numBattleCommon, [battleCommon], numEventCommon, [eventCommon], args for either initForBattle/initForEvent
         public override SubPacket createScriptBindPacket(uint playerActorId)
         {
-            List<LuaParam> lParams = LuaUtils.createLuaParamList(classPath, false, false, false, false, false, actorClassId, false, false, 0, 1, "TEST");
-            
+            List<LuaParam> lParams;
+
+            Player player = Server.GetWorldManager().GetPCInWorld(playerActorId);
+            lParams = DoActorInit(player);
+
+            if (lParams == null)
+            {
+                classPath = "/Chara/Npc/Populace/PopulaceStandard";
+                className = "PopulaceStandard";
+                lParams = LuaUtils.createLuaParamList(classPath, false, false, false, false, false, 0xF47F6, false, false, 0, 0);
+            }
+
+            ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams).debugPrintSubPacket();
             return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
         }
 
@@ -145,6 +162,8 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             propPacketUtil.addProperty("npcWork.hateType");
+            propPacketUtil.addProperty("npcWork.pushCommand");
+            propPacketUtil.addProperty("npcWork.pushCommandPriority");
 
             return BasePacket.createPacket(propPacketUtil.done(), true, false);
         }
@@ -223,17 +242,25 @@ namespace FFXIVClassic_Map_Server.Actors
                             appearanceIds[Character.HIGHLIGHT_HAIR] = (uint)(reader.GetUInt32(3) | reader.GetUInt32(2) << 10); //5- Hair Highlight, 4 - Hair Style
                             appearanceIds[Character.VOICE] = reader.GetUInt32(17);
                             appearanceIds[Character.MAINHAND] = reader.GetUInt32(19);
-                            //appearanceIds[Character.WEAPON2] = reader.GetUInt32(22);
+                            appearanceIds[Character.OFFHAND] = reader.GetUInt32(20);
+                            appearanceIds[Character.SPMAINHAND] = reader.GetUInt32(21);
+                            appearanceIds[Character.SPOFFHAND] = reader.GetUInt32(22);
+                            appearanceIds[Character.THROWING] = reader.GetUInt32(23);
+                            appearanceIds[Character.PACK] = reader.GetUInt32(24);
+                            appearanceIds[Character.POUCH] = reader.GetUInt32(25);
                             appearanceIds[Character.HEADGEAR] = reader.GetUInt32(26);
                             appearanceIds[Character.BODYGEAR] = reader.GetUInt32(27);
                             appearanceIds[Character.LEGSGEAR] = reader.GetUInt32(28);
                             appearanceIds[Character.HANDSGEAR] = reader.GetUInt32(29);
                             appearanceIds[Character.FEETGEAR] = reader.GetUInt32(30);
                             appearanceIds[Character.WAISTGEAR] = reader.GetUInt32(31);
-                            appearanceIds[Character.R_EAR] = reader.GetUInt32(32);
-                            appearanceIds[Character.L_EAR] = reader.GetUInt32(33);
-                            appearanceIds[Character.R_RINGFINGER] = reader.GetUInt32(36);
-                            appearanceIds[Character.L_RINGFINGER] = reader.GetUInt32(37);
+                            appearanceIds[Character.NECKGEAR] = reader.GetUInt32(32);
+                            appearanceIds[Character.R_EAR] = reader.GetUInt32(33);
+                            appearanceIds[Character.L_EAR] = reader.GetUInt32(34);
+                            appearanceIds[Character.R_INDEXFINGER] = reader.GetUInt32(35);
+                            appearanceIds[Character.L_INDEXFINGER] = reader.GetUInt32(36);
+                            appearanceIds[Character.R_RINGFINGER] = reader.GetUInt32(37);
+                            appearanceIds[Character.L_RINGFINGER] = reader.GetUInt32(38);
 
                         }
                     }
@@ -254,13 +281,45 @@ namespace FFXIVClassic_Map_Server.Actors
             this.eventConditions = conditions;
         }
 
+        public List<LuaParam> DoActorInit(Player player)
+        {
+            Script parent = null, child = null;
+
+            if (File.Exists("./scripts/base/" + classPath + ".lua"))
+                parent = LuaEngine.loadScript("./scripts/base/" + classPath + ".lua");
+            if (File.Exists(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId)))
+                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId));
+
+            if (parent == null)
+            {
+                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", getName()));
+                return null;
+            }
+
+            DynValue result;
+                            
+            if (child != null && child.Globals["init"] != null)
+                result = child.Call(child.Globals["init"], this);
+            else if (parent.Globals["init"] != null)
+                result = parent.Call(parent.Globals["init"], this);
+            else
+                return null;
+
+            List<LuaParam> lparams = LuaUtils.createLuaParamList(result);
+            return lparams;          
+        }
+
         public void DoEventStart(Player player, EventStartPacket eventStart)
         {
-            if (File.Exists("./scripts" + classPath + ".lua"))
-                actorScript = LuaEngine.loadScript("./scripts" + classPath + ".lua");
+            Script parent = null, child = null;
 
-            if (actorScript == null)
-            { 
+            if (File.Exists("./scripts/base/" + classPath + ".lua"))
+                parent = LuaEngine.loadScript("./scripts/base/" + classPath + ".lua");
+            if (File.Exists(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId)))
+                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId));
+
+            if (parent == null)
+            {
                 LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", getName()));
                 return;
             }
@@ -275,17 +334,27 @@ namespace FFXIVClassic_Map_Server.Actors
                 objects.AddRange(LuaUtils.createLuaParamObjectList(eventStart.luaParams));
 
             //Run Script
-            if (!actorScript.Globals.Get("onEventStarted").IsNil())
-                actorScript.Call(actorScript.Globals["onEventStarted"], objects.ToArray());
-        
+            DynValue result;
+
+            if (child != null && !child.Globals.Get("onEventStarted").IsNil())
+                result = child.Call(child.Globals["onEventStarted"], objects.ToArray());
+            else if (!parent.Globals.Get("onEventStarted").IsNil())
+                result = parent.Call(parent.Globals["onEventStarted"], objects.ToArray());
+            else
+                return;
+
         }
 
         public void DoEventUpdate(Player player, EventUpdatePacket eventUpdate)
         {
-            if (File.Exists("./scripts" + classPath + ".lua"))
-                actorScript = LuaEngine.loadScript("./scripts" + classPath + ".lua");
+            Script parent = null, child = null;
 
-            if (actorScript == null)
+            if (File.Exists("./scripts/base/" + classPath + ".lua"))
+                parent = LuaEngine.loadScript("./scripts/base/" + classPath + ".lua");
+            if (File.Exists(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId)))
+                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId));
+
+            if (parent == null)
             {
                 LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", getName()));
                 return;
@@ -299,24 +368,39 @@ namespace FFXIVClassic_Map_Server.Actors
             objects.AddRange(LuaUtils.createLuaParamObjectList(eventUpdate.luaParams));
 
             //Run Script
-            if (!actorScript.Globals.Get("onEventUpdate").IsNil())
-                actorScript.Call(actorScript.Globals["onEventUpdate"], objects.ToArray());
+            DynValue result;
+
+            if (child != null && !child.Globals.Get("onEventUpdate").IsNil())
+                result = child.Call(child.Globals["onEventUpdate"], objects.ToArray());
+            else if (!parent.Globals.Get("onEventUpdate").IsNil())
+                result = parent.Call(parent.Globals["onEventUpdate"], objects.ToArray());
+            else
+                return;
+
         }
 
         internal void DoOnActorSpawn(Player player)
         {
-            if (File.Exists("./scripts" + classPath + ".lua"))
-                actorScript = LuaEngine.loadScript("./scripts" + classPath + ".lua");
+            Script parent = null, child = null;
 
-            if (actorScript == null)
+            if (File.Exists("./scripts/base/" + classPath + ".lua"))
+                parent = LuaEngine.loadScript("./scripts/base/" + classPath + ".lua");
+            if (File.Exists(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId)))
+                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId));
+
+            if (parent == null)
             {
                 LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", getName()));
                 return;
             }
                
             //Run Script
-            if (!actorScript.Globals.Get("onSpawn").IsNil())
-                actorScript.Call(actorScript.Globals["onSpawn"], player, this);            
+            if (child != null && !child.Globals.Get("onSpawn").IsNil())
+                child.Call(child.Globals["onSpawn"], player, this);
+            else if (!parent.Globals.Get("onSpawn").IsNil())
+                parent.Call(parent.Globals["onSpawn"], player, this);
+            else
+                return;                
         }
     }
 }
