@@ -48,7 +48,7 @@ namespace FFXIVClassic_Map_Server.packets.receive.events
                             error = ASCIIEncoding.ASCII.GetString(binReader.ReadBytes(0x80)).Replace("\0", "");
 
                             if (errorIndex == 0)
-                                Log.error("LUA ERROR:");                            
+                                Log.Error("LUA ERROR:");                            
 
                             return;
                         }

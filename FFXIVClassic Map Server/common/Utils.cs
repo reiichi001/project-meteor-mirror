@@ -19,48 +19,48 @@ namespace FFXIVClassic_Map_Server.common
             return result;
         }
 
-        public static string ByteArrayToHex(byte[] bytes)
+        public static string ByteArrayToHex(byte[] bytes, int offset = 0, int bytesPerLine = 16)
         {
-            if (bytes == null) return "<null>";
-            int bytesLength = bytes.Length;
-            var bytesPerLine = 16;
-            char[] HexChars = "0123456789ABCDEF".ToCharArray();
+            if (bytes == null)
+            {
+                return String.Empty;
+            }
 
-            int firstHexColumn =
-                  8                   // 8 characters for the address
-                + 3;                  // 3 spaces
+            char[] hexChars = "0123456789ABCDEF".ToCharArray();
 
-            int firstCharColumn = firstHexColumn
-                + bytesPerLine * 3       // - 2 digit for the hexadecimal value and 1 space
-                + (bytesPerLine - 1) / 8 // - 1 extra space every 8 characters from the 9th
-                + 2;                  // 2 spaces 
-
-            int lineLength = firstCharColumn
-                + bytesPerLine           // - characters to show the ascii value
-                + Environment.NewLine.Length; // Carriage return and line feed (should normally be 2)
+            // 00000000   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  ................
+            // 00000010   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  ................
+            int offsetBlock = 8 + 3;
+            int byteBlock = offsetBlock + (bytesPerLine * 3) + ((bytesPerLine - 1) / 8) + 2;
+            int lineLength = byteBlock + bytesPerLine + Environment.NewLine.Length;
 
             char[] line = (new String(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
-            int expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
-            StringBuilder result = new StringBuilder(expectedLines * lineLength);
+            int numLines = (bytes.Length + bytesPerLine - 1) / bytesPerLine;
 
-            for (int i = 0; i < bytesLength; i += bytesPerLine)
+            StringBuilder sb = new StringBuilder(numLines * lineLength);
+
+            for (int i = offset; i < bytes.Length; i += bytesPerLine)
             {
-                line[0] = HexChars[(i >> 28) & 0xF];
-                line[1] = HexChars[(i >> 24) & 0xF];
-                line[2] = HexChars[(i >> 20) & 0xF];
-                line[3] = HexChars[(i >> 16) & 0xF];
-                line[4] = HexChars[(i >> 12) & 0xF];
-                line[5] = HexChars[(i >> 8) & 0xF];
-                line[6] = HexChars[(i >> 4) & 0xF];
-                line[7] = HexChars[(i >> 0) & 0xF];
+                line[0] = hexChars[(i >> 28) & 0xF];
+                line[1] = hexChars[(i >> 24) & 0xF];
+                line[2] = hexChars[(i >> 20) & 0xF];
+                line[3] = hexChars[(i >> 16) & 0xF];
+                line[4] = hexChars[(i >> 12) & 0xF];
+                line[5] = hexChars[(i >> 8) & 0xF];
+                line[6] = hexChars[(i >> 4) & 0xF];
+                line[7] = hexChars[(i >> 0) & 0xF];
 
-                int hexColumn = firstHexColumn;
-                int charColumn = firstCharColumn;
+                int hexColumn = offsetBlock;
+                int charColumn = byteBlock;
 
                 for (int j = 0; j < bytesPerLine; j++)
                 {
-                    if (j > 0 && (j & 7) == 0) hexColumn++;
-                    if (i + j >= bytesLength)
+                    if (j > 0 && (j & 7) == 0)
+                    {
+                        hexColumn++;
+                    }
+
+                    if (i + j >= bytes.Length)
                     {
                         line[hexColumn] = ' ';
                         line[hexColumn + 1] = ' ';
@@ -68,17 +68,20 @@ namespace FFXIVClassic_Map_Server.common
                     }
                     else
                     {
-                        byte b = bytes[i + j];
-                        line[hexColumn] = HexChars[(b >> 4) & 0xF];
-                        line[hexColumn + 1] = HexChars[b & 0xF];
-                        line[charColumn] = (b < 32 ? '.' : (char)b);
+                        byte by = bytes[i + j];
+                        line[hexColumn] = hexChars[(by >> 4) & 0xF];
+                        line[hexColumn + 1] = hexChars[by & 0xF];
+                        line[charColumn] = (by < 32 ? '.' : (char)by);
                     }
+
                     hexColumn += 3;
                     charColumn++;
                 }
-                result.Append(line);
+
+                sb.Append(line);
             }
-            return Environment.NewLine + result.ToString();
+
+            return sb.ToString();
         }
 
         public static UInt32 UnixTimeStampUTC()
@@ -88,7 +91,7 @@ namespace FFXIVClassic_Map_Server.common
             DateTime zuluTime = currentTime.ToUniversalTime();
             DateTime unixEpoch = new DateTime(1970, 1, 1);
             unixTimeStamp = (UInt32)(zuluTime.Subtract(unixEpoch)).TotalSeconds;
-            
+
             return unixTimeStamp;
         }
 
@@ -99,7 +102,7 @@ namespace FFXIVClassic_Map_Server.common
             DateTime zuluTime = currentTime.ToUniversalTime();
             DateTime unixEpoch = new DateTime(1970, 1, 1);
             unixTimeStamp = (UInt64)(zuluTime.Subtract(unixEpoch)).TotalMilliseconds;
-            
+
             return unixTimeStamp;
         }
 
@@ -117,10 +120,10 @@ namespace FFXIVClassic_Map_Server.common
 
         public static uint swapEndian(uint input)
         {
-            return ((input >> 24) & 0xff) | 
-                    ((input << 8) & 0xff0000) | 
-                    ((input >> 8) & 0xff00) | 
-                    ((input << 24) & 0xff000000); 
+            return ((input >> 24) & 0xff) |
+                    ((input << 8) & 0xff0000) |
+                    ((input >> 8) & 0xff00) |
+                    ((input << 24) & 0xff000000);
         }
 
         public static int swapEndian(int input)
@@ -138,77 +141,77 @@ namespace FFXIVClassic_Map_Server.common
 
         public static uint MurmurHash2(string key, uint seed)
         {
-	        // 'm' and 'r' are mixing constants generated offline.
-	        // They're not really 'magic', they just happen to work well.
+            // 'm' and 'r' are mixing constants generated offline.
+            // They're not really 'magic', they just happen to work well.
 
             byte[] data = Encoding.ASCII.GetBytes(key);
-	        const uint m = 0x5bd1e995;
-	        const int r = 24;
+            const uint m = 0x5bd1e995;
+            const int r = 24;
             int len = key.Length;
             int dataIndex = len - 4;
 
-	        // Initialize the hash to a 'random' value
+            // Initialize the hash to a 'random' value
 
-	        uint h = seed ^ (uint)len;
+            uint h = seed ^ (uint)len;
 
-	        // Mix 4 bytes at a time into the hash
-	        
+            // Mix 4 bytes at a time into the hash
 
-	        while (len >= 4)
-	        {
-		        h *= m;
+
+            while (len >= 4)
+            {
+                h *= m;
 
                 uint k = (uint)BitConverter.ToInt32(data, dataIndex);
-		        k =     ((k >> 24) & 0xff) | // move byte 3 to byte 0
-			            ((k << 8) & 0xff0000) | // move byte 1 to byte 2
-			            ((k >> 8) & 0xff00) | // move byte 2 to byte 1
-			            ((k << 24) & 0xff000000); // byte 0 to byte 3
+                k = ((k >> 24) & 0xff) | // move byte 3 to byte 0
+                        ((k << 8) & 0xff0000) | // move byte 1 to byte 2
+                        ((k >> 8) & 0xff00) | // move byte 2 to byte 1
+                        ((k << 24) & 0xff000000); // byte 0 to byte 3
 
-		        k *= m;
-		        k ^= k >> r;
-		        k *= m;
+                k *= m;
+                k ^= k >> r;
+                k *= m;
 
-		        h ^= k;
+                h ^= k;
 
-		        dataIndex -= 4;
-		        len -= 4;
-	        }
+                dataIndex -= 4;
+                len -= 4;
+            }
 
-	        // Handle the last few bytes of the input array
-	        switch (len)
-	        {
-                case 3: 
+            // Handle the last few bytes of the input array
+            switch (len)
+            {
+                case 3:
                     h ^= (uint)data[0] << 16; goto case 2;
-                case 2: 
-                    h ^= (uint)data[len-2] << 8; goto case 1;
-	            case 1:
-                    h ^= data[len-1];
-		            h *= m;
+                case 2:
+                    h ^= (uint)data[len - 2] << 8; goto case 1;
+                case 1:
+                    h ^= data[len - 1];
+                    h *= m;
                     break;
-	        };
+            };
 
-	        // Do a few final mixes of the hash to ensure the last few
-	        // bytes are well-incorporated.
+            // Do a few final mixes of the hash to ensure the last few
+            // bytes are well-incorporated.
 
-	        h ^= h >> 13;
-	        h *= m;
-	        h ^= h >> 15;
+            h ^= h >> 13;
+            h *= m;
+            h ^= h >> 15;
 
-	        return h;
+            return h;
         }
 
         public static byte[] ConvertBoolArrayToBinaryStream(bool[] array)
         {
-            byte[] data = new byte[(array.Length/8)+(array.Length%8 != 0 ? 1 : 0)];
+            byte[] data = new byte[(array.Length / 8) + (array.Length % 8 != 0 ? 1 : 0)];
 
             int dataCounter = 0;
-            for (int i = 0; i < array.Length; i+=8)
+            for (int i = 0; i < array.Length; i += 8)
             {
                 for (int bitCount = 0; bitCount < 8; bitCount++)
                 {
                     if (i + bitCount >= array.Length)
                         break;
-                    data[dataCounter] = (byte)(((array[i + bitCount] ? 1 : 0) << 7-bitCount) | data[dataCounter]);
+                    data[dataCounter] = (byte)(((array[i + bitCount] ? 1 : 0) << 7 - bitCount) | data[dataCounter]);
                 }
                 dataCounter++;
             }
@@ -226,7 +229,7 @@ namespace FFXIVClassic_Map_Server.common
             while (true)
             {
                 string result = "";
-                uint key = (uint)data[offset + 0] << 8 | data[offset+1];
+                uint key = (uint)data[offset + 0] << 8 | data[offset + 1];
                 uint key2 = data[offset + 2];
                 key = RotateRight(key, 1) & 0xFFFF;
                 key -= 0x22AF;
@@ -258,7 +261,7 @@ namespace FFXIVClassic_Map_Server.common
 
                 offset += 4 + count2;
 
-                Log.debug(result);
+                Log.Debug(result);
             }
         }
 
@@ -310,7 +313,7 @@ namespace FFXIVClassic_Map_Server.common
             }
 
             count = count ^ key;
-            result[3] = (byte) (count & 0xFF);
+            result[3] = (byte)(count & 0xFF);
 
             key += 0x22AF & 0xFFFF;
             key = RotateLeft(key, 1) & 0xFFFF;
@@ -320,7 +323,7 @@ namespace FFXIVClassic_Map_Server.common
             key += 0x22AF & 0xFFFF;
             key = RotateLeft(key, 1) & 0xFFFF;
 
-            
+
             result[1] = (byte)(key & 0xFF);
             result[0] = (byte)((key >> 8) & 0xFF);
 

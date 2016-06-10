@@ -642,7 +642,7 @@ namespace FFXIVClassic_Map_Server.Actors
             Database.savePlayerPlayTime(this);
             Database.savePlayerPosition(this);
 
-            Log.info(String.Format("{0} has been logged out and saved.", this.customDisplayName));
+            Log.Info(String.Format("{0} has been logged out and saved.", this.customDisplayName));
         }
 
         public Area getZone()

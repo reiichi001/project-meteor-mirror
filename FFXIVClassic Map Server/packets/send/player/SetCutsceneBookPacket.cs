@@ -81,7 +81,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
                     if (binStream.Length <= PACKET_SIZE - 0x20)
                         binWriter.Write(binStream);
                     else
-                        Log.error("Failed making SetCutsceneBook packet. Bin Stream was too big!");
+                        Log.Error("Failed making SetCutsceneBook packet. Bin Stream was too big!");
 
                     binWriter.Seek(0x109, SeekOrigin.Begin);
                     binWriter.Write(Encoding.ASCII.GetBytes(sNpcName), 0, Encoding.ASCII.GetByteCount(sNpcName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(sNpcName));

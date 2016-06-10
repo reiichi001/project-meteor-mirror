@@ -79,14 +79,14 @@ namespace FFXIVClassic_Map_Server.utils
 
                         cmd.Parameters["@placename"].Value = placenames[pId];
 
-                        Log.debug(String.Format("Wrote: {0}", id));
+                        Log.Debug(String.Format("Wrote: {0}", id));
                         cmd.ExecuteNonQuery();
 
                     }
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -137,14 +137,14 @@ namespace FFXIVClassic_Map_Server.utils
                         cmd.Parameters["@id"].Value = id;
                         cmd.Parameters["@displayNameId"].Value = nameId;
 
-                        Log.debug(String.Format("Wrote: {0} : {1}", id, nameId));
+                        Log.Debug(String.Format("Wrote: {0} : {1}", id, nameId));
                         cmd.ExecuteNonQuery();
 
                     }
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -203,14 +203,14 @@ namespace FFXIVClassic_Map_Server.utils
 
                         cmd.Parameters["@id"].Value = id;
 
-                        Log.debug(String.Format("Wrote: {0}", id));                        
+                        Log.Debug(String.Format("Wrote: {0}", id));                        
                         cmd.ExecuteNonQuery();
 
                     }
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -288,7 +288,7 @@ namespace FFXIVClassic_Map_Server.utils
                         else if (id == 1500)
                             otherId = SetCompletedAchievementsPacket.CATEGORY_GRAND_COMPANY;
 
-                        Log.debug(String.Format("Wrote: {0} : {1} : {2} : {3}", id, name, otherId, points));
+                        Log.Debug(String.Format("Wrote: {0} : {1} : {2} : {3}", id, name, otherId, points));
                         cmd.Parameters["@id"].Value = id;
                         cmd.Parameters["@name"].Value = name;
                         cmd.Parameters["@otherId"].Value = otherId;                        
@@ -300,7 +300,7 @@ namespace FFXIVClassic_Map_Server.utils
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -338,7 +338,7 @@ namespace FFXIVClassic_Map_Server.utils
 
                             string output2 = String.Format("mStaticActors.Add(0x{0:x}, new {2}(0x{0:x}, \"{1}\"));", id, output.Substring(1 + output.LastIndexOf("/")), output.Split('/')[1]);
 
-                            Log.debug(output2);
+                            Log.Debug(output2);
                             w.WriteLine(output2);
 
                         }

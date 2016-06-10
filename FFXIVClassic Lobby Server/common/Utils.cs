@@ -18,48 +18,48 @@ namespace FFXIVClassic_Lobby_Server.common
             return result;
         }
 
-        public static string ByteArrayToHex(byte[] bytes)
+        public static string ByteArrayToHex(byte[] bytes, int offset = 0, int bytesPerLine = 16)
         {
-            if (bytes == null) return "<null>";
-            int bytesLength = bytes.Length;
-            var bytesPerLine = 16;
-            char[] HexChars = "0123456789ABCDEF".ToCharArray();
+            if (bytes == null)
+            {
+                return String.Empty;
+            }
 
-            int firstHexColumn =
-                  8                   // 8 characters for the address
-                + 3;                  // 3 spaces
+            char[] hexChars = "0123456789ABCDEF".ToCharArray();
 
-            int firstCharColumn = firstHexColumn
-                + bytesPerLine * 3       // - 2 digit for the hexadecimal value and 1 space
-                + (bytesPerLine - 1) / 8 // - 1 extra space every 8 characters from the 9th
-                + 2;                  // 2 spaces 
-
-            int lineLength = firstCharColumn
-                + bytesPerLine           // - characters to show the ascii value
-                + Environment.NewLine.Length; // Carriage return and line feed (should normally be 2)
+            // 00000000   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  ................
+            // 00000010   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  ................
+            int offsetBlock = 8 + 3;
+            int byteBlock = offsetBlock + (bytesPerLine * 3) + ((bytesPerLine - 1) / 8) + 2;
+            int lineLength = byteBlock + bytesPerLine + Environment.NewLine.Length;
 
             char[] line = (new String(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
-            int expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
-            StringBuilder result = new StringBuilder(expectedLines * lineLength);
+            int numLines = (bytes.Length + bytesPerLine - 1) / bytesPerLine;
 
-            for (int i = 0; i < bytesLength; i += bytesPerLine)
+            StringBuilder sb = new StringBuilder(numLines * lineLength);
+
+            for (int i = offset; i < bytes.Length; i += bytesPerLine)
             {
-                line[0] = HexChars[(i >> 28) & 0xF];
-                line[1] = HexChars[(i >> 24) & 0xF];
-                line[2] = HexChars[(i >> 20) & 0xF];
-                line[3] = HexChars[(i >> 16) & 0xF];
-                line[4] = HexChars[(i >> 12) & 0xF];
-                line[5] = HexChars[(i >> 8) & 0xF];
-                line[6] = HexChars[(i >> 4) & 0xF];
-                line[7] = HexChars[(i >> 0) & 0xF];
+                line[0] = hexChars[(i >> 28) & 0xF];
+                line[1] = hexChars[(i >> 24) & 0xF];
+                line[2] = hexChars[(i >> 20) & 0xF];
+                line[3] = hexChars[(i >> 16) & 0xF];
+                line[4] = hexChars[(i >> 12) & 0xF];
+                line[5] = hexChars[(i >> 8) & 0xF];
+                line[6] = hexChars[(i >> 4) & 0xF];
+                line[7] = hexChars[(i >> 0) & 0xF];
 
-                int hexColumn = firstHexColumn;
-                int charColumn = firstCharColumn;
+                int hexColumn = offsetBlock;
+                int charColumn = byteBlock;
 
                 for (int j = 0; j < bytesPerLine; j++)
                 {
-                    if (j > 0 && (j & 7) == 0) hexColumn++;
-                    if (i + j >= bytesLength)
+                    if (j > 0 && (j & 7) == 0)
+                    {
+                        hexColumn++;
+                    }
+
+                    if (i + j >= bytes.Length)
                     {
                         line[hexColumn] = ' ';
                         line[hexColumn + 1] = ' ';
@@ -67,17 +67,20 @@ namespace FFXIVClassic_Lobby_Server.common
                     }
                     else
                     {
-                        byte b = bytes[i + j];
-                        line[hexColumn] = HexChars[(b >> 4) & 0xF];
-                        line[hexColumn + 1] = HexChars[b & 0xF];
-                        line[charColumn] = (b < 32 ? '.' : (char)b);
+                        byte by = bytes[i + j];
+                        line[hexColumn] = hexChars[(by >> 4) & 0xF];
+                        line[hexColumn + 1] = hexChars[by & 0xF];
+                        line[charColumn] = (by < 32 ? '.' : (char)by);
                     }
+
                     hexColumn += 3;
                     charColumn++;
                 }
-                result.Append(line);
+
+                sb.Append(line);
             }
-            return Environment.NewLine + result.ToString();
+
+            return sb.ToString();
         }
 
         public static UInt32 UnixTimeStampUTC()

@@ -33,7 +33,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
 
                 }
                 finally
@@ -88,9 +88,9 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                    
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                    
                     pid = 0;
                     cid = 0;
@@ -100,7 +100,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Dispose();
                 }
 
-                Log.database(String.Format("CID={0} created on 'characters' table.", cid));
+                Log.Sql(String.Format("CID={0} created on 'characters' table.", cid));
             }
 
             return alreadyExists;
@@ -183,7 +183,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                    
                     conn.Dispose();
                     return;
@@ -208,7 +208,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                    
                     conn.Dispose();
                     return;
@@ -230,7 +230,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                    
 
                 }
@@ -242,7 +242,7 @@ namespace FFXIVClassic_Lobby_Server
                 
             }
 
-            Log.database(String.Format("CID={0} state updated to active(2).", cid));
+            Log.Sql(String.Format("CID={0} state updated to active(2).", cid));
         }
 
         public static bool renameCharacter(uint userId, uint characterId, uint serverId, String newName)
@@ -277,7 +277,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                    
 
                 }
@@ -286,7 +286,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Dispose();
                 }
 
-                Log.database(String.Format("CID={0} name updated to \"{1}\".", characterId, newName));
+                Log.Sql(String.Format("CID={0} name updated to \"{1}\".", characterId, newName));
 
                 return false;
             }
@@ -310,7 +310,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                    
 
                 }
@@ -320,7 +320,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
             }
 
-            Log.database(String.Format("CID={0} deleted.", characterId));
+            Log.Sql(String.Format("CID={0} deleted.", characterId));
         }
 
         public static List<World> getServers()
@@ -335,7 +335,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                     worldList = new List<World>(); }
                 finally
                 {                    
@@ -357,7 +357,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                                        
                 }
                 finally
@@ -494,7 +494,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                    
                 }
                 finally
@@ -518,7 +518,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                     nameList = new List<String>(); }
                 finally
                 {
@@ -540,7 +540,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                     retainerList = new List<Retainer>(); }
                 finally
                 {

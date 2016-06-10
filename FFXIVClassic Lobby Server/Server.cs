@@ -25,7 +25,7 @@ namespace FFXIVClassic_Lobby_Server
 
         private void socketCleanup()
         {
-            Log.debug(String.Format("Cleanup thread started; it will run every {0} seconds.", CLEANUP_THREAD_SLEEP_TIME));
+            Log.Debug(String.Format("Cleanup thread started; it will run every {0} seconds.", CLEANUP_THREAD_SLEEP_TIME));
             while (!killCleanupThread)
             {
                 int count = 0;
@@ -40,7 +40,7 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 if (count != 0)
-                    Log.conn(String.Format("{0} connections were cleaned up.", count));
+                    Log.Status(String.Format("{0} connections were cleaned up.", count));
                 Thread.Sleep(CLEANUP_THREAD_SLEEP_TIME*1000);
             }
         }
@@ -80,7 +80,7 @@ namespace FFXIVClassic_Lobby_Server
             }
 
             Console.ForegroundColor = ConsoleColor.White;
-            Log.debug(String.Format("Lobby Server has started @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port));
+            Log.Debug(String.Format("Lobby Server has started @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port));
             Console.ForegroundColor = ConsoleColor.Gray;
 
             mProcessor = new PacketProcessor();
@@ -105,7 +105,7 @@ namespace FFXIVClassic_Lobby_Server
                 conn.socket.BeginReceive(conn.buffer, 0, conn.buffer.Length, SocketFlags.None, new AsyncCallback(receiveCallback), conn);
                 //Queue the accept of the next incomming connection
                 mServerSocket.BeginAccept(new AsyncCallback(acceptCallback), mServerSocket);
-                Log.conn(String.Format("Connection {0}:{1} has connected.", (conn.socket.RemoteEndPoint as IPEndPoint).Address, (conn.socket.RemoteEndPoint as IPEndPoint).Port));
+                Log.Status(String.Format("Connection {0}:{1} has connected.", (conn.socket.RemoteEndPoint as IPEndPoint).Address, (conn.socket.RemoteEndPoint as IPEndPoint).Port));
             }
             catch (SocketException)
             {
@@ -179,7 +179,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 else
                 {
-                    Log.conn(String.Format("{0} has disconnected.", conn.currentUserId == 0 ? conn.getAddress() : "User " + conn.currentUserId));
+                    Log.Status(String.Format("{0} has disconnected.", conn.currentUserId == 0 ? conn.getAddress() : "User " + conn.currentUserId));
 
                     lock (mConnectionList)
                     {
@@ -192,7 +192,7 @@ namespace FFXIVClassic_Lobby_Server
             {
                 if (conn.socket != null)
                 {
-                    Log.conn(String.Format("{0} has disconnected.", conn.currentUserId == 0 ? conn.getAddress() : "User " + conn.currentUserId));
+                    Log.Status(String.Format("{0} has disconnected.", conn.currentUserId == 0 ? conn.getAddress() : "User " + conn.currentUserId));
 
                     lock (mConnectionList)
                     {

@@ -217,7 +217,7 @@ namespace FFXIVClassic_Map_Server.lua
             }
             catch(SyntaxErrorException e)
             {
-                Log.error(String.Format("LUAERROR: {0}.", e.DecoratedMessage));
+                Log.Error(String.Format("LUAERROR: {0}.", e.DecoratedMessage));
                 return null;
             }
             return script;

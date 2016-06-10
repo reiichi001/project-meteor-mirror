@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 
 namespace FFXIVClassic_Lobby_Server.common
 {
@@ -7,66 +8,64 @@ namespace FFXIVClassic_Lobby_Server.common
     {
         public enum LogType
         {
-            Error = ConsoleColor.Red,
-            Debug = ConsoleColor.Yellow,
-            Info = ConsoleColor.Cyan,
+            Status = ConsoleColor.Green,
             Sql = ConsoleColor.Magenta,
-            Conn = ConsoleColor.Green,
-            Default = ConsoleColor.Gray
+            Info = ConsoleColor.White,
+            Debug = ConsoleColor.Cyan,
+            Error = ConsoleColor.Red
         }
 
-        public static void error(String message)
+        public static void Status(String message)
         {
-            log(message, LogType.Error);
+            LogFile(message, LogType.Status);
         }
 
-        public static void debug(String message)
+        public static void Sql(String message)
         {
-            #if DEBUG
-                log(message, LogType.Debug);
-            #endif
+            LogFile(message, LogType.Sql);
         }
 
-        public static void info(String message)
+        public static void Info(String message)
         {
-            log(message, LogType.Info);
+            LogFile(message, LogType.Info);
         }
 
-        public static void database(String message)
+        public static void Debug(String message)
         {
-            log(message, LogType.Sql);
+#if DEBUG
+            LogFile(message, LogType.Debug);
+#endif
         }
 
-        public static void conn(String message)
+        public static void Error(String message)
         {
-            log(message, LogType.Conn);
+            LogFile(message, LogType.Error);
         }
 
-        public static void log(String message, LogType type)
+        private static void LogFile(String message, LogType type)
         {
-            var timestamp = String.Format("[{0}] ", DateTime.Now.ToString("dd/MMM HH:mm:ss"));
-            var typestr = String.Format("[{0}] ", type.ToString().ToUpper());
+            string timestamp = String.Format("[{0}]", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"));
+            string messageType = String.Format("[{0}] ", type.ToString().ToUpper());
 
-            Console.Write(timestamp);
+            Console.WriteLine(timestamp);
             Console.ForegroundColor = (ConsoleColor)type;
-            Console.Write(typestr);
-            Console.ForegroundColor = ConsoleColor.Gray;
-            Console.WriteLine(message);
+            Console.Write(messageType);
+            Console.ResetColor();
+            Console.Write(message);
 
-            message = message.Insert(0, typestr);
-            message = message.Insert(0, timestamp);
+            StringBuilder sb = new StringBuilder();
 
-            Directory.CreateDirectory(ConfigConstants.OPTIONS_LOGPATH);
+            sb.AppendLine(String.Format("{0}{1}{2}", timestamp, messageType, message));
 
-            try
+            if (!Directory.Exists(ConfigConstants.OPTIONS_LOGPATH))
             {
-                File.AppendAllText(ConfigConstants.OPTIONS_LOGPATH + ConfigConstants.OPTIONS_LOGFILE, message + Environment.NewLine);
+                Directory.CreateDirectory(ConfigConstants.OPTIONS_LOGPATH);
             }
-            catch (Exception e)
+
+            using (FileStream fs = new FileStream(Path.Combine(ConfigConstants.OPTIONS_LOGPATH, ConfigConstants.OPTIONS_LOGFILE), FileMode.Append, FileAccess.Write))
+            using (StreamWriter sw = new StreamWriter(fs))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.Write(e.Message);
-                Console.ForegroundColor = ConsoleColor.Gray;
+                sw.WriteLine(sb.ToString());
             }
         }
     }

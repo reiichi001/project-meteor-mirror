@@ -238,7 +238,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                 }
                 finally
                 {

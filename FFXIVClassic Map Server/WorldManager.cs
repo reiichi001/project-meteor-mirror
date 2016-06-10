@@ -67,7 +67,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
 
                 }
                 finally
@@ -117,7 +117,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -125,7 +125,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Log.info(String.Format("Loaded {0} zones and {1} private areas.", count1, count2));
+            Log.Info(String.Format("Loaded {0} zones and {1} private areas.", count1, count2));
         }
 
         public void LoadZoneEntranceList()
@@ -170,7 +170,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -178,7 +178,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Log.info(String.Format("Loaded {0} zone spawn locations.", count));
+            Log.Info(String.Format("Loaded {0} zone spawn locations.", count));
         }
 
         public void LoadNPCs()
@@ -242,7 +242,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -250,7 +250,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Log.info(String.Format("Loaded {0} npc(s).", count));
+            Log.Info(String.Format("Loaded {0} npc(s).", count));
         }
 
         public void LoadNPCs(uint zoneId)
@@ -315,7 +315,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -323,7 +323,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Log.info(String.Format("Loaded {0} npc(s).", count));
+            Log.Info(String.Format("Loaded {0} npc(s).", count));
         }
 
         //Moves the actor to the new zone if exists. No packets are sent nor position changed.
@@ -354,7 +354,7 @@ namespace FFXIVClassic_Map_Server
         {
             if (!zoneEntranceList.ContainsKey(zoneEntrance))
             {
-                Log.error("Given zone entrance was not found: " + zoneEntrance);
+                Log.Error("Given zone entrance was not found: " + zoneEntrance);
                 return;
             }
 
@@ -410,7 +410,7 @@ namespace FFXIVClassic_Map_Server
         {
             if (!zoneEntranceList.ContainsKey(zoneEntrance))
             {
-                Log.error("Given zone entrance was not found: " + zoneEntrance);
+                Log.Error("Given zone entrance was not found: " + zoneEntrance);
                 return;
             }
 

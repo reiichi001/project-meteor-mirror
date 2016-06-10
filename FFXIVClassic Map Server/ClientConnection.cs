@@ -46,7 +46,7 @@ namespace FFXIVClassic_Map_Server
                     socket.Send(packetBytes);
                 }
                 catch (Exception e)
-                { Log.error(String.Format("Weird case, socket was d/ced: {0}", e)); }
+                { Log.Error(String.Format("Weird case, socket was d/ced: {0}", e)); }
             }
         }
 

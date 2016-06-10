@@ -21,14 +21,14 @@ namespace FFXIVClassic_Map_Server
             if (!ConfigConstants.load())
                 startServer = false;
 
-            Log.info("---------FFXIV 1.0 Map Server---------");            
+            Log.Info("---------FFXIV 1.0 Map Server---------");            
 
             Assembly assem = Assembly.GetExecutingAssembly();
             Version vers = assem.GetName().Version;
-            Log.info("Version: " + vers.ToString());
+            Log.Info("Version: " + vers.ToString());
 
             //Test DB Connection
-            Log.info("Testing DB connection... ");
+            Log.Info("Testing DB connection... ");
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
@@ -36,11 +36,11 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
                     conn.Close();
 
-                    Log.conn("[OK]");
+                    Log.Status("[OK]");
                 }
                 catch (MySqlException e)
                 {
-                    Log.error(e.ToString());
+                    Log.Error(e.ToString());
                     startServer = false; 
                 }
             }
@@ -48,9 +48,9 @@ namespace FFXIVClassic_Map_Server
             //Check World ID
             DBWorld thisWorld = Database.getServer(ConfigConstants.DATABASE_WORLDID);
             if (thisWorld != null)
-                Log.info(String.Format("Successfully pulled world info from DB. Server name is {0}.", thisWorld.name));
+                Log.Info(String.Format("Successfully pulled world info from DB. Server name is {0}.", thisWorld.name));
             else
-                Log.info("World info could not be retrieved from the DB. Welcome and MOTD will not be displayed.");
+                Log.Info("World info could not be retrieved from the DB. Welcome and MOTD will not be displayed.");
 
             //Start server if A-OK
             if (startServer)
@@ -66,7 +66,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Log.info("Press any key to continue...");
+            Log.Info("Press any key to continue...");
             Console.ReadKey();
         }
 

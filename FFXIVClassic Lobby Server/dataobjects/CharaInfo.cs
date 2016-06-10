@@ -227,7 +227,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
         {
             byte[] bytes = File.ReadAllBytes("./packets/charaappearance.bin");
 
-            Log.debug(Utils.ByteArrayToHex(bytes));
+            Log.Debug(Utils.ByteArrayToHex(bytes));
 
             return Convert.ToBase64String(bytes).Replace('+', '-').Replace('/', '_');
         }
