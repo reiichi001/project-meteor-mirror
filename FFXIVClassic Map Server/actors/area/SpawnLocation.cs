@@ -9,6 +9,7 @@ namespace FFXIVClassic_Map_Server.actors.area
     class SpawnLocation
     {
         public uint classId;
+        public string uniqueId;
         public uint zoneId;
         public string privAreaName;
         public uint privAreaLevel;
@@ -19,9 +20,10 @@ namespace FFXIVClassic_Map_Server.actors.area
         public ushort state;
         public uint animId;
 
-        public SpawnLocation(uint classId, uint zoneId, string privAreaName, uint privAreaLevel, float x, float y, float z, float rot, ushort state, uint animId)
+        public SpawnLocation(uint classId, string uniqueId, uint zoneId, string privAreaName, uint privAreaLevel, float x, float y, float z, float rot, ushort state, uint animId)
         {
             this.classId = classId;
+            this.uniqueId = uniqueId;
             this.zoneId = zoneId;
             this.privAreaName = privAreaName;
             this.privAreaLevel = privAreaLevel;

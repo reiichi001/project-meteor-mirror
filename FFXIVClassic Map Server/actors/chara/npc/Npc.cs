@@ -22,12 +22,12 @@ namespace FFXIVClassic_Map_Server.Actors
 {
     class Npc : Character
     {
-        //private Script actorScript;
         private uint actorClassId;
+        private string uniqueIdentifier;
 
         public NpcWork npcWork = new NpcWork();
 
-        public Npc(int actorNumber, uint classId, uint zoneId, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, uint displayNameId, string customDisplayName, string classPath)
+        public Npc(int actorNumber, uint classId, string uniqueId, uint zoneId, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, uint displayNameId, string customDisplayName, string classPath)
             : base((4 << 28 | zoneId << 19 | (uint)actorNumber))  
         {
             this.positionX = posX;
@@ -38,6 +38,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             this.displayNameId = displayNameId;
             this.customDisplayName = customDisplayName;
+
+            this.uniqueIdentifier = uniqueId;
 
             this.zoneId = zoneId;
             this.zone = Server.GetWorldManager().GetZone(zoneId);
@@ -86,13 +88,23 @@ namespace FFXIVClassic_Map_Server.Actors
             List<LuaParam> lParams;
 
             Player player = Server.GetWorldManager().GetPCInWorld(playerActorId);
-            lParams = DoActorInit(player);
+            lParams = DoActorInit(player);            
 
             if (lParams == null)
             {
                 classPath = "/Chara/Npc/Populace/PopulaceStandard";
                 className = "PopulaceStandard";
-                lParams = LuaUtils.createLuaParamList(classPath, false, false, false, false, false, 0xF47F6, false, false, 0, 0);
+                lParams = LuaUtils.createLuaParamList(classPath, false, false, false, false, false, 0xF47F6, false, false, 0, 1, "TEST");
+            }
+            else
+            {
+                lParams.Insert(0, new LuaParam(2, classPath));
+                lParams.Insert(1, new LuaParam(4, 4));
+                lParams.Insert(2, new LuaParam(4, 4));
+                lParams.Insert(3, new LuaParam(4, 4));
+                lParams.Insert(4, new LuaParam(4, 4));
+                lParams.Insert(5, new LuaParam(4, 4));
+                lParams.Insert(6, new LuaParam(0, (int)actorClassId));
             }
 
             ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams).debugPrintSubPacket();
@@ -188,7 +200,7 @@ namespace FFXIVClassic_Map_Server.Actors
                                     hairStyle,
                                     hairHighlightColor,
                                     hairVariation,
-                                    faceType,
+                                    faceType,   
                                     characteristics,
                                     characteristicsColor,
                                     faceEyebrows,
@@ -287,8 +299,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.loadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId)))
-                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId));
+            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
+                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
             if (parent == null)
             {
@@ -315,8 +327,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.loadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId)))
-                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId));
+            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
+                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
             if (parent == null)
             {
@@ -351,8 +363,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.loadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId)))
-                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId));
+            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
+                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
             if (parent == null)
             {
@@ -385,8 +397,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.loadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId)))
-                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}.{2}.lua", zone.zoneName, className, actorClassId));
+            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
+                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
             if (parent == null)
             {

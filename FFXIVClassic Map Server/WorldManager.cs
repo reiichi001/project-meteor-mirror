@@ -243,7 +243,8 @@ namespace FFXIVClassic_Map_Server
 
                     string query = @"
                                     SELECT 
-                                    actorClassId,                                    
+                                    actorClassId,  
+                                    uniqueId,                                  
                                     zoneId,      
                                     privateAreaName,                              
                                     privateAreaLevel,
@@ -264,10 +265,11 @@ namespace FFXIVClassic_Map_Server
                         while (reader.Read())
                         {
                             string customName = null;
-                            if (!reader.IsDBNull(10))
+                            if (!reader.IsDBNull(11))
                                 customName = reader.GetString("customDisplayName");
 
                             uint classId = reader.GetUInt32("actorClassId");
+                            string uniqueId = reader.GetString("uniqueId");
                             uint zoneId = reader.GetUInt32("zoneId");
                             string privAreaName = reader.GetString("privateAreaName");
                             uint privAreaLevel = reader.GetUInt32("privateAreaLevel");
@@ -287,7 +289,7 @@ namespace FFXIVClassic_Map_Server
                             if (zone == null)
                                 continue;
 
-                            SpawnLocation spawn = new SpawnLocation(classId, zoneId, privAreaName, privAreaLevel, x, y, z, rot, state, animId);
+                            SpawnLocation spawn = new SpawnLocation(classId, uniqueId, zoneId, privAreaName, privAreaLevel, x, y, z, rot, state, animId);
 
                             zone.addSpawnLocation(spawn);
 
