@@ -141,14 +141,18 @@ namespace FFXIVClassic_Lobby_Server.packets
         {
 #if DEBUG
             Console.BackgroundColor = ConsoleColor.DarkRed;
-            Log.Debug(String.Format("Size: 0x{0:X}", header.subpacketSize));
+
+            Log.Debug(String.Format("Size: 0x{0:X}{1}{2}", header.subpacketSize, Environment.NewLine, Utils.ByteArrayToHex(getHeaderBytes())));
+            
             if (header.type == 0x03)
-                Log.Debug(String.Format("Opcode: 0x{0:X}", gameMessage.opcode));
-            Log.Debug(String.Format("{0}", Utils.ByteArrayToHex(getHeaderBytes())));
-            if (header.type == 0x03)
-                Log.Debug(String.Format("{0}", Utils.ByteArrayToHex(getGameMessageBytes())));
+            {
+                Log.Debug(String.Format("Opcode: 0x{0:X}{1}{2}", gameMessage.opcode, Environment.NewLine, Utils.ByteArrayToHex(getGameMessageBytes(), SUBPACKET_SIZE)));
+            }
+
             Console.BackgroundColor = ConsoleColor.DarkMagenta;
-            Log.Debug(String.Format("{0}", Utils.ByteArrayToHex(data)));
+
+            Log.Debug(String.Format("Data: {0}{1}", Environment.NewLine, Utils.ByteArrayToHex(data, SUBPACKET_SIZE + GAMEMESSAGE_SIZE)));
+
             Console.BackgroundColor = ConsoleColor.Black;
 #endif
         }

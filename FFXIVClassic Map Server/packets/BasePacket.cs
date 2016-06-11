@@ -333,13 +333,17 @@ namespace FFXIVClassic_Map_Server.packets
         {
 #if DEBUG
             Console.BackgroundColor = ConsoleColor.DarkYellow;
-            Log.Debug(String.Format("IsAuthed: {0}, IsEncrypted: {1}, Size: 0x{2:X}, Num Subpackets: {3}", header.isAuthenticated, header.isCompressed, header.packetSize, header.numSubpackets));            
-            Log.Debug(String.Format("{0}", Utils.ByteArrayToHex(getHeaderBytes())));
+
+            Log.Debug(String.Format("IsAuth: {0} IsEncrypted: {1}, Size: 0x{2:X}, NumSubpackets: {3}{4}{5}", header.isAuthenticated, header.isCompressed, header.packetSize, header.numSubpackets, Environment.NewLine, Utils.ByteArrayToHex(getHeaderBytes())));
+
             foreach (SubPacket sub in getSubpackets())
+            {
                 sub.debugPrintSubPacket();
+            }
+
             Console.BackgroundColor = ConsoleColor.Black;
 #endif
         }
-        
+
     }
 }
