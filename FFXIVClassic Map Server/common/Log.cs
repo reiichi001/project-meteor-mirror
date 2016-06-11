@@ -47,11 +47,11 @@ namespace FFXIVClassic_Map_Server.common
             string timestamp = String.Format("[{0}]", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"));
             string messageType = String.Format("[{0}] ", type.ToString().ToUpper());
 
-            Console.WriteLine(timestamp);
+            Console.Write(timestamp);
             Console.ForegroundColor = (ConsoleColor)type;
             Console.Write(messageType);
-            Console.ResetColor();
-            Console.Write(message);
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.WriteLine(message);
 
             StringBuilder sb = new StringBuilder();
 
