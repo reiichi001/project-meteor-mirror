@@ -38,16 +38,18 @@ namespace FFXIVClassic_Lobby_Server.common
 
             StringBuilder sb = new StringBuilder(numLines * lineLength);
 
-            for (int i = offset; i < bytes.Length; i += bytesPerLine)
+            for (int i = 0; i < bytes.Length; i += bytesPerLine)
             {
-                line[0] = hexChars[(i >> 28) & 0xF];
-                line[1] = hexChars[(i >> 24) & 0xF];
-                line[2] = hexChars[(i >> 20) & 0xF];
-                line[3] = hexChars[(i >> 16) & 0xF];
-                line[4] = hexChars[(i >> 12) & 0xF];
-                line[5] = hexChars[(i >> 8) & 0xF];
-                line[6] = hexChars[(i >> 4) & 0xF];
-                line[7] = hexChars[(i >> 0) & 0xF];
+                int h = i + offset;
+
+                line[0] = hexChars[(h >> 28) & 0xF];
+                line[1] = hexChars[(h >> 24) & 0xF];
+                line[2] = hexChars[(h >> 20) & 0xF];
+                line[3] = hexChars[(h >> 16) & 0xF];
+                line[4] = hexChars[(h >> 12) & 0xF];
+                line[5] = hexChars[(h >> 8) & 0xF];
+                line[6] = hexChars[(h >> 4) & 0xF];
+                line[7] = hexChars[(h >> 0) & 0xF];
 
                 int hexColumn = offsetBlock;
                 int charColumn = byteBlock;

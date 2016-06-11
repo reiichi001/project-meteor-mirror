@@ -147,11 +147,11 @@ namespace FFXIVClassic_Map_Server.packets
             if (header.type == 0x03)
             {
                 Log.Debug(String.Format("Opcode: 0x{0:X}{1}{2}", gameMessage.opcode, Environment.NewLine, Utils.ByteArrayToHex(getGameMessageBytes(), SUBPACKET_SIZE)));
+
+                Console.BackgroundColor = ConsoleColor.DarkMagenta;
+
+                Log.Debug(String.Format("Data: {0}{1}", Environment.NewLine, Utils.ByteArrayToHex(data, SUBPACKET_SIZE + GAMEMESSAGE_SIZE)));
             }
-
-            Console.BackgroundColor = ConsoleColor.DarkMagenta;
-
-            Log.Debug(String.Format("Data: {0}{1}", Environment.NewLine, Utils.ByteArrayToHex(data, SUBPACKET_SIZE + GAMEMESSAGE_SIZE)));
 
             Console.BackgroundColor = ConsoleColor.Black;
 #endif
