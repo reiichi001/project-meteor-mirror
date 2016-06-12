@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using FFXIVClassic_Map_Server.common;
+using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.packets.send.actor;
@@ -116,7 +116,7 @@ namespace FFXIVClassic_Map_Server
             {
                 if (client != null)
                     client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Zone does not exist or setting isn't valid."), true, false));
-                Log.Error("Zone does not exist or setting isn't valid.");
+                Program.Log.Error("Zone does not exist or setting isn't valid.");
             }
 
             if (client != null)
@@ -142,7 +142,7 @@ namespace FFXIVClassic_Map_Server
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    Log.Info(String.Format("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation));
+                    Program.Log.Info(String.Format("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation));
                 }
             }
         }
@@ -578,7 +578,7 @@ namespace FFXIVClassic_Map_Server
                             }
                             catch (Exception e)
                             {
-                                Log.Error("Could not change weather: " + e);
+                                Program.Log.Error("Could not change weather: " + e);
                             }
                         }
                         #endregion
@@ -597,7 +597,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Log.Error("Could not load packet: " + e);
+                        Program.Log.Error("Could not load packet: " + e);
                     }
                 }
                 #endregion
@@ -607,7 +607,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     if (client != null)
                     {
-                        Log.Info(String.Format("Got request to reset zone: {0}", client.getActor().zoneId));
+                        Program.Log.Info(String.Format("Got request to reset zone: {0}", client.getActor().zoneId));
                         client.getActor().zone.clear();
                         client.getActor().zone.addActorToZone(client.getActor());
                         client.getActor().sendInstanceUpdate();
@@ -621,11 +621,11 @@ namespace FFXIVClassic_Map_Server
                 #region !reloaditems
                 else if (split[0].Equals("reloaditems"))
                 {
-                    Log.Info(String.Format("Got request to reload item gamedata"));
+                    Program.Log.Info(String.Format("Got request to reload item gamedata"));
                     sendMessage(client, "Reloading Item Gamedata...");
                     gamedataItems.Clear();
                     gamedataItems = Database.getItemGamedata();
-                    Log.Info(String.Format("Loaded {0} items.", gamedataItems.Count));
+                    Program.Log.Info(String.Format("Loaded {0} items.", gamedataItems.Count));
                     sendMessage(client, String.Format("Loaded {0} items.", gamedataItems.Count));
                     return true;
                 }
@@ -644,7 +644,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Log.Error("Could not load packet: " + e);
+                        Program.Log.Error("Could not load packet: " + e);
                     }
                 }
                 #endregion
@@ -660,7 +660,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Log.Error("Could not give item.");
+                        Program.Log.Error("Could not give item.");
                     }
                 }
                 #endregion
@@ -680,7 +680,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Log.Error("Could not give item.");
+                        Program.Log.Error("Could not give item.");
                     }
                 }
                 #endregion
@@ -703,7 +703,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Log.Error("Could not remove item.");
+                        Program.Log.Error("Could not remove item.");
                     }
                 }
                 #endregion
@@ -718,7 +718,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Log.Error("Could not give keyitem.");
+                        Program.Log.Error("Could not give keyitem.");
                     }
                 }
                 #endregion
@@ -737,7 +737,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Log.Error("Could not remove keyitem.");
+                        Program.Log.Error("Could not remove keyitem.");
                     }
                 }
                 #endregion
@@ -754,7 +754,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Log.Error("Could not give currency.");
+                        Program.Log.Error("Could not give currency.");
                     }
                 }
                 #endregion
@@ -775,7 +775,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Log.Error("Could not remove currency.");
+                        Program.Log.Error("Could not remove currency.");
                     }
                 }
                 #endregion
@@ -793,7 +793,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Log.Error("Could not change music: " + e);
+                        Program.Log.Error("Could not change music: " + e);
                     }
                 }
                 #endregion

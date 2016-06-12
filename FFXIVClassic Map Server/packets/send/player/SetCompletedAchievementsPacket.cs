@@ -1,4 +1,4 @@
-﻿using FFXIVClassic_Map_Server.common;
+﻿using FFXIVClassic.Common;
 using System.IO;
 
 namespace FFXIVClassic_Map_Server.packets.send.player
@@ -36,7 +36,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
                     if (binStream.Length <= PACKET_SIZE - 0x20)
                         binWriter.Write(binStream);
                     else                    
-                        Log.Error("Failed making SetCompletedAchievements packet. Bin Stream was too big!");                    
+                        Program.Log.Error("Failed making SetCompletedAchievements packet. Bin Stream was too big!");                    
                 }
             }
 

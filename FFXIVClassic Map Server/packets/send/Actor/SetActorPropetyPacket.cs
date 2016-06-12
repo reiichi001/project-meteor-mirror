@@ -1,4 +1,4 @@
-﻿using FFXIVClassic_Map_Server.common;
+﻿using FFXIVClassic.Common;
 using System;
 using System.IO;
 using System.Linq;

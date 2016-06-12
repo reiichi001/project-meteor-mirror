@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using FFXIVClassic_Map_Server.packets;
-using FFXIVClassic_Map_Server.common;
+using FFXIVClassic.Common;
 using System.Collections.Concurrent;
 using System.Net;
 
@@ -46,7 +46,7 @@ namespace FFXIVClassic_Map_Server
                     socket.Send(packetBytes);
                 }
                 catch (Exception e)
-                { Log.Error(String.Format("Weird case, socket was d/ced: {0}", e)); }
+                { Program.Log.Error(String.Format("Weird case, socket was d/ced: {0}", e)); }
             }
         }
 

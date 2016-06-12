@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Text;
 
-namespace FFXIVClassic_Lobby_Server.common
+namespace FFXIVClassic.Common
 {
-    static class Utils
+    public static class Utils
     {
         private static readonly uint[] _lookup32 = CreateLookup32();
 

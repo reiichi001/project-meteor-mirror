@@ -1,4 +1,4 @@
-﻿using FFXIVClassic_Map_Server.common;
+﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.actors;
 using FFXIVClassic_Map_Server.Actors.Chara;
@@ -238,7 +238,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {

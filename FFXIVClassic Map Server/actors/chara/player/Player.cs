@@ -1,4 +1,4 @@
-﻿using FFXIVClassic_Map_Server.common;
+﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.actors.director;
@@ -642,7 +642,7 @@ namespace FFXIVClassic_Map_Server.Actors
             Database.savePlayerPlayTime(this);
             Database.savePlayerPosition(this);
 
-            Log.Info(String.Format("{0} has been logged out and saved.", this.customDisplayName));
+            Program.Log.Info(String.Format("{0} has been logged out and saved.", this.customDisplayName));
         }
 
         public Area getZone()

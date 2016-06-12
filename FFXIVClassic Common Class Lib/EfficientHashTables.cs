@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FFXIVClassic_Map_Server.common
+namespace FFXIVClassic.Common
 {
     namespace EfficientHashTables
     {

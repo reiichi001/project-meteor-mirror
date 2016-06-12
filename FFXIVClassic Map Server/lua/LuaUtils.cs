@@ -1,4 +1,4 @@
-﻿using FFXIVClassic_Map_Server.common;
+﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using MoonSharp.Interpreter;

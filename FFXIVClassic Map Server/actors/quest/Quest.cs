@@ -1,4 +1,4 @@
-﻿using FFXIVClassic_Map_Server.common;
+﻿using FFXIVClassic.Common;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -68,7 +68,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (bitIndex >= 32)
             {
-                Log.Error(String.Format("Tried to access bit flag >= 32 for questId: {0}", actorId));
+                Program.Log.Error(String.Format("Tried to access bit flag >= 32 for questId: {0}", actorId));
                 return;
             }
             
@@ -86,7 +86,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (bitIndex >= 32)
             {
-                Log.Error(String.Format("Tried to access bit flag >= 32 for questId: {0}", actorId));
+                Program.Log.Error(String.Format("Tried to access bit flag >= 32 for questId: {0}", actorId));
                 return false;
             }
             else

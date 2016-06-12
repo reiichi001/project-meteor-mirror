@@ -5,7 +5,7 @@ using System.Net.Sockets;
 using System.Threading;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets;
-using FFXIVClassic_Map_Server.common;
+using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 
@@ -39,7 +39,7 @@ namespace FFXIVClassic_Map_Server
 
         private void connectionHealth()
         {
-            Log.Info(String.Format("Connection Health thread started; it will run every {0} seconds.", HEALTH_THREAD_SLEEP_TIME));
+            Program.Log.Info(String.Format("Connection Health thread started; it will run every {0} seconds.", HEALTH_THREAD_SLEEP_TIME));
             while (!killHealthThread)
             {
                 lock (mConnectedPlayerList)
@@ -77,7 +77,7 @@ namespace FFXIVClassic_Map_Server
             mStaticActors = new StaticActors(STATIC_ACTORS_PATH);
 
             gamedataItems = Database.getItemGamedata();
-            Log.Info(String.Format("Loaded {0} items.", gamedataItems.Count));
+            Program.Log.Info(String.Format("Loaded {0} items.", gamedataItems.Count));
 
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneList();
@@ -113,7 +113,7 @@ namespace FFXIVClassic_Map_Server
             }
 
             Console.ForegroundColor = ConsoleColor.White;
-            Log.Debug(String.Format("Map Server has started @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port));
+            Program.Log.Debug(String.Format("Map Server has started @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port));
             Console.ForegroundColor = ConsoleColor.Gray;
 
             mProcessor = new PacketProcessor(this, mConnectedPlayerList, mConnectionList);
@@ -150,7 +150,7 @@ namespace FFXIVClassic_Map_Server
                     mConnectionList.Add(conn);
                 }
 
-                Log.Status(String.Format("Connection {0}:{1} has connected.", (conn.socket.RemoteEndPoint as IPEndPoint).Address, (conn.socket.RemoteEndPoint as IPEndPoint).Port));
+                Program.Log.Status(String.Format("Connection {0}:{1} has connected.", (conn.socket.RemoteEndPoint as IPEndPoint).Address, (conn.socket.RemoteEndPoint as IPEndPoint).Port));
                 //Queue recieving of data from the connection
                 conn.socket.BeginReceive(conn.buffer, 0, conn.buffer.Length, SocketFlags.None, new AsyncCallback(receiveCallback), conn);
                 //Queue the accept of the next incomming connection
@@ -217,7 +217,7 @@ namespace FFXIVClassic_Map_Server
                     mConnectionList.Remove(conn);
                 }
                 if (conn.connType == BasePacket.TYPE_ZONE)
-                    Log.Status(String.Format("{0} has disconnected.", conn.owner == 0 ? conn.getAddress() : "User " + conn.owner));
+                    Program.Log.Status(String.Format("{0} has disconnected.", conn.owner == 0 ? conn.getAddress() : "User " + conn.owner));
                 return;
             }
 
@@ -261,7 +261,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 else
                 {
-                    Log.Status(String.Format("{0} has disconnected.", conn.owner == 0 ? conn.getAddress() : "User " + conn.owner));
+                    Program.Log.Status(String.Format("{0} has disconnected.", conn.owner == 0 ? conn.getAddress() : "User " + conn.owner));
 
                     lock (mConnectionList)
                     {
@@ -273,7 +273,7 @@ namespace FFXIVClassic_Map_Server
             {
                 if (conn.socket != null)
                 {
-                    Log.Status(String.Format("{0} has disconnected.", conn.owner == 0 ? conn.getAddress() : "User " + conn.owner));
+                    Program.Log.Status(String.Format("{0} has disconnected.", conn.owner == 0 ? conn.getAddress() : "User " + conn.owner));
 
                     lock (mConnectionList)
                     {

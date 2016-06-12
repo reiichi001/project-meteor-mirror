@@ -1,4 +1,4 @@
-﻿using FFXIVClassic_Map_Server.common;
+﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.Actors;
@@ -217,7 +217,7 @@ namespace FFXIVClassic_Map_Server.lua
             }
             catch(SyntaxErrorException e)
             {
-                Log.Error(String.Format("LUAERROR: {0}.", e.DecoratedMessage));
+                Program.Log.Error(String.Format("LUAERROR: {0}.", e.DecoratedMessage));
                 return null;
             }
             return script;

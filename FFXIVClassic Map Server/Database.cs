@@ -3,7 +3,7 @@ using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FFXIVClassic_Map_Server.common;
+using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.utils;
 using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.packets.send.player;
@@ -37,7 +37,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -59,7 +59,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -82,7 +82,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -138,7 +138,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -196,7 +196,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -232,7 +232,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -274,7 +274,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -308,7 +308,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -322,7 +322,7 @@ namespace FFXIVClassic_Map_Server
             int slot = player.getQuestSlot(quest.actorId);
             if (slot == -1)
             {
-                Log.Error(String.Format("Tried saving quest player didn't have: Player: {0:x}, QuestId: {0:x}", player.actorId, quest.actorId));
+                Program.Log.Error(String.Format("Tried saving quest player didn't have: Player: {0:x}, QuestId: {0:x}", player.actorId, quest.actorId));
                 return;
             }
             else
@@ -360,7 +360,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -790,7 +790,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -834,7 +834,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -872,7 +872,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -905,7 +905,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -976,7 +976,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -1032,7 +1032,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -1067,7 +1067,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -1107,7 +1107,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -1148,7 +1148,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -1188,7 +1188,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -1225,7 +1225,7 @@ namespace FFXIVClassic_Map_Server
 
                             if (offset < 0 || offset >= cheevosPacket.achievementFlags.Length)
                             {
-                                Log.Error("SQL Error; achievement flag offset id out of range: " + offset);
+                                Program.Log.Error("SQL Error; achievement flag offset id out of range: " + offset);
                                 continue;
                             }
                             cheevosPacket.achievementFlags[offset] = true;                             
@@ -1234,7 +1234,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch (MySqlException e)
                 {
-                    Log.Error(e.ToString());
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {

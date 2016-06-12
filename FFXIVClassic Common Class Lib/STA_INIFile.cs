@@ -9,10 +9,9 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-namespace STA.Settings
+namespace FFXIVClassic.Common
 {
-
-	internal class INIFile
+	public class INIFile
 	{
 
 #region "Declarations"
@@ -337,7 +336,7 @@ namespace STA.Settings
         }
 	
 		// *** Read a value from local cache ***
-		internal string GetValue(string SectionName, string Key, string DefaultValue)
+		public string GetValue(string SectionName, string Key, string DefaultValue)
 		{
 			// *** Lazy loading ***
 			if (m_Lazy)
@@ -457,6 +456,14 @@ namespace STA.Settings
 			if (int.TryParse(StringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out Value)) return Value;
             return DefaultValue;
 		}
+
+        internal uint GetValue(string SectionName, string Key, uint DefaultValue)
+        {
+            string StringValue = GetValue(SectionName, Key, DefaultValue.ToString(CultureInfo.InvariantCulture));
+            uint Value;
+            if (uint.TryParse(StringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out Value)) return Value;
+            return DefaultValue;
+        }
 
         internal long GetValue(string SectionName, string Key, long DefaultValue)
         {

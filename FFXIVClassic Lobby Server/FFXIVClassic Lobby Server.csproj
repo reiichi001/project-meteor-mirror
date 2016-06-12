@@ -11,6 +11,7 @@
     <AssemblyName>FFXIVClassic_Lobby_Server</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -23,7 +24,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -55,6 +55,9 @@
     <Reference Include="Dapper">
       <HintPath>..\packages\Dapper.1.42\lib\net45\Dapper.dll</HintPath>
     </Reference>
+    <Reference Include="FFXIVClassic.Common">
+      <HintPath>..\FFXIVClassic Common Class Lib\bin\Debug\FFXIVClassic.Common.dll</HintPath>
+    </Reference>
     <Reference Include="MySql.Data">
       <HintPath>..\packages\MySql.Data.6.9.7\lib\net45\MySql.Data.dll</HintPath>
     </Reference>
@@ -71,17 +74,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="common\Bitfield.cs" />
-    <Compile Include="common\Blowfish.cs" />
-    <Compile Include="common\Log.cs" />
-    <Compile Include="common\STA_INIFile.cs" />
     <Compile Include="dataobjects\Account.cs" />
     <Compile Include="dataobjects\Appearance.cs" />
     <Compile Include="dataobjects\CharaInfo.cs" />
     <Compile Include="dataobjects\Retainer.cs" />
     <Compile Include="dataobjects\Character.cs" />
     <Compile Include="ClientConnection.cs" />
-    <Compile Include="common\Utils.cs" />
     <Compile Include="ConfigConstants.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="dataobjects\World.cs" />

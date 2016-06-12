@@ -1,9 +1,9 @@
 ﻿using System;
 
-namespace FFXIVClassic_Map_Server.common
+namespace FFXIVClassic.Common
 {
     [global::System.AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
-    sealed class BitfieldLengthAttribute : Attribute
+    public sealed class BitfieldLengthAttribute : Attribute
     {
         uint length;
 
@@ -15,7 +15,7 @@ namespace FFXIVClassic_Map_Server.common
         public uint Length { get { return length; } }
     }
 
-    static class PrimitiveConversion
+    public static class PrimitiveConversion
     {
         public static UInt32 ToUInt32<T>(T t) where T : struct
         {

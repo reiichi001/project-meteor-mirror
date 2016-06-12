@@ -1,4 +1,4 @@
-﻿using STA.Settings;
+﻿using FFXIVClassic.Common;
 using System;
 using System.IO;
 
@@ -11,6 +11,7 @@ namespace FFXIVClassic_Lobby_Server
         public static bool   OPTIONS_TIMESTAMP = false;
         public static String OPTIONS_LOGPATH;
         public static String OPTIONS_LOGFILE;
+        public static String OPTIONS_LOGLEVEL;
 
         public static String DATABASE_HOST;
         public static String DATABASE_PORT;
@@ -37,6 +38,7 @@ namespace FFXIVClassic_Lobby_Server
             ConfigConstants.OPTIONS_TIMESTAMP =     configIni.GetValue("General", "showtimestamp", "true").ToLower().Equals("true");
             ConfigConstants.OPTIONS_LOGPATH =       configIni.GetValue("General", "log_path", "./logs/");
             ConfigConstants.OPTIONS_LOGFILE =       configIni.GetValue("General", "log_file_name", String.Format("lobby_{0}_{1}.log", OPTIONS_BINDIP, OPTIONS_PORT));
+            ConfigConstants.OPTIONS_LOGLEVEL =      configIni.GetValue("General", "log_level", "127");
 
             ConfigConstants.DATABASE_HOST =         configIni.GetValue("Database", "host", "");
             ConfigConstants.DATABASE_PORT =         configIni.GetValue("Database", "port", "");

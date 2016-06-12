@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FFXIVClassic_Lobby_Server.common
+namespace FFXIVClassic.Common
 {
     public class Blowfish
     {   

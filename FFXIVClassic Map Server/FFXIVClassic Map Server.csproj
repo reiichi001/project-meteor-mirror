@@ -42,6 +42,10 @@
       <HintPath>..\packages\Dapper.1.42\lib\net45\Dapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="FFXIVClassic.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\FFXIVClassic Common Class Lib\bin\Debug\FFXIVClassic.Common.dll</HintPath>
+    </Reference>
     <Reference Include="MoonSharp.Interpreter">
       <HintPath>..\packages\MoonSharp.1.2.1.0\lib\net40-client\MoonSharp.Interpreter.dll</HintPath>
     </Reference>
@@ -83,12 +87,6 @@
     <Compile Include="actors\world\WorldMaster.cs" />
     <Compile Include="ClientConnection.cs" />
     <Compile Include="CommandProcessor.cs" />
-    <Compile Include="common\Bitfield.cs" />
-    <Compile Include="common\Blowfish.cs" />
-    <Compile Include="common\EfficientHashTables.cs" />
-    <Compile Include="common\Log.cs" />
-    <Compile Include="common\STA_INIFile.cs" />
-    <Compile Include="common\Utils.cs" />
     <Compile Include="ConfigConstants.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="actors\Actor.cs" />

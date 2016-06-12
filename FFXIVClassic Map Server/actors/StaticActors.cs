@@ -1,4 +1,4 @@
-﻿using FFXIVClassic_Map_Server.common;
+﻿using FFXIVClassic.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -89,9 +89,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
             }
             catch(FileNotFoundException e)
-            { Log.Error("Could not find staticactors file."); return false; }
+            { Program.Log.Error("Could not find staticactors file."); return false; }
 
-            Log.Info(String.Format("Loaded {0} static actors.", mStaticActors.Count()));
+            Program.Log.Info(String.Format("Loaded {0} static actors.", mStaticActors.Count()));
 
             return true;
         }

@@ -1,4 +1,4 @@
-﻿using FFXIVClassic_Map_Server.common;
+﻿using FFXIVClassic.Common;
 using System;
 
 namespace FFXIVClassic_Map_Server.utils
