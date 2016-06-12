@@ -1,6 +1,7 @@
 ﻿using FFXIVClassic_Lobby_Server;
 using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Map_Server.actors.area;
+using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.common.EfficientHashTables;
 using FFXIVClassic_Map_Server.dataobjects;
@@ -24,6 +25,7 @@ namespace FFXIVClassic_Map_Server
         private WorldMaster worldMaster = new WorldMaster();
         private Dictionary<uint, Zone> zoneList;
         private Dictionary<uint, ZoneEntrance> zoneEntranceList;
+        private Dictionary<uint, ActorClass> actorClasses = new Dictionary<uint,ActorClass>();
 
         private Server mServer;
 
@@ -110,7 +112,7 @@ namespace FFXIVClassic_Map_Server
                             if (zoneList.ContainsKey(parentZoneId))
                             {
                                 Zone parent = zoneList[parentZoneId];
-                                PrivateArea privArea = new PrivateArea(parent, reader.GetUInt32("id"), reader.GetString("className"), reader.GetString("privateAreaName"), reader.GetUInt16("dayMusic"), reader.GetUInt16("nightMusic"), reader.GetUInt16("battleMusic"));
+                                PrivateArea privArea = new PrivateArea(parent, reader.GetUInt32("id"), reader.GetString("className"), reader.GetString("privateAreaName"), 1, reader.GetUInt16("dayMusic"), reader.GetUInt16("nightMusic"), reader.GetUInt16("battleMusic"));
                                 parent.addPrivateArea(privArea);
                             }
                             else
@@ -182,7 +184,7 @@ namespace FFXIVClassic_Map_Server
             Log.info(String.Format("Loaded {0} zone spawn locations.", count));
         }
 
-        public void LoadNPCs()
+        public void LoadActorClasses()
         {            
             int count = 0;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -194,20 +196,11 @@ namespace FFXIVClassic_Map_Server
                     string query = @"
                                     SELECT 
                                     id,
-                                    name,
-                                    zoneId,                                    
-                                    positionX,
-                                    positionY,
-                                    positionZ,
-                                    rotation,
-                                    actorState,
-                                    animationId,
+                                    classPath,                                    
                                     displayNameId,
-                                    customDisplayName,
-                                    actorClassName,
                                     eventConditions
                                     FROM gamedata_actor_class
-                                    WHERE name is not NULL AND zoneId > 0
+                                    WHERE classPath <> ''
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -216,27 +209,19 @@ namespace FFXIVClassic_Map_Server
                     {
                         while (reader.Read())
                         {
-                            string customName = null;
-                            if (!reader.IsDBNull(10))
-                                customName = reader.GetString(10);
+                            uint id = reader.GetUInt32("id");
+                            string classPath = reader.GetString("classPath");
+                            uint nameId = reader.GetUInt32("displayNameId");
+                            string eventConditions = null;
+                            
+                            if (!reader.IsDBNull(3))
+                                eventConditions = reader.GetString("eventConditions");
+                            else
+                                eventConditions = "{}";
 
-                            Npc npc = new Npc(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt32(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6), reader.GetUInt16(7), reader.GetUInt32(8), reader.GetUInt32(9), customName, reader.GetString(11));
-
-                            if (!reader.IsDBNull(12))
-                            {
-                                string eventConditions = reader.GetString(12);
-                                npc.loadEventConditions(eventConditions);
-                            }
-
-                            if (!zoneList.ContainsKey(npc.zoneId))
-                                continue;
-                            Zone zone = zoneList[npc.zoneId];
-                            if (zone == null)
-                                continue;
-                            npc.zone = zone;
-                            zone.addActorToZone(npc);
+                            ActorClass actorClass = new ActorClass(id, classPath, nameId, eventConditions);
+                            actorClasses.Add(id, actorClass);
                             count++;
-
                         }
                     }
                    
@@ -249,10 +234,10 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Log.info(String.Format("Loaded {0} npc(s).", count));
+            Log.info(String.Format("Loaded {0} actor classes.", count));
         }
 
-        public void LoadNPCs(uint zoneId)
+        public void LoadSpawnLocations()
         {
             int count = 0;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -263,54 +248,60 @@ namespace FFXIVClassic_Map_Server
 
                     string query = @"
                                     SELECT 
-                                    id,
-                                    name,
-                                    zoneId,                                    
+                                    actorClassId,  
+                                    uniqueId,                                  
+                                    zoneId,      
+                                    privateAreaName,                              
+                                    privateAreaLevel,
                                     positionX,
                                     positionY,
                                     positionZ,
                                     rotation,
                                     actorState,
                                     animationId,
-                                    displayNameId,
-                                    customDisplayName,
-                                    actorClassName,
-                                    eventConditions
-                                    FROM gamedata_actor_class
-                                    WHERE name is not NULL AND zoneId = @zoneId
+                                    customDisplayName
+                                    FROM server_spawn_locations                                    
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@zoneId", zoneId);
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
                             string customName = null;
-                            if (!reader.IsDBNull(10))
-                                customName = reader.GetString(10);
+                            if (!reader.IsDBNull(11))
+                                customName = reader.GetString("customDisplayName");
 
-                            Npc npc = new Npc(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt32(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6), reader.GetUInt16(7), reader.GetUInt32(8), reader.GetUInt32(9), customName, reader.GetString(11));
+                            uint classId = reader.GetUInt32("actorClassId");
+                            string uniqueId = reader.GetString("uniqueId");
+                            uint zoneId = reader.GetUInt32("zoneId");
+                            string privAreaName = reader.GetString("privateAreaName");
+                            uint privAreaLevel = reader.GetUInt32("privateAreaLevel");
+                            float x = reader.GetFloat("positionX");
+                            float y = reader.GetFloat("positionY");
+                            float z = reader.GetFloat("positionZ");
+                            float rot = reader.GetFloat("rotation");
+                            ushort state = reader.GetUInt16("actorState");
+                            uint animId = reader.GetUInt32("animationId");
 
-                            if (!reader.IsDBNull(12))
-                            {
-                                string eventConditions = reader.GetString(12);
-                                npc.loadEventConditions(eventConditions);
-                            }
-
-                            if (!zoneList.ContainsKey(npc.zoneId))
+                            if (!actorClasses.ContainsKey(classId))                                
                                 continue;
-                            Zone zone = zoneList[npc.zoneId];
+                            if (!zoneList.ContainsKey(zoneId))
+                                continue;
+
+                            Zone zone = zoneList[zoneId];
                             if (zone == null)
                                 continue;
-                            npc.zone = zone;
-                            zone.addActorToZone(npc);
-                            count++;
 
+                            SpawnLocation spawn = new SpawnLocation(classId, uniqueId, zoneId, privAreaName, privAreaLevel, x, y, z, rot, state, animId);
+
+                            zone.addSpawnLocation(spawn);
+
+                            count++;
                         }
                     }
-
+                    
                 }
                 catch (MySqlException e)
                 { Console.WriteLine(e); }
@@ -320,7 +311,14 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Log.info(String.Format("Loaded {0} npc(s).", count));
+            Log.info(String.Format("Loaded {0} spawn(s).", count));
+        }
+
+        public void spawnAllActors()
+        {
+            Log.info("Spawning actors...");
+            foreach (Zone z in zoneList.Values)
+                z.spawnAllActors(true);
         }
 
         //Moves the actor to the new zone if exists. No packets are sent nor position changed.
@@ -473,7 +471,7 @@ namespace FFXIVClassic_Map_Server
 
             Zone zone = zoneList[zoneId];
             //zone.clear();
-            LoadNPCs(zone.actorId);
+            //LoadNPCs(zone.actorId);
 
         }
 
@@ -556,6 +554,15 @@ namespace FFXIVClassic_Map_Server
             else
                 return null;
         }
+
+        public ActorClass GetActorClass(uint id)
+        {
+            if (actorClasses.ContainsKey(id))
+                return actorClasses[id];
+            else
+                return null;
+        }
+
     }
 
 }

@@ -302,5 +302,15 @@ namespace FFXIVClassic_Lobby_Server.common
             return (value >> bits) | (value << (16 - bits));
         }
 
+
+        public static string ToStringBase63(int number)
+        {
+            string lookup = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+            string secondDigit = lookup.Substring((int)Math.Floor((double)number / (double)lookup.Length), 1);
+            string firstDigit = lookup.Substring(number % lookup.Length, 1);
+
+            return secondDigit + firstDigit;
+        }
     }
 }

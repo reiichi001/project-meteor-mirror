@@ -62,6 +62,12 @@ namespace FFXIVClassic_Map_Server.lua
 
         public static void doActorOnEventStarted(Player player, Actor target, EventStartPacket eventStart)
         {
+            if (target is Npc)
+            {
+                ((Npc)target).DoEventStart(player, eventStart);
+                return;
+            }
+
             string luaPath;
 
             if (target is Command)
@@ -126,6 +132,12 @@ namespace FFXIVClassic_Map_Server.lua
 
         public static void doActorOnEventUpdated(Player player, Actor target, EventUpdatePacket eventUpdate)
         {
+            if (target is Npc)
+            {
+                ((Npc)target).DoEventUpdate(player, eventUpdate);
+                return;
+            }
+
             string luaPath; 
 
             if (target is Command)            
@@ -206,7 +218,7 @@ namespace FFXIVClassic_Map_Server.lua
             }
         }
 
-        private static Script loadScript(string filename)
+        public static Script loadScript(string filename)
         {
             Script script = new Script();
             ((FileSystemScriptLoader)script.Options.ScriptLoader).ModulePaths = FileSystemScriptLoader.UnpackStringPaths("./scripts/?;./scripts/?.lua");
@@ -227,7 +239,7 @@ namespace FFXIVClassic_Map_Server.lua
             return script;
         }
 
-        private static void SendError(Player player, string message)
+        public static void SendError(Player player, string message)
         {
             List<SubPacket> sendError = new List<SubPacket>();
             sendError.Add(EndEventPacket.buildPacket(player.actorId, player.currentEventOwner, player.currentEventName));

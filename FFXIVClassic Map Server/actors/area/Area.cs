@@ -1,5 +1,8 @@
-﻿using FFXIVClassic_Lobby_Server.common;
+﻿using FFXIVClassic_Lobby_Server;
+using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.actors.area;
+using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
@@ -21,15 +24,16 @@ namespace FFXIVClassic_Map_Server.Actors
         public ushort weatherNormal, weatherCommon, weatherRare;
         public ushort bgmDay, bgmNight, bgmBattle;
 
-        private string classPath;
+        protected string classPath;
 
         public int boundingGridSize = 50;
         public int minX = -1000, minY = -1000, maxX = 1000, maxY = 1000;
-        private int numXBlocks, numYBlocks;
-        private int halfWidth, halfHeight;
+        protected int numXBlocks, numYBlocks;
+        protected int halfWidth, halfHeight;
 
-        private Dictionary<uint, Actor> mActorList = new Dictionary<uint,Actor>();
-        private List<Actor>[,] mActorBlock;
+        protected List<SpawnLocation> mSpawnLocations = new List<SpawnLocation>();
+        protected Dictionary<uint, Actor> mActorList = new Dictionary<uint, Actor>();
+        protected List<Actor>[,] mActorBlock;
 
         Script areaScript;
 
@@ -333,6 +337,19 @@ namespace FFXIVClassic_Map_Server.Actors
                     p.queuePacket(clonedPacket);
                 }
             }            
+        }
+
+        public void spawnActor(SpawnLocation location)
+        {
+            ActorClass actorClass = Server.GetWorldManager().GetActorClass(location.classId);
+            
+            if (actorClass == null)
+                return;
+
+            Npc npc = new Npc(mActorList.Count + 1, actorClass.actorClassId, location.uniqueId, actorId, location.x, location.y, location.z, location.rot, location.state, location.animId, actorClass.displayNameId, null, actorClass.classPath);
+            npc.loadEventConditions(actorClass.eventConditions);            
+
+            addActorToZone(npc);                          
         }
 
     }
