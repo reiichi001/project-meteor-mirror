@@ -102,7 +102,6 @@ namespace FFXIVClassic_Lobby_Server
         public void doWarp(ConnectedPlayer client, uint id)
         {
             WorldManager worldManager = Server.GetWorldManager();
-
             FFXIVClassic_Map_Server.WorldManager.ZoneEntrance ze = worldManager.getZoneEntrance(id);
 
             if (ze == null)
@@ -119,10 +118,9 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public void doWarp(ConnectedPlayer client, uint zoneId, string privateArea, float x, float y, float z, float r)
+        public void doWarp(ConnectedPlayer client, uint zoneId, string privateArea, byte spawnType, float x, float y, float z, float r)
         {
             WorldManager worldManager = Server.GetWorldManager();
-
             if (worldManager.GetZone(zoneId) == null)
             {
                 if (client != null)
@@ -131,12 +129,12 @@ namespace FFXIVClassic_Lobby_Server
             }
 
             if (client != null)
-                worldManager.DoZoneChange(client.getActor(), zoneId, privateArea, 0x2, x, y, z, r);
+                worldManager.DoZoneChange(client.getActor(), zoneId, privateArea, spawnType, x, y, z, r);
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    worldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, 0x2, x, y, z, r);
+                    worldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, spawnType, x, y, z, r);
                 }
             }
         }
@@ -149,7 +147,7 @@ namespace FFXIVClassic_Lobby_Server
                 client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation)), true, false));
             }
             else
-            {
+            { 
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
@@ -397,7 +395,7 @@ namespace FFXIVClassic_Lobby_Server
                 #endregion
 
                 sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
-                doWarp(client, zoneId, privatearea, x, y, z, r);
+                doWarp(client, zoneId, privatearea, 0x00, x, y, z, r);
             }
             else if (split.Length == 5)
             {
@@ -423,7 +421,7 @@ namespace FFXIVClassic_Lobby_Server
                 #endregion
 
                 sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
-                doWarp(client, zoneId, privatearea, x, y, z, r);
+                doWarp(client, zoneId, privatearea, 0x2, x, y, z, r);
             }
             else if (split.Length == 6)
             {
@@ -451,10 +449,40 @@ namespace FFXIVClassic_Lobby_Server
                 #endregion
 
                 sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
-                doWarp(client, zoneId, privatearea, x, y, z, r);
+                doWarp(client, zoneId, privatearea, 0x2, x, y, z, r);
             }
             else
                 return; // catch any invalid warps here
+        }
+
+        private void doWeather(ConnectedPlayer client, string weatherID, string value)
+        {
+            ushort weather = Convert.ToUInt16(weatherID);
+
+            if (client != null)
+            {
+                client.queuePacket(BasePacket.createPacket(SetWeatherPacket.buildPacket(client.actorID, weather, Convert.ToUInt16(value)), true, false));
+            }
+
+            /*
+             * WIP: Change weather serverside, currently only clientside
+             * 
+            uint currentZoneID;
+            if (client != null)
+            {
+                currentZoneID = client.getActor().zoneId;
+
+                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+                {
+                    // Change the weather for everyone in the same zone
+                    if (currentZoneID == entry.Value.getActor().zoneId)
+                    {
+                        BasePacket weatherPacket = BasePacket.createPacket(SetWeatherPacket.buildPacket(entry.Value.actorID, weather), true, false);
+                        entry.Value.queuePacket(weatherPacket);
+                    }                    
+                }
+            }
+            */
         }
 
         /// <summary>
@@ -525,9 +553,46 @@ namespace FFXIVClassic_Lobby_Server
                         else if (split[1].Equals("setgraphic"))
                                sendMessage(client, Resources.CPsetgraphic);
                         */
+                     }
+                    if (split.Length == 3)
+                    {
+                        if(split[1].Equals("test"))
+                        {
+                            if (split[2].Equals("weather"))
+                                sendMessage(client, Resources.CPtestweather);
+                        }
                     }
 
                     return true;
+                }
+                #endregion
+
+                #region !test
+                else if (split[0].Equals("test"))
+                {
+                    if (split.Length == 1)
+                    {
+                        // catch invalid commands
+                        sendMessage(client, Resources.CPhelp);
+                    }
+                    else if (split.Length >= 2)
+                    {
+                        #region !test weather
+                        if (split[1].Equals("weather"))
+                        {
+                            try
+                            {
+                                doWeather(client, split[2], split[3]);
+                                return true;
+                            }
+                            catch (Exception e)
+                            {
+                                Log.error("Could not change weather: " + e);
+                            }
+                        }
+                        #endregion
+                    }
+
                 }
                 #endregion
 

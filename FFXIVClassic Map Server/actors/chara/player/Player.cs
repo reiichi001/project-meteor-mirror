@@ -479,7 +479,7 @@ namespace FFXIVClassic_Map_Server.Actors
             queuePacket(SetActorIsZoningPacket.buildPacket(actorId, actorId, false));
             queuePacket(_0x10Packet.buildPacket(actorId, 0xFF));
             queuePacket(SetMusicPacket.buildPacket(actorId, zone.bgmDay, 0x01));
-            queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR));
+            queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR, 1));
             
             queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId));
 
@@ -522,6 +522,7 @@ namespace FFXIVClassic_Map_Server.Actors
             BasePacket areaMasterSpawn = zone.getSpawnPackets(actorId);
             BasePacket debugSpawn = world.GetDebugActor().getSpawnPackets(actorId);
             BasePacket worldMasterSpawn = world.GetActor().getSpawnPackets(actorId);
+            BasePacket weatherDirectorSpawn = new WeatherDirector(this, 8003).getSpawnPackets(actorId);
             BasePacket directorSpawn = null;
             
             if (currentDirector != null)
@@ -550,6 +551,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 packet.debugPrintSubPacket();
                 queuePacket(packet);
             }
+
+            playerSession.queuePacket(weatherDirectorSpawn);
+
 /*
             #region hardcode
             BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door created

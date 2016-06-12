@@ -64,7 +64,7 @@ namespace FFXIVClassic_Map_Server.Properties {
         ///   Looks up a localized string similar to Adds the specified currency to the current player&apos;s inventory
         ///
         ///*Syntax:	givecurrency &lt;quantity&gt;
-        ///		givecurrency &lt;quantity&gt; &lt;type&gt;
+        ///		givecurrency  &lt;type&gt; &lt;quantity&gt;
         ///&lt;type&gt; is the specific type of currency desired, defaults to gil if no type specified.
         /// </summary>
         public static string CPgivecurrency {
@@ -105,7 +105,8 @@ namespace FFXIVClassic_Map_Server.Properties {
         ///
         ///Available commands: 
         ///Standard: mypos, music, warp
-        ///Server Administration: givecurrency, giveitem, givekeyitem, removecurrency, removekeyitem, reloaditems, reloadzones.
+        ///Server Administration: givecurrency, giveitem, givekeyitem, removecurrency, removekeyitem, reloaditems, reloadzones
+        ///Test: test weather.
         /// </summary>
         public static string CPhelp {
             get {
@@ -117,7 +118,7 @@ namespace FFXIVClassic_Map_Server.Properties {
         ///   Looks up a localized string similar to Changes the currently playing background music
         ///
         ///*Syntax:	music &lt;music id&gt;
-        ///&lt;music id&gt; is the key item&apos;s specific id as defined in the server database.
+        ///&lt;music id&gt; is the music&apos;s specific id as defined in the client.
         /// </summary>
         public static string CPmusic {
             get {
@@ -176,7 +177,7 @@ namespace FFXIVClassic_Map_Server.Properties {
         ///   Looks up a localized string similar to Removes the specified currency from the current player&apos;s inventory
         ///
         ///*Syntax:	removecurrency &lt;quantity&gt;
-        ///		removecurrency &lt;quantity&gt; &lt;type&gt;
+        ///		removecurrency &lt;type&gt; &lt;quantity&gt;
         ///&lt;type&gt; is the specific type of currency desired, defaults to gil if no type specified.
         /// </summary>
         public static string CPremovecurrency {
@@ -233,6 +234,18 @@ namespace FFXIVClassic_Map_Server.Properties {
         public static string CPsetgraphic {
             get {
                 return ResourceManager.GetString("CPsetgraphic", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Changes the current weather
+        ///
+        ///*Syntax:	test weather &lt;weather id&gt;
+        ///&lt;weather id&gt; is the weather&apos;s specific id as defined in the client.
+        /// </summary>
+        public static string CPtestweather {
+            get {
+                return ResourceManager.GetString("CPtestweather", resourceCulture);
             }
         }
         
