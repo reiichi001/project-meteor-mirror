@@ -92,9 +92,11 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (lParams == null)
             {
-                classPath = "/Chara/Npc/Populace/PopulaceStandard";
-                className = "PopulaceStandard";
-                lParams = LuaUtils.createLuaParamList(classPath, false, false, false, false, false, 0xF47F6, false, false, 0, 1, "TEST");
+                string classPathFake = "/Chara/Npc/Populace/PopulaceStandard";
+                string classNameFake = "PopulaceStandard";
+                lParams = LuaUtils.createLuaParamList(classPathFake, false, false, false, false, false, 0xF47F6, false, false, 0, 0);
+                ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, classNameFake, lParams).debugPrintSubPacket();
+                return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, classNameFake, lParams);
             }
             else
             {
@@ -302,7 +304,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
                 child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
-            if (parent == null)
+            if (parent == null && child == null)
             {
                 LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", getName()));
                 return null;

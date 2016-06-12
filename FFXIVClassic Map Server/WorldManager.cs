@@ -200,7 +200,7 @@ namespace FFXIVClassic_Map_Server
                                     displayNameId,
                                     eventConditions
                                     FROM gamedata_actor_class
-                                    WHERE classPath <> '' AND eventConditions is not NULL
+                                    WHERE classPath <> ''
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -212,7 +212,12 @@ namespace FFXIVClassic_Map_Server
                             uint id = reader.GetUInt32("id");
                             string classPath = reader.GetString("classPath");
                             uint nameId = reader.GetUInt32("displayNameId");
-                            string eventConditions = reader.GetString("eventConditions");
+                            string eventConditions = null;
+                            
+                            if (!reader.IsDBNull(3))
+                                eventConditions = reader.GetString("eventConditions");
+                            else
+                                eventConditions = "{}";
 
                             ActorClass actorClass = new ActorClass(id, classPath, nameId, eventConditions);
                             actorClasses.Add(id, actorClass);
