@@ -18,11 +18,11 @@ function onBeginLogin(player)
 			
 	--For Opening. Set Director and reset position incase d/c
 	if	   (player:hasQuest(110001) == true) then
-		player:setDirector("openingDirector", false);
+		--player:setDirector("openingDirector", false);
 		player.positionX = 0.016;
 		player.positionY = 10.35;
-		player.positionZ = -36.91;
-		--player.positionZ = -20.91;
+		--player.positionZ = -36.91;
+		player.positionZ = -20.91;
 		player.rotation = 0.025;
 		player:getQuest(110001):ClearQuestData();
 		player:getQuest(110001):ClearQuestFlags();

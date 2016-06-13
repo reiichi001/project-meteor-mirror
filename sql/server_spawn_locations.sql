@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 6/12/2016 6:41:44 PM
+Date: 6/12/2016 9:25:03 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -26,7 +26,7 @@ CREATE TABLE `server_spawn_locations` (
   `animationId` int(10) unsigned NOT NULL DEFAULT '0',
   `customDisplayName` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=627 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=628 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records 
@@ -606,7 +606,7 @@ INSERT INTO `server_spawn_locations` VALUES ('572', '1060022', '', '206', '', '0
 INSERT INTO `server_spawn_locations` VALUES ('573', '1000630', '', '206', '', '0', '-1.75', '21.34', '-1597.88', '-0.07', '0', '2053', null);
 INSERT INTO `server_spawn_locations` VALUES ('574', '1001183', '', '155', '', '0', '59.81', '4', '-1221.17', '0.87', '0', '1015', null);
 INSERT INTO `server_spawn_locations` VALUES ('575', '1200027', '', '155', '', '0', '55.82', '4', '-1216.88', '2.8', '0', '1041', null);
-INSERT INTO `server_spawn_locations` VALUES ('576', '1000458', '', '155', '', '0', '55.82', '4', '-1212.23', '1.91', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('576', '1000458', 'vkorolon', '155', '', '0', '55.82', '4', '-1212.23', '1.91', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('577', '1600100', '', '155', '', '0', '55.34', '4', '-1210.62', '0.99', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('578', '1000456', '', '155', '', '0', '56.59', '4', '-1205.44', '2.4', '0', '1015', null);
 INSERT INTO `server_spawn_locations` VALUES ('579', '1099063', '', '155', '', '0', '67.09', '-6.8', '-1215.63', '0', '0', '0', null);
@@ -657,3 +657,4 @@ INSERT INTO `server_spawn_locations` VALUES ('623', '5900001', 'fenyll_fineries'
 INSERT INTO `server_spawn_locations` VALUES ('624', '5900001', 'centaurs_eye', '206', '', '0', '136', '25', '-1542', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('625', '5900001', 'guild_lnc', '206', '', '0', '172', '28', '-1576', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('626', '5900001', 'guild_arc', '206', '', '0', '227', '12', '-1264', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('627', '5900001', 'guild_cnj', '206', '', '0', '-325', '8', '-1669', '0', '0', '0', null);
