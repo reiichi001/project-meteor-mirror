@@ -158,11 +158,11 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             isMore = flag;
         }
 
-        public void SetTarget(string tarGet)
+        public void SetTarget(string target)
         {
-            binWriter.Write((byte)(isMore ? 0x62 + tarGet.Length : 0x82 + tarGet.Length));
-            binWriter.Write(Encoding.ASCII.GetBytes(tarGet));
-            runningByteTotal += (ushort)(1 + Encoding.ASCII.GetByteCount(tarGet));
+            binWriter.Write((byte)(isMore ? 0x62 + target.Length : 0x82 + target.Length));
+            binWriter.Write(Encoding.ASCII.GetBytes(target));
+            runningByteTotal += (ushort)(1 + Encoding.ASCII.GetByteCount(target));
 
         }
 

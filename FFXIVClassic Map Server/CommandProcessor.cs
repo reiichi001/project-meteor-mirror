@@ -54,11 +54,11 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public void ChangeProperty(uint id, uint value, string tarGet)
+        public void ChangeProperty(uint id, uint value, string target)
         {
-            SetActorPropetyPacket ChangeProperty = new SetActorPropetyPacket(tarGet);
+            SetActorPropetyPacket ChangeProperty = new SetActorPropetyPacket(target);
 
-            ChangeProperty.SetTarget(tarGet);
+            ChangeProperty.SetTarget(target);
             ChangeProperty.AddInt(id, value);
             ChangeProperty.AddTarget();
 

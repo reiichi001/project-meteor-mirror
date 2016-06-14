@@ -10,7 +10,7 @@ namespace FFXIVClassic_Lobby_Server.packets
         public ushort subpacketSize;
         public ushort type;
         public uint sourceId;
-        public uint tarGetId;
+        public uint targetId;
         public uint unknown1;
     }
 
@@ -68,14 +68,14 @@ namespace FFXIVClassic_Lobby_Server.packets
             offset += header.subpacketSize;
         }
 
-        public SubPacket(ushort opcode, uint sourceId, uint tarGetId, byte[] data)
+        public SubPacket(ushort opcode, uint sourceId, uint targetId, byte[] data)
         {
             this.header = new SubPacketHeader();
             this.gameMessage = new GameMessageHeader();
 
             gameMessage.opcode = opcode;
             header.sourceId = sourceId;
-            header.tarGetId = tarGetId;
+            header.targetId = targetId;
 
             gameMessage.timestamp = Utils.UnixTimeStampUTC();
 
@@ -97,7 +97,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             header.subpacketSize = original.header.subpacketSize;
             header.type = original.header.type;
             header.sourceId = original.header.sourceId;
-            header.tarGetId = newTarGetId;
+            header.targetId = newTarGetId;
             data = original.data;
         }
 

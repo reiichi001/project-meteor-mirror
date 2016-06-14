@@ -8,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.battle
         public const ushort OPCODE = 0x0139;
         public const uint PACKET_SIZE = 0x58;
 
-        public static SubPacket BuildPacket(uint playerActorID, uint sourceActorId, uint tarGetActorId, uint animationId, uint effectId, ushort worldMasterTextId, ushort commandId, ushort amount, byte param)
+        public static SubPacket BuildPacket(uint playerActorID, uint sourceActorId, uint targetActorId, uint animationId, uint effectId, ushort worldMasterTextId, ushort commandId, ushort amount, byte param)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -26,7 +26,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.battle
                     binWriter.Write((UInt16)commandId);
                     binWriter.Write((UInt16)810); //?
 
-                    binWriter.Write((UInt32)tarGetActorId);
+                    binWriter.Write((UInt32)targetActorId);
 
                     binWriter.Write((UInt16)amount);
                     binWriter.Write((UInt16)worldMasterTextId);

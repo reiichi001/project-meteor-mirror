@@ -11,7 +11,7 @@ namespace FFXIVClassic_Map_Server.packets.send.events
         public const ushort OPCODE = 0x012F;
         public const uint PACKET_SIZE = 0x90;
 
-        public static SubPacket BuildPacket(uint playerActorId, uint tarGetActorId, string conditionName, List<LuaParam> luaParams)
+        public static SubPacket BuildPacket(uint playerActorId, uint targetActorId, string conditionName, List<LuaParam> luaParams)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -20,7 +20,7 @@ namespace FFXIVClassic_Map_Server.packets.send.events
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
                     binWriter.Write((UInt32)playerActorId);
-                    binWriter.Write((UInt32)tarGetActorId);
+                    binWriter.Write((UInt32)targetActorId);
                     binWriter.Write((Byte)0x5);
                     binWriter.Write((Byte)0x87);
                     binWriter.Write((Byte)0xDC);

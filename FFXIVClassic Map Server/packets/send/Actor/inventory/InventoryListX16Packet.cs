@@ -14,7 +14,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
             return BuildPacket(playerActorId, playerActorId, items, ref listOffset);
         }
 
-        public static SubPacket BuildPacket(uint sourceActorId, uint tarGetActorId, List<InventoryItem> items, ref int listOffset)
+        public static SubPacket BuildPacket(uint sourceActorId, uint targetActorId, List<InventoryItem> items, ref int listOffset)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -36,7 +36,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
                 }
             }
 
-            return new SubPacket(OPCODE, sourceActorId, tarGetActorId, data);
+            return new SubPacket(OPCODE, sourceActorId, targetActorId, data);
         }
     }
 }
