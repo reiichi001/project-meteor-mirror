@@ -1,13 +1,20 @@
-﻿using FFXIVClassic_Map_Server.packets;
+﻿using FFXIVClassic_Map_Server;
+using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.packets;
+using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.actors.area
 {
     class Zone : Area
-    {
+    {        
         Dictionary<string, Dictionary<uint, PrivateArea>> privateAreas = new Dictionary<string, Dictionary<uint, PrivateArea>>();
 
         public Zone(uint id, string zoneName, ushort regionId, string className, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
@@ -48,6 +55,41 @@ namespace FFXIVClassic_Map_Server.actors.area
             List<LuaParam> lParams;
             lParams = LuaUtils.CreateLuaParamList("/Area/Zone/" + className, false, true, zoneName, "", -1, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, true, isInstanceRaid, isEntranceDesion);
             return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);        
+        }
+
+        public void AddSpawnLocation(SpawnLocation spawn)
+        {
+            //Is it in a private area?
+            if (!spawn.privAreaName.Equals(""))
+            {
+                if (privateAreas.ContainsKey(spawn.privAreaName))
+                {
+                    Dictionary<uint, PrivateArea> levels = privateAreas[spawn.privAreaName];
+                    if (levels.ContainsKey(spawn.privAreaLevel))
+                        levels[spawn.privAreaLevel].AddSpawnLocation(spawn);
+                    else
+                        Program.Log.Error("Tried to add a spawn location to non-existing private area level \"{0}\" in area {1} in zone {2}", spawn.privAreaName, spawn.privAreaLevel, zoneName);
+                }
+                else
+                    Program.Log.Error("Tried to add a spawn location to non-existing private area \"{0}\" in zone {1}", spawn.privAreaName, zoneName);
+            }
+            else            
+                mSpawnLocations.Add(spawn);            
+        }
+
+        public void SpawnAllActors(bool doPrivAreas)
+        {
+            foreach (SpawnLocation spawn in mSpawnLocations)            
+                SpawnActor(spawn);
+
+            if (doPrivAreas)
+            {
+                foreach (Dictionary<uint, PrivateArea> areas in privateAreas.Values)
+                {
+                    foreach (PrivateArea pa in areas.Values)
+                        pa.SpawnAllActors();
+                }
+            }
         }
 
     }

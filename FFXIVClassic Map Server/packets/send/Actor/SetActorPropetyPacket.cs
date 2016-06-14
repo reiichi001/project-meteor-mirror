@@ -182,9 +182,9 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             isMore = flag;
         }
 
-        public void SetTarget(string target)
+        public void SetTarget(string tarGet)
         {
-            currentTarget = target;
+            currentTarget = tarGet;
         }
 
         public void AddTarget()

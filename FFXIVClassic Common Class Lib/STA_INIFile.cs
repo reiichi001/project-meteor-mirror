@@ -178,7 +178,7 @@ namespace FFXIVClassic.Common
             // *** Check if original file exists ***
             bool OriginalFileExists = File.Exists(m_FileName);
 
-            // *** Get temporary file name ***
+            // *** get temporary file name ***
             string TmpFileName = Path.ChangeExtension(m_FileName, "$n$");
 
             // *** Copy content of original file to temporary file, replace modified values ***

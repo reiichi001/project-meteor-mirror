@@ -22,7 +22,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public const float INNPOS_Z     = 165.050003f;
         public const float INNPOS_ROT   =  -1.530000f;
 
-        public static SubPacket BuildPacket(uint sourceActorID, uint targetActorID, uint actorId, float x, float y, float z, float rotation, uint spawnType, bool isZoningPlayer)
+        public static SubPacket BuildPacket(uint sourceActorID, uint tarGetActorID, uint actorId, float x, float y, float z, float rotation, uint spawnType, bool isZoningPlayer)
         {
             byte[] data = new byte[PACKET_SIZE-0x20];
 
@@ -44,7 +44,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
                 }
             }
 
-            return new SubPacket(OPCODE, sourceActorID, targetActorID, data);
+            return new SubPacket(OPCODE, sourceActorID, tarGetActorID, data);
         }
 
     }

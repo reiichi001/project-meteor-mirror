@@ -8,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
         public const ushort OPCODE = 0x0196;
         public const uint PACKET_SIZE = 0x38;
 
-        public static SubPacket BuildPacket(uint playerActorID, uint targetActorID)
+        public static SubPacket BuildPacket(uint playerActorID, uint tarGetActorID)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -21,7 +21,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, targetActorID, data);
+            return new SubPacket(OPCODE, playerActorID, tarGetActorID, data);
         }
     }
 }

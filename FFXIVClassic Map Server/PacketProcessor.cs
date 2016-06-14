@@ -349,8 +349,8 @@ namespace FFXIVClassic_Map_Server
                             client.QueuePacket(BasePacket.CreatePacket(BlacklistAddedPacket.BuildPacket(player.actorID, true, addBlackList.name), true, false));
                             break;
                         case 0x01CA:
-                            AddRemoveSocialPacket removeBlackList = new AddRemoveSocialPacket(subpacket.data);
-                            client.QueuePacket(BasePacket.CreatePacket(BlacklistRemovedPacket.BuildPacket(player.actorID, true, removeBlackList.name), true, false));
+                            AddRemoveSocialPacket RemoveBlackList = new AddRemoveSocialPacket(subpacket.data);
+                            client.QueuePacket(BasePacket.CreatePacket(BlacklistRemovedPacket.BuildPacket(player.actorID, true, RemoveBlackList.name), true, false));
                             break;
                         case 0x01CB:
                             int offset1 = 0;
@@ -361,8 +361,8 @@ namespace FFXIVClassic_Map_Server
                             client.QueuePacket(BasePacket.CreatePacket(FriendlistAddedPacket.BuildPacket(player.actorID, true, (uint)addFriendList.name.GetHashCode(), true, addFriendList.name), true, false));
                             break;
                         case 0x01CD:
-                            AddRemoveSocialPacket removeFriendList = new AddRemoveSocialPacket(subpacket.data);
-                            client.QueuePacket(BasePacket.CreatePacket(FriendlistRemovedPacket.BuildPacket(player.actorID, true, removeFriendList.name), true, false));
+                            AddRemoveSocialPacket RemoveFriendList = new AddRemoveSocialPacket(subpacket.data);
+                            client.QueuePacket(BasePacket.CreatePacket(FriendlistRemovedPacket.BuildPacket(player.actorID, true, RemoveFriendList.name), true, false));
                             break;
                         case 0x01CE:
                             int offset2 = 0;

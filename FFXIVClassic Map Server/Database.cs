@@ -400,7 +400,6 @@ namespace FFXIVClassic_Map_Server
                     birthMonth,
                     initialTown,
                     tribe,
-                    currentParty,
                     restBonus,
                     achievementPoints,
                     playTime
@@ -430,9 +429,9 @@ namespace FFXIVClassic_Map_Server
                             player.playerWork.birthdayMonth = reader.GetByte(14);
                             player.playerWork.initialTown = reader.GetByte(15);
                             player.playerWork.tribe = reader.GetByte(16);
-                            player.playerWork.restBonusExpRate = reader.GetInt32(18);
-                            player.achievementPoints = reader.GetUInt32(19);
-                            player.playTime = reader.GetUInt32(20);
+                            player.playerWork.restBonusExpRate = reader.GetInt32(17);
+                            player.achievementPoints = reader.GetUInt32(18);
+                            player.playTime = reader.GetUInt32(19);
                         }
                     }
                   

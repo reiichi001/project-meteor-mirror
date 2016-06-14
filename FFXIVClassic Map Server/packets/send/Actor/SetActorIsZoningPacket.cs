@@ -5,11 +5,11 @@
         public const ushort OPCODE = 0x017B;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket BuildPacket(uint playerActorID, uint targetActorID, bool isDimmed)
+        public static SubPacket BuildPacket(uint playerActorID, uint tarGetActorID, bool isDimmed)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
             data[0] = (byte)(isDimmed ? 1 : 0);
-            return new SubPacket(OPCODE, playerActorID, targetActorID, data);
+            return new SubPacket(OPCODE, playerActorID, tarGetActorID, data);
         }
     }
 }

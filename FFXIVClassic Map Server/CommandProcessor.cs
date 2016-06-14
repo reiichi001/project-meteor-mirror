@@ -1,12 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading.Tasks;
+using System.Threading;
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets;
+using System.IO;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server;
 using FFXIVClassic_Map_Server.packets.send;
+using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.Actors;
+using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.Properties;
 
@@ -45,11 +54,11 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public void ChangeProperty(uint id, uint value, string target)
+        public void ChangeProperty(uint id, uint value, string tarGet)
         {
-            SetActorPropetyPacket ChangeProperty = new SetActorPropetyPacket(target);
+            SetActorPropetyPacket ChangeProperty = new SetActorPropetyPacket(tarGet);
 
-            ChangeProperty.SetTarget(target);
+            ChangeProperty.SetTarget(tarGet);
             ChangeProperty.AddInt(id, value);
             ChangeProperty.AddTarget();
 
@@ -115,8 +124,8 @@ namespace FFXIVClassic_Map_Server
             if (worldManager.GetZone(zoneId) == null)
             {
                 if (client != null)
-                    client.QueuePacket(BasePacket.CreatePacket(SendMessagePacket.BuildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Zone Does not exist or setting isn't valid."), true, false));
-                Program.Log.Error("Zone Does not exist or setting isn't valid.");
+                    client.QueuePacket(BasePacket.CreatePacket(SendMessagePacket.BuildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Zone does not exist or setting isn't valid."), true, false));
+                Program.Log.Error("Zone does not exist or setting isn't valid.");
             }
 
             if (client != null)
@@ -142,7 +151,7 @@ namespace FFXIVClassic_Map_Server
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.GetActor();
-                    Program.Log.Info("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation);
+                    Program.Log.Info(String.Format("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation));
                 }
             }
         }
@@ -259,7 +268,7 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        // TODO:  make RemoveCurrency() remove all quantity of a currency if quantity_to_remove > quantity_in_inventory instead of silently failing
+        // TODO:  make RemoveCurrency() Remove all quantity of a currency if quantity_to_Remove > quantity_in_inventory instead of silently failing
         private void RemoveCurrency(ConnectedPlayer client, uint itemId, int quantity)
         {
             if (client != null)
@@ -446,7 +455,7 @@ namespace FFXIVClassic_Map_Server
                 return; // catch any invalid warps here
         }
 
-        private void DoWeather(ConnectedPlayer client, string weatherID, string value)
+        private void doWeather(ConnectedPlayer client, string weatherID, string value)
         {
             ushort weather = Convert.ToUInt16(weatherID);
 
@@ -524,12 +533,12 @@ namespace FFXIVClassic_Map_Server
                             SendMessage(client, Resources.CPgiveitem);
                         else if (split[1].Equals("givekeyitem"))
                             SendMessage(client, Resources.CPgivekeyitem);
-                        else if (split[1].Equals("removecurrency"))
-                            SendMessage(client, Resources.CPremovecurrency);
-                        else if (split[1].Equals("removeitem"))
-                            SendMessage(client, Resources.CPremoveitem);
-                        else if (split[1].Equals("removekeyitem"))
-                            SendMessage(client, Resources.CPremovekeyitem);
+                        else if (split[1].Equals("Removecurrency"))
+                            SendMessage(client, Resources.CPRemovecurrency);
+                        else if (split[1].Equals("Removeitem"))
+                            SendMessage(client, Resources.CPRemoveitem);
+                        else if (split[1].Equals("Removekeyitem"))
+                            SendMessage(client, Resources.CPRemovekeyitem);
                         else if (split[1].Equals("reloaditems"))
                             SendMessage(client, Resources.CPreloaditems);
                         else if (split[1].Equals("reloadzones"))
@@ -573,12 +582,12 @@ namespace FFXIVClassic_Map_Server
                         {
                             try
                             {
-                                DoWeather(client, split[2], split[3]);
+                                doWeather(client, split[2], split[3]);
                                 return true;
                             }
                             catch (Exception e)
                             {
-                                Program.Log.Error("Could not Change weather: " + e);
+                                Program.Log.Error("Could not change weather: " + e);
                             }
                         }
                         #endregion
@@ -607,13 +616,13 @@ namespace FFXIVClassic_Map_Server
                 {
                     if (client != null)
                     {
-                        Program.Log.Info("Got request to reset zone: {0}", client.GetActor().zoneId);
+                        Program.Log.Info(String.Format("Got request to reset zone: {0}", client.GetActor().zoneId));
                         client.GetActor().zone.Clear();
                         client.GetActor().zone.AddActorToZone(client.GetActor());
                         client.GetActor().SendInstanceUpdate();
                         client.QueuePacket(BasePacket.CreatePacket(SendMessagePacket.BuildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Reseting zone {0}...", client.GetActor().zoneId)), true, false));
                     }
-                    Server.GetWorldManager().ReloadZone(client.GetActor().zoneId);
+                    Server.GetWorldManager().reloadZone(client.GetActor().zoneId);
                     return true;
                 }
                 #endregion
@@ -621,11 +630,11 @@ namespace FFXIVClassic_Map_Server
                 #region !reloaditems
                 else if (split[0].Equals("reloaditems"))
                 {
-                    Program.Log.Info("Got request to reload item gamedata");
+                    Program.Log.Info(String.Format("Got request to reload item gamedata"));
                     SendMessage(client, "Reloading Item Gamedata...");
                     gamedataItems.Clear();
                     gamedataItems = Database.GetItemGamedata();
-                    Program.Log.Info("Loaded {0} items.", gamedataItems.Count);
+                    Program.Log.Info(String.Format("Loaded {0} items.", gamedataItems.Count));
                     SendMessage(client, String.Format("Loaded {0} items.", gamedataItems.Count));
                     return true;
                 }
@@ -685,8 +694,8 @@ namespace FFXIVClassic_Map_Server
                 }
                 #endregion
 
-                #region !removeitem
-                else if (split[0].Equals("removeitem"))
+                #region !Removeitem
+                else if (split[0].Equals("Removeitem"))
                 {
                     if (split.Length < 2)
                         return false;
@@ -703,7 +712,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Program.Log.Error("Could not remove item.");
+                        Program.Log.Error("Could not Remove item.");
                     }
                 }
                 #endregion
@@ -723,8 +732,8 @@ namespace FFXIVClassic_Map_Server
                 }
                 #endregion
 
-                #region !removekeyitem
-                else if (split[0].Equals("removekeyitem"))
+                #region !Removekeyitem
+                else if (split[0].Equals("Removekeyitem"))
                 {
                     if (split.Length < 2)
                         return false;
@@ -737,7 +746,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Program.Log.Error("Could not remove keyitem.");
+                        Program.Log.Error("Could not Remove keyitem.");
                     }
                 }
                 #endregion
@@ -759,8 +768,8 @@ namespace FFXIVClassic_Map_Server
                 }
                 #endregion
 
-                #region !removecurrency
-                else if (split[0].Equals("removecurrency"))
+                #region !Removecurrency
+                else if (split[0].Equals("Removecurrency"))
                 {
                     if (split.Length < 2)
                         return false;
@@ -775,7 +784,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Program.Log.Error("Could not remove currency.");
+                        Program.Log.Error("Could not Remove currency.");
                     }
                 }
                 #endregion
@@ -793,7 +802,7 @@ namespace FFXIVClassic_Map_Server
                     }
                     catch (Exception e)
                     {
-                        Program.Log.Error("Could not Change music: " + e);
+                        Program.Log.Error("Could not change music: " + e);
                     }
                 }
                 #endregion

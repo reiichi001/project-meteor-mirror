@@ -4,7 +4,7 @@
     {
         public short tp = 0;
 
-        public int targetInformation = 0;
+        public int tarGetInformation = 0;
 
         public ushort[] maxCommandRecastTime = new ushort[40];
 

@@ -11,9 +11,9 @@
             return new SubPacket(OPCODE, playerActorId, playerActorId, new byte[8]);
         }
 
-        public static SubPacket BuildPacket(uint sourceActorId, uint targetActorID)
+        public static SubPacket BuildPacket(uint sourceActorId, uint tarGetActorID)
         {
-            return new SubPacket(OPCODE, sourceActorId, targetActorID, new byte[8]);
+            return new SubPacket(OPCODE, sourceActorId, tarGetActorID, new byte[8]);
         }
 
     }

@@ -1,9 +1,14 @@
-﻿using FFXIVClassic.Common;
+﻿using FFXIVClassic_Map_Server;
+using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.dataobjects
 {
@@ -111,7 +116,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public void UpdateInstance(List<Actor> list)
         {            
             List<BasePacket> basePackets = new List<BasePacket>();
-            List<SubPacket> removeActorSubpackets = new List<SubPacket>();
+            List<SubPacket> RemoveActorSubpackets = new List<SubPacket>();
             List<SubPacket> posUpdateSubpackets = new List<SubPacket>();
 
             //Remove missing actors
@@ -145,7 +150,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
                     if (actor is Npc)
                     {
-                        LuaEngine.DoActorOnSpawn(GetActor(), (Npc)actor);
+                        ((Npc)actor).DoOnActorSpawn(playerActor);
                     }
                 }
             }

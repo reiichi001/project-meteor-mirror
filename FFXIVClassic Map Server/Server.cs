@@ -83,7 +83,9 @@ namespace FFXIVClassic_Map_Server
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneList();
             mWorldManager.LoadZoneEntranceList();
-            mWorldManager.LoadNPCs();
+            mWorldManager.LoadActorClasses();
+            mWorldManager.LoadSpawnLocations();
+            mWorldManager.SpawnAllActors();
 
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), int.Parse(ConfigConstants.OPTIONS_PORT));
 
@@ -294,7 +296,7 @@ namespace FFXIVClassic_Map_Server
         {
             BasePacket newPacket = null;
 
-            //Too small to even get length
+            //Too small to even Get length
             if (bytesRead <= offset)
                 return null;
 

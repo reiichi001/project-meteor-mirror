@@ -28,27 +28,27 @@ namespace FFXIVClassic_Map_Server.lua
             UserData.RegistrationPolicy = InteropRegistrationPolicy.Automatic;
         }
 
-        public static List<LuaParam> DoActorInstantiate(Player player, Actor target)
+        public static List<LuaParam> DoActorInstantiate(Player player, Actor tarGet)
         {
             string luaPath;
 
-            if (target is Npc)
+            if (tarGet is Npc)
             {
-                luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.GetName());
+                luaPath = String.Format(FILEPATH_NPCS, tarGet.zoneId, tarGet.GetName());
                 if (File.Exists(luaPath))
                 {                    
-                    Script script = loadScript(luaPath);
+                    Script script = LoadScript(luaPath);
 
                     if (script == null)
                         return null;
 
-                    DynValue result = script.Call(script.Globals["init"], target);
+                    DynValue result = script.Call(script.Globals["init"], tarGet);
                     List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
                     return lparams;
                 }
                 else
                 {
-                    SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+                    SendError(player, String.Format("ERROR: Could not find script for actor {0}.", tarGet.GetName()));
                     return null;
                 }
             }
@@ -56,24 +56,30 @@ namespace FFXIVClassic_Map_Server.lua
             return null;
         }       
 
-        public static void DoActorOnEventStarted(Player player, Actor target, EventStartPacket eventStart)
+        public static void DoActorOnEventStarted(Player player, Actor tarGet, EventStartPacket eventStart)
         {
+            if (tarGet is Npc)
+            {
+                ((Npc)tarGet).DoEventStart(player, eventStart);
+                return;
+            }
+
             string luaPath;
 
-            if (target is Command)
+            if (tarGet is Command)
             {
-                luaPath = String.Format(FILEPATH_COMMANDS, target.GetName());
+                luaPath = String.Format(FILEPATH_COMMANDS, tarGet.GetName());
             }
-            else if (target is Director)
+            else if (tarGet is Director)
             {
-                luaPath = String.Format(FILEPATH_DIRECTORS, target.GetName());
+                luaPath = String.Format(FILEPATH_DIRECTORS, tarGet.GetName());
             }
             else 
-                luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.GetName());
+                luaPath = String.Format(FILEPATH_NPCS, tarGet.zoneId, tarGet.GetName());
 
             if (File.Exists(luaPath))
             {
-                Script script = loadScript(luaPath);
+                Script script = LoadScript(luaPath);
 
                 if (script == null)
                     return;
@@ -81,7 +87,7 @@ namespace FFXIVClassic_Map_Server.lua
                 //Have to Do this to combine LuaParams
                 List<Object> objects = new List<Object>();
                 objects.Add(player);
-                objects.Add(target);
+                objects.Add(tarGet);
                 objects.Add(eventStart.triggerName);
 
                 if (eventStart.luaParams != null)
@@ -93,47 +99,53 @@ namespace FFXIVClassic_Map_Server.lua
             }
             else
             {
-                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", tarGet.GetName()));
             }
            
         }
 
-        public static void DoActorOnSpawn(Player player, Npc target)
+        public static void DoActorOnSpawn(Player player, Npc tarGet)
         {
-            string luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.GetName());
+            string luaPath = String.Format(FILEPATH_NPCS, tarGet.zoneId, tarGet.GetName());
 
             if (File.Exists(luaPath))
             {
-                Script script = loadScript(luaPath);
+                Script script = LoadScript(luaPath);
 
                 if (script == null)
                     return;
 
                 //Run Script
                 if (!script.Globals.Get("onSpawn").IsNil())
-                    script.Call(script.Globals["onSpawn"], player, target);
+                    script.Call(script.Globals["onSpawn"], player, tarGet);
             }
             else
             {
-                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", tarGet.GetName()));
             }
 
         }
 
-        public static void DoActorOnEventUpdated(Player player, Actor target, EventUpdatePacket eventUpdate)
+        public static void DoActorOnEventUpdated(Player player, Actor tarGet, EventUpdatePacket eventUpdate)
         {
+            if (tarGet is Npc)
+            {
+                ((Npc)tarGet).DoEventUpdate(player, eventUpdate);
+                return;
+            }
+
             string luaPath; 
 
-            if (target is Command)            
-                luaPath = String.Format(FILEPATH_COMMANDS, target.GetName());
-            else if (target is Director)
-                luaPath = String.Format(FILEPATH_DIRECTORS, target.GetName());            
+            if (tarGet is Command)            
+                luaPath = String.Format(FILEPATH_COMMANDS, tarGet.GetName());
+            else if (tarGet is Director)
+                luaPath = String.Format(FILEPATH_DIRECTORS, tarGet.GetName());            
             else
-                luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.GetName());
+                luaPath = String.Format(FILEPATH_NPCS, tarGet.zoneId, tarGet.GetName());
 
             if (File.Exists(luaPath))
             {
-                Script script = loadScript(luaPath);
+                Script script = LoadScript(luaPath);
 
                 if (script == null)
                     return;
@@ -141,7 +153,7 @@ namespace FFXIVClassic_Map_Server.lua
                 //Have to Do this to combine LuaParams
                 List<Object> objects = new List<Object>();
                 objects.Add(player);
-                objects.Add(target);
+                objects.Add(tarGet);
                 objects.Add(eventUpdate.val2);
                 objects.AddRange(LuaUtils.CreateLuaParamObjectList(eventUpdate.luaParams));
 
@@ -151,7 +163,7 @@ namespace FFXIVClassic_Map_Server.lua
             }
             else
             {
-                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", tarGet.GetName()));
             }                  
         }
 
@@ -161,7 +173,7 @@ namespace FFXIVClassic_Map_Server.lua
           
             if (File.Exists(luaPath))
             {
-                Script script = loadScript(luaPath);
+                Script script = LoadScript(luaPath);
 
                 if (script == null)
                     return;
@@ -176,7 +188,7 @@ namespace FFXIVClassic_Map_Server.lua
         {
             if (File.Exists(FILEPATH_PLAYER))
             {
-                Script script = loadScript(FILEPATH_PLAYER);
+                Script script = LoadScript(FILEPATH_PLAYER);
 
                 if (script == null)
                     return;
@@ -191,7 +203,7 @@ namespace FFXIVClassic_Map_Server.lua
         {
             if (File.Exists(FILEPATH_PLAYER))
             {
-                Script script = loadScript(FILEPATH_PLAYER);
+                Script script = LoadScript(FILEPATH_PLAYER);
 
                 if (script == null)
                     return;
@@ -202,14 +214,14 @@ namespace FFXIVClassic_Map_Server.lua
             }
         }
 
-        private static Script loadScript(string filename)
+        public static Script LoadScript(string filename)
         {
             Script script = new Script();
             ((FileSystemScriptLoader)script.Options.ScriptLoader).ModulePaths = FileSystemScriptLoader.UnpackStringPaths("./scripts/?;./scripts/?.lua");
-            script.Globals["getWorldManager"] = (Func<WorldManager>)Server.GetWorldManager;
-            script.Globals["getStaticActor"] = (Func<string, Actor>)Server.GetStaticActors;
-            script.Globals["getWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
-            script.Globals["getItemGamedata"] = (Func<uint, Item>)Server.GetItemGamedata;
+            script.Globals["GetWorldManager"] = (Func<WorldManager>)Server.GetWorldManager;
+            script.Globals["GetStaticActor"] = (Func<string, Actor>)Server.GetStaticActors;
+            script.Globals["GetWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
+            script.Globals["GetItemGamedata"] = (Func<uint, Item>)Server.GetItemGamedata;
 
             try
             {
@@ -223,7 +235,7 @@ namespace FFXIVClassic_Map_Server.lua
             return script;
         }
 
-        private static void SendError(Player player, string message)
+        public static void SendError(Player player, string message)
         {
             List<SubPacket> SendError = new List<SubPacket>();
             SendError.Add(EndEventPacket.BuildPacket(player.actorId, player.currentEventOwner, player.currentEventName));
@@ -238,7 +250,7 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (File.Exists(luaPath))
             {
-                Script script = loadScript(luaPath);
+                Script script = LoadScript(luaPath);
 
                 if (script == null)
                     return;
@@ -259,7 +271,7 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (File.Exists(luaPath))
             {
-                Script script = loadScript(luaPath);
+                Script script = LoadScript(luaPath);
 
                 if (script == null)
                     return;

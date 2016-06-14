@@ -5,9 +5,9 @@
         public const ushort OPCODE = 0x016E;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket BuildPacket(uint sourceActorId, uint targetActorId)
+        public static SubPacket BuildPacket(uint sourceActorId, uint tarGetActorId)
         {
-            return new SubPacket(OPCODE, sourceActorId, targetActorId, new byte[8]);
+            return new SubPacket(OPCODE, sourceActorId, tarGetActorId, new byte[8]);
         }
 
         public static SubPacket BuildPacket(uint playerActorID)

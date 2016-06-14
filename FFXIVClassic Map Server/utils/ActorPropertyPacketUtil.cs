@@ -32,11 +32,11 @@ namespace FFXIVClassic_Map_Server.utils
             }
         }
 
-        public void NewTarget(string target)
+        public void NewTarget(string tarGet)
         {
             currentActorPropertyPacket.AddTarget();
-            currentTarget = target;
-            currentActorPropertyPacket.SetTarget(target);            
+            currentTarget = tarGet;
+            currentActorPropertyPacket.SetTarget(tarGet);            
         }
 
         public List<SubPacket> Done()

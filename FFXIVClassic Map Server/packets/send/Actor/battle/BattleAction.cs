@@ -2,7 +2,7 @@
 {
     class BattleAction
     {
-        public uint targetId;
+        public uint tarGetId;
         public ushort amount;
         public ushort worldMasterTextId;
         public uint effectId;

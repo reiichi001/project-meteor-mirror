@@ -10,7 +10,7 @@ namespace FFXIVClassic_Map_Server.packets
         public ushort       subpacketSize;
         public ushort       type;
         public uint         sourceId; 
-        public uint         targetId;
+        public uint         tarGetId;
         public uint         unknown1;
     }
 
@@ -68,14 +68,14 @@ namespace FFXIVClassic_Map_Server.packets
             offset += header.subpacketSize;
         }
 
-        public SubPacket(ushort opcode, uint sourceId, uint targetId, byte[] data)
+        public SubPacket(ushort opcode, uint sourceId, uint tarGetId, byte[] data)
         {
             this.header = new SubPacketHeader();
             this.gameMessage = new GameMessageHeader();
 
             gameMessage.opcode = opcode;
             header.sourceId = sourceId;
-            header.targetId = targetId;
+            header.tarGetId = tarGetId;
 
             gameMessage.timestamp = Utils.UnixTimeStampUTC();
 
@@ -97,7 +97,7 @@ namespace FFXIVClassic_Map_Server.packets
             header.subpacketSize = original.header.subpacketSize;
             header.type = original.header.type;
             header.sourceId = original.header.sourceId;
-            header.targetId = newTargetId;
+            header.tarGetId = newTargetId;
             data = original.data;
         }
 

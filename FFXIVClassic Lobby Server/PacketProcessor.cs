@@ -166,7 +166,7 @@ namespace FFXIVClassic_Lobby_Server
             if (worldId == 0)
                 worldId = client.newCharaWorldId;
 
-            //Check if this character exists, get world from there
+            //Check if this character exists, Get world from there
             if (worldId == 0 && charaReq.characterId != 0)
             {
                 Character chara = Database.GetCharacter(client.currentUserId, charaReq.characterId);
