@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
 
 namespace FFXIVClassic.Common
 {
@@ -11,16 +11,17 @@ namespace FFXIVClassic.Common
         public string LogDirectory;
         public string LogFileName;
         public int EnabledLogTypes;
-        public Queue<Tuple<String, LogColour>> LogQueue;
+        public Queue<Tuple<String, LogType>> LogQueue;
 
         public Log(string path, string file, int enabledtypes)
         {
-            LogQueue = new Queue<Tuple<String, LogColour>>();
+            LogQueue = new Queue<Tuple<String, LogType>>();
             EnabledLogTypes = enabledtypes;
             LogDirectory = path;
             LogFileName = file;
         }
 
+        [Flags]
         public enum LogType
         {
             None    = 0x000,
@@ -33,6 +34,7 @@ namespace FFXIVClassic.Common
             Error   = 0x040,
         }
 
+        [Flags]
         public enum LogColour
         {
             Status = ConsoleColor.Green,
@@ -44,42 +46,42 @@ namespace FFXIVClassic.Common
 
         public void Status(String message, params object[] formatargs)
         {
-            if (formatargs.Length > 0)
+            if (formatargs.Any())
                 message = String.Format(message, formatargs);
 
-            QueueMessage(message, LogColour.Status);
+            QueueMessage(message, LogType.Status);
         }
 
         public void Sql(String message, params object[] formatargs)
         {
-            if (formatargs.Length > 0)
+            if (formatargs.Any())
                 message = String.Format(message, formatargs);
 
-            QueueMessage(message, LogColour.Sql);
+            QueueMessage(message, LogType.Sql);
         }
 
         public void Info(String message, params object[] formatargs)
         {
-            if (formatargs.Length > 0)
+            if (formatargs.Any())
                 message = String.Format(message, formatargs);
 
-            QueueMessage(message, LogColour.Info);
+            QueueMessage(message, LogType.Info);
         }
 
         public void Debug(String message, params object[] formatargs)
         {
-            if (formatargs.Length > 0)
+            if (formatargs.Any())
                 message = String.Format(message, formatargs);
 
-            QueueMessage(message, LogColour.Debug);
+            QueueMessage(message, LogType.Debug);
         }
 
         public void Error(String message, params object[] formatargs)
         {
-            if (formatargs.Length > 0)
+            if (formatargs.Any())
                 message = String.Format(message, formatargs);
 
-            QueueMessage(message, LogColour.Error);
+            QueueMessage(message, LogType.Error);
         }
 
         public void Packet(String message, params object[] formatargs)
@@ -87,20 +89,17 @@ namespace FFXIVClassic.Common
 
         }
 
-        private void QueueMessage(String message, LogColour type)
+        private void QueueMessage(String message, LogType colour)
         {
-            LogQueue.Enqueue(Tuple.Create(message, type));
+            LogQueue.Enqueue(Tuple.Create(message, colour));
         }
 
-        public void WriteMessage(String message, LogColour type)
+        public void WriteMessage(String message, LogType type)
         {
-            var canLog = false;
-
-            try 
-                {
-                    canLog = ((EnabledLogTypes & (int)(Enum.Parse(typeof(LogType), type.ToString()))) != 0);
-                }
-            catch (Exception  e) { }
+            if (((LogType)EnabledLogTypes & (LogType)type) == 0)
+            {
+                return;
+            }
 
             string timestamp = String.Format("[{0}]", DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss"));
             string messageType = String.Format("[{0}] ", type.ToString().ToUpper());
@@ -108,7 +107,7 @@ namespace FFXIVClassic.Common
             if ((EnabledLogTypes & (int)LogType.Console) != 0)
             {
                 Console.Write(timestamp);
-                Console.ForegroundColor = (ConsoleColor)type;
+                Console.ForegroundColor = (ConsoleColor)Enum.Parse(typeof(LogColour),type.ToString());
                 Console.Write(messageType);
                 Console.ForegroundColor = ConsoleColor.Gray;
                 Console.WriteLine(message);

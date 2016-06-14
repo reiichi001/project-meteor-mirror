@@ -71,8 +71,6 @@ namespace FFXIVClassic_Lobby_Server
             {
                 Server server = new Server();
                 server.startServer();
-
-                while (true) Thread.Sleep(10000);
             }
 
             Program.Log.Info("Press any key to continue...");
