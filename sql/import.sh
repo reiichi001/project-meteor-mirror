@@ -12,6 +12,10 @@ mysqladmin -h localhost -u $USER -p$PASS CREATE $DBNAME
 
 ECHO Loading $DBNAME tables into the database
 cd $IMPORT_PATH
-FOR %%X IN (*.sql) DO ECHO Importing %%X & "c:\program files\mysql\mysql server 5.7\bin\mysql" $DBNAME -h localhost -u $USER -p$PASS < %%X
+for X in *.sql;
+do 
+	echo Importing $X;
+	"C:\program files\mysql\mysql server 5.7\bin\mysql" $DBNAME -h localhost -u $USER -p$PASS < $X
+done
 
 ECHO Finished!
