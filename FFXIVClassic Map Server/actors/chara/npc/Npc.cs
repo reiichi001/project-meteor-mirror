@@ -35,7 +35,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             this.zoneId = zoneId;
 
-            loadNpcTemplate(id);
+            LoadNpcTemplate(id);
 
             charaWork.battleSave.potencial = 1.0f;
 
@@ -58,47 +58,47 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.property[4] = 1;
         }
 
-        public SubPacket createAddActorPacket(uint playerActorId)
+        public SubPacket CreateAddActorPacket(uint playerActorId)
         {
-            return AddActorPacket.buildPacket(actorId, playerActorId, 8);
+            return AddActorPacket.BuildPacket(actorId, playerActorId, 8);
         }
 
-        public override SubPacket createScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
 
             Player player = Server.GetWorldManager().GetPCInWorld(playerActorId);
-            lParams = LuaEngine.doActorInstantiate(player, this);
+            lParams = LuaEngine.DoActorInstantiate(player, this);
 
             if (lParams == null)
             {
                 className = "PopulaceStandard";
-                lParams = LuaUtils.createLuaParamList("/Chara/Npc/Populace/PopulaceStandard", false, false, false, false, false, 0xF47F6, false, false, 0, 1, "TEST");
+                lParams = LuaUtils.CreateLuaParamList("/Chara/Npc/Populace/PopulaceStandard", false, false, false, false, false, 0xF47F6, false, false, 0, 1, "TEST");
             }
 
-            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
+            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
         }
 
-        public override BasePacket getSpawnPackets(uint playerActorId, uint spawnType)
+        public override BasePacket GetSpawnPackets(uint playerActorId, uint spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(createAddActorPacket(playerActorId));
-            subpackets.AddRange(getEventConditionPackets(playerActorId));
-            subpackets.Add(createSpeedPacket(playerActorId));            
-            subpackets.Add(createSpawnPositonPacket(playerActorId, 0x0));            
-            subpackets.Add(createAppearancePacket(playerActorId));
-            subpackets.Add(createNamePacket(playerActorId));
-            subpackets.Add(createStatePacket(playerActorId));
-            subpackets.Add(createIdleAnimationPacket(playerActorId));
-            subpackets.Add(createInitStatusPacket(playerActorId));
-            subpackets.Add(createSetActorIconPacket(playerActorId));
-            subpackets.Add(createIsZoneingPacket(playerActorId));           
-            subpackets.Add(createScriptBindPacket(playerActorId));            
+            subpackets.Add(CreateAddActorPacket(playerActorId));
+            subpackets.AddRange(GetEventConditionPackets(playerActorId));
+            subpackets.Add(CreateSpeedPacket(playerActorId));            
+            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x0));            
+            subpackets.Add(CreateAppearancePacket(playerActorId));
+            subpackets.Add(CreateNamePacket(playerActorId));
+            subpackets.Add(CreateStatePacket(playerActorId));
+            subpackets.Add(CreateIdleAnimationPacket(playerActorId));
+            subpackets.Add(CreateInitStatusPacket(playerActorId));
+            subpackets.Add(CreateSetActorIconPacket(playerActorId));
+            subpackets.Add(CreateIsZoneingPacket(playerActorId));           
+            subpackets.Add(CreateScriptBindPacket(playerActorId));            
 
-            return BasePacket.createPacket(subpackets, true, false);
+            return BasePacket.CreatePacket(subpackets, true, false);
         }
 
-        public override BasePacket getInitPackets(uint playerActorId)
+        public override BasePacket GetInitPackets(uint playerActorId)
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this, playerActorId);
 
@@ -106,52 +106,52 @@ namespace FFXIVClassic_Map_Server.Actors
             for (int i = 0; i < charaWork.property.Length; i++)
             {
                 if (charaWork.property[i] != 0)
-                    propPacketUtil.addProperty(String.Format("charaWork.property[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.property[{0}]", i));
             }
 
             //Parameters
-            propPacketUtil.addProperty("charaWork.parameterSave.hp[0]");
-            propPacketUtil.addProperty("charaWork.parameterSave.hpMax[0]");
-            propPacketUtil.addProperty("charaWork.parameterSave.mp");
-            propPacketUtil.addProperty("charaWork.parameterSave.mpMax");
-            propPacketUtil.addProperty("charaWork.parameterTemp.tp");
+            propPacketUtil.AddProperty("charaWork.parameterSave.hp[0]");
+            propPacketUtil.AddProperty("charaWork.parameterSave.hpMax[0]");
+            propPacketUtil.AddProperty("charaWork.parameterSave.mp");
+            propPacketUtil.AddProperty("charaWork.parameterSave.mpMax");
+            propPacketUtil.AddProperty("charaWork.parameterTemp.tp");
 
             if (charaWork.parameterSave.state_mainSkill[0] != 0)
-                propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[0]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[0]");
             if (charaWork.parameterSave.state_mainSkill[1] != 0)
-                propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[1]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[1]");
             if (charaWork.parameterSave.state_mainSkill[2] != 0)
-                propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[2]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[2]");
             if (charaWork.parameterSave.state_mainSkill[3] != 0)
-                propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[3]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[3]");
 
-            propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkillLevel");
+            propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
 
             //Status Times
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
             {
                 if (charaWork.statusShownTime[i] != 0xFFFFFFFF)
-                    propPacketUtil.addProperty(String.Format("charaWork.statusShownTime[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
             }
 
             //General Parameters
             for (int i = 3; i < charaWork.battleTemp.generalParameter.Length; i++)
             {
                 if (charaWork.battleTemp.generalParameter[i] != 0)
-                    propPacketUtil.addProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
             }
 
-            propPacketUtil.addProperty("npcWork.hateType");
+            propPacketUtil.AddProperty("npcWork.hateType");
 
-            return BasePacket.createPacket(propPacketUtil.done(), true, false);
+            return BasePacket.CreatePacket(propPacketUtil.Done(), true, false);
         }
 
-        public uint getActorClassId()
+        public uint GetActorClassId()
         {
             return actorClassId;
         }
 
-        public void loadNpcTemplate(uint id)
+        public void LoadNpcTemplate(uint id)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -216,7 +216,7 @@ namespace FFXIVClassic_Map_Server.Actors
                             modelId = reader.GetUInt32(0);
                             appearanceIds[Character.SIZE] = reader.GetUInt32(1);
                             appearanceIds[Character.COLORINFO] = (uint)(reader.GetUInt32(16) | (reader.GetUInt32(15) << 10) | (reader.GetUInt32(17) << 20)); //17 - Skin Color, 16 - Hair Color, 18 - Eye Color
-                            appearanceIds[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.getFaceInfo(reader.GetByte(6), reader.GetByte(7), reader.GetByte(5), reader.GetByte(14), reader.GetByte(13), reader.GetByte(12), reader.GetByte(11), reader.GetByte(10), reader.GetByte(9), reader.GetByte(8)));
+                            appearanceIds[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.GetFaceInfo(reader.GetByte(6), reader.GetByte(7), reader.GetByte(5), reader.GetByte(14), reader.GetByte(13), reader.GetByte(12), reader.GetByte(11), reader.GetByte(10), reader.GetByte(9), reader.GetByte(8)));
                             appearanceIds[Character.HIGHLIGHT_HAIR] = (uint)(reader.GetUInt32(3) | reader.GetUInt32(2) << 10); //5- Hair Highlight, 4 - Hair Style
                             appearanceIds[Character.VOICE] = reader.GetUInt32(17);
                             appearanceIds[Character.MAINHAND] = reader.GetUInt32(19);
@@ -247,7 +247,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public void loadEventConditions(string eventConditions)
+        public void LoadEventConditions(string eventConditions)
         {
             EventList conditions = JsonConvert.DeserializeObject<EventList>(eventConditions);
             this.eventConditions = conditions;

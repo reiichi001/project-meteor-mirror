@@ -5,7 +5,7 @@
         public const ushort OPCODE = 0x00CA;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket buildPacket(uint playerActorID, uint actorID, byte val)
+        public static SubPacket BuildPacket(uint playerActorID, uint actorID, byte val)
         {
             byte[] data = new byte[PACKET_SIZE-0x20];
             data[0] = val; //Why?

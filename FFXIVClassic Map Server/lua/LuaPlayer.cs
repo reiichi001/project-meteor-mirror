@@ -15,55 +15,55 @@ namespace FFXIVClassic_Map_Server.lua
             this.player = player;
         }
 
-        public void setMusic(ushort musicID, ushort playMode)
+        public void SetMusic(ushort musicID, ushort playMode)
         {
-            player.playerSession.queuePacket(SetMusicPacket.buildPacket(player.actorId, musicID, playMode), true, false);
+            player.playerSession.QueuePacket(SetMusicPacket.BuildPacket(player.actorId, musicID, playMode), true, false);
         }
 
-        public void setWeather(ushort weatherID)
+        public void SetWeather(ushort weatherID)
         {
-            player.playerSession.queuePacket(SetWeatherPacket.buildPacket(player.actorId, weatherID, 1), true, false);
+            player.playerSession.QueuePacket(SetWeatherPacket.BuildPacket(player.actorId, weatherID, 1), true, false);
         }
 
-        public void getParameter(string paramName)
+        public void GetParameter(string paramName)
         {
 
         }
 
-        public void setParameter(string paramName, object value, string uiToRefresh)
+        public void SetParameter(string paramName, object value, string uiToRefresh)
         {
             
         }
 
-        public void getAttributePoints()
+        public void GetAttributePoints()
         {
             
         }
 
-        public void setAttributePoints(int str, int vit, int dex, int inte, int min, int pie)
+        public void SetAttributePoints(int str, int vit, int dex, int inte, int min, int pie)
         {
 
         }
 
-        public void logout()
+        public void Logout()
         {
-            player.playerSession.queuePacket(LogoutPacket.buildPacket(player.actorId), true, false);
+            player.playerSession.QueuePacket(LogoutPacket.BuildPacket(player.actorId), true, false);
         }
 
-        public void quitGame()
+        public void QuitGame()
         {
-            player.playerSession.queuePacket(QuitPacket.buildPacket(player.actorId), true, false);
+            player.playerSession.QueuePacket(QuitPacket.BuildPacket(player.actorId), true, false);
         }
 
-        public void runEvent(string functionName, params object[] parameters)
+        public void RunEvent(string functionName, params object[] parameters)
         {
-            List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
-        //    player.playerSession.queuePacket(RunEventFunctionPacket.buildPacket(player.actorId, player.eventCurrentOwner, player.eventCurrentStarter, functionName, lParams), true, false);
+            List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
+        //    player.playerSession.QueuePacket(RunEventFunctionPacket.BuildPacket(player.actorId, player.eventCurrentOwner, player.eventCurrentStarter, functionName, lParams), true, false);
         }
 
-        public void endEvent()
+        public void EndEvent()
         {
-          //  player.playerSession.queuePacket(EndEventPacket.buildPacket(player.actorId, player.eventCurrentOwner, player.eventCurrentStarter), true, false);
+          //  player.playerSession.QueuePacket(EndEventPacket.BuildPacket(player.actorId, player.eventCurrentOwner, player.eventCurrentStarter), true, false);
         }
 
     }

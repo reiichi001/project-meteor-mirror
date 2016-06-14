@@ -27,11 +27,11 @@ namespace FFXIVClassic_Map_Server.actors.director
             this.eventConditions.noticeEventConditions = noticeEventList;
         }
 
-        public override SubPacket createScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
-            lParams = LuaUtils.createLuaParamList("/Director/Quest/QuestDirectorMan0l001", false, false, false, false, false, 0x7532);
-            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
+            lParams = LuaUtils.CreateLuaParamList("/Director/Quest/QuestDirectorMan0l001", false, false, false, false, false, 0x7532);
+            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
         }
     }
 }

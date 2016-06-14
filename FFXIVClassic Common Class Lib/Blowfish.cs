@@ -283,7 +283,7 @@ namespace FFXIVClassic.Common
 
         public Blowfish(byte[] key)
         {
-            initializeBlowfish(key);
+            InitializeBlowfish(key);
         }
 
         public void Encipher(byte[] data, int offset, int length)
@@ -295,7 +295,7 @@ namespace FFXIVClassic.Common
             {
                 uint xl = (uint)((data[i + 0]) | (data[i + 1] << 8) | (data[i + 2] << 16) | (data[i + 3] << 24));
                 uint xr = (uint)((data[i + 4]) | (data[i + 5] << 8) | (data[i + 6] << 16) | (data[i + 7] << 24));
-                blowfish_encipher(ref xl, ref xr);
+                BlowfishEncipher(ref xl, ref xr);
                 data[i + 0] = (byte)(xl >> 0);
                 data[i + 1] = (byte)(xl >> 8);
                 data[i + 2] = (byte)(xl >> 16);
@@ -316,7 +316,7 @@ namespace FFXIVClassic.Common
             {
                 uint xl = (uint)((data[i + 0]) | (data[i + 1] << 8) | (data[i + 2] << 16) | (data[i + 3] << 24));
                 uint xr = (uint)((data[i + 4]) | (data[i + 5] << 8) | (data[i + 6] << 16) | (data[i + 7] << 24));
-                blowfish_decipher(ref xl, ref xr);
+                BlowfishDecipher(ref xl, ref xr);
                 data[i + 0] = (byte)(xl >> 0);
                 data[i + 1] = (byte)(xl >> 8);
                 data[i + 2] = (byte)(xl >> 16);
@@ -351,7 +351,7 @@ namespace FFXIVClassic.Common
 	        return y;
         }
 
-        private void blowfish_encipher(ref UInt32 xl, ref UInt32 xr)
+        private void BlowfishEncipher(ref UInt32 xl, ref UInt32 xr)
         {
 	        UInt32  temp;
 	        Int32          i;
@@ -374,7 +374,7 @@ namespace FFXIVClassic.Common
 	      
         }
 
-        private void blowfish_decipher(ref UInt32 xl, ref UInt32 xr)
+        private void BlowfishDecipher(ref UInt32 xl, ref UInt32 xr)
         {
             UInt32 temp;
             Int32 i;
@@ -383,13 +383,13 @@ namespace FFXIVClassic.Common
 		        xl = xl ^ P[i];
 		        xr = F(xl) ^ xr;
 
-		        /* Exchange xl and xr */
+		        /* ExChange xl and xr */
 		        temp = xl;
 		        xl = xr;
 		        xr = temp;
 	        }
 
-	        /* Exchange xl and xr */
+	        /* ExChange xl and xr */
 	        temp = xl;
 	        xl = xr;
 	        xr = temp;
@@ -399,7 +399,7 @@ namespace FFXIVClassic.Common
 
         }
 
-        private int initializeBlowfish(byte [] key)
+        private int InitializeBlowfish(byte [] key)
         {
 	        Int16          i;
             Int16          j;
@@ -433,7 +433,7 @@ namespace FFXIVClassic.Common
 
 	        for (i = 0; i < N + 2; i += 2)
 	        {
-		        blowfish_encipher(ref datal, ref datar);
+		        BlowfishEncipher(ref datal, ref datar);
 
 		        P[i] = datal;
 		        P[i + 1] = datar;
@@ -443,7 +443,7 @@ namespace FFXIVClassic.Common
 	        {
 		        for (j = 0; j < 256; j += 2)
 		        {
-			        blowfish_encipher(ref datal, ref datar);
+			        BlowfishEncipher(ref datal, ref datar);
 			        S[i,j] = datal;
 			        S[i,j + 1] = datar;
 		        }

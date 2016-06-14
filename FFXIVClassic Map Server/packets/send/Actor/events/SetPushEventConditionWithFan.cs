@@ -10,7 +10,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.events
         public const ushort OPCODE = 0x0170;
         public const uint PACKET_SIZE = 0x60;
 
-        public static SubPacket buildPacket(uint playerActorID, uint sourceActorID, EventList.PushFanEventCondition condition)
+        public static SubPacket BuildPacket(uint playerActorID, uint sourceActorID, EventList.PushFanEventCondition condition)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -30,7 +30,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.events
                     binWriter.Write(Encoding.ASCII.GetBytes(condition.conditionName), 0, Encoding.ASCII.GetByteCount(condition.conditionName) >= 0x24 ? 0x24 : Encoding.ASCII.GetByteCount(condition.conditionName));
                 }
             }
-            new SubPacket(OPCODE, sourceActorID, playerActorID, data).debugPrintSubPacket();
+            new SubPacket(OPCODE, sourceActorID, playerActorID, data).DebugPrintSubPacket();
             return new SubPacket(OPCODE, sourceActorID, playerActorID, data);
         }
     }

@@ -21,29 +21,29 @@ namespace FFXIVClassic_Map_Server.utils
             this.currentTarget = firstTarget;
         }
 
-        public void addProperty(string property)
+        public void AddProperty(string property)
         {
-            if (!currentActorPropertyPacket.addProperty(forActor, property))
+            if (!currentActorPropertyPacket.AddProperty(forActor, property))
             {
-                currentActorPropertyPacket.setIsMore(true);
-                currentActorPropertyPacket.addTarget();
-                subPackets.Add(currentActorPropertyPacket.buildPacket(playerActorId, forActor.actorId));
+                currentActorPropertyPacket.SetIsMore(true);
+                currentActorPropertyPacket.AddTarget();
+                subPackets.Add(currentActorPropertyPacket.BuildPacket(playerActorId, forActor.actorId));
                 currentActorPropertyPacket = new SetActorPropetyPacket(currentTarget);
             }
         }
 
-        public void newTarget(string target)
+        public void NewTarget(string target)
         {
-            currentActorPropertyPacket.addTarget();
+            currentActorPropertyPacket.AddTarget();
             currentTarget = target;
-            currentActorPropertyPacket.setTarget(target);            
+            currentActorPropertyPacket.SetTarget(target);            
         }
 
-        public List<SubPacket> done()
+        public List<SubPacket> Done()
         {
-            currentActorPropertyPacket.addTarget();
-            currentActorPropertyPacket.setIsMore(false);
-            subPackets.Add(currentActorPropertyPacket.buildPacket(playerActorId, forActor.actorId));
+            currentActorPropertyPacket.AddTarget();
+            currentActorPropertyPacket.SetIsMore(false);
+            subPackets.Add(currentActorPropertyPacket.BuildPacket(playerActorId, forActor.actorId));
             return subPackets;
         }
 

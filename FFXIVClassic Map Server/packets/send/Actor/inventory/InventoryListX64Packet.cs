@@ -9,7 +9,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
         public const ushort OPCODE = 0x014C;
         public const uint PACKET_SIZE = 0x1C20;
 
-        public static SubPacket buildPacket(uint playerActorID, List<InventoryItem> items, ref int listOffset)
+        public static SubPacket BuildPacket(uint playerActorID, List<InventoryItem> items, ref int listOffset)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -25,7 +25,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
 
                     for (int i = 0; i < max; i++)
                     {
-                        binWriter.Write(items[listOffset].toPacketBytes());
+                        binWriter.Write(items[listOffset].ToPacketBytes());
                         listOffset++;
                     }
                 }

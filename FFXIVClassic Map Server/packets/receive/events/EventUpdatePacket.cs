@@ -31,7 +31,7 @@ namespace FFXIVClassic_Map_Server.packets.receive.events
                         val1 = binReader.ReadUInt32();
                         val2 = binReader.ReadUInt32();
                         step = binReader.ReadByte();
-                        luaParams = LuaUtils.readLuaParams(binReader);
+                        luaParams = LuaUtils.ReadLuaParams(binReader);
                     }
                     catch (Exception){
                         invalidPacket = true;

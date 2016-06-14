@@ -51,7 +51,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             appearanceIDs = appearanceTable;
         }
 
-        public SubPacket buildPacket(uint playerActorID, uint actorID)
+        public SubPacket BuildPacket(uint playerActorID, uint actorID)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

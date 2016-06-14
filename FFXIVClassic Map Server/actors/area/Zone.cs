@@ -16,18 +16,18 @@ namespace FFXIVClassic_Map_Server.actors.area
 
         }
 
-        public void addPrivateArea(PrivateArea pa)
+        public void AddPrivateArea(PrivateArea pa)
         {
-            if (privateAreas.ContainsKey(pa.getPrivateAreaName()))
-                privateAreas[pa.getPrivateAreaName()][0] = pa;
+            if (privateAreas.ContainsKey(pa.GetPrivateAreaName()))
+                privateAreas[pa.GetPrivateAreaName()][0] = pa;
             else
             {
-                privateAreas[pa.getPrivateAreaName()] = new Dictionary<uint, PrivateArea>();
-                privateAreas[pa.getPrivateAreaName()][0] = pa;
+                privateAreas[pa.GetPrivateAreaName()] = new Dictionary<uint, PrivateArea>();
+                privateAreas[pa.GetPrivateAreaName()][0] = pa;
             }
         }
 
-        public PrivateArea getPrivateArea(string type, uint number)
+        public PrivateArea GetPrivateArea(string type, uint number)
         {
             if (privateAreas.ContainsKey(type))
             {
@@ -41,13 +41,13 @@ namespace FFXIVClassic_Map_Server.actors.area
                 return null;
         }
 
-        public override SubPacket createScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
             bool isEntranceDesion = false;
 
             List<LuaParam> lParams;
-            lParams = LuaUtils.createLuaParamList("/Area/Zone/" + className, false, true, zoneName, "", -1, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, true, isInstanceRaid, isEntranceDesion);
-            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);        
+            lParams = LuaUtils.CreateLuaParamList("/Area/Zone/" + className, false, true, zoneName, "", -1, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, true, isInstanceRaid, isEntranceDesion);
+            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);        
         }
 
     }

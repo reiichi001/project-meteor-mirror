@@ -11,7 +11,7 @@ namespace FFXIVClassic_Map_Server.packets.send.events
         public const ushort OPCODE = 0x0130;
         public const uint PACKET_SIZE = 0x2B8;
 
-        public static SubPacket buildPacket(uint playerActorID, uint eventOwnerActorID, string eventStarter, string callFunction, List<LuaParam> luaParams)
+        public static SubPacket BuildPacket(uint playerActorID, uint eventOwnerActorID, string eventStarter, string callFunction, List<LuaParam> luaParams)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
             int maxBodySize = data.Length - 0x80;
@@ -28,7 +28,7 @@ namespace FFXIVClassic_Map_Server.packets.send.events
                     binWriter.Write(Encoding.ASCII.GetBytes(callFunction), 0, Encoding.ASCII.GetByteCount(callFunction) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(callFunction));
                     binWriter.Seek(0x49, SeekOrigin.Begin);
 
-                    LuaUtils.writeLuaParams(binWriter, luaParams);
+                    LuaUtils.WriteLuaParams(binWriter, luaParams);
                 }
             }
 

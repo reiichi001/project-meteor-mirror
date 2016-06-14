@@ -26,7 +26,7 @@ namespace FFXIVClassic_Map_Server
             bool startServer = true;
 
             //Load Config
-            if (!ConfigConstants.load())
+            if (!ConfigConstants.Load())
                 startServer = false;
 
             // set up logging
@@ -58,7 +58,7 @@ namespace FFXIVClassic_Map_Server
             }
 
             //Check World ID
-            DBWorld thisWorld = Database.getServer(ConfigConstants.DATABASE_WORLDID);
+            DBWorld thisWorld = Database.GetServer(ConfigConstants.DATABASE_WORLDID);
             if (thisWorld != null)
                 Program.Log.Info("Successfully pulled world info from DB. Server name is {0}.", thisWorld.name);
             else
@@ -68,14 +68,14 @@ namespace FFXIVClassic_Map_Server
             if (startServer)
             {
                 Server server = new Server();
-                CommandProcessor cp = new CommandProcessor(server.getConnectedPlayerList());
-                server.startServer();
+                CommandProcessor cp = new CommandProcessor(server.GetConnectedPlayerList());
+                server.StartServer();
 
                 while (startServer)
                 {
                     String input = Console.ReadLine();
                     Log.Info("[Console Input] " + input);
-                    cp.doCommand(input, null);  
+                    cp.DoCommand(input, null);  
                 }
             }
 

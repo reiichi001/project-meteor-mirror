@@ -26,45 +26,45 @@ namespace FFXIVClassic_Map_Server
             mConnectedPlayerList = playerList;
         }
 
-        public void sendPacket(ConnectedPlayer client, string path)
+        public void SendPacket(ConnectedPlayer client, string path)
         {
             BasePacket packet = new BasePacket(path);
 
             if (client != null)
             {
-                packet.replaceActorID(client.actorID);
-                client.queuePacket(packet);
+                packet.ReplaceActorID(client.actorID);
+                client.QueuePacket(packet);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    packet.replaceActorID(entry.Value.actorID);
-                    entry.Value.queuePacket(packet);
+                    packet.ReplaceActorID(entry.Value.actorID);
+                    entry.Value.QueuePacket(packet);
                 }
             }
         }
 
-        public void changeProperty(uint id, uint value, string target)
+        public void ChangeProperty(uint id, uint value, string target)
         {
-            SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(target);
+            SetActorPropetyPacket ChangeProperty = new SetActorPropetyPacket(target);
 
-            changeProperty.setTarget(target);
-            changeProperty.addInt(id, value);
-            changeProperty.addTarget();
+            ChangeProperty.SetTarget(target);
+            ChangeProperty.AddInt(id, value);
+            ChangeProperty.AddTarget();
 
             foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
             {
-                SubPacket changePropertyPacket = changeProperty.buildPacket((entry.Value.actorID), (entry.Value.actorID));
+                SubPacket ChangePropertyPacket = ChangeProperty.BuildPacket((entry.Value.actorID), (entry.Value.actorID));
 
-                BasePacket packet = BasePacket.createPacket(changePropertyPacket, true, false);
-                packet.debugPrintPacket();
+                BasePacket packet = BasePacket.CreatePacket(ChangePropertyPacket, true, false);
+                packet.DebugPrintPacket();
 
-                entry.Value.queuePacket(packet);
+                entry.Value.QueuePacket(packet);
             }
         }
 
-        public void doMusic(ConnectedPlayer client, string music)
+        public void DoMusic(ConnectedPlayer client, string music)
         {
             ushort musicId;
 
@@ -74,13 +74,13 @@ namespace FFXIVClassic_Map_Server
                 musicId = Convert.ToUInt16(music);
 
             if (client != null)
-                client.queuePacket(BasePacket.createPacket(SetMusicPacket.buildPacket(client.actorID, musicId, 1), true, false));
+                client.QueuePacket(BasePacket.CreatePacket(SetMusicPacket.BuildPacket(client.actorID, musicId, 1), true, false));
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    BasePacket musicPacket = BasePacket.createPacket(SetMusicPacket.buildPacket(entry.Value.actorID, musicId, 1), true, false);
-                    entry.Value.queuePacket(musicPacket);
+                    BasePacket musicPacket = BasePacket.CreatePacket(SetMusicPacket.BuildPacket(entry.Value.actorID, musicId, 1), true, false);
+                    entry.Value.QueuePacket(musicPacket);
                 }
             }
         }
@@ -90,228 +90,228 @@ namespace FFXIVClassic_Map_Server
         /// </summary>
         /// <param name="client">The current player</param>
         /// <param name="id">Predefined list: &lt;ffxiv_database&gt;\server_zones_spawnlocations</param>
-        public void doWarp(ConnectedPlayer client, uint id)
+        public void DoWarp(ConnectedPlayer client, uint id)
         {
             WorldManager worldManager = Server.GetWorldManager();
-            FFXIVClassic_Map_Server.WorldManager.ZoneEntrance ze = worldManager.getZoneEntrance(id);
+            FFXIVClassic_Map_Server.WorldManager.ZoneEntrance ze = worldManager.GetZoneEntrance(id);
 
             if (ze == null)
                 return;
 
             if (client != null)
-                worldManager.DoZoneChange(client.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
+                worldManager.DoZoneChange(client.GetActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    worldManager.DoZoneChange(entry.Value.getActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
+                    worldManager.DoZoneChange(entry.Value.GetActor(), ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
                 }
             }
         }
 
-        public void doWarp(ConnectedPlayer client, uint zoneId, string privateArea, byte spawnType, float x, float y, float z, float r)
+        public void DoWarp(ConnectedPlayer client, uint zoneId, string privateArea, byte spawnType, float x, float y, float z, float r)
         {
             WorldManager worldManager = Server.GetWorldManager();
             if (worldManager.GetZone(zoneId) == null)
             {
                 if (client != null)
-                    client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Zone does not exist or setting isn't valid."), true, false));
-                Program.Log.Error("Zone does not exist or setting isn't valid.");
+                    client.QueuePacket(BasePacket.CreatePacket(SendMessagePacket.BuildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Zone Does not exist or setting isn't valid."), true, false));
+                Program.Log.Error("Zone Does not exist or setting isn't valid.");
             }
 
             if (client != null)
-                worldManager.DoZoneChange(client.getActor(), zoneId, privateArea, spawnType, x, y, z, r);
+                worldManager.DoZoneChange(client.GetActor(), zoneId, privateArea, spawnType, x, y, z, r);
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    worldManager.DoZoneChange(entry.Value.getActor(), zoneId, privateArea, spawnType, x, y, z, r);
+                    worldManager.DoZoneChange(entry.Value.GetActor(), zoneId, privateArea, spawnType, x, y, z, r);
                 }
             }
         }
 
-        public void printPos(ConnectedPlayer client)
+        public void PrintPos(ConnectedPlayer client)
         {
             if (client != null)
             {
-                Player p = client.getActor();
-                client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation)), true, false));
+                Player p = client.GetActor();
+                client.QueuePacket(BasePacket.CreatePacket(SendMessagePacket.BuildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation)), true, false));
             }
             else
             { 
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    Player p = entry.Value.getActor();
+                    Player p = entry.Value.GetActor();
                     Program.Log.Info("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation);
                 }
             }
         }
 
-        private void setGraphic(ConnectedPlayer client, uint slot, uint wId, uint eId, uint vId, uint cId)
+        private void SetGraphic(ConnectedPlayer client, uint slot, uint wId, uint eId, uint vId, uint cId)
         {
             if (client != null)
             {
-                Player p = client.getActor();
-                p.graphicChange(slot, wId, eId, vId, cId);
-                p.sendAppearance();
+                Player p = client.GetActor();
+                p.GraphicChange(slot, wId, eId, vId, cId);
+                p.SendAppearance();
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    Player p = entry.Value.getActor();
-                    p.graphicChange(slot, wId, eId, vId, cId);
-                    p.sendAppearance();
+                    Player p = entry.Value.GetActor();
+                    p.GraphicChange(slot, wId, eId, vId, cId);
+                    p.SendAppearance();
                 }
             }
         }
 
-        private void giveItem(ConnectedPlayer client, uint itemId, int quantity)
+        private void GiveItem(ConnectedPlayer client, uint itemId, int quantity)
         {
             if (client != null)
             {
-                Player p = client.getActor();
-                p.getInventory(Inventory.NORMAL).addItem(itemId, quantity);
+                Player p = client.GetActor();
+                p.GetInventory(Inventory.NORMAL).AddItem(itemId, quantity);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.NORMAL).addItem(itemId, quantity);
+                    Player p = entry.Value.GetActor();
+                    p.GetInventory(Inventory.NORMAL).AddItem(itemId, quantity);
                 }
             }
         }
 
-        private void giveItem(ConnectedPlayer client, uint itemId, int quantity, ushort type)
+        private void GiveItem(ConnectedPlayer client, uint itemId, int quantity, ushort type)
         {
             if (client != null)
             {
-                Player p = client.getActor();
+                Player p = client.GetActor();
 
-                if (p.getInventory(type) != null)
-                    p.getInventory(type).addItem(itemId, quantity);
+                if (p.GetInventory(type) != null)
+                    p.GetInventory(type).AddItem(itemId, quantity);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    Player p = entry.Value.getActor();
+                    Player p = entry.Value.GetActor();
 
-                    if (p.getInventory(type) != null)
-                        p.getInventory(type).addItem(itemId, quantity);
+                    if (p.GetInventory(type) != null)
+                        p.GetInventory(type).AddItem(itemId, quantity);
                 }
             }
         }
 
-        private void removeItem(ConnectedPlayer client, uint itemId, int quantity)
+        private void RemoveItem(ConnectedPlayer client, uint itemId, int quantity)
         {
             if (client != null)
             {
-                Player p = client.getActor();
-                p.getInventory(Inventory.NORMAL).removeItem(itemId, quantity);
+                Player p = client.GetActor();
+                p.GetInventory(Inventory.NORMAL).RemoveItem(itemId, quantity);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.NORMAL).removeItem(itemId, quantity);
+                    Player p = entry.Value.GetActor();
+                    p.GetInventory(Inventory.NORMAL).RemoveItem(itemId, quantity);
                 }
             }
         }
 
-        private void removeItem(ConnectedPlayer client, uint itemId, int quantity, ushort type)
+        private void RemoveItem(ConnectedPlayer client, uint itemId, int quantity, ushort type)
         {
             if (client != null)
             {
-                Player p = client.getActor();
+                Player p = client.GetActor();
 
-                if (p.getInventory(type) != null)
-                    p.getInventory(type).removeItem(itemId, quantity);
+                if (p.GetInventory(type) != null)
+                    p.GetInventory(type).RemoveItem(itemId, quantity);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    Player p = entry.Value.getActor();
+                    Player p = entry.Value.GetActor();
 
-                    if (p.getInventory(type) != null)
-                        p.getInventory(type).removeItem(itemId, quantity);
+                    if (p.GetInventory(type) != null)
+                        p.GetInventory(type).RemoveItem(itemId, quantity);
                 }
             }
         }
 
-        private void giveCurrency(ConnectedPlayer client, uint itemId, int quantity)
+        private void GiveCurrency(ConnectedPlayer client, uint itemId, int quantity)
         {
             if (client != null)
             {
-                Player p = client.getActor();
-                p.getInventory(Inventory.CURRENCY).addItem(itemId, quantity);
+                Player p = client.GetActor();
+                p.GetInventory(Inventory.CURRENCY).AddItem(itemId, quantity);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.CURRENCY).addItem(itemId, quantity);
+                    Player p = entry.Value.GetActor();
+                    p.GetInventory(Inventory.CURRENCY).AddItem(itemId, quantity);
                 }
             }
         }
 
-        // TODO:  make removeCurrency() remove all quantity of a currency if quantity_to_remove > quantity_in_inventory instead of silently failing
-        private void removeCurrency(ConnectedPlayer client, uint itemId, int quantity)
+        // TODO:  make RemoveCurrency() remove all quantity of a currency if quantity_to_remove > quantity_in_inventory instead of silently failing
+        private void RemoveCurrency(ConnectedPlayer client, uint itemId, int quantity)
         {
             if (client != null)
             {
-                Player p = client.getActor();
-                p.getInventory(Inventory.CURRENCY).removeItem(itemId, quantity);
+                Player p = client.GetActor();
+                p.GetInventory(Inventory.CURRENCY).RemoveItem(itemId, quantity);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.CURRENCY).removeItem(itemId, quantity);
+                    Player p = entry.Value.GetActor();
+                    p.GetInventory(Inventory.CURRENCY).RemoveItem(itemId, quantity);
                 }
             }
         }
 
-        private void giveKeyItem(ConnectedPlayer client, uint itemId)
+        private void GiveKeyItem(ConnectedPlayer client, uint itemId)
         {
             if (client != null)
             {
-                Player p = client.getActor();
-                p.getInventory(Inventory.KEYITEMS).addItem(itemId, 1);
+                Player p = client.GetActor();
+                p.GetInventory(Inventory.KEYITEMS).AddItem(itemId, 1);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.KEYITEMS).addItem(itemId, 1);
+                    Player p = entry.Value.GetActor();
+                    p.GetInventory(Inventory.KEYITEMS).AddItem(itemId, 1);
                 }
             }
         }
 
-        private void removeKeyItem(ConnectedPlayer client, uint itemId)
+        private void RemoveKeyItem(ConnectedPlayer client, uint itemId)
         {
             if (client != null)
             {
-                Player p = client.getActor();
-                p.getInventory(Inventory.KEYITEMS).removeItem(itemId, 1);
+                Player p = client.GetActor();
+                p.GetInventory(Inventory.KEYITEMS).RemoveItem(itemId, 1);
             }
             else
             {
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
-                    Player p = entry.Value.getActor();
-                    p.getInventory(Inventory.KEYITEMS).removeItem(itemId, 1);
+                    Player p = entry.Value.GetActor();
+                    p.GetInventory(Inventory.KEYITEMS).RemoveItem(itemId, 1);
                 }
             }
         }
 
-        private void parseWarp(ConnectedPlayer client, string[] split)
+        private void ParseWarp(ConnectedPlayer client, string[] split)
         {
             float x = 0, y = 0, z = 0, r = 0.0f;
             uint zoneId = 0;
@@ -331,7 +331,7 @@ namespace FFXIVClassic_Map_Server
                 catch{return;}
                 #endregion
 
-                doWarp(client, zoneId);
+                DoWarp(client, zoneId);
             }
             else if (split.Length == 4)
             {
@@ -343,7 +343,7 @@ namespace FFXIVClassic_Map_Server
                     if (String.IsNullOrEmpty(split[1]))
                         split[1] = "0";
 
-                    try { x = Single.Parse(split[1]) + client.getActor().positionX; }
+                    try { x = Single.Parse(split[1]) + client.GetActor().positionX; }
                     catch{return;}
 
                     split[1] = x.ToString();
@@ -355,7 +355,7 @@ namespace FFXIVClassic_Map_Server
                     if (String.IsNullOrEmpty(split[2]))
                         split[2] = "0";
 
-                    try { y = Single.Parse(split[2]) + client.getActor().positionY; }
+                    try { y = Single.Parse(split[2]) + client.GetActor().positionY; }
                     catch{return;}
 
                     split[2] = y.ToString();
@@ -367,7 +367,7 @@ namespace FFXIVClassic_Map_Server
                     if (String.IsNullOrEmpty(split[3]))
                         split[3] = "0";
 
-                    try { z = Single.Parse(split[3]) + client.getActor().positionZ; }
+                    try { z = Single.Parse(split[3]) + client.GetActor().positionZ; }
                     catch{return;}
 
                     split[3] = z.ToString();
@@ -381,12 +381,12 @@ namespace FFXIVClassic_Map_Server
                 }
                 catch{return;}
 
-                zoneId = client.getActor().zoneId;
-                r = client.getActor().rotation;
+                zoneId = client.GetActor().zoneId;
+                r = client.GetActor().rotation;
                 #endregion
 
-                sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
-                doWarp(client, zoneId, privatearea, 0x00, x, y, z, r);
+                SendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
+                DoWarp(client, zoneId, privatearea, 0x00, x, y, z, r);
             }
             else if (split.Length == 5)
             {
@@ -411,8 +411,8 @@ namespace FFXIVClassic_Map_Server
                 }
                 #endregion
 
-                sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
-                doWarp(client, zoneId, privatearea, 0x2, x, y, z, r);
+                SendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
+                DoWarp(client, zoneId, privatearea, 0x2, x, y, z, r);
             }
             else if (split.Length == 6)
             {
@@ -439,20 +439,20 @@ namespace FFXIVClassic_Map_Server
                 privatearea = split[2];
                 #endregion
 
-                sendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
-                doWarp(client, zoneId, privatearea, 0x2, x, y, z, r);
+                SendMessage(client, String.Format("Warping to: ZoneID: {0} X: {1}, Y: {2}, Z: {3}", zoneId, x, y, z));
+                DoWarp(client, zoneId, privatearea, 0x2, x, y, z, r);
             }
             else
                 return; // catch any invalid warps here
         }
 
-        private void doWeather(ConnectedPlayer client, string weatherID, string value)
+        private void DoWeather(ConnectedPlayer client, string weatherID, string value)
         {
             ushort weather = Convert.ToUInt16(weatherID);
 
             if (client != null)
             {
-                client.queuePacket(BasePacket.createPacket(SetWeatherPacket.buildPacket(client.actorID, weather, Convert.ToUInt16(value)), true, false));
+                client.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(client.actorID, weather, Convert.ToUInt16(value)), true, false));
             }
 
             /*
@@ -461,15 +461,15 @@ namespace FFXIVClassic_Map_Server
             uint currentZoneID;
             if (client != null)
             {
-                currentZoneID = client.getActor().zoneId;
+                currentZoneID = client.GetActor().zoneId;
 
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     // Change the weather for everyone in the same zone
-                    if (currentZoneID == entry.Value.getActor().zoneId)
+                    if (currentZoneID == entry.Value.GetActor().zoneId)
                     {
-                        BasePacket weatherPacket = BasePacket.createPacket(SetWeatherPacket.buildPacket(entry.Value.actorID, weather), true, false);
-                        entry.Value.queuePacket(weatherPacket);
+                        BasePacket weatherPacket = BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(entry.Value.actorID, weather), true, false);
+                        entry.Value.QueuePacket(weatherPacket);
                     }                    
                 }
             }
@@ -482,13 +482,13 @@ namespace FFXIVClassic_Map_Server
         /// </summary>
         /// <param name="client"></param>
         /// <param name="message"></param>
-        private void sendMessage(ConnectedPlayer client, String message)
+        private void SendMessage(ConnectedPlayer client, String message)
         {
             if (client != null)
-               client.getActor().queuePacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", message));
+               client.GetActor().QueuePacket(SendMessagePacket.BuildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", message));
         }
 
-        internal bool doCommand(string input, ConnectedPlayer client)
+        internal bool DoCommand(string input, ConnectedPlayer client)
         {
             input.Trim();
             if (input.StartsWith("!"))
@@ -499,7 +499,7 @@ namespace FFXIVClassic_Map_Server
             split = split.Where(temp => temp != "").ToArray(); // strips extra whitespace from commands
 
             // Debug
-            //sendMessage(client, string.Join(",", split));
+            //SendMessage(client, string.Join(",", split));
             
             if (split.Length >= 1)
             {
@@ -508,41 +508,41 @@ namespace FFXIVClassic_Map_Server
                 {
                     if (split.Length == 1)
                     {
-                        sendMessage(client, Resources.CPhelp);
+                        SendMessage(client, Resources.CPhelp);
                     }
                     if (split.Length == 2)
                     {
                         if (split[1].Equals("mypos"))
-                            sendMessage(client, Resources.CPmypos);
+                            SendMessage(client, Resources.CPmypos);
                         else if (split[1].Equals("music"))
-                            sendMessage(client, Resources.CPmusic);
+                            SendMessage(client, Resources.CPmusic);
                         else if (split[1].Equals("warp"))
-                            sendMessage(client, Resources.CPwarp);
+                            SendMessage(client, Resources.CPwarp);
                         else if (split[1].Equals("givecurrency"))
-                            sendMessage(client, Resources.CPgivecurrency);
+                            SendMessage(client, Resources.CPgivecurrency);
                         else if (split[1].Equals("giveitem"))
-                            sendMessage(client, Resources.CPgiveitem);
+                            SendMessage(client, Resources.CPgiveitem);
                         else if (split[1].Equals("givekeyitem"))
-                            sendMessage(client, Resources.CPgivekeyitem);
+                            SendMessage(client, Resources.CPgivekeyitem);
                         else if (split[1].Equals("removecurrency"))
-                            sendMessage(client, Resources.CPremovecurrency);
+                            SendMessage(client, Resources.CPremovecurrency);
                         else if (split[1].Equals("removeitem"))
-                            sendMessage(client, Resources.CPremoveitem);
+                            SendMessage(client, Resources.CPremoveitem);
                         else if (split[1].Equals("removekeyitem"))
-                            sendMessage(client, Resources.CPremovekeyitem);
+                            SendMessage(client, Resources.CPremovekeyitem);
                         else if (split[1].Equals("reloaditems"))
-                            sendMessage(client, Resources.CPreloaditems);
+                            SendMessage(client, Resources.CPreloaditems);
                         else if (split[1].Equals("reloadzones"))
-                            sendMessage(client, Resources.CPreloadzones);
+                            SendMessage(client, Resources.CPreloadzones);
                         /*
                         else if (split[1].Equals("property"))
-                            sendMessage(client, Resources.CPproperty);
+                            SendMessage(client, Resources.CPproperty);
                         else if (split[1].Equals("property2"))
-                            sendMessage(client, Resources.CPproperty2);
+                            SendMessage(client, Resources.CPproperty2);
                         else if (split[1].Equals("sendpacket"))
-                             sendMessage(client, Resources.CPsendpacket);
+                             SendMessage(client, Resources.CPsendpacket);
                         else if (split[1].Equals("setgraphic"))
-                               sendMessage(client, Resources.CPsetgraphic);
+                               SendMessage(client, Resources.CPsetgraphic);
                         */
                      }
                     if (split.Length == 3)
@@ -550,7 +550,7 @@ namespace FFXIVClassic_Map_Server
                         if(split[1].Equals("test"))
                         {
                             if (split[2].Equals("weather"))
-                                sendMessage(client, Resources.CPtestweather);
+                                SendMessage(client, Resources.CPtestweather);
                         }
                     }
 
@@ -564,7 +564,7 @@ namespace FFXIVClassic_Map_Server
                     if (split.Length == 1)
                     {
                         // catch invalid commands
-                        sendMessage(client, Resources.CPhelp);
+                        SendMessage(client, Resources.CPhelp);
                     }
                     else if (split.Length >= 2)
                     {
@@ -573,12 +573,12 @@ namespace FFXIVClassic_Map_Server
                         {
                             try
                             {
-                                doWeather(client, split[2], split[3]);
+                                DoWeather(client, split[2], split[3]);
                                 return true;
                             }
                             catch (Exception e)
                             {
-                                Program.Log.Error("Could not change weather: " + e);
+                                Program.Log.Error("Could not Change weather: " + e);
                             }
                         }
                         #endregion
@@ -592,7 +592,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     try
                     {
-                        printPos(client);
+                        PrintPos(client);
                         return true;
                     }
                     catch (Exception e)
@@ -607,13 +607,13 @@ namespace FFXIVClassic_Map_Server
                 {
                     if (client != null)
                     {
-                        Program.Log.Info("Got request to reset zone: {0}", client.getActor().zoneId);
-                        client.getActor().zone.clear();
-                        client.getActor().zone.addActorToZone(client.getActor());
-                        client.getActor().sendInstanceUpdate();
-                        client.queuePacket(BasePacket.createPacket(SendMessagePacket.buildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Reseting zone {0}...", client.getActor().zoneId)), true, false));
+                        Program.Log.Info("Got request to reset zone: {0}", client.GetActor().zoneId);
+                        client.GetActor().zone.Clear();
+                        client.GetActor().zone.AddActorToZone(client.GetActor());
+                        client.GetActor().SendInstanceUpdate();
+                        client.QueuePacket(BasePacket.CreatePacket(SendMessagePacket.BuildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Reseting zone {0}...", client.GetActor().zoneId)), true, false));
                     }
-                    Server.GetWorldManager().reloadZone(client.getActor().zoneId);
+                    Server.GetWorldManager().ReloadZone(client.GetActor().zoneId);
                     return true;
                 }
                 #endregion
@@ -622,11 +622,11 @@ namespace FFXIVClassic_Map_Server
                 else if (split[0].Equals("reloaditems"))
                 {
                     Program.Log.Info("Got request to reload item gamedata");
-                    sendMessage(client, "Reloading Item Gamedata...");
+                    SendMessage(client, "Reloading Item Gamedata...");
                     gamedataItems.Clear();
-                    gamedataItems = Database.getItemGamedata();
+                    gamedataItems = Database.GetItemGamedata();
                     Program.Log.Info("Loaded {0} items.", gamedataItems.Count);
-                    sendMessage(client, String.Format("Loaded {0} items.", gamedataItems.Count));
+                    SendMessage(client, String.Format("Loaded {0} items.", gamedataItems.Count));
                     return true;
                 }
                 #endregion
@@ -639,7 +639,7 @@ namespace FFXIVClassic_Map_Server
 
                     try
                     {
-                        sendPacket(client, "./packets/" + split[1]);
+                        SendPacket(client, "./packets/" + split[1]);
                         return true;
                     }
                     catch (Exception e)
@@ -655,7 +655,7 @@ namespace FFXIVClassic_Map_Server
                     try
                     {
                         if (split.Length == 6)
-                            setGraphic(client, UInt32.Parse(split[1]), UInt32.Parse(split[2]), UInt32.Parse(split[3]), UInt32.Parse(split[4]), UInt32.Parse(split[5]));
+                            SetGraphic(client, UInt32.Parse(split[1]), UInt32.Parse(split[2]), UInt32.Parse(split[3]), UInt32.Parse(split[4]), UInt32.Parse(split[5]));
                         return true;
                     }
                     catch (Exception e)
@@ -671,11 +671,11 @@ namespace FFXIVClassic_Map_Server
                     try
                     {
                         if (split.Length == 2)
-                            giveItem(client, UInt32.Parse(split[1]), 1);
+                            GiveItem(client, UInt32.Parse(split[1]), 1);
                         else if (split.Length == 3)
-                            giveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
+                            GiveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
                         else if (split.Length == 4)
-                            giveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]), UInt16.Parse(split[3]));
+                            GiveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]), UInt16.Parse(split[3]));
                         return true;
                     }
                     catch (Exception e)
@@ -694,11 +694,11 @@ namespace FFXIVClassic_Map_Server
                     try
                     {
                         if (split.Length == 2)
-                            removeItem(client, UInt32.Parse(split[1]), 1);
+                            RemoveItem(client, UInt32.Parse(split[1]), 1);
                         else if (split.Length == 3)
-                            removeItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
+                            RemoveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
                         else if (split.Length == 4)
-                            removeItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]), UInt16.Parse(split[3]));
+                            RemoveItem(client, UInt32.Parse(split[1]), Int32.Parse(split[2]), UInt16.Parse(split[3]));
                         return true;
                     }
                     catch (Exception e)
@@ -714,7 +714,7 @@ namespace FFXIVClassic_Map_Server
                     try
                     {
                         if (split.Length == 2)
-                            giveKeyItem(client, UInt32.Parse(split[1]));
+                            GiveKeyItem(client, UInt32.Parse(split[1]));
                     }
                     catch (Exception e)
                     {
@@ -732,7 +732,7 @@ namespace FFXIVClassic_Map_Server
                     try
                     {
                         if (split.Length == 2)
-                            removeKeyItem(client, UInt32.Parse(split[1]));
+                            RemoveKeyItem(client, UInt32.Parse(split[1]));
                         return true;
                     }
                     catch (Exception e)
@@ -748,9 +748,9 @@ namespace FFXIVClassic_Map_Server
                     try
                     {
                         if (split.Length == 2)
-                            giveCurrency(client, ITEM_GIL, Int32.Parse(split[1]));
+                            GiveCurrency(client, ITEM_GIL, Int32.Parse(split[1]));
                         else if (split.Length == 3)
-                            giveCurrency(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
+                            GiveCurrency(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
                     }
                     catch (Exception e)
                     {
@@ -768,9 +768,9 @@ namespace FFXIVClassic_Map_Server
                     try
                     {
                         if (split.Length == 2)
-                            removeCurrency(client, ITEM_GIL, Int32.Parse(split[1]));
+                            RemoveCurrency(client, ITEM_GIL, Int32.Parse(split[1]));
                         else if (split.Length == 3)
-                            removeCurrency(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
+                            RemoveCurrency(client, UInt32.Parse(split[1]), Int32.Parse(split[2]));
                         return true;
                     }
                     catch (Exception e)
@@ -788,12 +788,12 @@ namespace FFXIVClassic_Map_Server
 
                     try
                     {
-                        doMusic(client, split[1]);
+                        DoMusic(client, split[1]);
                         return true;
                     }
                     catch (Exception e)
                     {
-                        Program.Log.Error("Could not change music: " + e);
+                        Program.Log.Error("Could not Change music: " + e);
                     }
                 }
                 #endregion
@@ -801,7 +801,7 @@ namespace FFXIVClassic_Map_Server
                 #region !warp
                 else if (split[0].Equals("warp"))
                 {
-                    parseWarp(client, split);
+                    ParseWarp(client, split);
                     return true;
                 }
                 #endregion
@@ -811,7 +811,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     if (split.Length == 4)
                     {
-                        changeProperty(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
+                        ChangeProperty(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
                     }
                     return true;
                 }
@@ -822,7 +822,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     if (split.Length == 4)
                     {
-                        changeProperty(Convert.ToUInt32(split[1], 16), Convert.ToUInt32(split[2], 16), split[3]);
+                        ChangeProperty(Convert.ToUInt32(split[1], 16), Convert.ToUInt32(split[2], 16), split[3]);
                     }
                     return true;
                 }

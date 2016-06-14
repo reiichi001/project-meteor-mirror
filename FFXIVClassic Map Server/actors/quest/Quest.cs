@@ -115,7 +115,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SaveData()
         {
-            Database.saveQuest(owner, this);
+            Database.SaveQuest(owner, this);
         }
 
     }

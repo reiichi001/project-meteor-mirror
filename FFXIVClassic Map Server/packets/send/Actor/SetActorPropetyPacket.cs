@@ -34,13 +34,13 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             currentTarget = startingTarget;
         }
 
-        public void closeStreams()
+        public void CloseStreams()
         {
             binWriter.Dispose();
             mem.Dispose();
         }
 
-        public bool addByte(uint id, byte value)
+        public bool AddByte(uint id, byte value)
         {
             if (runningByteTotal + 6 + (1 + Encoding.ASCII.GetByteCount(currentTarget)) > MAXBYTES)
                 return false;
@@ -53,7 +53,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             return true;
         }
 
-        public bool addShort(uint id, ushort value)
+        public bool AddShort(uint id, ushort value)
         {
             if (runningByteTotal + 7 + (1 + Encoding.ASCII.GetByteCount(currentTarget)) > MAXBYTES)
                 return false;
@@ -66,7 +66,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             return true;
         }
 
-        public bool addInt(uint id, uint value)
+        public bool AddInt(uint id, uint value)
         {
             if (runningByteTotal + 9 + (1 + Encoding.ASCII.GetByteCount(currentTarget)) > MAXBYTES)
                 return false;
@@ -79,7 +79,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             return true;
         }
 
-        public bool addBuffer(uint id, byte[] buffer)
+        public bool AddBuffer(uint id, byte[] buffer)
         {
             if (runningByteTotal + 5 + buffer.Length + (1 + Encoding.ASCII.GetByteCount(currentTarget)) > MAXBYTES)
                 return false;
@@ -92,7 +92,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             return true;
         }
 
-        public bool addBuffer(uint id, byte[] buffer, int index, int length, int page)
+        public bool AddBuffer(uint id, byte[] buffer, int index, int length, int page)
         {
             if (runningByteTotal + 5 + length + (1 + Encoding.ASCII.GetByteCount(currentTarget)) > MAXBYTES)
                 return false;
@@ -106,7 +106,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             return true;
         }
 
-        public bool addProperty(FFXIVClassic_Map_Server.Actors.Actor actor, string name)
+        public bool AddProperty(FFXIVClassic_Map_Server.Actors.Actor actor, string name)
         {
             string[] split = name.Split('.');
             int arrayIndex = 0;
@@ -151,43 +151,43 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
                 if (curObj == null)
                     return false;
 
-                //Cast to the proper object and add to packet
+                //Cast to the proper object and Add to packet
                 uint id = Utils.MurmurHash2(name, 0);
                 if (curObj is bool)                
-                    return addByte(id, (byte)(((bool)curObj) ? 1 : 0));
+                    return AddByte(id, (byte)(((bool)curObj) ? 1 : 0));
                 else if (curObj is byte)
-                    return addByte(id, (byte)curObj);
+                    return AddByte(id, (byte)curObj);
                 else if (curObj is ushort)
-                    return addShort(id, (ushort)curObj);
+                    return AddShort(id, (ushort)curObj);
                 else if (curObj is short)
-                    return addShort(id, (ushort)(short)curObj);
+                    return AddShort(id, (ushort)(short)curObj);
                 else if (curObj is uint)
-                    return addInt(id, (uint)curObj);
+                    return AddInt(id, (uint)curObj);
                 else if (curObj is int)
-                    return addInt(id, (uint)(int)curObj);
+                    return AddInt(id, (uint)(int)curObj);
                 else if (curObj is float)
-                    return addBuffer(id, BitConverter.GetBytes((float)curObj));
+                    return AddBuffer(id, BitConverter.GetBytes((float)curObj));
                 else
                     return false;
             }
         }
 
-        public void setIsArrayMode(bool flag)
+        public void SetIsArrayMode(bool flag)
         {
             isArrayMode = flag;
         }
 
-        public void setIsMore(bool flag)
+        public void SetIsMore(bool flag)
         {
             isMore = flag;
         }
 
-        public void setTarget(string target)
+        public void SetTarget(string target)
         {
             currentTarget = target;
         }
 
-        public void addTarget()
+        public void AddTarget()
         {
             if (isArrayMode)
                 binWriter.Write((byte)(0xA4 + currentTarget.Length));
@@ -197,7 +197,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             runningByteTotal += (ushort)(1 + Encoding.ASCII.GetByteCount(currentTarget));
         }
 
-        public void addTarget(string newTarget)
+        public void AddTarget(string newTarget)
         {
             binWriter.Write((byte)(isMore ? 0x60 + currentTarget.Length : 0x82 + currentTarget.Length));
             binWriter.Write(Encoding.ASCII.GetBytes(currentTarget));
@@ -205,12 +205,12 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             currentTarget = newTarget;
         }
 
-        public SubPacket buildPacket(uint playerActorID, uint actorID)
+        public SubPacket BuildPacket(uint playerActorID, uint actorID)
         {
             binWriter.Seek(0, SeekOrigin.Begin);
             binWriter.Write((byte)runningByteTotal);
             
-            closeStreams();
+            CloseStreams();
 
             SubPacket packet = new SubPacket(OPCODE, actorID, playerActorID, data);
             return packet;

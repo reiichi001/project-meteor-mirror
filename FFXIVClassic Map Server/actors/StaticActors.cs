@@ -18,7 +18,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (data[0] == 's' && data[1] == 'a' && data[2] == 'n' && data[3] == 'e')
                 data = DecryptStaticActorsFile(data);
                 
-            loadStaticActors(data);
+            LoadStaticActors(data);
         }
 
         private byte[] DecryptStaticActorsFile(byte[] encoded)
@@ -50,7 +50,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return decoded;
         }
 
-        private bool loadStaticActors(byte[] data) 
+        private bool LoadStaticActors(byte[] data) 
         {
             try
             {
@@ -61,7 +61,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
                         while (binReader.BaseStream.Position != binReader.BaseStream.Length)
                         {
-                            uint id = Utils.swapEndian(binReader.ReadUInt32()) | 0xA0F00000;
+                            uint id = Utils.SwapEndian(binReader.ReadUInt32()) | 0xA0F00000;
 
                             List<byte> list = new List<byte>();
                             byte readByte;
@@ -96,12 +96,12 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public bool exists(uint actorId)
+        public bool Exists(uint actorId)
         {
             return mStaticActors[actorId] != null;
         }
 
-        public Actor findStaticActor(string name)
+        public Actor FindStaticActor(string name)
         {
             foreach (Actor a in mStaticActors.Values)
             {
@@ -112,7 +112,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return null;
         }
 
-        public Actor getActor(uint actorId)
+        public Actor GetActor(uint actorId)
         {
             if (mStaticActors.ContainsKey(actorId))
                 return mStaticActors[actorId];

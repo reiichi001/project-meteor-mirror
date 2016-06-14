@@ -19,7 +19,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             this.namesList = names;
         }        
 
-        public List<SubPacket> buildPackets()
+        public List<SubPacket> BuildPackets()
         {
             List<SubPacket> subPackets = new List<SubPacket>();
 

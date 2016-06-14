@@ -16,7 +16,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public ushort[] classes = new ushort[2 * 20];
         public ushort[] jobs = new ushort[8];
 
-        public void writeSearchEntry(BinaryWriter writer)
+        public void WriteSearchEntry(BinaryWriter writer)
         {
             writer.Write((UInt16)preferredClass);
             writer.Write((UInt16)langauges);

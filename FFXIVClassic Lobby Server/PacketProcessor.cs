@@ -14,25 +14,25 @@ namespace FFXIVClassic_Lobby_Server
     class PacketProcessor
     {
 
-        public void processPacket(ClientConnection client, BasePacket packet)
+        public void ProcessPacket(ClientConnection client, BasePacket packet)
         {
 
             if ((packet.header.packetSize == 0x288) && (packet.data[0x34] == 'T'))		//Test Ticket Data
             {
-                packet.debugPrintPacket();
+                packet.DebugPrintPacket();
                 //Crypto handshake
                 ProcessStartSession(client, packet);
                 return;
             }
 
-            BasePacket.decryptPacket(client.blowfish, ref packet);
+            BasePacket.DecryptPacket(client.blowfish, ref packet);
 
-            packet.debugPrintPacket();
+            packet.DebugPrintPacket();
 
-            List<SubPacket> subPackets = packet.getSubpackets();
+            List<SubPacket> subPackets = packet.GetSubpackets();
             foreach (SubPacket subpacket in subPackets)
             {
-                subpacket.debugPrintSubPacket();
+                subpacket.DebugPrintSubPacket();
 
                 if (subpacket.header.type == 3)
                 {
@@ -71,30 +71,30 @@ namespace FFXIVClassic_Lobby_Server
 
             //Respond with acknowledgment
             BasePacket outgoingPacket = new BasePacket(HardCoded_Packets.g_secureConnectionAcknowledgment);
-            BasePacket.encryptPacket(client.blowfish, outgoingPacket);
-            client.queuePacket(outgoingPacket);
+            BasePacket.EncryptPacket(client.blowfish, outgoingPacket);
+            client.QueuePacket(outgoingPacket);
         }
 
         private void ProcessSessionAcknowledgement(ClientConnection client, SubPacket packet)
         {
-            packet.debugPrintSubPacket();
+            packet.DebugPrintSubPacket();
             SessionPacket sessionPacket = new SessionPacket(packet.data);
             String clientVersion = sessionPacket.version;
 
             Program.Log.Info("Got acknowledgment for secure session.");         
             Program.Log.Info("CLIENT VERSION: {0}", clientVersion);
 
-            uint userId = Database.getUserIdFromSession(sessionPacket.session);
+            uint userId = Database.GetUserIdFromSession(sessionPacket.session);
             client.currentUserId = userId;
             client.currentSessionToken = sessionPacket.session; ;
 
             if (userId == 0)
             {
                     ErrorPacket errorPacket = new ErrorPacket(sessionPacket.sequence, 0, 0, 13001, "Your session has expired, please login again.");
-                    SubPacket subpacket = errorPacket.buildPacket();
-                    BasePacket errorBasePacket = BasePacket.createPacket(subpacket, true, false);
-                    BasePacket.encryptPacket(client.blowfish, errorBasePacket);
-                    client.queuePacket(errorBasePacket);
+                    SubPacket subpacket = errorPacket.BuildPacket();
+                    BasePacket errorBasePacket = BasePacket.CreatePacket(subpacket, true, false);
+                    BasePacket.EncryptPacket(client.blowfish, errorBasePacket);
+                    client.QueuePacket(errorBasePacket);
 
                     Program.Log.Info("Invalid session, kicking...");
                     return;
@@ -108,19 +108,19 @@ namespace FFXIVClassic_Lobby_Server
             defaultAccount.name = "FINAL FANTASY XIV";
             accountList.Add(defaultAccount);
             AccountListPacket listPacket = new AccountListPacket(1, accountList);
-            BasePacket basePacket = BasePacket.createPacket(listPacket.buildPackets(), true, false);
-            BasePacket.encryptPacket(client.blowfish, basePacket);
-            client.queuePacket(basePacket);
+            BasePacket basePacket = BasePacket.CreatePacket(listPacket.BuildPackets(), true, false);
+            BasePacket.EncryptPacket(client.blowfish, basePacket);
+            client.QueuePacket(basePacket);
         }
 
         private void ProcessGetCharacters(ClientConnection client, SubPacket packet)
         {   
-	        Program.Log.Info("{0} => Get characters", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId);
+	        Program.Log.Info("{0} => Get characters", client.currentUserId == 0 ? client.GetAddress() : "User " + client.currentUserId);
 
-            sendWorldList(client, packet);
-            sendImportList(client, packet);
-            sendRetainerList(client, packet);
-            sendCharacterList(client, packet);                        
+            SendWorldList(client, packet);
+            SendImportList(client, packet);
+            SendRetainerList(client, packet);
+            SendCharacterList(client, packet);                        
 
         }
 
@@ -128,29 +128,29 @@ namespace FFXIVClassic_Lobby_Server
         {
             SelectCharacterPacket selectCharRequest = new SelectCharacterPacket(packet.data);
 
-            Program.Log.Info("{0} => Select character id {1}", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId, selectCharRequest.characterId);
+            Program.Log.Info("{0} => Select character id {1}", client.currentUserId == 0 ? client.GetAddress() : "User " + client.currentUserId, selectCharRequest.characterId);
 
-            Character chara = Database.getCharacter(client.currentUserId, selectCharRequest.characterId);
+            Character chara = Database.GetCharacter(client.currentUserId, selectCharRequest.characterId);
             World world = null;
 
             if (chara != null)
-                world = Database.getServer(chara.serverId);
+                world = Database.GetServer(chara.serverId);
 
             if (world == null)
             {
-                ErrorPacket errorPacket = new ErrorPacket(selectCharRequest.sequence, 0, 0, 13001, "World does not exist or is inactive.");
-                SubPacket subpacket = errorPacket.buildPacket();
-                BasePacket basePacket = BasePacket.createPacket(subpacket, true, false);
-                BasePacket.encryptPacket(client.blowfish, basePacket);
-                client.queuePacket(basePacket);
+                ErrorPacket errorPacket = new ErrorPacket(selectCharRequest.sequence, 0, 0, 13001, "World Does not exist or is inactive.");
+                SubPacket subpacket = errorPacket.BuildPacket();
+                BasePacket basePacket = BasePacket.CreatePacket(subpacket, true, false);
+                BasePacket.EncryptPacket(client.blowfish, basePacket);
+                client.QueuePacket(basePacket);
                 return;
             }
 
             SelectCharacterConfirmPacket connectCharacter = new SelectCharacterConfirmPacket(selectCharRequest.sequence, selectCharRequest.characterId, client.currentSessionToken, world.address, world.port, selectCharRequest.ticket);
 
-            BasePacket outgoingPacket = BasePacket.createPacket(connectCharacter.buildPackets(), true, false);
-            BasePacket.encryptPacket(client.blowfish, outgoingPacket);
-	        client.queuePacket(outgoingPacket);
+            BasePacket outgoingPacket = BasePacket.CreatePacket(connectCharacter.BuildPackets(), true, false);
+            BasePacket.EncryptPacket(client.blowfish, outgoingPacket);
+	        client.QueuePacket(outgoingPacket);
         }
 
         private void ProcessModifyCharacter(ClientConnection client, SubPacket packet)
@@ -169,23 +169,23 @@ namespace FFXIVClassic_Lobby_Server
             //Check if this character exists, get world from there
             if (worldId == 0 && charaReq.characterId != 0)
             {
-                Character chara = Database.getCharacter(client.currentUserId, charaReq.characterId);
+                Character chara = Database.GetCharacter(client.currentUserId, charaReq.characterId);
                 if (chara != null)
                     worldId = chara.serverId;                
             }
 
             string worldName = null;           
-            World world = Database.getServer(worldId);
+            World world = Database.GetServer(worldId);
             if (world != null)
                 worldName = world.name;
 
             if (worldName == null)
             {
-                ErrorPacket errorPacket = new ErrorPacket(charaReq.sequence, 0, 0, 13001, "World does not exist or is inactive.");
-                SubPacket subpacket = errorPacket.buildPacket();
-                BasePacket basePacket = BasePacket.createPacket(subpacket, true, false);
-                BasePacket.encryptPacket(client.blowfish, basePacket);
-                client.queuePacket(basePacket);
+                ErrorPacket errorPacket = new ErrorPacket(charaReq.sequence, 0, 0, 13001, "World Does not exist or is inactive.");
+                SubPacket subpacket = errorPacket.BuildPacket();
+                BasePacket basePacket = BasePacket.CreatePacket(subpacket, true, false);
+                BasePacket.EncryptPacket(client.blowfish, basePacket);
+                client.QueuePacket(basePacket);
 
                 Program.Log.Info("User {0} => Error; invalid server id: \"{1}\"", client.currentUserId, worldId);
                 return;
@@ -197,15 +197,15 @@ namespace FFXIVClassic_Lobby_Server
             {
                 case 0x01://Reserve
                     
-                    alreadyTaken = Database.reserveCharacter(client.currentUserId, slot, worldId, name, out pid, out cid);
+                    alreadyTaken = Database.ReserveCharacter(client.currentUserId, slot, worldId, name, out pid, out cid);
 
                     if (alreadyTaken)
                     {
                         ErrorPacket errorPacket = new ErrorPacket(charaReq.sequence, 1003, 0, 13005, ""); //BDB - Chara Name Used, //1003 - Bad Word
-                        SubPacket subpacket = errorPacket.buildPacket();
-                        BasePacket basePacket = BasePacket.createPacket(subpacket, true, false);
-                        BasePacket.encryptPacket(client.blowfish, basePacket);
-                        client.queuePacket(basePacket);
+                        SubPacket subpacket = errorPacket.BuildPacket();
+                        BasePacket basePacket = BasePacket.CreatePacket(subpacket, true, false);
+                        BasePacket.EncryptPacket(client.blowfish, basePacket);
+                        client.QueuePacket(basePacket);
 
                         Program.Log.Info("User {0} => Error; name taken: \"{1}\"", client.currentUserId, charaReq.characterName);
                         return;
@@ -222,7 +222,7 @@ namespace FFXIVClassic_Lobby_Server
                     Program.Log.Info("User {0} => Character reserved \"{1}\"", client.currentUserId, name);
                     break;
                 case 0x02://Make                    
-                    CharaInfo info = CharaInfo.getFromNewCharRequest(charaReq.characterInfoEncoded);
+                    CharaInfo info = CharaInfo.GetFromNewCharRequest(charaReq.characterInfoEncoded);
 
                     //Set Initial Appearance (items will be loaded in by map server)                    
                     uint[] classAppearance = CharacterCreatorUtils.GetEquipmentForClass(info.currentClass);
@@ -266,25 +266,25 @@ namespace FFXIVClassic_Lobby_Server
                             break;
                     }
 
-                    Database.makeCharacter(client.currentUserId, client.newCharaCid, info);
+                    Database.MakeCharacter(client.currentUserId, client.newCharaCid, info);
 
                     pid = 1;
                     cid = client.newCharaCid;
                     name = client.newCharaName;
 
-                    Program.Log.Info("User {0} => Character created \"{1}\"", client.currentUserId, name);
+                    Program.Log.Info("User {0} => Character Created \"{1}\"", client.currentUserId, name);
                     break;
                 case 0x03://Rename
 
-                    alreadyTaken = Database.renameCharacter(client.currentUserId, charaReq.characterId, worldId, charaReq.characterName);
+                    alreadyTaken = Database.RenameCharacter(client.currentUserId, charaReq.characterId, worldId, charaReq.characterName);
 
                     if (alreadyTaken)
                     {
                         ErrorPacket errorPacket = new ErrorPacket(charaReq.sequence, 1003, 0, 13005, ""); //BDB - Chara Name Used, //1003 - Bad Word
-                        SubPacket subpacket = errorPacket.buildPacket();
-                        BasePacket basePacket = BasePacket.createPacket(subpacket, true, false);
-                        BasePacket.encryptPacket(client.blowfish, basePacket);
-                        client.queuePacket(basePacket);
+                        SubPacket subpacket = errorPacket.BuildPacket();
+                        BasePacket basePacket = BasePacket.CreatePacket(subpacket, true, false);
+                        BasePacket.EncryptPacket(client.blowfish, basePacket);
+                        client.QueuePacket(basePacket);
 
                         Program.Log.Info("User {0} => Error; name taken: \"{1}\"", client.currentUserId, charaReq.characterName);
                         return;
@@ -293,7 +293,7 @@ namespace FFXIVClassic_Lobby_Server
                     Program.Log.Info("User {0} => Character renamed \"{1}\"", client.currentUserId, name);
                     break;
                 case 0x04://Delete
-                    Database.deleteCharacter(charaReq.characterId, charaReq.characterName);
+                    Database.DeleteCharacter(charaReq.characterId, charaReq.characterName);
 
                     Program.Log.Info("User {0} => Character deleted \"{1}\"", client.currentUserId, name);
                     break;
@@ -304,58 +304,58 @@ namespace FFXIVClassic_Lobby_Server
             }
 
             CharaCreatorPacket charaCreator = new CharaCreatorPacket(charaReq.sequence, charaReq.command, pid, cid, 1, name, worldName);
-            BasePacket charaCreatorPacket = BasePacket.createPacket(charaCreator.buildPacket(), true, false);            
-            BasePacket.encryptPacket(client.blowfish, charaCreatorPacket);
-            client.queuePacket(charaCreatorPacket);
+            BasePacket charaCreatorPacket = BasePacket.CreatePacket(charaCreator.BuildPacket(), true, false);            
+            BasePacket.EncryptPacket(client.blowfish, charaCreatorPacket);
+            client.QueuePacket(charaCreatorPacket);
 
         }        
 
-        private void sendWorldList(ClientConnection client, SubPacket packet)
+        private void SendWorldList(ClientConnection client, SubPacket packet)
         {            
-            List<World> serverList = Database.getServers();
+            List<World> serverList = Database.GetServers();
             WorldListPacket worldlistPacket = new WorldListPacket(0, serverList);
-            List<SubPacket> subPackets = worldlistPacket.buildPackets();
+            List<SubPacket> subPackets = worldlistPacket.BuildPackets();
 
-            BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
-            BasePacket.encryptPacket(client.blowfish, basePacket);
-            client.queuePacket(basePacket);
+            BasePacket basePacket = BasePacket.CreatePacket(subPackets, true, false);
+            BasePacket.EncryptPacket(client.blowfish, basePacket);
+            client.QueuePacket(basePacket);
 
         }
 
-        private void sendImportList(ClientConnection client, SubPacket packet)
+        private void SendImportList(ClientConnection client, SubPacket packet)
         {
-            List<String> names = Database.getReservedNames(client.currentUserId);
+            List<String> names = Database.GetReservedNames(client.currentUserId);
 
             ImportListPacket importListPacket = new ImportListPacket(0, names);
-            List<SubPacket> subPackets = importListPacket.buildPackets();
-            BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
-            BasePacket.encryptPacket(client.blowfish, basePacket);
-            client.queuePacket(basePacket);
+            List<SubPacket> subPackets = importListPacket.BuildPackets();
+            BasePacket basePacket = BasePacket.CreatePacket(subPackets, true, false);
+            BasePacket.EncryptPacket(client.blowfish, basePacket);
+            client.QueuePacket(basePacket);
         }
 
-        private void sendRetainerList(ClientConnection client, SubPacket packet)
+        private void SendRetainerList(ClientConnection client, SubPacket packet)
         {
-            List<Retainer> retainers = Database.getRetainers(client.currentUserId);
+            List<Retainer> retainers = Database.GetRetainers(client.currentUserId);
 
             RetainerListPacket retainerListPacket = new RetainerListPacket(0, retainers);
-            List<SubPacket> subPackets = retainerListPacket.buildPackets();
-            BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
-            BasePacket.encryptPacket(client.blowfish, basePacket);
-            client.queuePacket(basePacket);
+            List<SubPacket> subPackets = retainerListPacket.BuildPackets();
+            BasePacket basePacket = BasePacket.CreatePacket(subPackets, true, false);
+            BasePacket.EncryptPacket(client.blowfish, basePacket);
+            client.QueuePacket(basePacket);
         }
 
-        private void sendCharacterList(ClientConnection client, SubPacket packet)
+        private void SendCharacterList(ClientConnection client, SubPacket packet)
         {
-            List<Character> characterList = Database.getCharacters(client.currentUserId);
+            List<Character> characterList = Database.GetCharacters(client.currentUserId);
 
             if (characterList.Count > 8)
                 Program.Log.Error("Warning, got more than 8 characters. List truncated, check DB for issues.");
 
             CharacterListPacket characterlistPacket = new CharacterListPacket(0, characterList);
-            List<SubPacket> subPackets = characterlistPacket.buildPackets();
-            BasePacket basePacket = BasePacket.createPacket(subPackets, true, false);
-            BasePacket.encryptPacket(client.blowfish, basePacket);
-            client.queuePacket(basePacket);
+            List<SubPacket> subPackets = characterlistPacket.BuildPackets();
+            BasePacket basePacket = BasePacket.CreatePacket(subPackets, true, false);
+            BasePacket.EncryptPacket(client.blowfish, basePacket);
+            client.QueuePacket(basePacket);
         }
 
         private byte[] GenerateKey(string ticketPhrase, uint clientNumber)

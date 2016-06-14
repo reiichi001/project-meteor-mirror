@@ -12,7 +12,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public const float DEFAULT_WALK = 2.0f;
         public const float DEFAULT_RUN = 5.0f;
 
-        public static SubPacket buildPacket(uint playerActorID, uint targetActorID)
+        public static SubPacket BuildPacket(uint playerActorID, uint targetActorID)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -41,7 +41,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             return new SubPacket(OPCODE, playerActorID, targetActorID, data);
         }
 
-        public static SubPacket buildPacket(uint playerActorID, uint targetActorID, float stopSpeed, float walkSpeed, float runSpeed)
+        public static SubPacket BuildPacket(uint playerActorID, uint targetActorID, float stopSpeed, float walkSpeed, float runSpeed)
         {               
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

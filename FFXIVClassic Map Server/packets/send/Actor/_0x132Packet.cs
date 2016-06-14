@@ -9,7 +9,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public const ushort OPCODE = 0x132;
         public const uint PACKET_SIZE = 0x48;
 
-        public static SubPacket buildPacket(uint playerActorID, ushort number, string function)
+        public static SubPacket BuildPacket(uint playerActorID, ushort number, string function)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

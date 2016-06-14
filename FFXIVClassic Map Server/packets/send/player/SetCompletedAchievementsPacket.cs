@@ -24,7 +24,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
 
         public bool[] achievementFlags = new bool[1024];
 
-        public SubPacket buildPacket(uint playerActorID)
+        public SubPacket BuildPacket(uint playerActorID)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

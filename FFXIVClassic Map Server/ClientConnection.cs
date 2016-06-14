@@ -13,33 +13,33 @@ namespace FFXIVClassic_Map_Server
         public Blowfish blowfish;
         public Socket socket;
         public byte[] buffer;
-        private BlockingCollection<BasePacket> sendPacketQueue = new BlockingCollection<BasePacket>(1000);
+        private BlockingCollection<BasePacket> SendPacketQueue = new BlockingCollection<BasePacket>(1000);
         public int lastPartialSize = 0;
 
         //Instance Stuff
         public uint owner = 0;
         public int connType = 0;
 
-        public void queuePacket(BasePacket packet)
+        public void QueuePacket(BasePacket packet)
         {
-            sendPacketQueue.Add(packet);
+            SendPacketQueue.Add(packet);
         }
 
-        public void queuePacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)
+        public void QueuePacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)
         {
-            sendPacketQueue.Add(BasePacket.createPacket(subpacket, isAuthed, isEncrypted));
+            SendPacketQueue.Add(BasePacket.CreatePacket(subpacket, isAuthed, isEncrypted));
         }
 
-        public void flushQueuedSendPackets()
+        public void FlushQueuedSendPackets()
         {
             if (!socket.Connected)
                 return;
 
-            while (sendPacketQueue.Count > 0)
+            while (SendPacketQueue.Count > 0)
             {
-                BasePacket packet = sendPacketQueue.Take();                
+                BasePacket packet = SendPacketQueue.Take();                
 
-                byte[] packetBytes = packet.getPacketBytes();
+                byte[] packetBytes = packet.GetPacketBytes();
 
                 try
                 {
@@ -50,17 +50,17 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public String getAddress()
+        public String GetAddress()
         {
             return String.Format("{0}:{1}", (socket.RemoteEndPoint as IPEndPoint).Address, (socket.RemoteEndPoint as IPEndPoint).Port);
         }
 
-        public bool isConnected()
+        public bool IsConnected()
         {
             return (socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
         }
 
-        public void disconnect()
+        public void Disconnect()
         {
             if (socket.Connected)
                 socket.Disconnect(false);

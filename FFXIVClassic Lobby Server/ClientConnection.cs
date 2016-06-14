@@ -15,7 +15,7 @@ namespace FFXIVClassic_Lobby_Server
         public Socket socket;
         public byte[] buffer = new byte[0xffff];
         public CircularBuffer<byte> incomingStream = new CircularBuffer<byte>(1024);
-        public BlockingCollection<BasePacket> sendPacketQueue = new BlockingCollection<BasePacket>(100);
+        public BlockingCollection<BasePacket> SendPacketQueue = new BlockingCollection<BasePacket>(100);
         public int lastPartialSize = 0;
 
         //Instance Stuff
@@ -31,7 +31,7 @@ namespace FFXIVClassic_Lobby_Server
         public ushort newCharaWorldId;
         
 
-        public void processIncoming(int bytesIn)
+        public void ProcessIncoming(int bytesIn)
         {
             if (bytesIn == 0)
                 return;
@@ -39,20 +39,20 @@ namespace FFXIVClassic_Lobby_Server
             incomingStream.Put(buffer, 0, bytesIn);
         }
 
-        public void queuePacket(BasePacket packet)
+        public void QueuePacket(BasePacket packet)
         {
-            sendPacketQueue.Add(packet);
+            SendPacketQueue.Add(packet);
         }
 
-        public void flushQueuedSendPackets()
+        public void FlushQueuedSendPackets()
         {
             if (!socket.Connected)
                 return;
 
-            while (sendPacketQueue.Count > 0)
+            while (SendPacketQueue.Count > 0)
             {
-                BasePacket packet = sendPacketQueue.Take();
-                byte[] packetBytes = packet.getPacketBytes();
+                BasePacket packet = SendPacketQueue.Take();
+                byte[] packetBytes = packet.GetPacketBytes();
                 byte[] buffer = new byte[0xffff];
                 Array.Copy(packetBytes, buffer, packetBytes.Length);
                 try { 
@@ -63,12 +63,12 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public String getAddress()
+        public String GetAddress()
         {
             return String.Format("{0}:{1}", (socket.RemoteEndPoint as IPEndPoint).Address, (socket.RemoteEndPoint as IPEndPoint).Port);
         }        
 
-        public void disconnect()
+        public void Disconnect()
         {
             socket.Shutdown(SocketShutdown.Both);
             socket.Disconnect(false);

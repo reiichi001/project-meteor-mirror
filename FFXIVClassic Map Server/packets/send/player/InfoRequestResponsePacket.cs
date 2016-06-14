@@ -9,7 +9,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
         public const ushort OPCODE = 0x0133;
         public const uint PACKET_SIZE = 0xE0;
 
-        public static SubPacket buildPacket(uint playerActorID, uint targetActorID, List<LuaParam> luaParams)
+        public static SubPacket BuildPacket(uint playerActorID, uint targetActorID, List<LuaParam> luaParams)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -17,7 +17,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    LuaUtils.writeLuaParams(binWriter, luaParams);
+                    LuaUtils.WriteLuaParams(binWriter, luaParams);
                 }
             }
 

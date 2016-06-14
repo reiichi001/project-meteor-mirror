@@ -7,7 +7,7 @@
     
     The primary goals of this format is to allow a simple XML format 
     that is mostly human readable. The generation and parsing of the 
-    various data types are done through the TypeConverter classes 
+    various data types are Done through the TypeConverter classes 
     associated with the data types.
     
     Example:
@@ -33,7 +33,7 @@
     Each data row contains a name, and value. The row also contains a 
     type or mimetype. Type corresponds to a .NET class that support 
     text/value conversion through the TypeConverter architecture. 
-    Classes that don't support this are serialized and stored with the 
+    Classes that Don't support this are serialized and stored with the 
     mimetype set.
     
     The mimetype is used for serialized objects, and tells the 
@@ -156,7 +156,7 @@ Test: test weather</value>
   <data name="CPmypos" xml:space="preserve">
     <value>Prints out your current location
 
-*Note: The X/Y/Z coordinates do not correspond to the coordinates listed in the in-game map, they are based on the underlying game data</value>
+*Note: The X/Y/Z coordinates Do not correspond to the coordinates listed in the in-game map, they are based on the underlying game data</value>
   </data>
   <data name="CPproperty" xml:space="preserve">
     <value>*Syntax:	property &lt;value 1&gt; &lt;value 2&gt; &lt;value 3&gt;</value>
@@ -199,7 +199,7 @@ Test: test weather</value>
   <data name="CPsetgraphic" xml:space="preserve">
     <value>Overrides the currently displayed character equipment in a specific slot
 
-*Note: Similar to Glamours in FFXIV:ARR, the overridden graphics are purely cosmetic, they do not affect the underlying stats of whatever is equipped on that slot
+*Note: Similar to Glamours in FFXIV:ARR, the overridden graphics are purely cosmetic, they Do not affect the underlying stats of whatever is equipped on that slot
 
 *Syntax:	sendpacket &lt;slot&gt; &lt;wid&gt; &lt;eid&gt; &lt;vid&gt; &lt;cid&gt;
 &lt;w/e/v/c id&gt; are as defined in the client game data</value>

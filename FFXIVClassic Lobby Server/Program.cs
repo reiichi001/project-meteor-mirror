@@ -21,7 +21,7 @@ namespace FFXIVClassic_Lobby_Server
             bool startServer = true;
 
             //Load Config
-            if (!ConfigConstants.load())
+            if (!ConfigConstants.Load())
                 startServer = false;
 
             Log = LogManager.GetCurrentClassLogger();
@@ -57,7 +57,7 @@ namespace FFXIVClassic_Lobby_Server
             if (startServer)
             {
                 Server server = new Server();
-                server.startServer();
+                server.StartServer();
             }
 
             Program.Log.Info("Press any key to continue...");

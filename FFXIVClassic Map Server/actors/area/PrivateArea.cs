@@ -18,17 +18,17 @@ namespace FFXIVClassic_Map_Server.actors.area
             this.privateAreaName = privateAreaName;
         }
 
-        public string getPrivateAreaName()
+        public string GetPrivateAreaName()
         {
             return privateAreaName;
         }
 
-        public Zone getParentZone()
+        public Zone GetParentZone()
         {
             return parentZone;
         }
 
-        public override SubPacket createScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
 
@@ -37,9 +37,9 @@ namespace FFXIVClassic_Map_Server.actors.area
             if (className.ToLower().Contains("content"))
                 path = "Content/" + className;
 
-            lParams = LuaUtils.createLuaParamList("/Area/PrivateArea/" + path, false, true, zoneName, privateAreaName, 0x9E, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, false, false, false);
-            ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams).debugPrintSubPacket();
-            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
+            lParams = LuaUtils.CreateLuaParamList("/Area/PrivateArea/" + path, false, true, zoneName, privateAreaName, 0x9E, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, false, false, false);
+            ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams).DebugPrintSubPacket();
+            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
         }
         
     }

@@ -198,7 +198,7 @@ namespace FFXIVClassic.Common
                         // *** Open the original file ***
                         sr = new StreamReader(m_FileName);
 
-                        // *** Read the file original content, replace changes with local cache values ***
+                        // *** Read the file original content, replace Changes with local cache values ***
                         string s;
                         string SectionName;
                         string Key = null;
@@ -379,7 +379,7 @@ namespace FFXIVClassic.Common
 				Dictionary<string, string> Section;
 				if (!m_Sections.TryGetValue(SectionName, out Section))
 				{
-					// *** If it doesn't, add it ***
+					// *** If it Doesn't, Add it ***
 					Section = new Dictionary<string, string>();
 					m_Sections.Add(SectionName,Section);
 				}
@@ -473,7 +473,7 @@ namespace FFXIVClassic.Common
             return DefaultValue;
         }
 
-		internal double GetValue(string SectionName, string Key, double DefaultValue)
+		internal Double GetValue(string SectionName, string Key, Double DefaultValue)
 		{
             string StringValue = GetValue(SectionName, Key, DefaultValue.ToString(CultureInfo.InvariantCulture));
 			double Value;
@@ -518,7 +518,7 @@ namespace FFXIVClassic.Common
             SetValue(SectionName, Key, Value.ToString(CultureInfo.InvariantCulture));
         }
 
-		internal void SetValue(string SectionName, string Key, double Value)
+		internal void SetValue(string SectionName, string Key, Double Value)
 		{
 			SetValue(SectionName, Key, Value.ToString(CultureInfo.InvariantCulture));
 		}

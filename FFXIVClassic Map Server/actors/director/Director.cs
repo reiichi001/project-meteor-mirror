@@ -15,35 +15,35 @@ namespace FFXIVClassic_Map_Server.actors.director
             this.owner = owner;
         }
 
-        public virtual BasePacket getSpawnPackets(uint playerActorId, uint spawnType)
+        public virtual BasePacket GetSpawnPackets(uint playerActorId, uint spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(createAddActorPacket(playerActorId, 0));
-            subpackets.AddRange(getEventConditionPackets(playerActorId));
-            subpackets.Add(createSpeedPacket(playerActorId));
-            subpackets.Add(createSpawnPositonPacket(playerActorId, 0));
-            subpackets.Add(createNamePacket(playerActorId));
-            subpackets.Add(createStatePacket(playerActorId));
-            subpackets.Add(createIsZoneingPacket(playerActorId));
-            subpackets.Add(createScriptBindPacket(playerActorId));
-            return BasePacket.createPacket(subpackets, true, false);
+            subpackets.Add(CreateAddActorPacket(playerActorId, 0));
+            subpackets.AddRange(GetEventConditionPackets(playerActorId));
+            subpackets.Add(CreateSpeedPacket(playerActorId));
+            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0));
+            subpackets.Add(CreateNamePacket(playerActorId));
+            subpackets.Add(CreateStatePacket(playerActorId));
+            subpackets.Add(CreateIsZoneingPacket(playerActorId));
+            subpackets.Add(CreateScriptBindPacket(playerActorId));
+            return BasePacket.CreatePacket(subpackets, true, false);
         }        
 
-        public override BasePacket getInitPackets(uint playerActorId)
+        public override BasePacket GetInitPackets(uint playerActorId)
         {
             SetActorPropetyPacket initProperties = new SetActorPropetyPacket("/_init");
-            initProperties.addTarget();
-            return BasePacket.createPacket(initProperties.buildPacket(playerActorId, actorId), true, false);
+            initProperties.AddTarget();
+            return BasePacket.CreatePacket(initProperties.BuildPacket(playerActorId, actorId), true, false);
         }
 
-        public void onTalked(Npc npc)
+        public void OnTalked(Npc npc)
         {
-            LuaEngine.doDirectorOnTalked(this, owner, npc);
+            LuaEngine.DoDirectorOnTalked(this, owner, npc);
         }
 
-        public void onCommand(Command command)
+        public void OnCommand(Command command)
         {
-            LuaEngine.doDirectorOnCommand(this, owner, command);
+            LuaEngine.DoDirectorOnCommand(this, owner, command);
         }
 
     }    

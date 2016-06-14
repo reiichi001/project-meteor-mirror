@@ -101,7 +101,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             data = original.data;
         }
 
-        public byte[] getHeaderBytes()
+        public byte[] GetHeaderBytes()
         {
             int size = Marshal.SizeOf(header);
             byte[] arr = new byte[size];
@@ -113,7 +113,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             return arr;
         }
 
-        public byte[] getGameMessageBytes()
+        public byte[] GetGameMessageBytes()
         {
             int size = Marshal.SizeOf(gameMessage);
             byte[] arr = new byte[size];
@@ -125,26 +125,26 @@ namespace FFXIVClassic_Lobby_Server.packets
             return arr;
         }
 
-        public byte[] getBytes()
+        public byte[] GetBytes()
         {
             byte[] outBytes = new byte[header.subpacketSize];
-            Array.Copy(getHeaderBytes(), 0, outBytes, 0, SUBPACKET_SIZE);
+            Array.Copy(GetHeaderBytes(), 0, outBytes, 0, SUBPACKET_SIZE);
 
             if (header.type == 0x3)
-                Array.Copy(getGameMessageBytes(), 0, outBytes, SUBPACKET_SIZE, GAMEMESSAGE_SIZE);
+                Array.Copy(GetGameMessageBytes(), 0, outBytes, SUBPACKET_SIZE, GAMEMESSAGE_SIZE);
 
             Array.Copy(data, 0, outBytes, SUBPACKET_SIZE + (header.type == 0x3 ? GAMEMESSAGE_SIZE : 0), data.Length);
             return outBytes;
         }
 
-        public void debugPrintSubPacket()
+        public void DebugPrintSubPacket()
         {
 #if DEBUG
-            Program.Log.Debug("Size: 0x{0:X}{1}{2}", header.subpacketSize, Environment.NewLine, Utils.ByteArrayToHex(getHeaderBytes()));
+            Program.Log.Debug("Size: 0x{0:X}{1}{2}", header.subpacketSize, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
             
             if (header.type == 0x03)
             {
-                Program.Log.Debug("Opcode: 0x{0:X}{1}{2}", gameMessage.opcode, Environment.NewLine, Utils.ByteArrayToHex(getGameMessageBytes(), SUBPACKET_SIZE));
+                Program.Log.Debug("Opcode: 0x{0:X}{1}{2}", gameMessage.opcode, Environment.NewLine, Utils.ByteArrayToHex(GetGameMessageBytes(), SUBPACKET_SIZE));
             }
 
             Program.Log.Debug("Data: {0}{1}", Environment.NewLine, Utils.ByteArrayToHex(data, SUBPACKET_SIZE + GAMEMESSAGE_SIZE));

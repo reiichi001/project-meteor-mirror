@@ -8,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.send.supportdesk
         public const ushort OPCODE = 0x01D4;
         public const uint PACKET_SIZE = 0x2B8;
 
-        public static SubPacket buildPacket(uint playerActorID, string titleText, string bodyText)
+        public static SubPacket BuildPacket(uint playerActorID, string titleText, string bodyText)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
             int maxBodySize = data.Length - 0x80;

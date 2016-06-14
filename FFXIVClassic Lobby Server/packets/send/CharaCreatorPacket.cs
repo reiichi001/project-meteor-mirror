@@ -36,7 +36,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             this.worldName = worldName;
         }        
 
-        public SubPacket buildPacket()    
+        public SubPacket BuildPacket()    
         {
             MemoryStream memStream = new MemoryStream(0x1F0);
             BinaryWriter binWriter = new BinaryWriter(memStream);

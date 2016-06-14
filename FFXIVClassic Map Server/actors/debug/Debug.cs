@@ -18,24 +18,24 @@ namespace FFXIVClassic_Map_Server.Actors
             this.className = "Debug";
         }
 
-        public override SubPacket createScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
-            lParams = LuaUtils.createLuaParamList("/System/Debug.prog", false, false, false, false, true, 0xC51F, true, true);
-            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
+            lParams = LuaUtils.CreateLuaParamList("/System/Debug.prog", false, false, false, false, true, 0xC51F, true, true);
+            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
         }
 
-        public override BasePacket getSpawnPackets(uint playerActorId)
+        public override BasePacket GetSpawnPackets(uint playerActorId)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(createAddActorPacket(playerActorId, 0));            
-            subpackets.Add(createSpeedPacket(playerActorId));
-            subpackets.Add(createSpawnPositonPacket(playerActorId, 0x1));
-            subpackets.Add(createNamePacket(playerActorId));
-            subpackets.Add(createStatePacket(playerActorId));
-            subpackets.Add(createIsZoneingPacket(playerActorId));
-            subpackets.Add(createScriptBindPacket(playerActorId));
-            return BasePacket.createPacket(subpackets, true, false);
+            subpackets.Add(CreateAddActorPacket(playerActorId, 0));            
+            subpackets.Add(CreateSpeedPacket(playerActorId));
+            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x1));
+            subpackets.Add(CreateNamePacket(playerActorId));
+            subpackets.Add(CreateStatePacket(playerActorId));
+            subpackets.Add(CreateIsZoneingPacket(playerActorId));
+            subpackets.Add(CreateScriptBindPacket(playerActorId));
+            return BasePacket.CreatePacket(subpackets, true, false);
         }
 
     }

@@ -25,14 +25,14 @@ namespace FFXIVClassic.Common
                 _buckets = new element[_capacity][];
             }
 
-            public uint hash(ulong key)
+            public uint Hash(ulong key)
             {
                 return (uint)(key % _capacity);
             }
 
             public void Add(ulong key, T value)
             {
-                uint hsh = hash(key);
+                uint hsh = Hash(key);
                 element[] e;
                 if (_buckets[hsh] == null)
                     _buckets[hsh] = e = new element[1];
@@ -53,7 +53,7 @@ namespace FFXIVClassic.Common
 
             public T Get(ulong key)
             {
-                uint hsh = hash(key);
+                uint hsh = Hash(key);
                 element[] e = _buckets[hsh];
                 if (e == null) return default(T);
                 foreach (var f in e)
@@ -64,7 +64,7 @@ namespace FFXIVClassic.Common
 
             public bool Has(ulong key)
             {
-                uint hsh = hash(key);
+                uint hsh = Hash(key);
                 element[] e = _buckets[hsh];
                 if (e == null) return false;
                 foreach (var f in e)
@@ -104,14 +104,14 @@ namespace FFXIVClassic.Common
                 _buckets = new element[_capacity][];
             }
 
-            public uint hash(uint key)
+            public uint Hash(uint key)
             {
                 return (uint)(key % _capacity);
             }
 
             public void Add(uint key, T value)
             {
-                uint hsh = hash(key);
+                uint hsh = Hash(key);
                 element[] e;
                 if (_buckets[hsh] == null)
                     _buckets[hsh] = e = new element[1];
@@ -132,7 +132,7 @@ namespace FFXIVClassic.Common
 
             public T Get(uint key)
             {
-                uint hsh = hash(key);
+                uint hsh = Hash(key);
                 element[] e = _buckets[hsh];
                 if (e == null) return default(T);
                 foreach (var f in e)

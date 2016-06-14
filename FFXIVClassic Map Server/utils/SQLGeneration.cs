@@ -12,7 +12,7 @@ namespace FFXIVClassic_Map_Server.utils
     class SQLGeneration
     {
         
-        public static void generateZones()
+        public static void GenerateZones()
         {
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -95,7 +95,7 @@ namespace FFXIVClassic_Map_Server.utils
             }
         }
 
-        public static void generateActors()
+        public static void GenerateActors()
         {
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -153,7 +153,7 @@ namespace FFXIVClassic_Map_Server.utils
             }
         }
 
-        public static void generateActorAppearance()
+        public static void GenerateActorAppearance()
         {
             uint NUMFIELDS = 39;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -221,7 +221,7 @@ namespace FFXIVClassic_Map_Server.utils
 
         }
 
-        public static void generateAchievementIds()
+        public static void GenerateAchievementIds()
         {
             
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -311,7 +311,7 @@ namespace FFXIVClassic_Map_Server.utils
 
         }
 
-        public void getStaticActors()
+        public void GetStaticActors()
         {
             using (MemoryStream s = new MemoryStream(File.ReadAllBytes("D:\\luadec\\script\\staticactorr9w.luab")))
             {
@@ -324,7 +324,7 @@ namespace FFXIVClassic_Map_Server.utils
 
                         while (binReader.BaseStream.Position != binReader.BaseStream.Length)
                         {
-                            uint id = Utils.swapEndian(binReader.ReadUInt32()) | 0xA0F00000;
+                            uint id = Utils.SwapEndian(binReader.ReadUInt32()) | 0xA0F00000;
 
                             List<byte> list = new List<byte>();
                             byte readByte;

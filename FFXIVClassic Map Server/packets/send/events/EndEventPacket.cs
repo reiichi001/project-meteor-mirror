@@ -9,7 +9,7 @@ namespace FFXIVClassic_Map_Server.packets.send.events
         public const ushort OPCODE = 0x0131;
         public const uint PACKET_SIZE = 0x50;
 
-        public static SubPacket buildPacket(uint playerActorID, uint eventOwnerActorID, string eventStarter)
+        public static SubPacket BuildPacket(uint playerActorID, uint eventOwnerActorID, string eventStarter)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
             int maxBodySize = data.Length - 0x80;

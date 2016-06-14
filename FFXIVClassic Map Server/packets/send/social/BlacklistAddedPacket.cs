@@ -8,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.send.social
         public const ushort OPCODE = 0x01C9;
         public const uint PACKET_SIZE = 0x048;
 
-        public static SubPacket buildPacket(uint playerActorID, bool isSuccess, string nameToAdd)
+        public static SubPacket BuildPacket(uint playerActorID, bool isSuccess, string nameToAdd)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

@@ -23,7 +23,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             this.message = message;
         }
 
-        public SubPacket buildPacket()
+        public SubPacket BuildPacket()
         {
             MemoryStream memStream = new MemoryStream(0x210);
             BinaryWriter binWriter = new BinaryWriter(memStream);

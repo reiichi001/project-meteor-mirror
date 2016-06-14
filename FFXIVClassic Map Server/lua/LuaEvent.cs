@@ -2,12 +2,12 @@
 {
     class LuaEvent
     {
-        public static void getStep()
+        public static void GetStep()
         {
 
         }
 
-        public static void getParam()
+        public static void GetParam()
         {
 
         }

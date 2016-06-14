@@ -16,7 +16,7 @@ namespace FFXIVClassic_Lobby_Server
         public static String DATABASE_USERNAME;
         public static String DATABASE_PASSWORD;
 
-        public static bool load()
+        public static bool Load()
         {
             Console.Write("Loading lobby_config.ini file... ");
 

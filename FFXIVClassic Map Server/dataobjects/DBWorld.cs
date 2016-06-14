@@ -3,7 +3,7 @@
     class DBWorld
     {
         public ushort id;
-        public string address;
+        public string Address;
         public ushort port;
         public ushort listPosition;
         public ushort population;

@@ -20,7 +20,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             this.worldList = serverList;
         }        
 
-        public List<SubPacket> buildPackets()
+        public List<SubPacket> BuildPackets()
         {
             List<SubPacket> subPackets = new List<SubPacket>();
 

@@ -24,7 +24,7 @@ namespace FFXIVClassic_Lobby_Server
         private Thread cleanupThread;
         private bool killCleanupThread = false;
 
-        private void socketCleanup()
+        private void SocketCleanup()
         {
             Program.Log.Info("Cleanup thread started; it will run every {0} seconds.", CLEANUP_THREAD_SLEEP_TIME);
             while (!killCleanupThread)
@@ -47,7 +47,7 @@ namespace FFXIVClassic_Lobby_Server
         }
 
         #region Socket Handling
-        public bool startServer()
+        public bool StartServer()
         {
             //cleanupThread = new Thread(new ThreadStart(socketCleanup));
             //cleanupThread.Name = "LobbyThread:Cleanup";
@@ -60,7 +60,7 @@ namespace FFXIVClassic_Lobby_Server
             }
             catch (Exception e)
             {
-                throw new ApplicationException("Could not create socket, check to make sure not duplicating port", e);
+                throw new ApplicationException("Could not Create socket, check to make sure not duplicating port", e);
             }
             try
             {
@@ -73,7 +73,7 @@ namespace FFXIVClassic_Lobby_Server
             }
             try
             {               
-                mServerSocket.BeginAccept(new AsyncCallback(acceptCallback), mServerSocket);
+                mServerSocket.BeginAccept(new AsyncCallback(AcceptCallback), mServerSocket);
             }
             catch (Exception e)
             {
@@ -89,7 +89,7 @@ namespace FFXIVClassic_Lobby_Server
             return true;
         }
 
-        private void acceptCallback(IAsyncResult result)
+        private void AcceptCallback(IAsyncResult result)
         {
             ClientConnection conn = null;
             try
@@ -103,9 +103,9 @@ namespace FFXIVClassic_Lobby_Server
                     mConnectionList.Add(conn);
                 }
                 //Queue recieving of data from the connection
-                conn.socket.BeginReceive(conn.buffer, 0, conn.buffer.Length, SocketFlags.None, new AsyncCallback(receiveCallback), conn);
+                conn.socket.BeginReceive(conn.buffer, 0, conn.buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), conn);
                 //Queue the accept of the next incomming connection
-                mServerSocket.BeginAccept(new AsyncCallback(acceptCallback), mServerSocket);
+                mServerSocket.BeginAccept(new AsyncCallback(AcceptCallback), mServerSocket);
                 Program.Log.Info("Connection {0}:{1} has connected.", (conn.socket.RemoteEndPoint as IPEndPoint).Address, (conn.socket.RemoteEndPoint as IPEndPoint).Port);
             }
             catch (SocketException)
@@ -118,7 +118,7 @@ namespace FFXIVClassic_Lobby_Server
                         mConnectionList.Remove(conn);
                     }
                 }
-                mServerSocket.BeginAccept(new AsyncCallback(acceptCallback), mServerSocket);
+                mServerSocket.BeginAccept(new AsyncCallback(AcceptCallback), mServerSocket);
             }
             catch (Exception)
             {
@@ -130,11 +130,11 @@ namespace FFXIVClassic_Lobby_Server
                         mConnectionList.Remove(conn);
                     }
                 }
-                mServerSocket.BeginAccept(new AsyncCallback(acceptCallback), mServerSocket);
+                mServerSocket.BeginAccept(new AsyncCallback(AcceptCallback), mServerSocket);
             }
         }
 
-        private void receiveCallback(IAsyncResult result)
+        private void ReceiveCallback(IAsyncResult result)
         {
             ClientConnection conn = (ClientConnection)result.AsyncState;            
 
@@ -151,13 +151,13 @@ namespace FFXIVClassic_Lobby_Server
                     //Build packets until can no longer or out of data
                     while (true)
                     {
-                        BasePacket basePacket = buildPacket(ref offset, conn.buffer, bytesRead);
+                        BasePacket basePacket = BuildPacket(ref offset, conn.buffer, bytesRead);
 
                         //If can't build packet, break, else process another
                         if (basePacket == null)
                             break;
                         else
-                            mProcessor.processPacket(conn, basePacket);
+                            mProcessor.ProcessPacket(conn, basePacket);
                     }
 
                     //Not all bytes consumed, transfer leftover to beginning
@@ -169,22 +169,22 @@ namespace FFXIVClassic_Lobby_Server
                     conn.lastPartialSize = bytesRead - offset;
 
                     //Build any queued subpackets into basepackets and send
-                    conn.flushQueuedSendPackets();
+                    conn.FlushQueuedSendPackets();
 
                     if (offset < bytesRead)
                         //Need offset since not all bytes consumed
-                        conn.socket.BeginReceive(conn.buffer, bytesRead - offset, conn.buffer.Length - (bytesRead - offset), SocketFlags.None, new AsyncCallback(receiveCallback), conn);
+                        conn.socket.BeginReceive(conn.buffer, bytesRead - offset, conn.buffer.Length - (bytesRead - offset), SocketFlags.None, new AsyncCallback(ReceiveCallback), conn);
                     else
                         //All bytes consumed, full buffer available
-                        conn.socket.BeginReceive(conn.buffer, 0, conn.buffer.Length, SocketFlags.None, new AsyncCallback(receiveCallback), conn);
+                        conn.socket.BeginReceive(conn.buffer, 0, conn.buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), conn);
                 }
                 else
                 {
-                    Program.Log.Info("{0} has disconnected.", conn.currentUserId == 0 ? conn.getAddress() : "User " + conn.currentUserId);
+                    Program.Log.Info("{0} has disconnected.", conn.currentUserId == 0 ? conn.GetAddress() : "User " + conn.currentUserId);
 
                     lock (mConnectionList)
                     {
-                        conn.disconnect();
+                        conn.Disconnect();
                         mConnectionList.Remove(conn);
                     }
                 }
@@ -193,7 +193,7 @@ namespace FFXIVClassic_Lobby_Server
             {
                 if (conn.socket != null)
                 {
-                    Program.Log.Info("{0} has disconnected.", conn.currentUserId == 0 ? conn.getAddress() : "User " + conn.currentUserId);
+                    Program.Log.Info("{0} has disconnected.", conn.currentUserId == 0 ? conn.GetAddress() : "User " + conn.currentUserId);
 
                     lock (mConnectionList)
                     {
@@ -209,7 +209,7 @@ namespace FFXIVClassic_Lobby_Server
         /// <param name="offset">Current offset in buffer.</param>
         /// <param name="buffer">Incoming buffer.</param>
         /// <returns>Returns either a BasePacket or null if not enough data.</returns>
-        public BasePacket buildPacket(ref int offset, byte[] buffer, int bytesRead)
+        public BasePacket BuildPacket(ref int offset, byte[] buffer, int bytesRead)
         {
             BasePacket newPacket = null;
 

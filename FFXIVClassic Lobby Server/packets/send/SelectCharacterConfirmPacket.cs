@@ -26,7 +26,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             this.selectCharTicket = selectCharTicket;            
         }        
 
-        public List<SubPacket> buildPackets()
+        public List<SubPacket> BuildPackets()
         {
             List<SubPacket> subPackets = new List<SubPacket>();
 

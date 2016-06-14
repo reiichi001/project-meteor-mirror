@@ -129,7 +129,7 @@ namespace FFXIVClassic_Map_Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Prints out your current location
         ///
-        ///*Note: The X/Y/Z coordinates do not correspond to the coordinates listed in the in-game map, they are based on the underlying game data.
+        ///*Note: The X/Y/Z coordinates Do not correspond to the coordinates listed in the in-game map, they are based on the underlying game data.
         /// </summary>
         public static string CPmypos {
             get {
@@ -226,7 +226,7 @@ namespace FFXIVClassic_Map_Server.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Overrides the currently displayed character equipment in a specific slot
         ///
-        ///*Note: Similar to Glamours in FFXIV:ARR, the overridden graphics are purely cosmetic, they do not affect the underlying stats of whatever is equipped on that slot
+        ///*Note: Similar to Glamours in FFXIV:ARR, the overridden graphics are purely cosmetic, they Do not affect the underlying stats of whatever is equipped on that slot
         ///
         ///*Syntax:	sendpacket &lt;slot&gt; &lt;wid&gt; &lt;eid&gt; &lt;vid&gt; &lt;cid&gt;
         ///&lt;w/e/v/c id&gt; are as defined in the client game data.

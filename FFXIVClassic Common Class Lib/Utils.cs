@@ -107,7 +107,7 @@ namespace FFXIVClassic.Common
             return unixTimeStamp;
         }
 
-        public static ulong swapEndian(ulong input)
+        public static ulong SwapEndian(ulong input)
         {
             return ((0x00000000000000FF) & (input >> 56) |
                     (0x000000000000FF00) & (input >> 40) |
@@ -119,7 +119,7 @@ namespace FFXIVClassic.Common
                     (0xFF00000000000000) & (input << 56));
         }
 
-        public static uint swapEndian(uint input)
+        public static uint SwapEndian(uint input)
         {
             return ((input >> 24) & 0xff) |
                     ((input << 8) & 0xff0000) |
@@ -127,7 +127,7 @@ namespace FFXIVClassic.Common
                     ((input << 24) & 0xff000000);
         }
 
-        public static int swapEndian(int input)
+        public static int SwapEndian(int input)
         {
             uint inputAsUint = (uint)input;
 

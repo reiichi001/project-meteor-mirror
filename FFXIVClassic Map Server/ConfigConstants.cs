@@ -17,7 +17,7 @@ namespace FFXIVClassic_Map_Server
         public static String DATABASE_USERNAME;
         public static String DATABASE_PASSWORD;
 
-        public static bool load()
+        public static bool Load()
         {
             Console.Write("Loading map_config.ini file... ");
 

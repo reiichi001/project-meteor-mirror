@@ -55,30 +55,30 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.statusShownTime[i] = 0xFFFFFFFF;
         }
 
-        public SubPacket createAppearancePacket(uint playerActorId)
+        public SubPacket CreateAppearancePacket(uint playerActorId)
         {
             SetActorAppearancePacket setappearance = new SetActorAppearancePacket(modelId, appearanceIds);
-            return setappearance.buildPacket(actorId, playerActorId);
+            return setappearance.BuildPacket(actorId, playerActorId);
         }
 
-        public SubPacket createInitStatusPacket(uint playerActorId)
+        public SubPacket CreateInitStatusPacket(uint playerActorId)
         {
-            return (SetActorStatusAllPacket.buildPacket(actorId, playerActorId, charaWork.status));                      
+            return (SetActorStatusAllPacket.BuildPacket(actorId, playerActorId, charaWork.status));                      
         }
 
-        public SubPacket createSetActorIconPacket(uint playerActorId)
+        public SubPacket CreateSetActorIconPacket(uint playerActorId)
         {
-            return SetActorIconPacket.buildPacket(actorId, playerActorId, currentActorIcon);
+            return SetActorIconPacket.BuildPacket(actorId, playerActorId, currentActorIcon);
         }
 
-        public SubPacket createIdleAnimationPacket(uint playerActorId)
+        public SubPacket CreateIdleAnimationPacket(uint playerActorId)
         {
-            return SetActorIdleAnimationPacket.buildPacket(actorId, playerActorId, animationId);
+            return SetActorIdleAnimationPacket.BuildPacket(actorId, playerActorId, animationId);
         }
 
-        public void setQuestGraphic(Player player, int graphicNum)
+        public void SetQuestGraphic(Player player, int graphicNum)
         {
-            player.queuePacket(SetActorQuestGraphicPacket.buildPacket(player.actorId, actorId, graphicNum));
+            player.QueuePacket(SetActorQuestGraphicPacket.BuildPacket(player.actorId, actorId, graphicNum));
         }
 
     }
