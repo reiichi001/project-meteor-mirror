@@ -334,7 +334,7 @@ namespace FFXIVClassic_Map_Server.packets
 #if DEBUG
             Console.BackgroundColor = ConsoleColor.DarkYellow;
 
-            Program.Log.Debug(String.Format("IsAuth: {0} IsEncrypted: {1}, Size: 0x{2:X}, NumSubpackets: {3}{4}{5}", header.isAuthenticated, header.isCompressed, header.packetSize, header.numSubpackets, Environment.NewLine, Utils.ByteArrayToHex(getHeaderBytes())));
+            Program.Log.Debug("IsAuth: {0} IsEncrypted: {1}, Size: 0x{2:X}, NumSubpackets: {3}{4}{5}", header.isAuthenticated, header.isCompressed, header.packetSize, header.numSubpackets, Environment.NewLine, Utils.ByteArrayToHex(getHeaderBytes()));
 
             foreach (SubPacket sub in getSubpackets())
             {

@@ -142,7 +142,7 @@ namespace FFXIVClassic_Map_Server
                 foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
                 {
                     Player p = entry.Value.getActor();
-                    Program.Log.Info(String.Format("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation));
+                    Program.Log.Info("{0}\'s position: ZoneID: {1}, X: {2}, Y: {3}, Z: {4}, Rotation: {5}", p.customDisplayName, p.zoneId, p.positionX, p.positionY, p.positionZ, p.rotation);
                 }
             }
         }
@@ -607,7 +607,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     if (client != null)
                     {
-                        Program.Log.Info(String.Format("Got request to reset zone: {0}", client.getActor().zoneId));
+                        Program.Log.Info("Got request to reset zone: {0}", client.getActor().zoneId);
                         client.getActor().zone.clear();
                         client.getActor().zone.addActorToZone(client.getActor());
                         client.getActor().sendInstanceUpdate();
@@ -621,11 +621,11 @@ namespace FFXIVClassic_Map_Server
                 #region !reloaditems
                 else if (split[0].Equals("reloaditems"))
                 {
-                    Program.Log.Info(String.Format("Got request to reload item gamedata"));
+                    Program.Log.Info("Got request to reload item gamedata");
                     sendMessage(client, "Reloading Item Gamedata...");
                     gamedataItems.Clear();
                     gamedataItems = Database.getItemGamedata();
-                    Program.Log.Info(String.Format("Loaded {0} items.", gamedataItems.Count));
+                    Program.Log.Info("Loaded {0} items.", gamedataItems.Count);
                     sendMessage(client, String.Format("Loaded {0} items.", gamedataItems.Count));
                     return true;
                 }

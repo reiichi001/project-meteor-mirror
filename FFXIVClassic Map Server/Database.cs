@@ -322,7 +322,7 @@ namespace FFXIVClassic_Map_Server
             int slot = player.getQuestSlot(quest.actorId);
             if (slot == -1)
             {
-                Program.Log.Error(String.Format("Tried saving quest player didn't have: Player: {0:x}, QuestId: {0:x}", player.actorId, quest.actorId));
+                Program.Log.Error("Tried saving quest player didn't have: Player: {0:x}, QuestId: {0:x}", player.actorId, quest.actorId);
                 return;
             }
             else

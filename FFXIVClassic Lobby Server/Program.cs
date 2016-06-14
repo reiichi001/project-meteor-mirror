@@ -4,12 +4,12 @@ using System.Threading;
 using MySql.Data.MySqlClient;
 using System.Reflection;
 using FFXIVClassic.Common;
-
+using NLog;
 namespace FFXIVClassic_Lobby_Server
 {
     class Program
     {
-        public static Log Log;
+        public static Logger Log;
 
         static void Main(string[] args)
         {
@@ -24,20 +24,7 @@ namespace FFXIVClassic_Lobby_Server
             if (!ConfigConstants.load())
                 startServer = false;
 
-            Log = new Log(ConfigConstants.OPTIONS_LOGPATH, ConfigConstants.OPTIONS_LOGFILE, Int32.Parse(ConfigConstants.OPTIONS_LOGLEVEL));
-
-            Thread thread = new Thread(() =>
-            {
-                while (true)
-                {
-                    if (Log.LogQueue.Count > 0)
-                    {
-                        var message = Program.Log.LogQueue.Dequeue();
-                        Program.Log.WriteMessage(message.Item1, message.Item2);
-                    }
-                }
-            });
-            thread.Start();
+            Log = LogManager.GetCurrentClassLogger();
 
             Program.Log.Info("--------FFXIV 1.0 Lobby Server--------");
 
@@ -47,7 +34,7 @@ namespace FFXIVClassic_Lobby_Server
             Program.Log.Info("Version: " + vers.ToString());
 
             //Test DB Connection
-            Program.Log.Info(String.Format("Testing DB connection to \"{0}\"... ", ConfigConstants.DATABASE_HOST));
+            Program.Log.Info("Testing DB connection to \"{0}\"... ", ConfigConstants.DATABASE_HOST);
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
@@ -55,7 +42,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Open();
                     conn.Close();
 
-                    Program.Log.Status("[OK]");
+                    Program.Log.Info("[OK]");
                 }
                 catch (MySqlException e)
                 {

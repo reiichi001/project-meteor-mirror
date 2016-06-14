@@ -9,9 +9,6 @@ namespace FFXIVClassic_Lobby_Server
         public static String OPTIONS_BINDIP;
         public static String OPTIONS_PORT;
         public static bool   OPTIONS_TIMESTAMP = false;
-        public static String OPTIONS_LOGPATH;
-        public static String OPTIONS_LOGFILE;
-        public static String OPTIONS_LOGLEVEL;
 
         public static String DATABASE_HOST;
         public static String DATABASE_PORT;
@@ -36,9 +33,6 @@ namespace FFXIVClassic_Lobby_Server
             ConfigConstants.OPTIONS_BINDIP =        configIni.GetValue("General", "server_ip", "127.0.0.1");
             ConfigConstants.OPTIONS_PORT =          configIni.GetValue("General", "server_port", "54994");
             ConfigConstants.OPTIONS_TIMESTAMP =     configIni.GetValue("General", "showtimestamp", "true").ToLower().Equals("true");
-            ConfigConstants.OPTIONS_LOGPATH =       configIni.GetValue("General", "log_path", "./logs/");
-            ConfigConstants.OPTIONS_LOGFILE =       configIni.GetValue("General", "log_file_name", String.Format("lobby_{0}_{1}.log", OPTIONS_BINDIP, OPTIONS_PORT));
-            ConfigConstants.OPTIONS_LOGLEVEL =      configIni.GetValue("General", "log_level", "127");
 
             ConfigConstants.DATABASE_HOST =         configIni.GetValue("Database", "host", "");
             ConfigConstants.DATABASE_PORT =         configIni.GetValue("Database", "port", "");
@@ -47,7 +41,7 @@ namespace FFXIVClassic_Lobby_Server
             ConfigConstants.DATABASE_PASSWORD =     configIni.GetValue("Database", "password", "");
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(String.Format("[OK]"));
+            Console.WriteLine("[OK]");
             Console.ForegroundColor = ConsoleColor.Gray;
 
             return true;

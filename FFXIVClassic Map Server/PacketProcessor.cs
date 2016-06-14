@@ -127,9 +127,9 @@ namespace FFXIVClassic_Map_Server
                     player.setConnection(packet.header.connectionType, client);
 
                     if (packet.header.connectionType == BasePacket.TYPE_ZONE)
-                        Program.Log.Debug(String.Format("Got {0} connection for ActorID {1} @ {2}.", "zone", actorID, client.getAddress()));
+                        Program.Log.Debug("Got {0} connection for ActorID {1} @ {2}.", "zone", actorID, client.getAddress());
                     else if (packet.header.connectionType == BasePacket.TYPE_CHAT)
-                        Program.Log.Debug(String.Format("Got {0} connection for ActorID {1} @ {2}.", "chat", actorID, client.getAddress()));
+                        Program.Log.Debug("Got {0} connection for ActorID {1} @ {2}.", "chat", actorID, client.getAddress());
 
                     //Create player actor
                     reply1.debugPrintPacket();
@@ -180,7 +180,7 @@ namespace FFXIVClassic_Map_Server
                         //Chat Received
                         case 0x0003:
                             ChatMessagePacket chatMessage = new ChatMessagePacket(subpacket.data);
-                            Program.Log.Info(String.Format("Got type-{5} message: {0} @ {1}, {2}, {3}, Rot: {4}", chatMessage.message, chatMessage.posX, chatMessage.posY, chatMessage.posZ, chatMessage.posRot, chatMessage.logType));
+                            Program.Log.Info("Got type-{5} message: {0} @ {1}, {2}, {3}, Rot: {4}", chatMessage.message, chatMessage.posX, chatMessage.posY, chatMessage.posZ, chatMessage.posRot, chatMessage.logType);
                             subpacket.debugPrintSubPacket();
 
                             if (chatMessage.message.StartsWith("!"))
@@ -268,7 +268,7 @@ namespace FFXIVClassic_Map_Server
                                         ownerActor = player.getActor().currentDirector;
                                     else
                                     {
-                                        Program.Log.Debug(String.Format("\n===Event START===\nCould not find actor 0x{0:X} for event started by caller: 0x{1:X}\nEvent Starter: {2}\nParams: {3}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.triggerName, LuaUtils.dumpParams(eventStart.luaParams)));
+                                        Program.Log.Debug("\n===Event START===\nCould not find actor 0x{0:X} for event started by caller: 0x{1:X}\nEvent Starter: {2}\nParams: {3}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.triggerName, LuaUtils.dumpParams(eventStart.luaParams));
                                         break;
                                     }
                                 }                                    
@@ -276,7 +276,7 @@ namespace FFXIVClassic_Map_Server
                             
                             LuaEngine.doActorOnEventStarted(player.getActor(), ownerActor, eventStart);
 
-                            Program.Log.Debug(String.Format("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.val1, eventStart.val2, eventStart.triggerName, LuaUtils.dumpParams(eventStart.luaParams)));
+                            Program.Log.Debug("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.val1, eventStart.val2, eventStart.triggerName, LuaUtils.dumpParams(eventStart.luaParams));
                             break;
                         //Unknown, happens at npc spawn and cutscene play????
                         case 0x00CE:
@@ -285,7 +285,7 @@ namespace FFXIVClassic_Map_Server
                         case 0x012E:
                             subpacket.debugPrintSubPacket();
                             EventUpdatePacket eventUpdate = new EventUpdatePacket(subpacket.data);
-                            Program.Log.Debug(String.Format("\n===Event UPDATE===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nStep: 0x{4:X}\nParams: {5}", eventUpdate.actorID, eventUpdate.scriptOwnerActorID, eventUpdate.val1, eventUpdate.val2, eventUpdate.step, LuaUtils.dumpParams(eventUpdate.luaParams)));
+                            Program.Log.Debug("\n===Event UPDATE===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nStep: 0x{4:X}\nParams: {5}", eventUpdate.actorID, eventUpdate.scriptOwnerActorID, eventUpdate.val1, eventUpdate.val2, eventUpdate.step, LuaUtils.dumpParams(eventUpdate.luaParams));
 
                             //Is it a static actor? If not look in the player's instance
                             Actor updateOwnerActor = Server.getStaticActors(player.getActor().currentEventOwner);
@@ -406,7 +406,7 @@ namespace FFXIVClassic_Map_Server
                             client.queuePacket(BasePacket.createPacket(EndGMTicketPacket.buildPacket(player.actorID), true, false));
                             break;
                         default:
-                            Program.Log.Debug(String.Format("Unknown command 0x{0:X} received.", subpacket.gameMessage.opcode));
+                            Program.Log.Debug("Unknown command 0x{0:X} received.", subpacket.gameMessage.opcode);
                             subpacket.debugPrintSubPacket();
                             break;
                     }

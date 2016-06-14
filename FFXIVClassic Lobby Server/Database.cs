@@ -100,7 +100,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Dispose();
                 }
 
-                Program.Log.Sql(String.Format("CID={0} created on 'characters' table.", cid));
+                Program.Log.Debug("[SQL] CID={0} created on 'characters' table.", cid);
             }
 
             return alreadyExists;
@@ -242,7 +242,7 @@ namespace FFXIVClassic_Lobby_Server
                 
             }
 
-            Program.Log.Sql(String.Format("CID={0} state updated to active(2).", cid));
+            Program.Log.Debug("[SQL] CID={0} state updated to active(2).", cid);
         }
 
         public static bool renameCharacter(uint userId, uint characterId, uint serverId, String newName)
@@ -286,7 +286,7 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Dispose();
                 }
 
-                Program.Log.Sql(String.Format("CID={0} name updated to \"{1}\".", characterId, newName));
+                Program.Log.Debug("[SQL] CID={0} name updated to \"{1}\".", characterId, newName);
 
                 return false;
             }
@@ -320,7 +320,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
             }
 
-            Program.Log.Sql(String.Format("CID={0} deleted.", characterId));
+            Program.Log.Debug("[SQL] CID={0} deleted.", characterId);
         }
 
         public static List<World> getServers()

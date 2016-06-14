@@ -79,7 +79,7 @@ namespace FFXIVClassic_Map_Server.utils
 
                         cmd.Parameters["@placename"].Value = placenames[pId];
 
-                        Program.Log.Debug(String.Format("Wrote: {0}", id));
+                        Program.Log.Debug("Wrote: {0}", id);
                         cmd.ExecuteNonQuery();
 
                     }
@@ -137,7 +137,7 @@ namespace FFXIVClassic_Map_Server.utils
                         cmd.Parameters["@id"].Value = id;
                         cmd.Parameters["@displayNameId"].Value = nameId;
 
-                        Program.Log.Debug(String.Format("Wrote: {0} : {1}", id, nameId));
+                        Program.Log.Debug("Wrote: {0} : {1}", id, nameId);
                         cmd.ExecuteNonQuery();
 
                     }
@@ -203,7 +203,7 @@ namespace FFXIVClassic_Map_Server.utils
 
                         cmd.Parameters["@id"].Value = id;
 
-                        Program.Log.Debug(String.Format("Wrote: {0}", id));                        
+                        Program.Log.Debug("Wrote: {0}", id);                        
                         cmd.ExecuteNonQuery();
 
                     }
@@ -288,7 +288,7 @@ namespace FFXIVClassic_Map_Server.utils
                         else if (id == 1500)
                             otherId = SetCompletedAchievementsPacket.CATEGORY_GRAND_COMPANY;
 
-                        Program.Log.Debug(String.Format("Wrote: {0} : {1} : {2} : {3}", id, name, otherId, points));
+                        Program.Log.Debug("Wrote: {0} : {1} : {2} : {3}", id, name, otherId, points);
                         cmd.Parameters["@id"].Value = id;
                         cmd.Parameters["@name"].Value = name;
                         cmd.Parameters["@otherId"].Value = otherId;                        

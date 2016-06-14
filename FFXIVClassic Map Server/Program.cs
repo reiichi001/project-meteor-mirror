@@ -1,16 +1,21 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
+using System.Text;
 using MySql.Data.MySqlClient;
 using System.Reflection;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic.Common;
+using NLog;
+using NLog.Targets;
+using NLog.Targets.Wrappers;
+using NLog.Config;
 
 namespace FFXIVClassic_Map_Server
 {
     class Program
     {
-        public static Log Log;
+        public static Logger Log;
 
         static void Main(string[] args)
         {
@@ -24,20 +29,9 @@ namespace FFXIVClassic_Map_Server
             if (!ConfigConstants.load())
                 startServer = false;
 
-            Log = new Log(ConfigConstants.OPTIONS_LOGPATH, ConfigConstants.OPTIONS_LOGFILE, Int32.Parse(ConfigConstants.OPTIONS_LOGLEVEL));
+            // set up logging
 
-            Thread thread = new Thread(() =>
-            {
-                while (true)
-                {
-                    if (Log.LogQueue.Count > 0)
-                    {
-                        var message = Program.Log.LogQueue.Dequeue();
-                        Program.Log.WriteMessage(message.Item1, message.Item2);
-                    }
-                }
-            });
-            thread.Start();
+            Log = LogManager.GetCurrentClassLogger();
 
             Program.Log.Info("---------FFXIV 1.0 Map Server---------");            
 
@@ -54,7 +48,7 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
                     conn.Close();
 
-                    Program.Log.Status("[OK]");
+                    Program.Log.Info("[OK]");
                 }
                 catch (MySqlException e)
                 {
@@ -66,7 +60,7 @@ namespace FFXIVClassic_Map_Server
             //Check World ID
             DBWorld thisWorld = Database.getServer(ConfigConstants.DATABASE_WORLDID);
             if (thisWorld != null)
-                Program.Log.Info(String.Format("Successfully pulled world info from DB. Server name is {0}.", thisWorld.name));
+                Program.Log.Info("Successfully pulled world info from DB. Server name is {0}.", thisWorld.name);
             else
                 Program.Log.Info("World info could not be retrieved from the DB. Welcome and MOTD will not be displayed.");
 
@@ -77,9 +71,10 @@ namespace FFXIVClassic_Map_Server
                 CommandProcessor cp = new CommandProcessor(server.getConnectedPlayerList());
                 server.startServer();
 
-                while (true)
+                while (startServer)
                 {
                     String input = Console.ReadLine();
+                    Log.Info("[Console Input] " + input);
                     cp.doCommand(input, null);  
                 }
             }

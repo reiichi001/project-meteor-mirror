@@ -68,7 +68,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (bitIndex >= 32)
             {
-                Program.Log.Error(String.Format("Tried to access bit flag >= 32 for questId: {0}", actorId));
+                Program.Log.Error("Tried to access bit flag >= 32 for questId: {0}", actorId);
                 return;
             }
             
@@ -86,7 +86,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (bitIndex >= 32)
             {
-                Program.Log.Error(String.Format("Tried to access bit flag >= 32 for questId: {0}", actorId));
+                Program.Log.Error("Tried to access bit flag >= 32 for questId: {0}", actorId);
                 return false;
             }
             else

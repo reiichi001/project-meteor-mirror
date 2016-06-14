@@ -125,7 +125,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Program.Log.Info(String.Format("Loaded {0} zones and {1} private areas.", count1, count2));
+            Program.Log.Info("Loaded {0} zones and {1} private areas.", count1, count2);
         }
 
         public void LoadZoneEntranceList()
@@ -178,7 +178,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Program.Log.Info(String.Format("Loaded {0} zone spawn locations.", count));
+            Program.Log.Info("Loaded {0} zone spawn locations.", count);
         }
 
         public void LoadNPCs()
@@ -250,7 +250,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Program.Log.Info(String.Format("Loaded {0} npc(s).", count));
+            Program.Log.Info("Loaded {0} npc(s).", count);
         }
 
         public void LoadNPCs(uint zoneId)
@@ -323,7 +323,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Program.Log.Info(String.Format("Loaded {0} npc(s).", count));
+            Program.Log.Info("Loaded {0} npc(s).", count);
         }
 
         //Moves the actor to the new zone if exists. No packets are sent nor position changed.

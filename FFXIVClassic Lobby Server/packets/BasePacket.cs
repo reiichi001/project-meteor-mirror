@@ -336,7 +336,7 @@ namespace FFXIVClassic_Lobby_Server.packets
 #if DEBUG
             Console.BackgroundColor = ConsoleColor.DarkYellow;
 
-            Program.Log.Debug(String.Format("IsAuth: {0} Size: 0x{1:X}, NumSubpackets: {2}{3}{4}", header.isAuthenticated, header.packetSize, header.numSubpackets, Environment.NewLine, Utils.ByteArrayToHex(getHeaderBytes())));
+            Program.Log.Debug("IsAuth: {0} Size: 0x{1:X}, NumSubpackets: {2}{3}{4}", header.isAuthenticated, header.packetSize, header.numSubpackets, Environment.NewLine, Utils.ByteArrayToHex(getHeaderBytes()));
 
             foreach (SubPacket sub in getSubpackets())
             {

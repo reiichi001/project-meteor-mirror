@@ -53,7 +53,7 @@ namespace FFXIVClassic_Lobby_Server
                         case 0x0F:
                         //Mod Retainers
                         default:
-                            Program.Log.Debug(String.Format("Unknown command 0x{0:X} received.", subpacket.gameMessage.opcode));
+                            Program.Log.Debug("Unknown command 0x{0:X} received.", subpacket.gameMessage.opcode);
                             break;
                     }
                 }
@@ -67,7 +67,7 @@ namespace FFXIVClassic_Lobby_Server
             byte[] blowfishKey = GenerateKey(securityHandshake.ticketPhrase, securityHandshake.clientNumber);
             client.blowfish = new Blowfish(blowfishKey);
 
-            Program.Log.Info(String.Format("SecCNum: 0x{0:X}", securityHandshake.clientNumber));
+            Program.Log.Info("SecCNum: 0x{0:X}", securityHandshake.clientNumber);
 
             //Respond with acknowledgment
             BasePacket outgoingPacket = new BasePacket(HardCoded_Packets.g_secureConnectionAcknowledgment);
@@ -81,8 +81,8 @@ namespace FFXIVClassic_Lobby_Server
             SessionPacket sessionPacket = new SessionPacket(packet.data);
             String clientVersion = sessionPacket.version;
 
-            Program.Log.Info(String.Format("Got acknowledgment for secure session."));         
-            Program.Log.Info(String.Format("CLIENT VERSION: {0}", clientVersion));
+            Program.Log.Info("Got acknowledgment for secure session.");         
+            Program.Log.Info("CLIENT VERSION: {0}", clientVersion);
 
             uint userId = Database.getUserIdFromSession(sessionPacket.session);
             client.currentUserId = userId;
@@ -96,11 +96,11 @@ namespace FFXIVClassic_Lobby_Server
                     BasePacket.encryptPacket(client.blowfish, errorBasePacket);
                     client.queuePacket(errorBasePacket);
 
-                    Program.Log.Info(String.Format("Invalid session, kicking..."));
+                    Program.Log.Info("Invalid session, kicking...");
                     return;
             }
 
-            Program.Log.Info(String.Format("USER ID: {0}", userId));
+            Program.Log.Info("USER ID: {0}", userId);
 
             List<Account> accountList = new List<Account>();
             Account defaultAccount = new Account();
@@ -115,7 +115,7 @@ namespace FFXIVClassic_Lobby_Server
 
         private void ProcessGetCharacters(ClientConnection client, SubPacket packet)
         {   
-	        Program.Log.Info(String.Format("{0} => Get characters", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId));
+	        Program.Log.Info("{0} => Get characters", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId);
 
             sendWorldList(client, packet);
             sendImportList(client, packet);
@@ -128,7 +128,7 @@ namespace FFXIVClassic_Lobby_Server
         {
             SelectCharacterPacket selectCharRequest = new SelectCharacterPacket(packet.data);
 
-            Program.Log.Info(String.Format("{0} => Select character id {1}", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId, selectCharRequest.characterId));
+            Program.Log.Info("{0} => Select character id {1}", client.currentUserId == 0 ? client.getAddress() : "User " + client.currentUserId, selectCharRequest.characterId);
 
             Character chara = Database.getCharacter(client.currentUserId, selectCharRequest.characterId);
             World world = null;
@@ -187,7 +187,7 @@ namespace FFXIVClassic_Lobby_Server
                 BasePacket.encryptPacket(client.blowfish, basePacket);
                 client.queuePacket(basePacket);
 
-                Program.Log.Info(String.Format("User {0} => Error; invalid server id: \"{1}\"", client.currentUserId, worldId));
+                Program.Log.Info("User {0} => Error; invalid server id: \"{1}\"", client.currentUserId, worldId);
                 return;
             }
 
@@ -207,7 +207,7 @@ namespace FFXIVClassic_Lobby_Server
                         BasePacket.encryptPacket(client.blowfish, basePacket);
                         client.queuePacket(basePacket);
 
-                        Program.Log.Info(String.Format("User {0} => Error; name taken: \"{1}\"", client.currentUserId, charaReq.characterName));
+                        Program.Log.Info("User {0} => Error; name taken: \"{1}\"", client.currentUserId, charaReq.characterName);
                         return;
                     }
                     else
@@ -219,7 +219,7 @@ namespace FFXIVClassic_Lobby_Server
                         client.newCharaName = name;
                     }
 
-                    Program.Log.Info(String.Format("User {0} => Character reserved \"{1}\"", client.currentUserId, name));
+                    Program.Log.Info("User {0} => Character reserved \"{1}\"", client.currentUserId, name);
                     break;
                 case 0x02://Make                    
                     CharaInfo info = CharaInfo.getFromNewCharRequest(charaReq.characterInfoEncoded);
@@ -272,7 +272,7 @@ namespace FFXIVClassic_Lobby_Server
                     cid = client.newCharaCid;
                     name = client.newCharaName;
 
-                    Program.Log.Info(String.Format("User {0} => Character created \"{1}\"", client.currentUserId, name));
+                    Program.Log.Info("User {0} => Character created \"{1}\"", client.currentUserId, name);
                     break;
                 case 0x03://Rename
 
@@ -286,20 +286,20 @@ namespace FFXIVClassic_Lobby_Server
                         BasePacket.encryptPacket(client.blowfish, basePacket);
                         client.queuePacket(basePacket);
 
-                        Program.Log.Info(String.Format("User {0} => Error; name taken: \"{1}\"", client.currentUserId, charaReq.characterName));
+                        Program.Log.Info("User {0} => Error; name taken: \"{1}\"", client.currentUserId, charaReq.characterName);
                         return;
                     }
 
-                    Program.Log.Info(String.Format("User {0} => Character renamed \"{1}\"", client.currentUserId, name));
+                    Program.Log.Info("User {0} => Character renamed \"{1}\"", client.currentUserId, name);
                     break;
                 case 0x04://Delete
                     Database.deleteCharacter(charaReq.characterId, charaReq.characterName);
 
-                    Program.Log.Info(String.Format("User {0} => Character deleted \"{1}\"", client.currentUserId, name));
+                    Program.Log.Info("User {0} => Character deleted \"{1}\"", client.currentUserId, name);
                     break;
                 case 0x06://Rename Retainer
 
-                    Program.Log.Info(String.Format("User {0} => Retainer renamed \"{1}\"", client.currentUserId, name));
+                    Program.Log.Info("User {0} => Retainer renamed \"{1}\"", client.currentUserId, name);
                     break;
             }
 

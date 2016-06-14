@@ -91,7 +91,7 @@ namespace FFXIVClassic_Map_Server.Actors
             catch(FileNotFoundException e)
             { Program.Log.Error("Could not find staticactors file."); return false; }
 
-            Program.Log.Info(String.Format("Loaded {0} static actors.", mStaticActors.Count()));
+            Program.Log.Info("Loaded {0} static actors.", mStaticActors.Count());
 
             return true;
         }
