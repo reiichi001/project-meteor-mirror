@@ -314,7 +314,7 @@ namespace FFXIVClassic_Map_Server.Actors
                             
             if (child != null && child.Globals["init"] != null)
                 result = child.Call(child.Globals["init"], this);
-            else if (parent.Globals["init"] != null)
+            else if (parent != null && parent.Globals["init"] != null)
                 result = parent.Call(parent.Globals["init"], this);
             else
                 return null;
