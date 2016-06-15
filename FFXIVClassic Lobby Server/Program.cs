@@ -13,22 +13,20 @@ namespace FFXIVClassic_Lobby_Server
 
         static void Main(string[] args)
         {
+
+            // set up logging
+            Log = LogManager.GetCurrentClassLogger();
 #if DEBUG
             TextWriterTraceListener myWriter = new TextWriterTraceListener(System.Console.Out);
             Debug.Listeners.Add(myWriter);
 #endif
-
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("--------FFXIV 1.0 Lobby Server--------");
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Program.Log.Info("--------FFXIV 1.0 Lobby Server--------");
 
             bool startServer = true;
 
             //Load Config
             if (!ConfigConstants.Load())
                 startServer = false;
-
-            Log = LogManager.GetCurrentClassLogger();
             
             Assembly assem = Assembly.GetExecutingAssembly();
             Version vers = assem.GetName().Version;

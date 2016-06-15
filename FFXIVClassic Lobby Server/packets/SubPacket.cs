@@ -140,6 +140,7 @@ namespace FFXIVClassic_Lobby_Server.packets
         public void DebugPrintSubPacket()
         {
 #if DEBUG
+            // todo: create new target for colourful packet logging
             Program.Log.Debug("Size: 0x{0:X}{1}{2}", header.subpacketSize, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
             
             if (header.type == 0x03)

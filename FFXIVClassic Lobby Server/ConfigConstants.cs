@@ -18,13 +18,11 @@ namespace FFXIVClassic_Lobby_Server
 
         public static bool Load()
         {
-            Console.Write("Loading lobby_config.ini file... ");
+            Program.Log.Info("Loading lobby_config.ini file... ");
 
             if (!File.Exists("./lobby_config.ini"))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(String.Format("[FILE NOT FOUND]"));
-                Console.ForegroundColor = ConsoleColor.Gray;
+                Program.Log.Error("[FILE NOT FOUND]");
                 return false;
             }
 
@@ -40,9 +38,7 @@ namespace FFXIVClassic_Lobby_Server
             ConfigConstants.DATABASE_USERNAME =     configIni.GetValue("Database", "username", "");
             ConfigConstants.DATABASE_PASSWORD =     configIni.GetValue("Database", "password", "");
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("[OK]");
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Program.Log.Info("[OK]");
 
             return true;
         }

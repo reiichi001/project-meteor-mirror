@@ -334,7 +334,8 @@ namespace FFXIVClassic_Lobby_Server.packets
         public void DebugPrintPacket()
         {
 #if DEBUG
-            Console.BackgroundColor = ConsoleColor.DarkYellow;
+            // todo: create new target for colourful packet logging
+            //Console.BackgroundColor = ConsoleColor.DarkYellow;
 
             Program.Log.Debug("IsAuth: {0} Size: 0x{1:X}, NumSubpackets: {2}{3}{4}", header.isAuthenticated, header.packetSize, header.numSubpackets, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
 
@@ -343,7 +344,7 @@ namespace FFXIVClassic_Lobby_Server.packets
                 sub.DebugPrintSubPacket();
             }
 
-            Console.BackgroundColor = ConsoleColor.Black;
+            //Console.BackgroundColor = ConsoleColor.Black;
 #endif
         }
 
