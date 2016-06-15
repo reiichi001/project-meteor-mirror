@@ -4,25 +4,25 @@ end
 
 function onEventStarted(player, npc)
 	isNew = false;
-	player:runEventFunction("eventTalkStep1", isNew);
+	player:RunEventFunction("eventTalkStep1", isNew);
 end
 
 function onEventUpdate(player, npc, step, menuOptionSelected, lsName, lsCrest)
 
 	if (menuOptionSelected == nil) then
-		player:endEvent();
+		player:EndEvent();
 		return;
 	end
 
 	isNew = false;
 	if (menuOptionSelected == 1) then
-		player:runEventFunction("eventTalkStep2", isNew);
+		player:RunEventFunction("eventTalkStep2", isNew);
 	elseif (menuOptionSelected == 10) then
-		player:endEvent();
+		player:EndEvent();
 		return;
 	elseif (menuOptionSelected == 3) then
 		--createLinkshell
-		player:runEventFunction("eventTalkStepMakeupDone", isNew);
+		player:RunEventFunction("eventTalkStepMakeupDone", isNew);
 	end	
 	
 end

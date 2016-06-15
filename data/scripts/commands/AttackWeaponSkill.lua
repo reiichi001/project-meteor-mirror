@@ -10,13 +10,13 @@ Finds the correct weaponskill subscript to fire when a weaponskill actor is acti
 
 function onEventStarted(player, actor, triggerName)	
 
-	worldMaster = getWorldMaster();
+	worldMaster = GetWorldMaster();
 
-	if (player:getState() != 2) then
-		player:sendGameMessage(worldMaster, 32503, 0x20);
+	if (player:GetState() != 2) then
+		player:SendGameMessage(worldMaster, 32503, 0x20);
 	end
 
-	player:endCommand();
+	player:EndCommand();
 	
 end
 

@@ -3,13 +3,13 @@ function init(npc)
 end
 
 function onEventStarted(player, npc)
-	player:sendMessage(0x20, "", "This PopulaceShopSalesman actor has no event set. Actor Class Id: " .. tostring(npc:getActorClassId()))
-	player:endEvent();
-	--player:runEventFunction("welcomeTalk");
+	player:SendMessage(0x20, "", "This PopulaceShopSalesman actor has no event set. Actor Class Id: " .. tostring(npc:GetActorClassId()))
+	player:EndEvent();
+	--player:RunEventFunction("welcomeTalk");
 end
 
 function onEventUpdate(player, npc, step, menuOptionSelected, lsName, lsCrest)
 
-	player:endEvent();	
+	player:EndEvent();	
 	
 end

@@ -58,23 +58,23 @@ function onEventStarted(player, actor, triggerName, invActionInfo, param1, param
 	
 	--Equip Item
 	if (invActionInfo ~= nil) then		
-		item = player:getInventory(0):getItemBySlot(invActionInfo.slot);		
+		item = player:GetInventory(0):GetItemBySlot(invActionInfo.slot);		
 		equipItem(player, equipSlot, item);			
-		player:sendAppearance();
+		player:SendAppearance();
 	--Unequip Item
 	else	
-		item = player:getEquipment():GetItemAtSlot(equipSlot);
+		item = player:GetEquipment():GetItemAtSlot(equipSlot);
 		if (unequipItem(player, equipSlot, item) == true) then --Returns true only if something changed (didn't error out)
-			player:sendAppearance();
+			player:SendAppearance();
 		end
 	end
 	
-	player:endCommand();	
+	player:EndCommand();	
 end
 
 function loadGearset(player, classId)	
-	player:getEquipment():ToggleDBWrite(false);
-	local gearset = player:getGearset(classId);
+	player:GetEquipment():ToggleDBWrite(false);
+	local gearset = player:GetGearset(classId);
 	
 	if gearset == nil then
 		return;
@@ -83,7 +83,7 @@ function loadGearset(player, classId)
 	for slot = 0, 34 do
 	
 		if (slot ~= EQUIPSLOT_MAINHAND and slot ~= EQUIPSLOT_UNDERSHIRT and slot ~= EQUIPSLOT_UNDERGARMENT) then
-			itemAtSlot = player:getEquipment():GetItemAtSlot(slot);
+			itemAtSlot = player:GetEquipment():GetItemAtSlot(slot);
 			itemAtGearsetSlot = gearset[slot];
 			
 			if (itemAtSlot ~= nil or itemAtGearsetSlot ~= nil) then		
@@ -100,15 +100,15 @@ function loadGearset(player, classId)
 		
 	end
 	
-	player:getEquipment():ToggleDBWrite(true);
+	player:GetEquipment():ToggleDBWrite(true);
 	
 end
 
 function equipItem(player, equipSlot, item)
 	if (item ~= nil) then	
 		local classId = nil;
-		local worldMaster = getWorldMaster();
-		local gItem = getItemGamedata(item.itemId);
+		local worldMaster = GetWorldMaster();
+		local gItem = GetItemGamedata(item.itemId);
 		
 		--If it's the mainhand, begin class change based on weapon
 		if (equipSlot == EQUIPSLOT_MAINHAND) then
@@ -136,16 +136,16 @@ function equipItem(player, equipSlot, item)
 			end	
 			
 			if (classId ~= nil) then
-				player:sendGameMessage(player, worldMaster, 30103, 0x20, 0, 0, player, classId); 
+				player:SendGameMessage(player, worldMaster, 30103, 0x20, 0, 0, player, classId); 
 				player:prepareClassChange(classId);
 			end
 				
 		end		
 		
 		--Item Equipped message
-		player:sendGameMessage(player, worldMaster, 30601, 0x20, equipSlot+1, item.itemId, item.quality, 0, 0, 1); 
+		player:SendGameMessage(player, worldMaster, 30601, 0x20, equipSlot+1, item.itemId, item.quality, 0, 0, 1); 
 		
-		player:getEquipment():Equip(equipSlot, item);		
+		player:GetEquipment():Equip(equipSlot, item);		
 		
 		if 	   (equipSlot == EQUIPSLOT_MAINHAND and gItem:IsNailWeapon() == false and gItem:IsBowWeapon() == false) then graphicSlot = GRAPHICSLOT_MAINHAND;
 		elseif (equipSlot == EQUIPSLOT_OFFHAND) then graphicSlot = GRAPHICSLOT_OFFHAND;
@@ -184,19 +184,19 @@ function equipItem(player, equipSlot, item)
 end
 
 function unequipItem(player, equipSlot, item)
-	worldMaster = getWorldMaster();
+	worldMaster = GetWorldMaster();
 
 	if (item ~= nil and (equipSlot == EQUIPSLOT_MAINHAND or equipSlot == EQUIPSLOT_UNDERSHIRT or equipSlot == EQUIPSLOT_UNDERGARMENT)) then
-		player:sendGameMessage(player, worldMaster, 30730, 0x20, equipSlot+1, item.itemId, item.quality, 0, 0, 1); --Unable to unequip
+		player:SendGameMessage(player, worldMaster, 30730, 0x20, equipSlot+1, item.itemId, item.quality, 0, 0, 1); --Unable to unequip
 	elseif (item ~= nil) then
-		player:sendGameMessage(player, worldMaster, 30602, 0x20, equipSlot+1, item.itemId, item.quality, 0, 0, 1); --Item Removed
-		player:getEquipment():Unequip(equipSlot);
+		player:SendGameMessage(player, worldMaster, 30602, 0x20, equipSlot+1, item.itemId, item.quality, 0, 0, 1); --Item Removed
+		player:GetEquipment():Unequip(equipSlot);
 				
 		if (equipSlot == EQUIPSLOT_BODY) then --Show Undershirt
-			item = player:getEquipment():GetItemAtSlot(EQUIPSLOT_UNDERSHIRT);
+			item = player:GetEquipment():GetItemAtSlot(EQUIPSLOT_UNDERSHIRT);
 			player:graphicChange(GRAPHICSLOT_BODY, item);
 		elseif (equipSlot == EQUIPSLOT_LEGS) then --Show Undergarment
-			item = player:getEquipment():GetItemAtSlot(EQUIPSLOT_UNDERGARMENT);
+			item = player:GetEquipment():GetItemAtSlot(EQUIPSLOT_UNDERGARMENT);
 			player:graphicChange(GRAPHICSLOT_LEGS, item);			
 		elseif  (equipSlot == EQUIPSLOT_HANDS) then player:graphicChange(15, 0, 1, 0, 0);
 		elseif  (equipSlot == EQUIPSLOT_FEET) then player:graphicChange(16, 0, 1, 0, 0);

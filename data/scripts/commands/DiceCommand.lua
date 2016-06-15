@@ -12,10 +12,10 @@ function onEventStarted(player, actor, triggerName, maxNumber)
 		
 	result = math.random(0, maxNumber);
 	
-	worldMaster = getWorldMaster();
-	player:sendGameMessage(player, worldMaster, 25342, 0x20, result, maxNumber);
+	worldMaster = GetWorldMaster();
+	player:SendGameMessage(player, worldMaster, 25342, 0x20, result, maxNumber);
 				
-	player:endCommand();
+	player:EndCommand();
 	
 end
 

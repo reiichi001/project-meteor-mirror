@@ -1,6 +1,6 @@
 
 function onEventStarted(player, npc)
-    defaultSea = getStaticActor("DftSea");
-    player:runEventFunction("delegateEvent", player, defaultSea, "defaultTalkWithDhemsunn_001", nil, nil, nil);
+    defaultSea = GetStaticActor("DftSea");
+    player:RunEventFunction("delegateEvent", player, defaultSea, "defaultTalkWithDhemsunn_001", nil, nil, nil);
 end
 

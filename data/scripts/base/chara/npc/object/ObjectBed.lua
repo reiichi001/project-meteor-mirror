@@ -4,22 +4,22 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-	player:runEventFunction("askLogout", player);
+	player:RunEventFunction("askLogout", player);
 end
 
 function onEventUpdate(player, npc, eventStep, menuOptionSelected)	
 	
 	if (menuOptionSelected == 1) then 
-		player:endEvent();
+		player:EndEvent();
 		return;
 	elseif (menuOptionSelected == 2) then
 		player:quitGame();
 	elseif (menuOptionSelected == 3) then
 		player:logout();
 	elseif (menuOptionSelected == 4) then
-		player:sendMessage(33, "", "Heck the bed");
+		player:SendMessage(33, "", "Heck the bed");
 	end 	
 	
-	player:endEvent();
+	player:EndEvent();
 		
 end

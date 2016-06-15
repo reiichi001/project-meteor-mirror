@@ -25,10 +25,10 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-	player:runEventFunction("eventAetheryteParentSelect", 0x0, false, 0x61, 0x0,0,0,0,0);
+	player:RunEventFunction("eventAetheryteParentSelect", 0x0, false, 0x61, 0x0,0,0,0,0);
 end
 
 function onEventUpdate(player, npc, step, menuOptionSelected, lsName, lsCrest)
-	--player:runEventFunction("askOfferQuest", player, 1000);
-	player:endEvent();
+	--player:RunEventFunction("askOfferQuest", player, 1000);
+	player:EndEvent();
 end

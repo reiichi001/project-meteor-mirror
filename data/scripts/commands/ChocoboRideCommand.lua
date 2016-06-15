@@ -8,40 +8,40 @@ Handles mounting and dismounting the Chocobo and Goobbue
 
 function onEventStarted(player, actor, triggerName, isGoobbue)
 
-	if (player:getState() == 0) then		
+	if (player:GetState() == 0) then		
 				
-		worldMaster = getWorldMaster();		
+		worldMaster = GetWorldMaster();		
 		
 		if (isGoobbue ~= true) then
 			player:changeMusic(83);
-			player:sendChocoboAppearance();
-			player:sendGameMessage(player, worldMaster, 26001, 0x20);
-			player:setMountState(1);
+			player:SendChocoboAppearance();
+			player:SendGameMessage(player, worldMaster, 26001, 0x20);
+			player:SetMountState(1);
 		else
 			player:changeMusic(98);
-			player:sendGoobbueAppearance();
-			player:sendGameMessage(player, worldMaster, 26019, 0x20);
-			player:setMountState(2);
+			player:SendGoobbueAppearance();
+			player:SendGameMessage(player, worldMaster, 26019, 0x20);
+			player:SetMountState(2);
 		end
 		
 		player:changeSpeed(0.0, 5.0, 10.0);
 		player:changeState(15);
 	else
-		player:changeMusic(player:getZone().bgmDay);
+		player:changeMusic(player:GetZone().bgmDay);
 		
-		worldMaster = getWorldMaster();
+		worldMaster = GetWorldMaster();
 		
-		if (player:getMountState() == 1) then
-			player:sendGameMessage(player, worldMaster, 26003, 0x20);
+		if (player:GetMountState() == 1) then
+			player:SendGameMessage(player, worldMaster, 26003, 0x20);
 		else
-			player:sendGameMessage(player, worldMaster, 26021, 0x20);		
+			player:SendGameMessage(player, worldMaster, 26021, 0x20);		
 		end
 		
-		player:setMountState(0);
+		player:SetMountState(0);
 		player:changeSpeed(0.0, 2.0, 5.0)
 		player:changeState(0); 
 	end
 	
-	player:endCommand();
+	player:EndCommand();
 	
 end

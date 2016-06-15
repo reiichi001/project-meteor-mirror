@@ -4,10 +4,10 @@ function init(npc)
 end
 
 function onEventStarted(player, npc)
-	player:sendMessage(0x20, "", "This PopulaceStandard actor has no event set. Actor Class Id: " .. tostring(npc:getActorClassId()));
-	player:endEvent();
+	player:SendMessage(0x20, "", "This PopulaceStandard actor has no event set. Actor Class Id: " .. tostring(npc:GetActorClassId()));
+	player:EndEvent();
 end
 
 function onEventUpdate(player, npc, blah, menuSelect)
-	player:endEvent();
+	player:EndEvent();
 end

@@ -28,10 +28,10 @@ function init(npc)
 end
 
 function onEventStarted(player, npc)
-	player:runEventFunction("talkOfferWelcome", player, 1);
+	player:RunEventFunction("talkOfferWelcome", player, 1);
 end
 
 function onEventUpdate(player, npc, step, menuOptionSelected, lsName, lsCrest)
-	--player:runEventFunction("askOfferQuest", player, 1000);
-	player:endEvent();
+	--player:RunEventFunction("askOfferQuest", player, 1000);
+	player:EndEvent();
 end

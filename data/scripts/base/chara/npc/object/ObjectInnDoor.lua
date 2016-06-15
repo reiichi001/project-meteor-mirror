@@ -4,16 +4,16 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-	defaultFst = getStaticActor("DftFst");
-	player:runEventFunction("delegateEvent", player, defaultFst, "defaultTalkWithInn_ExitDoor", nil, nil, nil);
+	defaultFst = GetStaticActor("DftFst");
+	player:RunEventFunction("delegateEvent", player, defaultFst, "defaultTalkWithInn_ExitDoor", nil, nil, nil);
 end
 
 function onEventUpdate(player, npc, resultId, isExitYes)
 
 	if (isExitYes ~= nil and isExitYes == 1) then
-		getWorldManager():DoZoneChange(player, 1);
+		GetWorldManager():DoZoneChange(player, 1);
 	else
-		player:endEvent();
+		player:EndEvent();
 	end
 	
 end
