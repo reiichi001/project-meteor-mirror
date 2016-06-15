@@ -1,9 +1,9 @@
-﻿using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.common;
+﻿using FFXIVClassic_Map_Server;
+using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors;
-using FFXIVClassic_Map_Server.common.EfficientHashTables;
+using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
@@ -113,7 +113,7 @@ namespace FFXIVClassic_Map_Server
                             {
                                 Zone parent = zoneList[parentZoneId];
                                 PrivateArea privArea = new PrivateArea(parent, reader.GetUInt32("id"), reader.GetString("className"), reader.GetString("privateAreaName"), 1, reader.GetUInt16("dayMusic"), reader.GetUInt16("nightMusic"), reader.GetUInt16("battleMusic"));
-                                parent.addPrivateArea(privArea);
+                                parent.AddPrivateArea(privArea);
                             }
                             else
                                 continue;
@@ -130,7 +130,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Log.info(String.Format("Loaded {0} zones and {1} private areas.", count1, count2));
+            Program.Log.Info(String.Format("Loaded {0} zones and {1} private areas.", count1, count2));
         }
 
         public void LoadZoneEntranceList()
@@ -181,7 +181,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Log.info(String.Format("Loaded {0} zone spawn locations.", count));
+            Program.Log.Info(String.Format("Loaded {0} zone spawn locations.", count));
         }
 
         public void LoadActorClasses()
@@ -234,7 +234,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Log.info(String.Format("Loaded {0} actor classes.", count));
+            Program.Log.Info(String.Format("Loaded {0} actor classes.", count));
         }
 
         public void LoadSpawnLocations()
@@ -296,7 +296,7 @@ namespace FFXIVClassic_Map_Server
 
                             SpawnLocation spawn = new SpawnLocation(classId, uniqueId, zoneId, privAreaName, privAreaLevel, x, y, z, rot, state, animId);
 
-                            zone.addSpawnLocation(spawn);
+                            zone.AddSpawnLocation(spawn);
 
                             count++;
                         }
@@ -311,14 +311,14 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
-            Log.info(String.Format("Loaded {0} spawn(s).", count));
+            Program.Log.Info(String.Format("Loaded {0} spawn(s).", count));
         }
 
-        public void spawnAllActors()
+        public void SpawnAllActors()
         {
-            Log.info("Spawning actors...");
+            Program.Log.Info("Spawning actors...");
             foreach (Zone z in zoneList.Values)
-                z.spawnAllActors(true);
+                z.SpawnAllActors(true);
         }
 
         //Moves the actor to the new zone if exists. No packets are sent nor position changed.
@@ -329,7 +329,7 @@ namespace FFXIVClassic_Map_Server
             if (player.zone != null)
             {
                 oldZone = player.zone;
-                oldZone.removeActorFromZone(player);
+                oldZone.RemoveActorFromZone(player);
             }
 
             //Add player to new zone and update
@@ -339,9 +339,9 @@ namespace FFXIVClassic_Map_Server
             if (newZone == null)
                 return;
 
-            newZone.addActorToZone(player);
+            newZone.AddActorToZone(player);
 
-            LuaEngine.onZoneIn(player);
+            LuaEngine.OnZoneIn(player);
         }
 
         //Moves actor to new zone, and sends packets to spawn at the given zone entrance
@@ -349,7 +349,7 @@ namespace FFXIVClassic_Map_Server
         {
             if (!zoneEntranceList.ContainsKey(zoneEntrance))
             {
-                Log.error("Given zone entrance was not found: " + zoneEntrance);
+                Program.Log.Error("Given zone entrance was not found: " + zoneEntrance);
                 return;
             }
 
@@ -366,7 +366,7 @@ namespace FFXIVClassic_Map_Server
             if (player.zone != null)
             {
                 oldZone = player.zone;
-                oldZone.removeActorFromZone(player);
+                oldZone.RemoveActorFromZone(player);
             }
 
             //Add player to new zone and update
@@ -375,12 +375,12 @@ namespace FFXIVClassic_Map_Server
             if (destinationPrivateArea == null)
                 newArea = GetZone(destinationZoneId);
             else
-                newArea = GetZone(destinationZoneId).getPrivateArea(destinationPrivateArea, 0);
+                newArea = GetZone(destinationZoneId).GetPrivateArea(destinationPrivateArea, 0);
             //This server does not contain that zoneId
             if (newArea == null)
                 return;
 
-            newArea.addActorToZone(player);
+            newArea.AddActorToZone(player);
 
             //Update player actor's properties
             player.zoneId = newArea.actorId;
@@ -391,13 +391,13 @@ namespace FFXIVClassic_Map_Server
             player.rotation = spawnRotation;
 
             //Send packets
-            player.playerSession.queuePacket(DeleteAllActorsPacket.buildPacket(player.actorId), true, false);
-            player.playerSession.queuePacket(_0xE2Packet.buildPacket(player.actorId, 0x0), true, false);
-            player.sendZoneInPackets(this, spawnType);
-            player.playerSession.clearInstance();
-            player.sendInstanceUpdate();
+            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
+            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x0), true, false);
+            player.SendZoneInPackets(this, spawnType);
+            player.playerSession.ClearInstance();
+            player.SendInstanceUpdate();
 
-            LuaEngine.onZoneIn(player);
+            LuaEngine.OnZoneIn(player);
         }
 
         //Moves actor within zone to spawn position
@@ -405,7 +405,7 @@ namespace FFXIVClassic_Map_Server
         {
             if (!zoneEntranceList.ContainsKey(zoneEntrance))
             {
-                Log.error("Given zone entrance was not found: " + zoneEntrance);
+                Program.Log.Error("Given zone entrance was not found: " + zoneEntrance);
                 return;
             }
 
@@ -423,8 +423,8 @@ namespace FFXIVClassic_Map_Server
             //Remove player from currentZone if transfer else it's login
             if (player.zone != null)
             {
-                player.zone.removeActorFromZone(player);
-                player.zone.addActorToZone(player);
+                player.zone.RemoveActorFromZone(player);
+                player.zone.AddActorToZone(player);
 
                 //Update player actor's properties;
                 player.positionX = spawnX;
@@ -433,9 +433,9 @@ namespace FFXIVClassic_Map_Server
                 player.rotation = spawnRotation;
 
                 //Send packets
-                player.playerSession.queuePacket(_0xE2Packet.buildPacket(player.actorId, 0x0), true, false);
-                player.playerSession.queuePacket(player.createSpawnTeleportPacket(player.actorId, spawnType), true, false);
-                player.sendInstanceUpdate();
+                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x0), true, false);
+                player.playerSession.QueuePacket(player.CreateSpawnTeleportPacket(player.actorId, spawnType), true, false);
+                player.SendInstanceUpdate();
 
             }            
         }
@@ -453,15 +453,15 @@ namespace FFXIVClassic_Map_Server
             //Set the current zone and add player
             player.zone = zone;
 
-            LuaEngine.onBeginLogin(player);
+            LuaEngine.OnBeginLogin(player);
             
-            zone.addActorToZone(player);
+            zone.AddActorToZone(player);
             
             //Send packets            
-            player.sendZoneInPackets(this, 0x1);
+            player.SendZoneInPackets(this, 0x1);
 
-            LuaEngine.onLogin(player);
-            LuaEngine.onZoneIn(player);
+            LuaEngine.OnLogin(player);
+            LuaEngine.OnZoneIn(player);
         }
 
         public void reloadZone(uint zoneId)
@@ -547,7 +547,7 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public ZoneEntrance getZoneEntrance(uint entranceId)
+        public ZoneEntrance GetZoneEntrance(uint entranceId)
         {
             if (zoneEntranceList.ContainsKey(entranceId))
                 return zoneEntranceList[entranceId];

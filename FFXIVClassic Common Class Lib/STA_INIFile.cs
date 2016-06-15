@@ -9,10 +9,9 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
-namespace STA.Settings
+namespace FFXIVClassic.Common
 {
-
-	internal class INIFile
+	public class INIFile
 	{
 
 #region "Declarations"
@@ -179,7 +178,7 @@ namespace STA.Settings
             // *** Check if original file exists ***
             bool OriginalFileExists = File.Exists(m_FileName);
 
-            // *** Get temporary file name ***
+            // *** get temporary file name ***
             string TmpFileName = Path.ChangeExtension(m_FileName, "$n$");
 
             // *** Copy content of original file to temporary file, replace modified values ***
@@ -199,7 +198,7 @@ namespace STA.Settings
                         // *** Open the original file ***
                         sr = new StreamReader(m_FileName);
 
-                        // *** Read the file original content, replace changes with local cache values ***
+                        // *** Read the file original content, replace Changes with local cache values ***
                         string s;
                         string SectionName;
                         string Key = null;
@@ -337,7 +336,7 @@ namespace STA.Settings
         }
 	
 		// *** Read a value from local cache ***
-		internal string GetValue(string SectionName, string Key, string DefaultValue)
+		public string GetValue(string SectionName, string Key, string DefaultValue)
 		{
 			// *** Lazy loading ***
 			if (m_Lazy)
@@ -380,7 +379,7 @@ namespace STA.Settings
 				Dictionary<string, string> Section;
 				if (!m_Sections.TryGetValue(SectionName, out Section))
 				{
-					// *** If it doesn't, add it ***
+					// *** If it Doesn't, Add it ***
 					Section = new Dictionary<string, string>();
 					m_Sections.Add(SectionName,Section);
 				}
@@ -458,6 +457,14 @@ namespace STA.Settings
             return DefaultValue;
 		}
 
+        internal uint GetValue(string SectionName, string Key, uint DefaultValue)
+        {
+            string StringValue = GetValue(SectionName, Key, DefaultValue.ToString(CultureInfo.InvariantCulture));
+            uint Value;
+            if (uint.TryParse(StringValue, NumberStyles.Any, CultureInfo.InvariantCulture, out Value)) return Value;
+            return DefaultValue;
+        }
+
         internal long GetValue(string SectionName, string Key, long DefaultValue)
         {
             string StringValue = GetValue(SectionName, Key, DefaultValue.ToString(CultureInfo.InvariantCulture));
@@ -466,7 +473,7 @@ namespace STA.Settings
             return DefaultValue;
         }
 
-		internal double GetValue(string SectionName, string Key, double DefaultValue)
+		internal Double GetValue(string SectionName, string Key, Double DefaultValue)
 		{
             string StringValue = GetValue(SectionName, Key, DefaultValue.ToString(CultureInfo.InvariantCulture));
 			double Value;
@@ -511,7 +518,7 @@ namespace STA.Settings
             SetValue(SectionName, Key, Value.ToString(CultureInfo.InvariantCulture));
         }
 
-		internal void SetValue(string SectionName, string Key, double Value)
+		internal void SetValue(string SectionName, string Key, Double Value)
 		{
 			SetValue(SectionName, Key, Value.ToString(CultureInfo.InvariantCulture));
 		}

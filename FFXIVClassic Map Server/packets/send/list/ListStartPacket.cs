@@ -1,10 +1,6 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.list
 {
@@ -17,7 +13,7 @@ namespace FFXIVClassic_Map_Server.packets.send.list
         public const ushort OPCODE = 0x017C;
         public const uint PACKET_SIZE = 0x98;
 
-        public static SubPacket buildPacket(uint playerActorID, uint locationCode, ulong sequenceId, ulong listId, uint listTypeId, int numEntries)
+        public static SubPacket BuildPacket(uint playerActorID, uint locationCode, ulong sequenceId, ulong listId, uint listTypeId, int numEntries)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -38,7 +34,7 @@ namespace FFXIVClassic_Map_Server.packets.send.list
                     binWriter.Write((UInt64)0);
                     binWriter.Write((UInt64)listId);
 
-                    //This seems to change depending on what the list is for
+                    //This seems to Change depending on what the list is for
                     binWriter.Write((UInt32)listTypeId);
                     binWriter.Seek(0x40, SeekOrigin.Begin);
 

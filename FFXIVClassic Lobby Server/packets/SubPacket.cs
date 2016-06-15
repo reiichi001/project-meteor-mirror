@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
-using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic.Common;
 
 namespace FFXIVClassic_Lobby_Server.packets
 {
@@ -106,7 +101,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             data = original.data;
         }
 
-        public byte[] getHeaderBytes()
+        public byte[] GetHeaderBytes()
         {
             int size = Marshal.SizeOf(header);
             byte[] arr = new byte[size];
@@ -118,7 +113,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             return arr;
         }
 
-        public byte[] getGameMessageBytes()
+        public byte[] GetGameMessageBytes()
         {
             int size = Marshal.SizeOf(gameMessage);
             byte[] arr = new byte[size];
@@ -130,31 +125,29 @@ namespace FFXIVClassic_Lobby_Server.packets
             return arr;
         }
 
-        public byte[] getBytes()
+        public byte[] GetBytes()
         {
             byte[] outBytes = new byte[header.subpacketSize];
-            Array.Copy(getHeaderBytes(), 0, outBytes, 0, SUBPACKET_SIZE);
+            Array.Copy(GetHeaderBytes(), 0, outBytes, 0, SUBPACKET_SIZE);
 
             if (header.type == 0x3)
-                Array.Copy(getGameMessageBytes(), 0, outBytes, SUBPACKET_SIZE, GAMEMESSAGE_SIZE);
+                Array.Copy(GetGameMessageBytes(), 0, outBytes, SUBPACKET_SIZE, GAMEMESSAGE_SIZE);
 
             Array.Copy(data, 0, outBytes, SUBPACKET_SIZE + (header.type == 0x3 ? GAMEMESSAGE_SIZE : 0), data.Length);
             return outBytes;
         }
 
-        public void debugPrintSubPacket()
+        public void DebugPrintSubPacket()
         {
 #if DEBUG
-            Console.BackgroundColor = ConsoleColor.DarkRed;
-            Console.WriteLine("Size: 0x{0:X}", header.subpacketSize);
+            Program.Log.Debug("Size: 0x{0:X}{1}{2}", header.subpacketSize, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
+            
             if (header.type == 0x03)
-                Console.WriteLine("Opcode: 0x{0:X}", gameMessage.opcode);
-            Console.WriteLine("{0}", Utils.ByteArrayToHex(getHeaderBytes()));
-            if (header.type == 0x03)
-                Console.WriteLine("{0}", Utils.ByteArrayToHex(getGameMessageBytes()));
-            Console.BackgroundColor = ConsoleColor.DarkMagenta;
-            Console.WriteLine("{0}", Utils.ByteArrayToHex(data));
-            Console.BackgroundColor = ConsoleColor.Black;
+            {
+                Program.Log.Debug("Opcode: 0x{0:X}{1}{2}", gameMessage.opcode, Environment.NewLine, Utils.ByteArrayToHex(GetGameMessageBytes(), SUBPACKET_SIZE));
+            }
+
+            Program.Log.Debug("Data: {0}{1}", Environment.NewLine, Utils.ByteArrayToHex(data, SUBPACKET_SIZE + GAMEMESSAGE_SIZE));
 #endif
         }
 

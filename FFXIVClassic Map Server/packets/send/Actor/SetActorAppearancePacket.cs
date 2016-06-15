@@ -1,10 +1,4 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace FFXIVClassic_Map_Server.packets.send.actor
 {
@@ -57,7 +51,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             appearanceIDs = appearanceTable;
         }
 
-        public SubPacket buildPacket(uint playerActorID, uint actorID)
+        public SubPacket BuildPacket(uint playerActorID, uint actorID)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

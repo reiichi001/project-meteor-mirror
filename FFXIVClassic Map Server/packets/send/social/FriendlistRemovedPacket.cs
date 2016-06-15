@@ -1,10 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.social
 {
@@ -13,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.send.social
         public const ushort OPCODE = 0x01CD;
         public const uint PACKET_SIZE = 0x057;
 
-        public static SubPacket buildPacket(uint playerActorID, bool isSuccess, string nameToRemove)
+        public static SubPacket BuildPacket(uint playerActorID, bool isSuccess, string nameToRemove)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

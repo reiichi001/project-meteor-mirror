@@ -11,11 +11,11 @@ emoteTable = {
 
 function onEventStarted(player, actor, triggerName, emoteId)
 
-	if (player:getState() == 0) then						
+	if (player:GetState() == 0) then						
 		player:doEmote(emoteId);
 	end
 	
-	player:endCommand();
+	player:EndCommand();
 	
 end
 

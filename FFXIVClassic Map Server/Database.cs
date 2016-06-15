@@ -1,30 +1,23 @@
 ﻿using MySql.Data.MySqlClient;
 using Dapper;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.utils;
-using FFXIVClassic_Lobby_Server.packets;
+using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.packets.send.player;
-using FFXIVClassic_Lobby_Server.dataobjects;
-using FFXIVClassic_Map_Server;
-using FFXIVClassic_Map_Server.common.EfficientHashTables;
-using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
+using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.actors.chara.player;
 
-namespace FFXIVClassic_Lobby_Server
+namespace FFXIVClassic_Map_Server
 {
 
     class Database
     {
 
-        public static uint getUserIdFromSession(String sessionId)
+        public static uint GetUserIdFromSession(String sessionId)
         {
             uint id = 0;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -43,7 +36,9 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -52,7 +47,7 @@ namespace FFXIVClassic_Lobby_Server
             return id;
         }
      
-        public static DBWorld getServer(uint serverId)
+        public static DBWorld GetServer(uint serverId)
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -63,7 +58,8 @@ namespace FFXIVClassic_Lobby_Server
                     world = conn.Query<DBWorld>("SELECT * FROM servers WHERE id=@ServerId", new {ServerId = serverId}).SingleOrDefault();                  
                 }
                 catch (MySqlException e)
-                {                    
+                {
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -74,7 +70,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }    
 
-        public static List<Npc> getNpcList()
+        public static List<Npc> GetNpcList()
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -86,6 +82,7 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
@@ -96,7 +93,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static Dictionary<uint, Item> getItemGamedata()
+        public static Dictionary<uint, Item> GetItemGamedata()
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -140,7 +137,9 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -150,7 +149,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static void savePlayerAppearance(Player player)
+        public static void SavePlayerAppearance(Player player)
         {
             string query;
             MySqlCommand cmd;
@@ -196,7 +195,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -204,7 +205,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static void savePlayerCurrentClass(Player player)
+        public static void SavePlayerCurrentClass(Player player)
         {
             string query;
             MySqlCommand cmd;
@@ -230,7 +231,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -238,7 +241,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static void savePlayerPosition(Player player)
+        public static void SavePlayerPosition(Player player)
         {
             string query;            
             MySqlCommand cmd;
@@ -270,7 +273,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -278,7 +283,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static void savePlayerPlayTime(Player player)
+        public static void SavePlayerPlayTime(Player player)
         {
             string query;
             MySqlCommand cmd;
@@ -297,12 +302,14 @@ namespace FFXIVClassic_Lobby_Server
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charaId", player.actorId);
-                    cmd.Parameters.AddWithValue("@playtime", player.getPlayTime(true));
+                    cmd.Parameters.AddWithValue("@playtime", player.GetPlayTime(true));
 
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -310,19 +317,19 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static void saveQuest(Player player, Quest quest)
+        public static void SaveQuest(Player player, Quest quest)
         {
-            int slot = player.getQuestSlot(quest.actorId);
+            int slot = player.GetQuestSlot(quest.actorId);
             if (slot == -1)
             {
-                Log.error(String.Format("Tried saving quest player didn't have: Player: {0:x}, QuestId: {0:x}", player.actorId, quest.actorId));
+                Program.Log.Error("Tried saving quest player didn't have: Player: {0:x}, QuestId: {0:x}", player.actorId, quest.actorId);
                 return;
             }
             else
-                saveQuest(player, quest, slot);
+                SaveQuest(player, quest, slot);
         }
 
-        public static void saveQuest(Player player, Quest quest, int slot)
+        public static void SaveQuest(Player player, Quest quest, int slot)
         {
             string query;
             MySqlCommand cmd;
@@ -352,7 +359,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -360,7 +369,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static void loadPlayerCharacter(Player player)
+        public static void LoadPlayerCharacter(Player player)
         {            
             string query;
             MySqlCommand cmd;            
@@ -550,12 +559,12 @@ namespace FFXIVClassic_Lobby_Server
                         if (reader.Read())
                         {
                             if (reader.GetUInt32(0) == 0xFFFFFFFF)
-                                player.modelId = CharacterUtils.getTribeModel(player.playerWork.tribe);
+                                player.modelId = CharacterUtils.GetTribeModel(player.playerWork.tribe);
                             else
                                 player.modelId = reader.GetUInt32(0);
                             player.appearanceIds[Character.SIZE] = reader.GetByte(1);
                             player.appearanceIds[Character.COLORINFO] = (uint)(reader.GetUInt16(3) | (reader.GetUInt16(5) << 10) | (reader.GetUInt16(7) << 20));
-                            player.appearanceIds[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.getFaceInfo(reader.GetByte(8), reader.GetByte(9), reader.GetByte(10), reader.GetByte(11), reader.GetByte(12), reader.GetByte(13), reader.GetByte(14), reader.GetByte(15), reader.GetByte(16), reader.GetByte(17)));
+                            player.appearanceIds[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.GetFaceInfo(reader.GetByte(8), reader.GetByte(9), reader.GetByte(10), reader.GetByte(11), reader.GetByte(12), reader.GetByte(13), reader.GetByte(14), reader.GetByte(15), reader.GetByte(16), reader.GetByte(17)));
                             player.appearanceIds[Character.HIGHLIGHT_HAIR] = (uint)(reader.GetUInt16(6) | reader.GetUInt16(4) << 10);
                             player.appearanceIds[Character.VOICE] = reader.GetByte(2);
                             player.appearanceIds[Character.MAINHAND] = reader.GetUInt32(18);
@@ -702,7 +711,7 @@ namespace FFXIVClassic_Lobby_Server
                             else
                                 questFlags = 0;
 
-                            string questName = Server.getStaticActors(player.playerWork.questScenario[index]).actorName;
+                            string questName = Server.GetStaticActors(player.playerWork.questScenario[index]).actorName;
                             player.questScenario[index] = new Quest(player, player.playerWork.questScenario[index], questName, questData, questFlags);
                         }
                     }
@@ -769,17 +778,19 @@ namespace FFXIVClassic_Lobby_Server
                         }
                     }
 
-                    player.getInventory(Inventory.NORMAL).initList(getInventory(player, 0, Inventory.NORMAL));
-                    player.getInventory(Inventory.KEYITEMS).initList(getInventory(player, 0, Inventory.KEYITEMS));
-                    player.getInventory(Inventory.CURRENCY).initList(getInventory(player, 0, Inventory.CURRENCY));
-                    player.getInventory(Inventory.BAZAAR).initList(getInventory(player, 0, Inventory.BAZAAR));
-                    player.getInventory(Inventory.MELDREQUEST).initList(getInventory(player, 0, Inventory.MELDREQUEST));
-                    player.getInventory(Inventory.LOOT).initList(getInventory(player, 0, Inventory.LOOT));
+                    player.GetInventory(Inventory.NORMAL).InitList(GetInventory(player, 0, Inventory.NORMAL));
+                    player.GetInventory(Inventory.KEYITEMS).InitList(GetInventory(player, 0, Inventory.KEYITEMS));
+                    player.GetInventory(Inventory.CURRENCY).InitList(GetInventory(player, 0, Inventory.CURRENCY));
+                    player.GetInventory(Inventory.BAZAAR).InitList(GetInventory(player, 0, Inventory.BAZAAR));
+                    player.GetInventory(Inventory.MELDREQUEST).InitList(GetInventory(player, 0, Inventory.MELDREQUEST));
+                    player.GetInventory(Inventory.LOOT).InitList(GetInventory(player, 0, Inventory.LOOT));
 
-                    player.getEquipment().SetEquipment(getEquipment(player, player.charaWork.parameterSave.state_mainSkill[0]));
+                    player.GetEquipment().SetEquipment(GetEquipment(player, player.charaWork.parameterSave.state_mainSkill[0]));
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -788,9 +799,9 @@ namespace FFXIVClassic_Lobby_Server
 
         }
 
-        public static InventoryItem[] getEquipment(Player player, ushort classId)
+        public static InventoryItem[] GetEquipment(Player player, ushort classId)
         {
-            InventoryItem[] equipment = new InventoryItem[player.getEquipment().GetCapacity()];
+            InventoryItem[] equipment = new InventoryItem[player.GetEquipment().GetCapacity()];
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -815,13 +826,15 @@ namespace FFXIVClassic_Lobby_Server
                         {
                             ushort equipSlot = reader.GetUInt16(0);
                             ulong uniqueItemId = reader.GetUInt16(1);
-                            InventoryItem item = player.getInventory(Inventory.NORMAL).getItemById(uniqueItemId);
+                            InventoryItem item = player.GetInventory(Inventory.NORMAL).GetItemById(uniqueItemId);
                             equipment[equipSlot] = item;
                         }
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -831,7 +844,7 @@ namespace FFXIVClassic_Lobby_Server
             return equipment;
         }
 
-        public static void equipItem(Player player, ushort equipSlot, ulong uniqueItemId)
+        public static void EquipItem(Player player, ushort equipSlot, ulong uniqueItemId)
         {
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -857,7 +870,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -866,7 +881,7 @@ namespace FFXIVClassic_Lobby_Server
 
         }
 
-        public static void unequipItem(Player player, ushort equipSlot)
+        public static void UnequipItem(Player player, ushort equipSlot)
         {
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -888,7 +903,9 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -897,7 +914,7 @@ namespace FFXIVClassic_Lobby_Server
 
         }
 
-        public static List<InventoryItem> getInventory(Player player, uint slotOffset, uint type)
+        public static List<InventoryItem> GetInventory(Player player, uint slotOffset, uint type)
         {
             List<InventoryItem> items = new List<InventoryItem>();
 
@@ -957,7 +974,9 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -967,7 +986,7 @@ namespace FFXIVClassic_Lobby_Server
             return items;
         }
 
-        public static InventoryItem addItem(Player player, uint itemId, int quantity, byte quality, byte itemType, int durability, ushort type)
+        public static InventoryItem AddItem(Player player, uint itemId, int quantity, byte quality, byte itemType, int durability, ushort type)
         {
             InventoryItem insertedItem = null;
 
@@ -1008,10 +1027,12 @@ namespace FFXIVClassic_Lobby_Server
                     cmd.ExecuteNonQuery();
                     cmd2.ExecuteNonQuery();
 
-                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.getInventory(type).getNextEmptySlot(), itemType, quality, durability, 0, 0, 0, 0, 0, 0);
+                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.GetInventory(type).GetNextEmptySlot(), itemType, quality, durability, 0, 0, 0, 0, 0, 0);
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -1021,7 +1042,7 @@ namespace FFXIVClassic_Lobby_Server
             return insertedItem;
         }
 
-        public static void setQuantity(Player player, uint slot, ushort type, int quantity)
+        public static void SetQuantity(Player player, uint slot, ushort type, int quantity)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -1044,7 +1065,9 @@ namespace FFXIVClassic_Lobby_Server
 
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -1053,7 +1076,7 @@ namespace FFXIVClassic_Lobby_Server
 
         }
 
-        public static void removeItem(Player player, ulong serverItemId, ushort type)
+        public static void RemoveItem(Player player, ulong serverItemId, ushort type)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}; Allow User Variables=True", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -1082,7 +1105,9 @@ namespace FFXIVClassic_Lobby_Server
 
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -1091,7 +1116,7 @@ namespace FFXIVClassic_Lobby_Server
 
         }
 
-        public static void removeItem(Player player, ushort slot, ushort type)
+        public static void RemoveItem(Player player, ushort slot, ushort type)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}; Allow User Variables=True", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -1121,7 +1146,9 @@ namespace FFXIVClassic_Lobby_Server
 
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -1130,7 +1157,7 @@ namespace FFXIVClassic_Lobby_Server
 
         }
 
-        public static SubPacket getLatestAchievements(Player player)
+        public static SubPacket GetLatestAchievements(Player player)
         {
             uint[] latestAchievements = new uint[5];
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -1159,17 +1186,19 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
                 }
             }
 
-            return SetLatestAchievementsPacket.buildPacket(player.actorId, latestAchievements);
+            return SetLatestAchievementsPacket.BuildPacket(player.actorId, latestAchievements);
         }
 
-        public static SubPacket getAchievementsPacket(Player player)
+        public static SubPacket GetAchievementsPacket(Player player)
         {
             SetCompletedAchievementsPacket cheevosPacket = new SetCompletedAchievementsPacket();
 
@@ -1195,7 +1224,7 @@ namespace FFXIVClassic_Lobby_Server
 
                             if (offset < 0 || offset >= cheevosPacket.achievementFlags.Length)
                             {
-                                Log.error("SQL Error; achievement flag offset id out of range: " + offset);
+                                Program.Log.Error("SQL Error; achievement flag offset id out of range: " + offset);
                                 continue;
                             }
                             cheevosPacket.achievementFlags[offset] = true;                             
@@ -1203,14 +1232,16 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
                 }
             }
 
-            return cheevosPacket.buildPacket(player.actorId);
+            return cheevosPacket.BuildPacket(player.actorId);
         }
 
 

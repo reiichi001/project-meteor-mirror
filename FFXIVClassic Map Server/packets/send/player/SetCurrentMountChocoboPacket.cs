@@ -1,11 +1,4 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FFXIVClassic_Map_Server.packets.send.player
+﻿namespace FFXIVClassic_Map_Server.packets.send.player
 {
     class SetCurrentMountChocoboPacket
     {
@@ -29,7 +22,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
         public const ushort OPCODE = 0x0197;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket buildPacket(uint playerActorID, int appearanceId)
+        public static SubPacket BuildPacket(uint playerActorID, int appearanceId)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
             data[5] = (byte)(appearanceId & 0xFF);

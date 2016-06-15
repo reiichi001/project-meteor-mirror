@@ -1,10 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.recruitment
 {
@@ -13,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.send.recruitment
         public const ushort OPCODE = 0x01C5;
         public const uint PACKET_SIZE = 0x038;
 
-        public static SubPacket buildPacket(uint playerActorID, bool isRecruiting, bool isRecruiter, long recruitmentId)
+        public static SubPacket BuildPacket(uint playerActorID, bool isRecruiting, bool isRecruiter, long recruitmentId)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

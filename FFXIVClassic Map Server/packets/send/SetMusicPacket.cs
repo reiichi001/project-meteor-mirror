@@ -1,9 +1,4 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace FFXIVClassic_Map_Server.packets.send
 {
@@ -19,7 +14,7 @@ namespace FFXIVClassic_Map_Server.packets.send
         public const ushort EFFECT_PLAY_NORMAL_CHANNEL = 0x5; //Only works for multi channeled music
         public const ushort EFFECT_PLAY_BATTLE_CHANNEL = 0x6;
 
-        public static SubPacket buildPacket(uint playerActorID, ushort musicID, ushort musicTrackMode)
+        public static SubPacket BuildPacket(uint playerActorID, ushort musicID, ushort musicTrackMode)
         {
             ulong combined = (ulong)(musicID | (musicTrackMode << 16));
             return new SubPacket(OPCODE, 0, playerActorID, BitConverter.GetBytes(combined));

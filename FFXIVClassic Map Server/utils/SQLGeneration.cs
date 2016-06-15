@@ -1,21 +1,18 @@
-﻿using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.common;
+﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.packets.send.player;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.utils
 {
     class SQLGeneration
     {
         
-        public static void generateZones()
+        public static void GenerateZones()
         {
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -82,13 +79,15 @@ namespace FFXIVClassic_Map_Server.utils
 
                         cmd.Parameters["@placename"].Value = placenames[pId];
 
-                        Console.WriteLine("Wrote: {0}", id);
+                        Program.Log.Debug("Wrote: {0}", id);
                         cmd.ExecuteNonQuery();
 
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -96,7 +95,7 @@ namespace FFXIVClassic_Map_Server.utils
             }
         }
 
-        public static void generateActors()
+        public static void GenerateActors()
         {
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -138,13 +137,15 @@ namespace FFXIVClassic_Map_Server.utils
                         cmd.Parameters["@id"].Value = id;
                         cmd.Parameters["@displayNameId"].Value = nameId;
 
-                        Console.WriteLine("Wrote: {0} : {1}", id, nameId);
+                        Program.Log.Debug("Wrote: {0} : {1}", id, nameId);
                         cmd.ExecuteNonQuery();
 
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -152,7 +153,7 @@ namespace FFXIVClassic_Map_Server.utils
             }
         }
 
-        public static void generateActorAppearance()
+        public static void GenerateActorAppearance()
         {
             uint NUMFIELDS = 39;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -202,13 +203,15 @@ namespace FFXIVClassic_Map_Server.utils
 
                         cmd.Parameters["@id"].Value = id;
 
-                        Console.WriteLine("Wrote: {0}", id);                        
+                        Program.Log.Debug("Wrote: {0}", id);                        
                         cmd.ExecuteNonQuery();
 
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -218,7 +221,7 @@ namespace FFXIVClassic_Map_Server.utils
 
         }
 
-        public static void generateAchievementIds()
+        public static void GenerateAchievementIds()
         {
             
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -285,7 +288,7 @@ namespace FFXIVClassic_Map_Server.utils
                         else if (id == 1500)
                             otherId = SetCompletedAchievementsPacket.CATEGORY_GRAND_COMPANY;
 
-                        Console.WriteLine("Wrote: {0} : {1} : {2} : {3}", id, name, otherId, points);
+                        Program.Log.Debug("Wrote: {0} : {1} : {2} : {3}", id, name, otherId, points);
                         cmd.Parameters["@id"].Value = id;
                         cmd.Parameters["@name"].Value = name;
                         cmd.Parameters["@otherId"].Value = otherId;                        
@@ -296,7 +299,9 @@ namespace FFXIVClassic_Map_Server.utils
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+                }
                 finally
                 {
                     conn.Dispose();
@@ -306,7 +311,7 @@ namespace FFXIVClassic_Map_Server.utils
 
         }
 
-        public void getStaticActors()
+        public void GetStaticActors()
         {
             using (MemoryStream s = new MemoryStream(File.ReadAllBytes("D:\\luadec\\script\\staticactorr9w.luab")))
             {
@@ -319,7 +324,7 @@ namespace FFXIVClassic_Map_Server.utils
 
                         while (binReader.BaseStream.Position != binReader.BaseStream.Length)
                         {
-                            uint id = Utils.swapEndian(binReader.ReadUInt32()) | 0xA0F00000;
+                            uint id = Utils.SwapEndian(binReader.ReadUInt32()) | 0xA0F00000;
 
                             List<byte> list = new List<byte>();
                             byte readByte;
@@ -333,7 +338,7 @@ namespace FFXIVClassic_Map_Server.utils
 
                             string output2 = String.Format("mStaticActors.Add(0x{0:x}, new {2}(0x{0:x}, \"{1}\"));", id, output.Substring(1 + output.LastIndexOf("/")), output.Split('/')[1]);
 
-                            Console.WriteLine(output2);
+                            Program.Log.Debug(output2);
                             w.WriteLine(output2);
 
                         }

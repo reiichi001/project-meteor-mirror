@@ -10,6 +10,6 @@ The param "itemDBIds" has the vars: item1 and item2.
 --]]
 
 function onEventStarted(player, actor, triggerName, invActionInfo, param1, param2, param3, param4, param5, param6, param7, param8, itemDBIds)
-	player:getInventory(0x00):removeItem(invActionInfo.slot);
-	player:endCommand();	
+	player:GetInventory(0x00):removeItem(invActionInfo.slot);
+	player:EndCommand();	
 end

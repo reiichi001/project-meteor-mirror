@@ -1,11 +1,7 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using FFXIVClassic_Map_Server.actors;
+﻿using FFXIVClassic_Map_Server.actors;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.actor.events
 {
@@ -14,7 +10,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.events
         public const ushort OPCODE = 0x0175;
         public const uint PACKET_SIZE = 0x60;
 
-        public static SubPacket buildPacket(uint playerActorID, uint sourceActorID, EventList.PushBoxEventCondition condition)
+        public static SubPacket BuildPacket(uint playerActorID, uint sourceActorID, EventList.PushBoxEventCondition condition)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.dataobjects
 {
@@ -19,7 +16,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public ushort[] classes = new ushort[2 * 20];
         public ushort[] jobs = new ushort[8];
 
-        public void writeSearchEntry(BinaryWriter writer)
+        public void WriteSearchEntry(BinaryWriter writer)
         {
             writer.Write((UInt16)preferredClass);
             writer.Write((UInt16)langauges);

@@ -1,10 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.dataobjects
 {
@@ -35,7 +30,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             this.quantity = 1;
             this.slot = slot;
 
-            Item gItem = Server.getItemGamedata(itemId);
+            Item gItem = Server.GetItemGamedata(itemId);
             itemType = gItem.isExclusive ? (byte)0x3 : (byte)0x0;
         }
 
@@ -77,7 +72,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             this.materia5 = materia5;
         }
 
-        public byte[] toPacketBytes()
+        public byte[] ToPacketBytes()
         {           
             byte[] data = new byte[0x70];
 

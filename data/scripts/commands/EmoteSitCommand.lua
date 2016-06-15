@@ -6,7 +6,7 @@ EmoteSitCommand Script
 
 function onEventStarted(player, actor, triggerName, emoteId)
 
-	if (player:getState() == 0) then						
+	if (player:GetState() == 0) then						
 		if (emoteId == 0x2712) then
 			player:changeState(11);
 		else
@@ -16,7 +16,7 @@ function onEventStarted(player, actor, triggerName, emoteId)
 		player:changeState(0);
 	end
 	
-	player:endCommand();
+	player:EndCommand();
 	
 end
 

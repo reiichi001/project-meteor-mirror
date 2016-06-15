@@ -1,16 +1,11 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.login
 {
     class Login0x7ResponsePacket
     {
-        public static BasePacket buildPacket(uint actorID, uint time)
+        public static BasePacket BuildPacket(uint actorID, uint time)
         {
             byte[] data = new byte[0x18];
 
@@ -35,7 +30,7 @@ namespace FFXIVClassic_Map_Server.packets.send.login
                 }
             }
 
-            return BasePacket.createPacket(data, false, false);
+            return BasePacket.CreatePacket(data, false, false);
         }
     }
 }

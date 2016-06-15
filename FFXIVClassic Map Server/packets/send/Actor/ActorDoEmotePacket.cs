@@ -1,10 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.actor
 {
@@ -13,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public const ushort OPCODE = 0x00E1;
         public const uint PACKET_SIZE = 0x30;
 
-        public static SubPacket buildPacket(uint sourceActorId, uint targetActorId, uint targettedActorId, uint emoteID)
+        public static SubPacket BuildPacket(uint sourceActorId, uint targetActorId, uint targettedActorId, uint emoteID)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -33,7 +28,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             }
 
             SubPacket packet = new SubPacket(OPCODE, sourceActorId, targetActorId, data);
-            packet.debugPrintSubPacket();
+            packet.DebugPrintSubPacket();
             return packet;
         }
     }

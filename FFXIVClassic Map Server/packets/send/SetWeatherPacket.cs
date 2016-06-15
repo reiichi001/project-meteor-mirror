@@ -1,9 +1,4 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace FFXIVClassic_Map_Server.packets.send
 {
@@ -40,7 +35,7 @@ namespace FFXIVClassic_Map_Server.packets.send
         public const ushort OPCODE = 0x000D;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket buildPacket(uint playerActorID, ushort weatherId, ushort transitionTime)
+        public static SubPacket BuildPacket(uint playerActorID, ushort weatherId, ushort transitionTime)
         {
             ulong combined = (ulong)(weatherId | (transitionTime << 16));
             return new SubPacket(OPCODE, 0, playerActorID, BitConverter.GetBytes(combined));

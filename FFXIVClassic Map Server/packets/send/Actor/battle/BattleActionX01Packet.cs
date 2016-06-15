@@ -1,10 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.actor.battle
 {
@@ -13,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.battle
         public const ushort OPCODE = 0x0139;
         public const uint PACKET_SIZE = 0x58;
 
-        public static SubPacket buildPacket(uint playerActorID, uint sourceActorId, uint targetActorId, uint animationId, uint effectId, ushort worldMasterTextId, ushort commandId, ushort amount, byte param)
+        public static SubPacket BuildPacket(uint playerActorID, uint sourceActorId, uint targetActorId, uint animationId, uint effectId, ushort worldMasterTextId, ushort commandId, ushort amount, byte param)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

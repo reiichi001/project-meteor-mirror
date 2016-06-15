@@ -1,9 +1,4 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System;
 
 namespace FFXIVClassic_Map_Server.packets.send.actor
 {
@@ -32,7 +27,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public const ushort OPCODE = 0x134;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket buildPacket(uint playerActorID, uint targetID, uint mainState, uint subState)
+        public static SubPacket BuildPacket(uint playerActorID, uint targetID, uint mainState, uint subState)
         {            
             ulong combined = (mainState & 0xFF) | ((subState & 0xFF) << 8);
             return new SubPacket(OPCODE, playerActorID, targetID, BitConverter.GetBytes(combined));

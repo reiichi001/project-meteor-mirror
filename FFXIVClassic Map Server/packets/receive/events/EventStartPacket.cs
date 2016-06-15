@@ -1,11 +1,8 @@
-﻿using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Map_Server.lua;
+﻿using FFXIVClassic_Map_Server.lua;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.receive.events
 {
@@ -51,7 +48,7 @@ namespace FFXIVClassic_Map_Server.packets.receive.events
                             error = ASCIIEncoding.ASCII.GetString(binReader.ReadBytes(0x80)).Replace("\0", "");
 
                             if (errorIndex == 0)
-                                Log.error("LUA ERROR:");                            
+                                Program.Log.Error("LUA ERROR:");                            
 
                             return;
                         }
@@ -66,7 +63,7 @@ namespace FFXIVClassic_Map_Server.packets.receive.events
 
                         binReader.BaseStream.Seek(0x31, SeekOrigin.Begin);
 
-                        luaParams = LuaUtils.readLuaParams(binReader);
+                        luaParams = LuaUtils.ReadLuaParams(binReader);
                     }
                     catch (Exception){
                         invalidPacket = true;

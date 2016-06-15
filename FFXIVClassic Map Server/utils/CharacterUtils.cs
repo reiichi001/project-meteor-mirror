@@ -1,9 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server.common;
+﻿using FFXIVClassic.Common;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.utils
 {
@@ -35,7 +31,7 @@ namespace FFXIVClassic_Map_Server.utils
             public uint unknown;
         }
         
-        public static FaceInfo getFaceInfo(byte characteristics, byte characteristicsColor, byte faceType, byte ears, byte faceMouth, byte faceFeatures, byte faceNose, byte faceEyeShape, byte faceIrisSize, byte faceEyebrows)
+        public static FaceInfo GetFaceInfo(byte characteristics, byte characteristicsColor, byte faceType, byte ears, byte faceMouth, byte faceFeatures, byte faceNose, byte faceEyeShape, byte faceIrisSize, byte faceEyebrows)
         {
             FaceInfo faceInfo = new FaceInfo();
             faceInfo.characteristics = characteristics;
@@ -51,7 +47,7 @@ namespace FFXIVClassic_Map_Server.utils
             return faceInfo;
         }
 
-        public static UInt32 getTribeModel(byte tribe)
+        public static UInt32 GetTribeModel(byte tribe)
         {
             switch (tribe)
             {

@@ -1,12 +1,8 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
+﻿using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.actors.director
 {
@@ -31,11 +27,11 @@ namespace FFXIVClassic_Map_Server.actors.director
             this.eventConditions.noticeEventConditions = noticeEventList;
         }
 
-        public override SubPacket createScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
-            lParams = LuaUtils.createLuaParamList("/Director/Quest/QuestDirectorMan0l001", false, false, false, false, false, 0x7532);
-            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
+            lParams = LuaUtils.CreateLuaParamList("/Director/Quest/QuestDirectorMan0l001", false, false, false, false, false, 0x7532);
+            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
         }
     }
 }

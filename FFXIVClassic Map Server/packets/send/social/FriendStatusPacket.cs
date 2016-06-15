@@ -1,10 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.social
 {
@@ -13,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.send.social
         public const ushort OPCODE = 0x01CF;
         public const uint PACKET_SIZE = 0x686;
 
-        public static SubPacket buildPacket(uint playerActorID, Tuple<long, bool>[] friendStatus)
+        public static SubPacket BuildPacket(uint playerActorID, Tuple<long, bool>[] friendStatus)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

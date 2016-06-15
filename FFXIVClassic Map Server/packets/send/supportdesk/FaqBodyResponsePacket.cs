@@ -1,10 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.supportdesk
 {
@@ -13,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.send.supportdesk
         public const ushort OPCODE = 0x01D1;
         public const uint PACKET_SIZE = 0x587;
 
-        public static SubPacket buildPacket(uint playerActorID, string faqsBodyText)
+        public static SubPacket BuildPacket(uint playerActorID, string faqsBodyText)
         {            
             byte[] data = new byte[PACKET_SIZE - 0x20];
             int maxBodySize = data.Length - 0x04;

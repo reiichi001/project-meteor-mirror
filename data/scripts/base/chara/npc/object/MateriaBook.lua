@@ -3,9 +3,9 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-	player:runEventFunction("materiabookTalk");
+	player:RunEventFunction("materiabookTalk");
 end
 
 function onEventUpdate(player, npc, step, menuOptionSelected)
-	player:endEvent();	
+	player:EndEvent();	
 end

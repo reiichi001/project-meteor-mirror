@@ -1,6 +1,6 @@
-﻿using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.packets;
+﻿using FFXIVClassic_Map_Server;
+using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
@@ -34,7 +34,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             actorInstanceList.Add(playerActor);
         }
 
-        public void setConnection(int type, ClientConnection conn)
+        public void SetConnection(int type, ClientConnection conn)
         {
             conn.connType = type;
             switch (type)
@@ -48,55 +48,55 @@ namespace FFXIVClassic_Map_Server.dataobjects
             }
         }
        
-        public bool isClientConnectionsReady()
+        public bool IsClientConnectionsReady()
         {
             return (zoneConnection != null && chatConnection != null);
         }
 
-        public void disconnect()
+        public void Disconnect()
         {
-            zoneConnection.disconnect();
-            chatConnection.disconnect();
+            zoneConnection.Disconnect();
+            chatConnection.Disconnect();
         }      
 
-        public bool isDisconnected()
+        public bool IsDisconnected()
         {
-            return (!zoneConnection.isConnected() && !chatConnection.isConnected());
+            return (!zoneConnection.IsConnected() && !chatConnection.IsConnected());
         }
 
-        public void queuePacket(BasePacket basePacket)
+        public void QueuePacket(BasePacket basePacket)
         {
-            zoneConnection.queuePacket(basePacket);
+            zoneConnection.QueuePacket(basePacket);
         }
 
-        public void queuePacket(SubPacket subPacket, bool isAuthed, bool isEncrypted)
+        public void QueuePacket(SubPacket subPacket, bool isAuthed, bool isEncrypted)
         {
-                zoneConnection.queuePacket(subPacket, isAuthed, isEncrypted);
+                zoneConnection.QueuePacket(subPacket, isAuthed, isEncrypted);
         }
 
-        public Player getActor()
+        public Player GetActor()
         {
             return playerActor;
         }
 
-        public void ping()
+        public void Ping()
         {
             lastPingPacket = Utils.UnixTimeStampUTC();
         }
 
-        public bool checkIfDCing()
+        public bool CheckIfDCing()
         {
             uint currentTime = Utils.UnixTimeStampUTC();
             if (currentTime - lastPingPacket >= 5000) //Show D/C flag
-                playerActor.setDCFlag(true);
+                playerActor.SetDCFlag(true);
             else if (currentTime - lastPingPacket >= 30000) //DCed
                 return true;
             else
-                playerActor.setDCFlag(false);
+                playerActor.SetDCFlag(false);
             return false;
         }
 
-        public void updatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
+        public void UpdatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
         {            
             playerActor.oldPositionX = playerActor.positionX;
             playerActor.oldPositionY = playerActor.positionY;
@@ -109,14 +109,14 @@ namespace FFXIVClassic_Map_Server.dataobjects
             playerActor.rotation = rot;
             playerActor.moveState = moveState;
 
-            getActor().zone.updateActorPosition(getActor());
+            GetActor().zone.UpdateActorPosition(GetActor());
              
         }            
         
-        public void updateInstance(List<Actor> list)
+        public void UpdateInstance(List<Actor> list)
         {            
             List<BasePacket> basePackets = new List<BasePacket>();
-            List<SubPacket> removeActorSubpackets = new List<SubPacket>();
+            List<SubPacket> RemoveActorSubpackets = new List<SubPacket>();
             List<SubPacket> posUpdateSubpackets = new List<SubPacket>();
 
             //Remove missing actors
@@ -124,7 +124,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             {
                 if (!list.Contains(actorInstanceList[i]))
                 {
-                    getActor().queuePacket(RemoveActorPacket.buildPacket(playerActor.actorId, actorInstanceList[i].actorId));
+                    GetActor().QueuePacket(RemoveActorPacket.BuildPacket(playerActor.actorId, actorInstanceList[i].actorId));
                     actorInstanceList.RemoveAt(i);                    
                 }
             }
@@ -139,13 +139,13 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
                 if (actorInstanceList.Contains(actor))
                 {
-                    getActor().queuePacket(actor.createPositionUpdatePacket(playerActor.actorId));
+                    GetActor().QueuePacket(actor.CreatePositionUpdatePacket(playerActor.actorId));
                 }
                 else
                 {
-                    getActor().queuePacket(actor.getSpawnPackets(playerActor.actorId, 1));
-                    getActor().queuePacket(actor.getInitPackets(playerActor.actorId));
-                    getActor().queuePacket(actor.getSetEventStatusPackets(playerActor.actorId));                   
+                    GetActor().QueuePacket(actor.GetSpawnPackets(playerActor.actorId, 1));
+                    GetActor().QueuePacket(actor.GetInitPackets(playerActor.actorId));
+                    GetActor().QueuePacket(actor.GetSetEventStatusPackets(playerActor.actorId));                   
                     actorInstanceList.Add(actor);
 
                     if (actor is Npc)
@@ -158,7 +158,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         }
 
 
-        public void clearInstance()
+        public void ClearInstance()
         {
             actorInstanceList.Clear();
         }

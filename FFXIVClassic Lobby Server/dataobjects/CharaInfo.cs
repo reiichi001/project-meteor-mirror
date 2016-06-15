@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic.Common;
 using System.IO;
 
 namespace FFXIVClassic_Lobby_Server.dataobjects
@@ -60,7 +56,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
         public uint feet;
         public uint belt;
 
-        public static CharaInfo getFromNewCharRequest(String encoded)
+        public static CharaInfo GetFromNewCharRequest(String encoded)
         {
             byte[] data = Convert.FromBase64String(encoded.Replace('-', '+').Replace('_', '/'));
 
@@ -120,7 +116,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
             return info;
         }
 
-        public static String buildForCharaList(Character chara, Appearance appearance)
+        public static String BuildForCharaList(Character chara, Appearance appearance)
         {
             byte[] data;
             
@@ -150,7 +146,7 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
                     writer.Write(System.Text.Encoding.UTF8.GetBytes(chara.name + '\0'));
                     writer.Write((UInt32)0x1c);
                     writer.Write((UInt32)0x04);
-                    writer.Write((UInt32)getTribeModel(chara.tribe));
+                    writer.Write((UInt32)GetTribeModel(chara.tribe));
                     writer.Write((UInt32)appearance.size);
                     uint colorVal = appearance.skinColor | (uint)(appearance.hairColor << 10) | (uint)(appearance.eyeColor << 20);
                     writer.Write((UInt32)colorVal);
@@ -227,16 +223,16 @@ namespace FFXIVClassic_Lobby_Server.dataobjects
             return Convert.ToBase64String(data).Replace('+', '-').Replace('/', '_');
         }
 
-        public static String debug()
+        public static String Debug()
         {
             byte[] bytes = File.ReadAllBytes("./packets/charaappearance.bin");
 
-            Console.WriteLine(Utils.ByteArrayToHex(bytes));
+            Program.Log.Debug(Utils.ByteArrayToHex(bytes));
 
             return Convert.ToBase64String(bytes).Replace('+', '-').Replace('/', '_');
         }
 
-        public static UInt32 getTribeModel(byte tribe)
+        public static UInt32 GetTribeModel(byte tribe)
         {
             switch (tribe)
             {

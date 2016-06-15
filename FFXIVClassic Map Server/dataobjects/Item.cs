@@ -1,9 +1,5 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.dataobjects
 {
@@ -382,7 +378,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return -1;
         }
 
-        public double getItemHQValue(float value1, float value2)
+        public Double GetItemHQValue(float value1, float value2)
         {
             return Math.Max(value1 + 1, Math.Ceiling(value1 * value2));
         }
@@ -424,7 +420,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public readonly int paramBonusType10;
         public readonly short paramBonusValue10;
 
-        public readonly short additionalEffect;
+        public readonly short AdditionalEffect;
         public readonly bool materialBindPermission;
         public readonly short materializeTable;
 
@@ -463,7 +459,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             paramBonusType10 = reader.GetInt32("paramBonusType10");
             paramBonusValue10 = reader.GetInt16("paramBonusValue10");
 
-            additionalEffect = reader.GetInt16("additionalEffect");
+            AdditionalEffect = reader.GetInt16("additionalEffect");
             materialBindPermission = reader.GetBoolean("materiaBindPermission");
             materializeTable = reader.GetInt16("materializeTable");
         }

@@ -1,11 +1,6 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using FFXIVClassic_Map_Server.dataobjects;
-using System;
+﻿using FFXIVClassic_Map_Server.dataobjects;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
 {
@@ -15,7 +10,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
         public const ushort OPCODE = 0x014A;
         public const uint PACKET_SIZE = 0x90;
 
-        public static SubPacket buildPacket(uint playerActorID, List<InventoryItem> items, ref int listOffset)
+        public static SubPacket BuildPacket(uint playerActorID, List<InventoryItem> items, ref int listOffset)
         {
             byte[] data;
 
@@ -25,7 +20,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
                 {
                     for (int i = listOffset; i < items.Count; i++)
                     {
-                        binWriter.Write(items[i].toPacketBytes());
+                        binWriter.Write(items[i].ToPacketBytes());
                         listOffset++;
                     }
                 }

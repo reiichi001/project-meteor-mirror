@@ -3,7 +3,7 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-	player:endEvent();
+	player:EndEvent();
 end
 
 function onEventUpdate(player, npc)

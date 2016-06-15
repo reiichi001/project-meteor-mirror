@@ -1,7 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.packets;
-using FFXIVClassic_Map_Server.actors.area;
+﻿using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.dataobjects;
@@ -10,19 +8,13 @@ using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.actor.events;
-using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.events;
 using FFXIVClassic_Map_Server.packets.send.list;
-using FFXIVClassic_Map_Server.packets.send.login;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.utils;
-using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -236,144 +228,144 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.parameterTemp.tp = 3000;
 
-            Database.loadPlayerCharacter(this);
+            Database.LoadPlayerCharacter(this);
             lastPlayTimeUpdate = Utils.UnixTimeStampUTC();
         }
         
-        public List<SubPacket> create0x132Packets(uint playerActorId)
+        public List<SubPacket> Create0x132Packets(uint playerActorId)
         {
             List<SubPacket> packets = new List<SubPacket>();
-            packets.Add(_0x132Packet.buildPacket(playerActorId, 0xB, "commandForced"));
-            packets.Add(_0x132Packet.buildPacket(playerActorId, 0xA, "commandDefault"));
-            packets.Add(_0x132Packet.buildPacket(playerActorId, 0x6, "commandWeak"));
-            packets.Add(_0x132Packet.buildPacket(playerActorId, 0x4, "commandContent"));
-            packets.Add(_0x132Packet.buildPacket(playerActorId, 0x6, "commandJudgeMode"));
-            packets.Add(_0x132Packet.buildPacket(playerActorId, 0x100, "commandRequest"));
-            packets.Add(_0x132Packet.buildPacket(playerActorId, 0x100, "widgetCreate"));
-            packets.Add(_0x132Packet.buildPacket(playerActorId, 0x100, "macroRequest"));
+            packets.Add(_0x132Packet.BuildPacket(playerActorId, 0xB, "commandForced"));
+            packets.Add(_0x132Packet.BuildPacket(playerActorId, 0xA, "commandDefault"));
+            packets.Add(_0x132Packet.BuildPacket(playerActorId, 0x6, "commandWeak"));
+            packets.Add(_0x132Packet.BuildPacket(playerActorId, 0x4, "commandContent"));
+            packets.Add(_0x132Packet.BuildPacket(playerActorId, 0x6, "commandJudgeMode"));
+            packets.Add(_0x132Packet.BuildPacket(playerActorId, 0x100, "commandRequest"));
+            packets.Add(_0x132Packet.BuildPacket(playerActorId, 0x100, "widGetCreate"));
+            packets.Add(_0x132Packet.BuildPacket(playerActorId, 0x100, "macroRequest"));
             return packets;
         }
 
-        public override SubPacket createScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
-            if (isMyPlayer(playerActorId))
+            if (IsMyPlayer(playerActorId))
             {
                 if (currentDirector != null)
-                    lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, true, currentDirector, true, 0, false, timers, true);
+                    lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, true, currentDirector, true, 0, false, timers, true);
                 else
-                    lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, false, true, 0, false, timers, true);
+                    lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, false, true, 0, false, timers, true);
             }
             else
-                lParams = LuaUtils.createLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
-            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
+                lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
+            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
         }        
 
-        public override BasePacket getSpawnPackets(uint playerActorId, uint spawnType)
+        public override BasePacket GetSpawnPackets(uint playerActorId, uint spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(createAddActorPacket(playerActorId, 8));
-            if (isMyPlayer(playerActorId))
-                subpackets.AddRange(create0x132Packets(playerActorId));
-            subpackets.Add(createSpeedPacket(playerActorId));
-            subpackets.Add(createSpawnPositonPacket(playerActorId, spawnType));
-            subpackets.Add(createAppearancePacket(playerActorId));
-            subpackets.Add(createNamePacket(playerActorId));
-            subpackets.Add(_0xFPacket.buildPacket(playerActorId, playerActorId));
-            subpackets.Add(createStatePacket(playerActorId));
-            subpackets.Add(createIdleAnimationPacket(playerActorId));
-            subpackets.Add(createInitStatusPacket(playerActorId));
-            subpackets.Add(createSetActorIconPacket(playerActorId));
-            subpackets.Add(createIsZoneingPacket(playerActorId));
-            subpackets.AddRange(createPlayerRelatedPackets(playerActorId));
-            subpackets.Add(createScriptBindPacket(playerActorId));            
-            return BasePacket.createPacket(subpackets, true, false);
+            subpackets.Add(CreateAddActorPacket(playerActorId, 8));
+            if (IsMyPlayer(playerActorId))
+                subpackets.AddRange(Create0x132Packets(playerActorId));
+            subpackets.Add(CreateSpeedPacket(playerActorId));
+            subpackets.Add(CreateSpawnPositonPacket(playerActorId, spawnType));
+            subpackets.Add(CreateAppearancePacket(playerActorId));
+            subpackets.Add(CreateNamePacket(playerActorId));
+            subpackets.Add(_0xFPacket.BuildPacket(playerActorId, playerActorId));
+            subpackets.Add(CreateStatePacket(playerActorId));
+            subpackets.Add(CreateIdleAnimationPacket(playerActorId));
+            subpackets.Add(CreateInitStatusPacket(playerActorId));
+            subpackets.Add(CreateSetActorIconPacket(playerActorId));
+            subpackets.Add(CreateIsZoneingPacket(playerActorId));
+            subpackets.AddRange(CreatePlayerRelatedPackets(playerActorId));
+            subpackets.Add(CreateScriptBindPacket(playerActorId));            
+            return BasePacket.CreatePacket(subpackets, true, false);
         }
 
-        public List<SubPacket> createPlayerRelatedPackets(uint playerActorId)
+        public List<SubPacket> CreatePlayerRelatedPackets(uint playerActorId)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
 
             if (gcCurrent != 0)
-                subpackets.Add(SetGrandCompanyPacket.buildPacket(actorId, playerActorId, gcCurrent, gcRankLimsa, gcRankGridania, gcRankUldah));
+                subpackets.Add(SetGrandCompanyPacket.BuildPacket(actorId, playerActorId, gcCurrent, gcRankLimsa, gcRankGridania, gcRankUldah));
 
             if (currentTitle != 0)
-                subpackets.Add(SetPlayerTitlePacket.buildPacket(actorId, playerActorId, currentTitle));
+                subpackets.Add(SetPlayerTitlePacket.BuildPacket(actorId, playerActorId, currentTitle));
 
             if (currentJob != 0)
-                subpackets.Add(SetCurrentJobPacket.buildPacket(actorId, playerActorId, currentJob));
+                subpackets.Add(SetCurrentJobPacket.BuildPacket(actorId, playerActorId, currentJob));
 
-            if (isMyPlayer(playerActorId))
+            if (IsMyPlayer(playerActorId))
             {
-                subpackets.Add(_0x196Packet.buildPacket(playerActorId, playerActorId));
+                subpackets.Add(_0x196Packet.BuildPacket(playerActorId, playerActorId));
 
                 if (hasChocobo && chocoboName != null && !chocoboName.Equals(""))
                 {
-                    subpackets.Add(SetChocoboNamePacket.buildPacket(actorId, playerActorId, chocoboName));
-                    subpackets.Add(SetHasChocoboPacket.buildPacket(playerActorId, hasChocobo));
+                    subpackets.Add(SetChocoboNamePacket.BuildPacket(actorId, playerActorId, chocoboName));
+                    subpackets.Add(SetHasChocoboPacket.BuildPacket(playerActorId, hasChocobo));
                 }
 
                 if (hasGoobbue)
-                    subpackets.Add(SetHasGoobbuePacket.buildPacket(playerActorId, hasGoobbue));
+                    subpackets.Add(SetHasGoobbuePacket.BuildPacket(playerActorId, hasGoobbue));
 
-                subpackets.Add(SetAchievementPointsPacket.buildPacket(playerActorId, achievementPoints));
-                subpackets.Add(Database.getLatestAchievements(this));
-                subpackets.Add(Database.getAchievementsPacket(this));                
+                subpackets.Add(SetAchievementPointsPacket.BuildPacket(playerActorId, achievementPoints));
+                subpackets.Add(Database.GetLatestAchievements(this));
+                subpackets.Add(Database.GetAchievementsPacket(this));                
             }
 
             return subpackets;
         }
 
-        public override BasePacket getInitPackets(uint playerActorId)
+        public override BasePacket GetInitPackets(uint playerActorId)
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this, playerActorId);
                         
-            propPacketUtil.addProperty("charaWork.eventSave.bazaarTax");
-            propPacketUtil.addProperty("charaWork.battleSave.potencial");
+            propPacketUtil.AddProperty("charaWork.eventSave.bazaarTax");
+            propPacketUtil.AddProperty("charaWork.battleSave.potencial");
 
             //Properties
             for (int i = 0; i < charaWork.property.Length; i++)
             {
                 if (charaWork.property[i] != 0)                
-                    propPacketUtil.addProperty(String.Format("charaWork.property[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.property[{0}]", i));
             }
             
             //Parameters
-            propPacketUtil.addProperty("charaWork.parameterSave.hp[0]");
-            propPacketUtil.addProperty("charaWork.parameterSave.hpMax[0]");
-            propPacketUtil.addProperty("charaWork.parameterSave.mp");
-            propPacketUtil.addProperty("charaWork.parameterSave.mpMax");
-            propPacketUtil.addProperty("charaWork.parameterTemp.tp");
-            propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[0]");
-            propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkillLevel");
+            propPacketUtil.AddProperty("charaWork.parameterSave.hp[0]");
+            propPacketUtil.AddProperty("charaWork.parameterSave.hpMax[0]");
+            propPacketUtil.AddProperty("charaWork.parameterSave.mp");
+            propPacketUtil.AddProperty("charaWork.parameterSave.mpMax");
+            propPacketUtil.AddProperty("charaWork.parameterTemp.tp");
+            propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[0]");
+            propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
             
             //Status Times
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
             {
                 if (charaWork.statusShownTime[i] != 0xFFFFFFFF)
-                    propPacketUtil.addProperty(String.Format("charaWork.statusShownTime[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
             }
         
             //General Parameters
             for (int i = 3; i < charaWork.battleTemp.generalParameter.Length; i++)
             {
                 if (charaWork.battleTemp.generalParameter[i] != 0)
-                    propPacketUtil.addProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
             }
             
-            propPacketUtil.addProperty("charaWork.battleTemp.castGauge_speed[0]");
-            propPacketUtil.addProperty("charaWork.battleTemp.castGauge_speed[1]");
+            propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[0]");
+            propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[1]");
             
             //Battle Save Skillpoint
             
             //Commands
-            propPacketUtil.addProperty("charaWork.commandBorder");
+            propPacketUtil.AddProperty("charaWork.commandBorder");
 
 
             for (int i = 0; i < charaWork.command.Length; i++)
             {
                 if (charaWork.command[i] != 0)
-                    propPacketUtil.addProperty(String.Format("charaWork.command[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.command[{0}]", i));
             }
          
             
@@ -381,110 +373,110 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 charaWork.commandCategory[i] = 1;
                 if (charaWork.commandCategory[i] != 0)
-                    propPacketUtil.addProperty(String.Format("charaWork.commandCategory[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.commandCategory[{0}]", i));
             }
 
             for (int i = 0; i < charaWork.commandAcquired.Length; i++)
             {
                 if (charaWork.commandAcquired[i] != false)
-                    propPacketUtil.addProperty(String.Format("charaWork.commandAcquired[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.commandAcquired[{0}]", i));
             }
             
 
             for (int i = 0; i < charaWork.additionalCommandAcquired.Length; i++)
             {
                 if (charaWork.additionalCommandAcquired[i] != false)
-                    propPacketUtil.addProperty(String.Format("charaWork.additionalCommandAcquired[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.AdditionalCommandAcquired[{0}]", i));
             }
             
             for (int i = 0; i < charaWork.parameterSave.commandSlot_compatibility.Length; i++)
             {
                 charaWork.parameterSave.commandSlot_compatibility[i] = true;
                 if (charaWork.parameterSave.commandSlot_compatibility[i])
-                    propPacketUtil.addProperty(String.Format("charaWork.parameterSave.commandSlot_compatibility[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_compatibility[{0}]", i));
             }
 
          /*
       for (int i = 0; i < charaWork.parameterSave.commandSlot_recastTime.Length; i++)
       {
           if (charaWork.parameterSave.commandSlot_recastTime[i] != 0)
-              propPacketUtil.addProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i));
+              propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i));
       }            
       */
 
             //System
-            propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[0]");
-            propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[1]");
-            propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_int16_forClientSelf[0]");
-            propPacketUtil.addProperty("charaWork.parameterTemp.forceControl_int16_forClientSelf[1]");
+            propPacketUtil.AddProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[0]");
+            propPacketUtil.AddProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[1]");
+            propPacketUtil.AddProperty("charaWork.parameterTemp.forceControl_int16_forClientSelf[0]");
+            propPacketUtil.AddProperty("charaWork.parameterTemp.forceControl_int16_forClientSelf[1]");
 
             charaWork.parameterTemp.otherClassAbilityCount[0] = 4;
             charaWork.parameterTemp.otherClassAbilityCount[1] = 5;
             charaWork.parameterTemp.giftCount[1] = 5;
 
-            propPacketUtil.addProperty("charaWork.parameterTemp.otherClassAbilityCount[0]");
-            propPacketUtil.addProperty("charaWork.parameterTemp.otherClassAbilityCount[1]");
-            propPacketUtil.addProperty("charaWork.parameterTemp.giftCount[1]");
+            propPacketUtil.AddProperty("charaWork.parameterTemp.otherClassAbilityCount[0]");
+            propPacketUtil.AddProperty("charaWork.parameterTemp.otherClassAbilityCount[1]");
+            propPacketUtil.AddProperty("charaWork.parameterTemp.giftCount[1]");
 
-            propPacketUtil.addProperty("charaWork.depictionJudge");
+            propPacketUtil.AddProperty("charaWork.depictionJudge");
             
             //Scenario
             for (int i = 0; i < playerWork.questScenario.Length; i++)
             {
                 if (playerWork.questScenario[i] != 0)
-                    propPacketUtil.addProperty(String.Format("playerWork.questScenario[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("playerWork.questScenario[{0}]", i));
             }
 
             //Guildleve - Local
             for (int i = 0; i < playerWork.questGuildleve.Length; i++)
             {
                 if (playerWork.questGuildleve[i] != 0)
-                    propPacketUtil.addProperty(String.Format("playerWork.questGuildleve[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("playerWork.questGuildleve[{0}]", i));
             }
 
             //Guildleve - Regional
             for (int i = 0; i < work.guildleveId.Length; i++)
             {
                 if (work.guildleveId[i] != 0)
-                    propPacketUtil.addProperty(String.Format("work.guildleveId[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("work.guildleveId[{0}]", i));
                 if (work.guildleveDone[i] != false)
-                    propPacketUtil.addProperty(String.Format("work.guildleveDone[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("work.guildleveDone[{0}]", i));
                 if (work.guildleveChecked[i] != false)
-                    propPacketUtil.addProperty(String.Format("work.guildleveChecked[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("work.guildleveChecked[{0}]", i));
             }
 
             //NPC Linkshell
             for (int i = 0; i < playerWork.npcLinkshellChatCalling.Length; i++)
             {
                 if (playerWork.npcLinkshellChatCalling[i] != false)
-                    propPacketUtil.addProperty(String.Format("playerWork.npcLinkshellChatCalling[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("playerWork.npcLinkshellChatCalling[{0}]", i));
                 if (playerWork.npcLinkshellChatExtra[i] != false)
-                    propPacketUtil.addProperty(String.Format("playerWork.npcLinkshellChatExtra[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("playerWork.npcLinkshellChatExtra[{0}]", i));
             }
 
-            propPacketUtil.addProperty("playerWork.restBonusExpRate");
+            propPacketUtil.AddProperty("playerWork.restBonusExpRate");
 
             //Profile
-            propPacketUtil.addProperty("playerWork.tribe");
-            propPacketUtil.addProperty("playerWork.guardian");
-            propPacketUtil.addProperty("playerWork.birthdayMonth");
-            propPacketUtil.addProperty("playerWork.birthdayDay");
-            propPacketUtil.addProperty("playerWork.initialTown");
+            propPacketUtil.AddProperty("playerWork.tribe");
+            propPacketUtil.AddProperty("playerWork.guardian");
+            propPacketUtil.AddProperty("playerWork.birthdayMonth");
+            propPacketUtil.AddProperty("playerWork.birthdayDay");
+            propPacketUtil.AddProperty("playerWork.initialTown");
             
-            return BasePacket.createPacket(propPacketUtil.done(), true, false);
+            return BasePacket.CreatePacket(propPacketUtil.Done(), true, false);
         }
 
-        public void sendZoneInPackets(WorldManager world, ushort spawnType)
+        public void SendZoneInPackets(WorldManager world, ushort spawnType)
         {
-            queuePacket(SetActorIsZoningPacket.buildPacket(actorId, actorId, false));
-            queuePacket(_0x10Packet.buildPacket(actorId, 0xFF));
-            queuePacket(SetMusicPacket.buildPacket(actorId, zone.bgmDay, 0x01));
-            queuePacket(SetWeatherPacket.buildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR, 1));
+            QueuePacket(SetActorIsZoningPacket.BuildPacket(actorId, actorId, false));
+            QueuePacket(_0x10Packet.BuildPacket(actorId, 0xFF));
+            QueuePacket(SetMusicPacket.BuildPacket(actorId, zone.bgmDay, 0x01));
+            QueuePacket(SetWeatherPacket.BuildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR, 1));
             
-            queuePacket(SetMapPacket.buildPacket(actorId, zone.regionId, zone.actorId));
+            QueuePacket(SetMapPacket.BuildPacket(actorId, zone.regionId, zone.actorId));
 
-            queuePacket(getSpawnPackets(actorId, spawnType));            
-            getSpawnPackets(actorId, spawnType).debugPrintPacket();
+            QueuePacket(GetSpawnPackets(actorId, spawnType));            
+            GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
 
             #region grouptest
             //Retainers
@@ -493,52 +485,52 @@ namespace FFXIVClassic_Map_Server.Actors
             retainerListEntries.Add(new ListEntry(0x23, 0x0, 0xFFFFFFFF, false, false, "TEST1"));
             retainerListEntries.Add(new ListEntry(0x24, 0x0, 0xFFFFFFFF, false, false, "TEST2"));
             retainerListEntries.Add(new ListEntry(0x25, 0x0, 0xFFFFFFFF, false, false, "TEST3"));
-            BasePacket retainerListPacket = BasePacket.createPacket(ListUtils.createRetainerList(actorId, 0xF4, 1, 0x800000000004e639, retainerListEntries), true, false);
-            playerSession.queuePacket(retainerListPacket);
+            BasePacket retainerListPacket = BasePacket.CreatePacket(ListUtils.CreateRetainerList(actorId, 0xF4, 1, 0x800000000004e639, retainerListEntries), true, false);
+            playerSession.QueuePacket(retainerListPacket);
 
             //Party
             List<ListEntry> partyListEntries = new List<ListEntry>();
             partyListEntries.Add(new ListEntry(actorId, 0xFFFFFFFF, 0xFFFFFFFF, false, true, customDisplayName));
             partyListEntries.Add(new ListEntry(0x029B27D3, 0xFFFFFFFF, 0x195, false, true, "Valentine Bluefeather"));
-            BasePacket partyListPacket = BasePacket.createPacket(ListUtils.createPartyList(actorId, 0xF4, 1, 0x8000000000696df2, partyListEntries), true, false);
-            playerSession.queuePacket(partyListPacket);
+            BasePacket partyListPacket = BasePacket.CreatePacket(ListUtils.CreatePartyList(actorId, 0xF4, 1, 0x8000000000696df2, partyListEntries), true, false);
+            playerSession.QueuePacket(partyListPacket);
             #endregion
 
             #region Inventory & Equipment
-            queuePacket(InventoryBeginChangePacket.buildPacket(actorId));
-            inventories[Inventory.NORMAL].sendFullInventory();
-            inventories[Inventory.CURRENCY].sendFullInventory();
-            inventories[Inventory.KEYITEMS].sendFullInventory();
-            inventories[Inventory.BAZAAR].sendFullInventory();
-            inventories[Inventory.MELDREQUEST].sendFullInventory();
-            inventories[Inventory.LOOT].sendFullInventory();
+            QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
+            inventories[Inventory.NORMAL].SendFullInventory();
+            inventories[Inventory.CURRENCY].SendFullInventory();
+            inventories[Inventory.KEYITEMS].SendFullInventory();
+            inventories[Inventory.BAZAAR].SendFullInventory();
+            inventories[Inventory.MELDREQUEST].SendFullInventory();
+            inventories[Inventory.LOOT].SendFullInventory();
             equipment.SendFullEquipment(false);   
-            playerSession.queuePacket(InventoryEndChangePacket.buildPacket(actorId), true, false);
+            playerSession.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId), true, false);
             #endregion
 
-            playerSession.queuePacket(getInitPackets(actorId));
+            playerSession.QueuePacket(GetInitPackets(actorId));
 
 
-            BasePacket areaMasterSpawn = zone.getSpawnPackets(actorId);
-            BasePacket debugSpawn = world.GetDebugActor().getSpawnPackets(actorId);
-            BasePacket worldMasterSpawn = world.GetActor().getSpawnPackets(actorId);
-            BasePacket weatherDirectorSpawn = new WeatherDirector(this, 8003).getSpawnPackets(actorId);
+            BasePacket areaMasterSpawn = zone.GetSpawnPackets(actorId);
+            BasePacket debugSpawn = world.GetDebugActor().GetSpawnPackets(actorId);
+            BasePacket worldMasterSpawn = world.GetActor().GetSpawnPackets(actorId);
+            BasePacket weatherDirectorSpawn = new WeatherDirector(this, 8003).GetSpawnPackets(actorId);
             BasePacket directorSpawn = null;
             
             if (currentDirector != null)
-                directorSpawn = currentDirector.getSpawnPackets(actorId);
+                directorSpawn = currentDirector.GetSpawnPackets(actorId);
 
-            playerSession.queuePacket(areaMasterSpawn);
-            playerSession.queuePacket(debugSpawn);
+            playerSession.QueuePacket(areaMasterSpawn);
+            playerSession.QueuePacket(debugSpawn);
             if (directorSpawn != null)
             {
-                //directorSpawn.debugPrintPacket();
-               // currentDirector.getInitPackets(actorId).debugPrintPacket();
-                queuePacket(directorSpawn);
-                queuePacket(currentDirector.getInitPackets(actorId));
-                //queuePacket(currentDirector.getSetEventStatusPackets(actorId));
+                //directorSpawn.DebugPrintPacket();
+               // currentDirector.GetInitPackets(actorId).DebugPrintPacket();
+                QueuePacket(directorSpawn);
+                QueuePacket(currentDirector.GetInitPackets(actorId));
+                //QueuePacket(currentDirector.GetSetEventStatusPackets(actorId));
             }
-            playerSession.queuePacket(worldMasterSpawn);
+            playerSession.QueuePacket(worldMasterSpawn);
 
             if (zone.isInn)
             {
@@ -546,73 +538,73 @@ namespace FFXIVClassic_Map_Server.Actors
                 for (int i = 0; i < 2048; i++)
                     cutsceneBookPacket.cutsceneFlags[i] = true;
 
-                SubPacket packet = cutsceneBookPacket.buildPacket(actorId, "<Path Companion>", 11, 1, 1);
+                SubPacket packet = cutsceneBookPacket.BuildPacket(actorId, "<Path Companion>", 11, 1, 1);
 
-                packet.debugPrintSubPacket();
-                queuePacket(packet);
+                packet.DebugPrintSubPacket();
+                QueuePacket(packet);
             }
 
-            playerSession.queuePacket(weatherDirectorSpawn);
+            playerSession.QueuePacket(weatherDirectorSpawn);
 
 /*
             #region hardcode
-            BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door created
+            BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door Created
             BasePacket reply11 = new BasePacket("./packets/login/login11.bin"); //NPC Create ??? Final init
-            reply10.replaceActorID(actorId);
-            reply11.replaceActorID(actorId);
-            //playerSession.queuePacket(reply10);
-           // playerSession.queuePacket(reply11);
+            reply10.ReplaceActorID(actorId);
+            reply11.ReplaceActorID(actorId);
+            //playerSession.QueuePacket(reply10);
+           // playerSession.QueuePacket(reply11);
             #endregion
 */
         }
 
-        private void sendRemoveInventoryPackets(List<ushort> slots)
+        private void SendRemoveInventoryPackets(List<ushort> slots)
         {
             int currentIndex = 0;
 
             while (true)
             {
                 if (slots.Count - currentIndex >= 64)
-                    queuePacket(InventoryRemoveX64Packet.buildPacket(actorId, slots, ref currentIndex));
+                    QueuePacket(InventoryRemoveX64Packet.BuildPacket(actorId, slots, ref currentIndex));
                 else if (slots.Count - currentIndex >= 32)
-                    queuePacket(InventoryRemoveX32Packet.buildPacket(actorId, slots, ref currentIndex));
+                    QueuePacket(InventoryRemoveX32Packet.BuildPacket(actorId, slots, ref currentIndex));
                 else if (slots.Count - currentIndex >= 16)
-                    queuePacket(InventoryRemoveX16Packet.buildPacket(actorId, slots, ref currentIndex));
+                    QueuePacket(InventoryRemoveX16Packet.BuildPacket(actorId, slots, ref currentIndex));
                 else if (slots.Count - currentIndex >= 8)
-                    queuePacket(InventoryRemoveX08Packet.buildPacket(actorId, slots, ref currentIndex));
+                    QueuePacket(InventoryRemoveX08Packet.BuildPacket(actorId, slots, ref currentIndex));
                 else if (slots.Count - currentIndex == 1)
-                    queuePacket(InventoryRemoveX01Packet.buildPacket(actorId, slots[currentIndex]));
+                    QueuePacket(InventoryRemoveX01Packet.BuildPacket(actorId, slots[currentIndex]));
                 else
                     break;
             }
 
         }
 
-        public bool isMyPlayer(uint otherActorId)
+        public bool IsMyPlayer(uint otherActorId)
         {
             return actorId == otherActorId;
         }        
 
-        public void queuePacket(BasePacket packet)
+        public void QueuePacket(BasePacket packet)
         {
-            playerSession.queuePacket(packet);
+            playerSession.QueuePacket(packet);
         }
 
-        public void queuePacket(SubPacket packet)
+        public void QueuePacket(SubPacket packet)
         {
-            playerSession.queuePacket(packet, true, false);
+            playerSession.QueuePacket(packet, true, false);
         }
 
-        public void queuePackets(List<SubPacket> packets)
+        public void QueuePackets(List<SubPacket> packets)
         {
             foreach (SubPacket subpacket in packets)
-                playerSession.queuePacket(subpacket, true, false);
+                playerSession.QueuePacket(subpacket, true, false);
         }
 
-        public void broadcastPacket(SubPacket packet, bool sendToSelf)
+        public void BroadcastPacket(SubPacket packet, bool sendToSelf)
         {
             if (sendToSelf)            
-                queuePacket(packet);
+                QueuePacket(packet);
             
             foreach (Actor a in playerSession.actorInstanceList)
             {
@@ -620,62 +612,62 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     Player p = (Player)a;
                     SubPacket clonedPacket = new SubPacket(packet, a.actorId);
-                    p.queuePacket(clonedPacket);
+                    p.QueuePacket(clonedPacket);
                 }
             }
         }
 
-        public void setDCFlag(bool flag)
+        public void SetDCFlag(bool flag)
         {
             if (flag)
             {
-                broadcastPacket(SetActorIconPacket.buildPacket(actorId, actorId, SetActorIconPacket.DISCONNECTING), true);
+                BroadcastPacket(SetActorIconPacket.BuildPacket(actorId, actorId, SetActorIconPacket.DISCONNECTING), true);
             }
             else
             {
                 if (isGM)
-                    broadcastPacket(SetActorIconPacket.buildPacket(actorId, actorId, SetActorIconPacket.ISGM), true);
+                    BroadcastPacket(SetActorIconPacket.BuildPacket(actorId, actorId, SetActorIconPacket.ISGM), true);
                 else
-                    broadcastPacket(SetActorIconPacket.buildPacket(actorId, actorId, 0), true);
+                    BroadcastPacket(SetActorIconPacket.BuildPacket(actorId, actorId, 0), true);
             }
         }
 
-        public void cleanupAndSave()
+        public void CleanupAndSave()
         {                        
             //Remove actor from zone and main server list
-            zone.removeActorFromZone(this);
-            Server.getServer().removePlayer(this);
+            zone.RemoveActorFromZone(this);
+            Server.GetServer().RemovePlayer(this);
 
             //Save Player
-            Database.savePlayerPlayTime(this);
-            Database.savePlayerPosition(this);
+            Database.SavePlayerPlayTime(this);
+            Database.SavePlayerPosition(this);
 
-            Log.info(String.Format("{0} has been logged out and saved.", this.customDisplayName));
+            Program.Log.Info("{0} has been logged out and saved.", this.customDisplayName);
         }
 
-        public Area getZone()
+        public Area GetZone()
         {
             return zone;
         }
 
-        public void sendMessage(uint logType, string sender, string message)
+        public void SendMessage(uint logType, string sender, string message)
         {
-            queuePacket(SendMessagePacket.buildPacket(actorId, actorId, logType, sender, message));
+            QueuePacket(SendMessagePacket.BuildPacket(actorId, actorId, logType, sender, message));
         }
 
-        public void logout()
+        public void Logout()
         {
-            queuePacket(LogoutPacket.buildPacket(actorId));
-            cleanupAndSave();
+            QueuePacket(LogoutPacket.BuildPacket(actorId));
+            CleanupAndSave();
         }
 
-        public void quitGame()
+        public void QuitGame()
         {
-            queuePacket(QuitPacket.buildPacket(actorId));
-            cleanupAndSave();
+            QueuePacket(QuitPacket.BuildPacket(actorId));
+            CleanupAndSave();
         }
 
-        public uint getPlayTime(bool doUpdate)
+        public uint GetPlayTime(bool doUpdate)
         {
             if (doUpdate)
             {
@@ -687,82 +679,82 @@ namespace FFXIVClassic_Map_Server.Actors
             return playTime;
         }
 
-        public void changeMusic(ushort musicId)
+        public void ChangeMusic(ushort musicId)
         {
-            queuePacket(SetMusicPacket.buildPacket(actorId, musicId, 1));
+            QueuePacket(SetMusicPacket.BuildPacket(actorId, musicId, 1));
         }
 
-        public void sendChocoboAppearance()
+        public void SendChocoboAppearance()
         {
-            broadcastPacket(SetCurrentMountChocoboPacket.buildPacket(actorId, chocoboAppearance), true);
+            BroadcastPacket(SetCurrentMountChocoboPacket.BuildPacket(actorId, chocoboAppearance), true);
         }
 
-        public void sendGoobbueAppearance()
+        public void SendGoobbueAppearance()
         {
-            broadcastPacket(SetCurrentMountGoobbuePacket.buildPacket(actorId, 1), true);
+            BroadcastPacket(SetCurrentMountGoobbuePacket.BuildPacket(actorId, 1), true);
         }
 
-        public void setMountState(byte mountState)
+        public void SetMountState(byte mountState)
         {
             this.mountState = mountState;
         }
 
-        public byte getMountState()
+        public byte GetMountState()
         {
             return mountState;
         }
 
-        public void doEmote(uint emoteId)
+        public void DoEmote(uint emoteId)
         {
-            broadcastPacket(ActorDoEmotePacket.buildPacket(actorId, actorId, currentTarget, emoteId), true);
+            BroadcastPacket(ActorDoEmotePacket.BuildPacket(actorId, actorId, currentTarget, emoteId), true);
         }
 
-        public void sendGameMessage(Actor sourceActor, Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
+        public void SendGameMessage(Actor sourceActor, Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
         {
             if (msgParams.Length == 0)
             {
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, sourceActor.actorId, textIdOwner.actorId, textId, log));
+                QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, sourceActor.actorId, textIdOwner.actorId, textId, log));
             }
             else
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, sourceActor.actorId, textIdOwner.actorId, textId, log, LuaUtils.createLuaParamList(msgParams)));
+                QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, sourceActor.actorId, textIdOwner.actorId, textId, log, LuaUtils.CreateLuaParamList(msgParams)));
         }
 
-        public void sendGameMessage(Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
+        public void SendGameMessage(Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
         {
             if (msgParams.Length == 0)
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log));
+                QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log));
             else
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log, LuaUtils.createLuaParamList(msgParams)));
+                QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log, LuaUtils.CreateLuaParamList(msgParams)));
         }
 
-        public void sendGameMessage(Actor textIdOwner, ushort textId, byte log, string customSender, params object[] msgParams)
+        public void SendGameMessage(Actor textIdOwner, ushort textId, byte log, string customSender, params object[] msgParams)
         {
             if (msgParams.Length == 0)
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log));
+                QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log));
             else
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log, LuaUtils.createLuaParamList(msgParams)));
+                QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log, LuaUtils.CreateLuaParamList(msgParams)));
         }
 
-        public void sendGameMessage(Actor textIdOwner, ushort textId, byte log, uint displayId, params object[] msgParams)
+        public void SendGameMessage(Actor textIdOwner, ushort textId, byte log, uint displayId, params object[] msgParams)
         {
             if (msgParams.Length == 0)
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log));
+                QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log));
             else
-                queuePacket(GameMessagePacket.buildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log, LuaUtils.createLuaParamList(msgParams)));
+                QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log, LuaUtils.CreateLuaParamList(msgParams)));
         }
 
-        public void broadcastWorldMessage(ushort worldMasterId, params object[] msgParams)
+        public void BroadcastWorldMessage(ushort worldMasterId, params object[] msgParams)
         {
             //SubPacket worldMasterMessage = 
-            //zone.broadcastPacketAroundActor(this, worldMasterMessage);
+            //zone.BroadcastPacketAroundActor(this, worldMasterMessage);
         }
 
-        public void graphicChange(uint slot, uint graphicId)
+        public void GraphicChange(uint slot, uint graphicId)
         {
             appearanceIds[slot] = graphicId;           
         }
 
-        public void graphicChange(uint slot, uint weapId, uint equipId, uint variantId, uint colorId)
+        public void GraphicChange(uint slot, uint weapId, uint equipId, uint variantId, uint colorId)
         {
 
             uint mixedVariantId;
@@ -781,12 +773,12 @@ namespace FFXIVClassic_Map_Server.Actors
             
         }
 
-        public void sendAppearance()
+        public void SendAppearance()
         {
-            broadcastPacket(createAppearancePacket(actorId), true);
+            BroadcastPacket(CreateAppearancePacket(actorId), true);
         }
 
-        public void sendCharaExpInfo()
+        public void SendCharaExpInfo()
         {
             if (lastStep == 0)
             {
@@ -800,22 +792,22 @@ namespace FFXIVClassic_Map_Server.Actors
                 Buffer.BlockCopy(charaWork.battleSave.skillLevel, 0, skillLevelBuffer, 0, skillLevelBuffer.Length);
                 SetActorPropetyPacket charaInfo1 = new SetActorPropetyPacket("charaWork/exp");
 
-                charaInfo1.setIsArrayMode(true);
+                charaInfo1.SetIsArrayMode(true);
                 if (maxLength == 0x5E)
                 {
-                    charaInfo1.addBuffer(Utils.MurmurHash2("charaWork.battleSave.skillLevel", 0), skillLevelBuffer, 0, skillLevelBuffer.Length, 0x0);
+                    charaInfo1.AddBuffer(Utils.MurmurHash2("charaWork.battleSave.skillLevel", 0), skillLevelBuffer, 0, skillLevelBuffer.Length, 0x0);
                     lastPosition += maxLength;
                 }
                 else
                 {
-                    charaInfo1.addBuffer(Utils.MurmurHash2("charaWork.battleSave.skillLevel", 0), skillLevelBuffer, 0, skillLevelBuffer.Length, 0x3);
+                    charaInfo1.AddBuffer(Utils.MurmurHash2("charaWork.battleSave.skillLevel", 0), skillLevelBuffer, 0, skillLevelBuffer.Length, 0x3);
                     lastPosition = 0;
                     lastStep++;
                 }
 
-                charaInfo1.addTarget();
+                charaInfo1.AddTarget();
 
-                queuePacket(charaInfo1.buildPacket(actorId, actorId));
+                QueuePacket(charaInfo1.BuildPacket(actorId, actorId));
             }
             else if (lastStep == 1)
             {
@@ -832,38 +824,38 @@ namespace FFXIVClassic_Map_Server.Actors
                 
                 if (maxLength == 0x5E)
                 {
-                    charaInfo1.setIsArrayMode(true);
-                    charaInfo1.addBuffer(Utils.MurmurHash2("charaWork.battleSave.skillLevelCap", 0), skillCapBuffer, 0, skillCapBuffer.Length, 0x1);
+                    charaInfo1.SetIsArrayMode(true);
+                    charaInfo1.AddBuffer(Utils.MurmurHash2("charaWork.battleSave.skillLevelCap", 0), skillCapBuffer, 0, skillCapBuffer.Length, 0x1);
                     lastPosition += maxLength;
                 }
                 else
                 {
-                    charaInfo1.setIsArrayMode(false);
-                    charaInfo1.addBuffer(Utils.MurmurHash2("charaWork.battleSave.skillLevelCap", 0), skillCapBuffer, 0, skillCapBuffer.Length, 0x3);
+                    charaInfo1.SetIsArrayMode(false);
+                    charaInfo1.AddBuffer(Utils.MurmurHash2("charaWork.battleSave.skillLevelCap", 0), skillCapBuffer, 0, skillCapBuffer.Length, 0x3);
                     lastStep = 0;
                     lastPosition = 0;
                 }
 
-                charaInfo1.addTarget();
+                charaInfo1.AddTarget();
 
-                queuePacket(charaInfo1.buildPacket(actorId, actorId));
+                QueuePacket(charaInfo1.BuildPacket(actorId, actorId));
             }
            
         }
 
-        public InventoryItem[] getGearset(ushort classId)
+        public InventoryItem[] GetGearset(ushort classId)
         {
-            return Database.getEquipment(this, classId);
+            return Database.GetEquipment(this, classId);
         }
 
-        public void prepareClassChange(byte classId)
+        public void PrepareClassChange(byte classId)
         {            
             //If new class, init abilties and level
 
-            sendCharaExpInfo();
+            SendCharaExpInfo();
         }
 
-        public void doClassChange(byte classId)
+        public void DoClassChange(byte classId)
         {
             //load hotbars
             //Calculate stats
@@ -894,26 +886,26 @@ namespace FFXIVClassic_Map_Server.Actors
 
             ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("charaWork/stateForAll", this, actorId);
 
-            propertyBuilder.addProperty("charaWork.parameterSave.state_mainSkill[0]");
-            propertyBuilder.addProperty("charaWork.parameterSave.state_mainSkillLevel");
-            propertyBuilder.newTarget("playerWork/expBonus");
-            propertyBuilder.addProperty("playerWork.restBonusExpRate");
+            propertyBuilder.AddProperty("charaWork.parameterSave.state_mainSkill[0]");
+            propertyBuilder.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
+            propertyBuilder.NewTarget("playerWork/expBonus");
+            propertyBuilder.AddProperty("playerWork.restBonusExpRate");
 
-            List<SubPacket> packets = propertyBuilder.done();
+            List<SubPacket> packets = propertyBuilder.Done();
 
             foreach (SubPacket packet in packets)
-                broadcastPacket(packet, true);
+                BroadcastPacket(packet, true);
 
-            Database.savePlayerCurrentClass(this);
+            Database.SavePlayerCurrentClass(this);
         }
 
-        public void graphicChange(int slot, InventoryItem invItem)
+        public void GraphicChange(int slot, InventoryItem invItem)
         {
             if (invItem == null)            
                 appearanceIds[slot] = 0;            
             else
             {
-                Item item = Server.getItemGamedata(invItem.itemId);
+                Item item = Server.GetItemGamedata(invItem.itemId);
                 if (item is EquipmentItem)
                 {
                     EquipmentItem eqItem = (EquipmentItem)item;
@@ -934,12 +926,12 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
             }
 
-            Database.savePlayerAppearance(this);
+            Database.SavePlayerAppearance(this);
 
-            broadcastPacket(createAppearancePacket(actorId), true);
+            BroadcastPacket(CreateAppearancePacket(actorId), true);
         }        
 
-        public Inventory getInventory(ushort type)
+        public Inventory GetInventory(ushort type)
         {
             if (inventories.ContainsKey(type))
                 return inventories[type];
@@ -947,7 +939,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 return null;
         }
 
-        public Actor getActorInInstance(uint actorId)
+        public Actor GetActorInInstance(uint actorId)
         {
             foreach (Actor a in playerSession.actorInstanceList)
             {
@@ -958,27 +950,27 @@ namespace FFXIVClassic_Map_Server.Actors
             return null;
         }
 
-        public void setZoneChanging(bool flag)
+        public void SetZoneChanging(bool flag)
         {
             isZoneChanging = flag;
         }
 
-        public bool isInZoneChange()
+        public bool IsInZoneChange()
         {
             return isZoneChanging;
         }
 
-        public Equipment getEquipment()
+        public Equipment GetEquipment()
         {
             return equipment;
         }     
 
-        public byte getInitialTown()
+        public byte GetInitialTown()
         {
             return playerWork.initialTown;
         }
 
-        public int getFreeQuestSlot()
+        public int GetFreeQuestSlot()
         {
             for (int i = 0; i < questScenario.Length; i++)
             {
@@ -989,32 +981,32 @@ namespace FFXIVClassic_Map_Server.Actors
             return -1;
         }
 
-        public void addQuest(uint id)
+        public void AddQuest(uint id)
         {
-            Actor actor = Server.getStaticActors((0xA0F00000 | id));
-            addQuest(actor.actorName);
+            Actor actor = Server.GetStaticActors((0xA0F00000 | id));
+            AddQuest(actor.actorName);
         }
 
-        public void addQuest(string name)
+        public void AddQuest(string name)
         {
-            Actor actor = Server.getStaticActors(name);
+            Actor actor = Server.GetStaticActors(name);
 
             if (actor == null)
                 return;
 
             uint id = actor.actorId;
 
-            int freeSlot = getFreeQuestSlot();
+            int freeSlot = GetFreeQuestSlot();
 
             if (freeSlot == -1)
                 return;
 
             playerWork.questScenario[freeSlot] = id;
             questScenario[freeSlot] = new Quest(this, playerWork.questScenario[freeSlot], name, null, 0);
-            Database.saveQuest(this, questScenario[freeSlot]);
+            Database.SaveQuest(this, questScenario[freeSlot]);
         }
 
-        public Quest getQuest(uint id)
+        public Quest GetQuest(uint id)
         {
             for (int i = 0; i < questScenario.Length; i++)
             {
@@ -1025,7 +1017,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return null;
         }
 
-        public Quest getQuest(string name)
+        public Quest GetQuest(string name)
         {
             for (int i = 0; i < questScenario.Length; i++)
             {
@@ -1036,7 +1028,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return null;
         }
 
-        public bool hasQuest(string name)
+        public bool HasQuest(string name)
         {
             for (int i = 0; i < questScenario.Length; i++)
             {
@@ -1047,7 +1039,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return false;
         }
 
-        public bool hasQuest(uint id)
+        public bool HasQuest(uint id)
         {
             for (int i = 0; i < questScenario.Length; i++)
             {
@@ -1058,7 +1050,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return false;
         }
 
-        public int getQuestSlot(uint id)
+        public int GetQuestSlot(uint id)
         {
             for (int i = 0; i < questScenario.Length; i++)
             {
@@ -1069,7 +1061,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return -1;
         }
 
-        public void setDirector(string directorType, bool sendPackets)
+        public void SetDirector(string directorType, bool sendPackets)
         {
             if (directorType.Equals("openingDirector"))
             {
@@ -1090,22 +1082,22 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (sendPackets)
             {
-                queuePacket(RemoveActorPacket.buildPacket(actorId, 0x46080012));
-                queuePacket(currentDirector.getSpawnPackets(actorId));
-                queuePacket(currentDirector.getInitPackets(actorId));
-                //queuePacket(currentDirector.getSetEventStatusPackets(actorId));
-                //currentDirector.getSpawnPackets(actorId).debugPrintPacket();
-                //currentDirector.getInitPackets(actorId).debugPrintPacket();
+                QueuePacket(RemoveActorPacket.BuildPacket(actorId, 0x46080012));
+                QueuePacket(currentDirector.GetSpawnPackets(actorId));
+                QueuePacket(currentDirector.GetInitPackets(actorId));
+                //QueuePacket(currentDirector.GetSetEventStatusPackets(actorId));
+                //currentDirector.GetSpawnPackets(actorId).DebugPrintPacket();
+                //currentDirector.GetInitPackets(actorId).DebugPrintPacket();
             }
 
         }
 
-        public Director getDirector()
+        public Director GetDirector()
         {
             return currentDirector;
         }
 
-        public void examinePlayer(Actor examinee)
+        public void ExaminePlayer(Actor examinee)
         {
             Player toBeExamined;
             if (examinee is Player)
@@ -1113,79 +1105,79 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 return;
 
-            queuePacket(InventoryBeginChangePacket.buildPacket(toBeExamined.actorId, actorId));
-            toBeExamined.getEquipment().SendCheckEquipmentToPlayer(this);
-            queuePacket(InventoryEndChangePacket.buildPacket(toBeExamined.actorId, actorId));
+            QueuePacket(InventoryBeginChangePacket.BuildPacket(toBeExamined.actorId, actorId));
+            toBeExamined.GetEquipment().SendCheckEquipmentToPlayer(this);
+            QueuePacket(InventoryEndChangePacket.BuildPacket(toBeExamined.actorId, actorId));
         }
 
-        public void sendRequestedInfo(params object[] parameters)
+        public void SendRequestedInfo(params object[] parameters)
         {
-            List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
-            SubPacket spacket = InfoRequestResponsePacket.buildPacket(actorId, actorId, lParams);
-            spacket.debugPrintSubPacket();
-            queuePacket(spacket);
+            List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
+            SubPacket spacket = InfoRequestResponsePacket.BuildPacket(actorId, actorId, lParams);
+            spacket.DebugPrintSubPacket();
+            QueuePacket(spacket);
         }
 
-        public void kickEvent(Actor actor, string conditionName, params object[] parameters)
+        public void KickEvent(Actor actor, string conditionName, params object[] parameters)
         {
             if (actor == null)
                 return;
 
-            List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
-            SubPacket spacket = KickEventPacket.buildPacket(actorId, actor.actorId, conditionName, lParams);
-            spacket.debugPrintSubPacket();
-            queuePacket(spacket);
+            List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
+            SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, conditionName, lParams);
+            spacket.DebugPrintSubPacket();
+            QueuePacket(spacket);
         }
 
-        public void setEventStatus(Actor actor, string conditionName, bool enabled, byte unknown)
+        public void SetEventStatus(Actor actor, string conditionName, bool enabled, byte unknown)
         {
-            queuePacket(SetEventStatus.buildPacket(actorId, actor.actorId, enabled, unknown, conditionName));
+            QueuePacket(packets.send.actor.events.SetEventStatus.BuildPacket(actorId, actor.actorId, enabled, unknown, conditionName));
         }
 
-        public void runEventFunction(string functionName, params object[] parameters)
+        public void RunEventFunction(string functionName, params object[] parameters)
         {
-            List<LuaParam> lParams = LuaUtils.createLuaParamList(parameters);
-            SubPacket spacket = RunEventFunctionPacket.buildPacket(actorId, currentEventOwner, currentEventName, functionName, lParams);
-            spacket.debugPrintSubPacket();
-            queuePacket(spacket);
+            List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
+            SubPacket spacket = RunEventFunctionPacket.BuildPacket(actorId, currentEventOwner, currentEventName, functionName, lParams);
+            spacket.DebugPrintSubPacket();
+            QueuePacket(spacket);
         }
 
-        public void endEvent()
+        public void EndEvent()
         {
-            SubPacket p = EndEventPacket.buildPacket(actorId, currentEventOwner, currentEventName);
-            p.debugPrintSubPacket();
-            queuePacket(p);
+            SubPacket p = EndEventPacket.BuildPacket(actorId, currentEventOwner, currentEventName);
+            p.DebugPrintSubPacket();
+            QueuePacket(p);
 
             currentEventOwner = 0;
             currentEventName = "";
             eventMenuId = 0;
         }
 
-        public void endCommand()
+        public void EndCommand()
         {
-            SubPacket p = EndEventPacket.buildPacket(actorId, currentCommand, currentCommandName);
-            p.debugPrintSubPacket();
-            queuePacket(p);
+            SubPacket p = EndEventPacket.BuildPacket(actorId, currentCommand, currentCommandName);
+            p.DebugPrintSubPacket();
+            QueuePacket(p);
 
             currentCommand = 0;
             currentCommandName = "";
         }
 
-        public void setCurrentMenuId(uint id)
+        public void SetCurrentMenuId(uint id)
         {
             eventMenuId = id;
         }
 
-        public uint getCurrentMenuId()
+        public uint GetCurrentMenuId()
         {
             return eventMenuId;
         }
 
-        public void sendInstanceUpdate()
+        public void SendInstanceUpdate()
         {
            
             //Update Instance
-            playerSession.updateInstance(zone.getActorsAroundActor(this, 50));            
+            playerSession.UpdateInstance(zone.GetActorsAroundActor(this, 50));            
         
         }
 

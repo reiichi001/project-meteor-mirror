@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
-using FFXIVClassic_Lobby_Server.common;
 using System.IO;
+using FFXIVClassic.Common;
 
-namespace FFXIVClassic_Lobby_Server.packets
-{    
-   
+namespace FFXIVClassic_Map_Server.packets
+{
+
     [StructLayout(LayoutKind.Sequential)]
     public struct BasePacketHeader
     {
@@ -105,7 +102,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             this.data = data;
         }
 
-        public List<SubPacket> getSubpackets()
+        public List<SubPacket> GetSubpackets()
         {
             List<SubPacket> subpackets = new List<SubPacket>(header.numSubpackets);
 
@@ -117,7 +114,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             return subpackets;
         }
 
-        public unsafe static BasePacketHeader getHeader(byte[] bytes)
+        public unsafe static BasePacketHeader GetHeader(byte[] bytes)
         {
             BasePacketHeader header;
             if (bytes.Length < BASEPACKET_SIZE)
@@ -131,7 +128,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             return header;
         }
 
-        public byte[] getHeaderBytes()
+        public byte[] GetHeaderBytes()
         {
             int size = Marshal.SizeOf(header);
             byte[] arr = new byte[size];
@@ -143,16 +140,16 @@ namespace FFXIVClassic_Lobby_Server.packets
             return arr;
         }
 
-        public byte[] getPacketBytes()
+        public byte[] GetPacketBytes()
         {
             byte[] outBytes = new byte[header.packetSize];
-            Array.Copy(getHeaderBytes(), 0, outBytes, 0, BASEPACKET_SIZE);
+            Array.Copy(GetHeaderBytes(), 0, outBytes, 0, BASEPACKET_SIZE);
             Array.Copy(data, 0, outBytes, BASEPACKET_SIZE, data.Length);
             return outBytes;
         }
 
         //Replaces all instances of the sniffed actorID with the given one
-        public void replaceActorID(uint actorID)
+        public void ReplaceActorID(uint actorID)
         {
             using (MemoryStream mem = new MemoryStream(data))
             {
@@ -175,7 +172,7 @@ namespace FFXIVClassic_Lobby_Server.packets
         }
 
         //Replaces all instances of the sniffed actorID with the given one
-        public void replaceActorID(uint fromActorID, uint actorID)
+        public void ReplaceActorID(uint fromActorID, uint actorID)
         {
             using (MemoryStream mem = new MemoryStream(data))
             {
@@ -198,7 +195,7 @@ namespace FFXIVClassic_Lobby_Server.packets
         }
 
         #region Utility Functions
-        public static BasePacket createPacket(List<SubPacket> subpackets, bool isAuthed, bool isCompressed)
+        public static BasePacket CreatePacket(List<SubPacket> subpackets, bool isAuthed, bool isCompressed)
         {
             //Create Header
             BasePacketHeader header = new BasePacketHeader();
@@ -220,7 +217,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             int offset = 0;
             foreach (SubPacket subpacket in subpackets)
             {
-                byte[] subpacketData = subpacket.getBytes();
+                byte[] subpacketData = subpacket.GetBytes();
                 Array.Copy(subpacketData, 0, data, offset, subpacketData.Length);
                 offset += (ushort)subpacketData.Length;
             }
@@ -231,7 +228,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             return packet;
         }
 
-        public static BasePacket createPacket(SubPacket subpacket, bool isAuthed, bool isCompressed)
+        public static BasePacket CreatePacket(SubPacket subpacket, bool isAuthed, bool isCompressed)
         {
             //Create Header
             BasePacketHeader header = new BasePacketHeader();
@@ -249,7 +246,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             data = new byte[header.packetSize - 0x10];
 
             //Add Subpackets
-            byte[] subpacketData = subpacket.getBytes();
+            byte[] subpacketData = subpacket.GetBytes();
             Array.Copy(subpacketData, 0, data, 0, subpacketData.Length);            
 
             Debug.Assert(data != null);
@@ -258,7 +255,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             return packet;
         }
 
-        public static BasePacket createPacket(byte[] data, bool isAuthed, bool isCompressed)
+        public static BasePacket CreatePacket(byte[] data, bool isAuthed, bool isCompressed)
         {
 
             Debug.Assert(data != null);
@@ -279,7 +276,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             return packet;
         }
 
-        public static unsafe void encryptPacket(Blowfish blowfish, BasePacket packet)
+        public static unsafe void EncryptPacket(Blowfish blowfish, BasePacket packet)
         {
             byte[] data = packet.data;
             int size = packet.header.packetSize;
@@ -305,7 +302,7 @@ namespace FFXIVClassic_Lobby_Server.packets
 
         }
 
-        public static unsafe void decryptPacket(Blowfish blowfish, ref BasePacket packet)
+        public static unsafe void DecryptPacket(Blowfish blowfish, ref BasePacket packet)
         {
             byte[] data = packet.data;
             int size = packet.header.packetSize;
@@ -332,17 +329,21 @@ namespace FFXIVClassic_Lobby_Server.packets
         }
         #endregion
 
-        public void debugPrintPacket()
+        public void DebugPrintPacket()
         {
 #if DEBUG
             Console.BackgroundColor = ConsoleColor.DarkYellow;
-            Console.WriteLine("IsAuthed: {0}, IsEncrypted: {1}, Size: 0x{2:X}, Num Subpackets: {3}", header.isAuthenticated, header.isCompressed, header.packetSize, header.numSubpackets);            
-            Console.WriteLine("{0}", Utils.ByteArrayToHex(getHeaderBytes()));
-            foreach (SubPacket sub in getSubpackets())
-                sub.debugPrintSubPacket();
+
+            Program.Log.Debug("IsAuth: {0} IsEncrypted: {1}, Size: 0x{2:X}, NumSubpackets: {3}{4}{5}", header.isAuthenticated, header.isCompressed, header.packetSize, header.numSubpackets, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
+
+            foreach (SubPacket sub in GetSubpackets())
+            {
+                sub.DebugPrintSubPacket();
+            }
+
             Console.BackgroundColor = ConsoleColor.Black;
 #endif
         }
-        
+
     }
 }

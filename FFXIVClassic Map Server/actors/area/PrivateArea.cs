@@ -1,4 +1,4 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
+﻿using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
@@ -24,22 +24,22 @@ namespace FFXIVClassic_Map_Server.actors.area
             this.privateAreaLevel = privateAreaLevel;
         }
 
-        public string getPrivateAreaName()
+        public string GetPrivateAreaName()
         {
             return privateAreaName;
         }
 
-        public uint getPrivateAreaLevel()
+        public uint GetPrivateAreaLevel()
         {
             return privateAreaLevel;
         }
 
-        public Zone getParentZone()
+        public Zone GetParentZone()
         {
             return parentZone;
         }
 
-        public override SubPacket createScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
 
@@ -48,21 +48,21 @@ namespace FFXIVClassic_Map_Server.actors.area
             if (className.ToLower().Contains("content"))
                 path = "Content/" + className;
 
-            lParams = LuaUtils.createLuaParamList("/Area/PrivateArea/" + path, false, true, zoneName, privateAreaName, 0x9E, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, false, false, false);
-            ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams).debugPrintSubPacket();
-            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
+            lParams = LuaUtils.CreateLuaParamList("/Area/PrivateArea/" + path, false, true, zoneName, privateAreaName, 0x9E, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, false, false, false);
+            ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams).DebugPrintSubPacket();
+            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
         }
 
 
-        public void addSpawnLocation(SpawnLocation spawn)
+        public void AddSpawnLocation(SpawnLocation spawn)
         {
             mSpawnLocations.Add(spawn);
         }
 
-        public void spawnAllActors()
+        public void SpawnAllActors()
         {
             foreach (SpawnLocation spawn in mSpawnLocations)
-                spawnActor(spawn);
+                SpawnActor(spawn);
         }
     }
 }

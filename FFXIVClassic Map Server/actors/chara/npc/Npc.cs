@@ -1,10 +1,9 @@
-﻿using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.packets;
+﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors;
 using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
+using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.packets.receive.events;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.utils;
@@ -77,13 +76,13 @@ namespace FFXIVClassic_Map_Server.Actors
             generateActorName((int)actorNumber);            
         }
 
-        public SubPacket createAddActorPacket(uint playerActorId)
+        public SubPacket CreateAddActorPacket(uint playerActorId)
         {
-            return AddActorPacket.buildPacket(actorId, playerActorId, 8);
+            return AddActorPacket.BuildPacket(actorId, playerActorId, 8);
         }
 
         // actorClassId, [], [], numBattleCommon, [battleCommon], numEventCommon, [eventCommon], args for either initForBattle/initForEvent
-        public override SubPacket createScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
 
@@ -94,9 +93,9 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 string classPathFake = "/Chara/Npc/Populace/PopulaceStandard";
                 string classNameFake = "PopulaceStandard";
-                lParams = LuaUtils.createLuaParamList(classPathFake, false, false, false, false, false, 0xF47F6, false, false, 0, 0);
-                ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, classNameFake, lParams).debugPrintSubPacket();
-                return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, classNameFake, lParams);
+                lParams = LuaUtils.CreateLuaParamList(classPathFake, false, false, false, false, false, 0xF47F6, false, false, 0, 0);
+                ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams).DebugPrintSubPacket();
+                return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams);
             }
             else
             {
@@ -109,30 +108,30 @@ namespace FFXIVClassic_Map_Server.Actors
                 lParams.Insert(6, new LuaParam(0, (int)actorClassId));
             }
 
-            ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams).debugPrintSubPacket();
-            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);
+            ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams).DebugPrintSubPacket();
+            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
         }
 
-        public override BasePacket getSpawnPackets(uint playerActorId, uint spawnType)
+        public override BasePacket GetSpawnPackets(uint playerActorId, uint spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(createAddActorPacket(playerActorId));
-            subpackets.AddRange(getEventConditionPackets(playerActorId));
-            subpackets.Add(createSpeedPacket(playerActorId));            
-            subpackets.Add(createSpawnPositonPacket(playerActorId, 0x0));            
-            subpackets.Add(createAppearancePacket(playerActorId));
-            subpackets.Add(createNamePacket(playerActorId));
-            subpackets.Add(createStatePacket(playerActorId));
-            subpackets.Add(createIdleAnimationPacket(playerActorId));
-            subpackets.Add(createInitStatusPacket(playerActorId));
-            subpackets.Add(createSetActorIconPacket(playerActorId));
-            subpackets.Add(createIsZoneingPacket(playerActorId));           
-            subpackets.Add(createScriptBindPacket(playerActorId));            
+            subpackets.Add(CreateAddActorPacket(playerActorId));
+            subpackets.AddRange(GetEventConditionPackets(playerActorId));
+            subpackets.Add(CreateSpeedPacket(playerActorId));            
+            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x0));            
+            subpackets.Add(CreateAppearancePacket(playerActorId));
+            subpackets.Add(CreateNamePacket(playerActorId));
+            subpackets.Add(CreateStatePacket(playerActorId));
+            subpackets.Add(CreateIdleAnimationPacket(playerActorId));
+            subpackets.Add(CreateInitStatusPacket(playerActorId));
+            subpackets.Add(CreateSetActorIconPacket(playerActorId));
+            subpackets.Add(CreateIsZoneingPacket(playerActorId));           
+            subpackets.Add(CreateScriptBindPacket(playerActorId));            
 
-            return BasePacket.createPacket(subpackets, true, false);
+            return BasePacket.CreatePacket(subpackets, true, false);
         }
 
-        public override BasePacket getInitPackets(uint playerActorId)
+        public override BasePacket GetInitPackets(uint playerActorId)
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this, playerActorId);
 
@@ -140,49 +139,49 @@ namespace FFXIVClassic_Map_Server.Actors
             for (int i = 0; i < charaWork.property.Length; i++)
             {
                 if (charaWork.property[i] != 0)
-                    propPacketUtil.addProperty(String.Format("charaWork.property[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.property[{0}]", i));
             }
 
             //Parameters
-            propPacketUtil.addProperty("charaWork.parameterSave.hp[0]");
-            propPacketUtil.addProperty("charaWork.parameterSave.hpMax[0]");
-            propPacketUtil.addProperty("charaWork.parameterSave.mp");
-            propPacketUtil.addProperty("charaWork.parameterSave.mpMax");
-            propPacketUtil.addProperty("charaWork.parameterTemp.tp");
+            propPacketUtil.AddProperty("charaWork.parameterSave.hp[0]");
+            propPacketUtil.AddProperty("charaWork.parameterSave.hpMax[0]");
+            propPacketUtil.AddProperty("charaWork.parameterSave.mp");
+            propPacketUtil.AddProperty("charaWork.parameterSave.mpMax");
+            propPacketUtil.AddProperty("charaWork.parameterTemp.tp");
 
             if (charaWork.parameterSave.state_mainSkill[0] != 0)
-                propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[0]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[0]");
             if (charaWork.parameterSave.state_mainSkill[1] != 0)
-                propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[1]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[1]");
             if (charaWork.parameterSave.state_mainSkill[2] != 0)
-                propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[2]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[2]");
             if (charaWork.parameterSave.state_mainSkill[3] != 0)
-                propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkill[3]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[3]");
 
-            propPacketUtil.addProperty("charaWork.parameterSave.state_mainSkillLevel");
+            propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
 
             //Status Times
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
             {
                 if (charaWork.statusShownTime[i] != 0xFFFFFFFF)
-                    propPacketUtil.addProperty(String.Format("charaWork.statusShownTime[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
             }
 
             //General Parameters
             for (int i = 3; i < charaWork.battleTemp.generalParameter.Length; i++)
             {
                 if (charaWork.battleTemp.generalParameter[i] != 0)
-                    propPacketUtil.addProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
             }
 
-            propPacketUtil.addProperty("npcWork.hateType");
-            propPacketUtil.addProperty("npcWork.pushCommand");
-            propPacketUtil.addProperty("npcWork.pushCommandPriority");
+            propPacketUtil.AddProperty("npcWork.hateType");
+            propPacketUtil.AddProperty("npcWork.pushCommand");
+            propPacketUtil.AddProperty("npcWork.pushCommandPriority");
 
-            return BasePacket.createPacket(propPacketUtil.done(), true, false);
+            return BasePacket.CreatePacket(propPacketUtil.Done(), true, false);
         }
 
-        public uint getActorClassId()
+        public uint GetActorClassId()
         {
             return actorClassId;
         }
@@ -252,7 +251,7 @@ namespace FFXIVClassic_Map_Server.Actors
                             modelId = reader.GetUInt32(0);
                             appearanceIds[Character.SIZE] = reader.GetUInt32(1);
                             appearanceIds[Character.COLORINFO] = (uint)(reader.GetUInt32(16) | (reader.GetUInt32(15) << 10) | (reader.GetUInt32(17) << 20)); //17 - Skin Color, 16 - Hair Color, 18 - Eye Color
-                            appearanceIds[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.getFaceInfo(reader.GetByte(6), reader.GetByte(7), reader.GetByte(5), reader.GetByte(14), reader.GetByte(13), reader.GetByte(12), reader.GetByte(11), reader.GetByte(10), reader.GetByte(9), reader.GetByte(8)));
+                            appearanceIds[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.GetFaceInfo(reader.GetByte(6), reader.GetByte(7), reader.GetByte(5), reader.GetByte(14), reader.GetByte(13), reader.GetByte(12), reader.GetByte(11), reader.GetByte(10), reader.GetByte(9), reader.GetByte(8)));
                             appearanceIds[Character.HIGHLIGHT_HAIR] = (uint)(reader.GetUInt32(3) | reader.GetUInt32(2) << 10); //5- Hair Highlight, 4 - Hair Style
                             appearanceIds[Character.VOICE] = reader.GetUInt32(17);
                             appearanceIds[Character.MAINHAND] = reader.GetUInt32(19);
@@ -300,13 +299,13 @@ namespace FFXIVClassic_Map_Server.Actors
             Script parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.loadScript("./scripts/base/" + classPath + ".lua");
+                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
             if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
+                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
             if (parent == null && child == null)
             {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", getName()));
+                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
                 return null;
             }
 
@@ -319,7 +318,7 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 return null;
 
-            List<LuaParam> lparams = LuaUtils.createLuaParamList(result);
+            List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
             return lparams;          
         }
 
@@ -328,13 +327,13 @@ namespace FFXIVClassic_Map_Server.Actors
             Script parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.loadScript("./scripts/base/" + classPath + ".lua");
+                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
             if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
+                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
             if (parent == null)
             {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", getName()));
+                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
                 return;
             }
 
@@ -345,7 +344,7 @@ namespace FFXIVClassic_Map_Server.Actors
             objects.Add(eventStart.triggerName);
 
             if (eventStart.luaParams != null)
-                objects.AddRange(LuaUtils.createLuaParamObjectList(eventStart.luaParams));
+                objects.AddRange(LuaUtils.CreateLuaParamObjectList(eventStart.luaParams));
 
             //Run Script
             DynValue result;
@@ -364,13 +363,13 @@ namespace FFXIVClassic_Map_Server.Actors
             Script parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.loadScript("./scripts/base/" + classPath + ".lua");
+                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
             if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
+                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
             if (parent == null)
             {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", getName()));
+                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
                 return;
             }
 
@@ -379,7 +378,7 @@ namespace FFXIVClassic_Map_Server.Actors
             objects.Add(player);
             objects.Add(this);
             objects.Add(eventUpdate.val2);
-            objects.AddRange(LuaUtils.createLuaParamObjectList(eventUpdate.luaParams));
+            objects.AddRange(LuaUtils.CreateLuaParamObjectList(eventUpdate.luaParams));
 
             //Run Script
             DynValue result;
@@ -398,13 +397,13 @@ namespace FFXIVClassic_Map_Server.Actors
             Script parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.loadScript("./scripts/base/" + classPath + ".lua");
+                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
             if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.loadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
+                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
             if (parent == null)
             {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", getName()));
+                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
                 return;
             }
                

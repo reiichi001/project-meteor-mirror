@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace FFXIVClassic_Lobby_Server.common
+namespace FFXIVClassic.Common
 {
-    static class Utils
+    public static class Utils
     {
         private static readonly uint[] _lookup32 = CreateLookup32();
 
@@ -21,28 +18,71 @@ namespace FFXIVClassic_Lobby_Server.common
             return result;
         }
 
-        public static string ByteArrayToHex(byte[] bytes)
+        public static string ByteArrayToHex(byte[] bytes, int offset = 0, int bytesPerLine = 16)
         {
-            var lookup32 = _lookup32;
-            var result = new char[(bytes.Length * 3) + ((bytes.Length / 16) < 1 ? 1 : (bytes.Length / 16) * 3) + bytes.Length + 60];
-            int numNewLines = 0;
-            for (int i = 0; i < bytes.Length; i++)
+            if (bytes == null)
             {
-                var val = lookup32[bytes[i]];
-                result[(3 * i) + (17 * numNewLines) + 0] = (char)val;
-                result[(3 * i) + (17 * numNewLines) + 1] = (char)(val >> 16);
-                result[(3 * i) + (17 * numNewLines) + 2] = ' ';
+                return String.Empty;
+            }
 
-                result[(numNewLines * (3 * 16 + 17)) + (3 * 16) + (i % 16)] = (char)bytes[i] >= 32 && (char)bytes[i] <= 126 ? (char)bytes[i] : '.';
+            char[] hexChars = "0123456789ABCDEF".ToCharArray();
 
-                if (i != bytes.Length - 1 && bytes.Length > 16 && i != 0 && (i + 1) % 16 == 0)
+            // 00000000   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  ................
+            // 00000010   00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  ................
+            int offsetBlock = 8 + 3;
+            int byteBlock = offsetBlock + (bytesPerLine * 3) + ((bytesPerLine - 1) / 8) + 2;
+            int lineLength = byteBlock + bytesPerLine + Environment.NewLine.Length;
+
+            char[] line = (new String(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
+            int numLines = (bytes.Length + bytesPerLine - 1) / bytesPerLine;
+
+            StringBuilder sb = new StringBuilder(numLines * lineLength);
+
+            for (int i = 0; i < bytes.Length; i += bytesPerLine)
+            {
+                int h = i + offset;
+
+                line[0] = hexChars[(h >> 28) & 0xF];
+                line[1] = hexChars[(h >> 24) & 0xF];
+                line[2] = hexChars[(h >> 20) & 0xF];
+                line[3] = hexChars[(h >> 16) & 0xF];
+                line[4] = hexChars[(h >> 12) & 0xF];
+                line[5] = hexChars[(h >> 8) & 0xF];
+                line[6] = hexChars[(h >> 4) & 0xF];
+                line[7] = hexChars[(h >> 0) & 0xF];
+
+                int hexColumn = offsetBlock;
+                int charColumn = byteBlock;
+
+                for (int j = 0; j < bytesPerLine; j++)
                 {
-                    result[(numNewLines * (3 * 16 + 17)) + (3 * 16) + (16)] = '\n';
-                    numNewLines++;
+                    if (j > 0 && (j & 7) == 0)
+                    {
+                        hexColumn++;
+                    }
+
+                    if (i + j >= bytes.Length)
+                    {
+                        line[hexColumn] = ' ';
+                        line[hexColumn + 1] = ' ';
+                        line[charColumn] = ' ';
+                    }
+                    else
+                    {
+                        byte by = bytes[i + j];
+                        line[hexColumn] = hexChars[(by >> 4) & 0xF];
+                        line[hexColumn + 1] = hexChars[by & 0xF];
+                        line[charColumn] = (by < 32 ? '.' : (char)by);
+                    }
+
+                    hexColumn += 3;
+                    charColumn++;
                 }
 
+                sb.Append(line);
             }
-            return new string(result);
+
+            return sb.ToString();
         }
 
         public static UInt32 UnixTimeStampUTC()
@@ -67,7 +107,7 @@ namespace FFXIVClassic_Lobby_Server.common
             return unixTimeStamp;
         }
 
-        public static ulong swapEndian(ulong input)
+        public static ulong SwapEndian(ulong input)
         {
             return ((0x00000000000000FF) & (input >> 56) |
                     (0x000000000000FF00) & (input >> 40) |
@@ -79,7 +119,7 @@ namespace FFXIVClassic_Lobby_Server.common
                     (0xFF00000000000000) & (input << 56));
         }
 
-        public static uint swapEndian(uint input)
+        public static uint SwapEndian(uint input)
         {
             return ((input >> 24) & 0xff) |
                     ((input << 8) & 0xff0000) |
@@ -87,7 +127,7 @@ namespace FFXIVClassic_Lobby_Server.common
                     ((input << 24) & 0xff000000);
         }
 
-        public static int swapEndian(int input)
+        public static int SwapEndian(int input)
         {
             uint inputAsUint = (uint)input;
 
@@ -178,6 +218,16 @@ namespace FFXIVClassic_Lobby_Server.common
             }
 
             return data;
+        }
+
+        public static string ToStringBase63(int number)
+        {
+            string lookup = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+            string secondDigit = lookup.Substring((int)Math.Floor((double)number / (double)lookup.Length), 1);
+            string firstDigit = lookup.Substring(number % lookup.Length, 1);
+
+            return secondDigit + firstDigit;
         }
     }
 }

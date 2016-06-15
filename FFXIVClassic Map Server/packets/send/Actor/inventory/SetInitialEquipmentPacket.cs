@@ -42,7 +42,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
                 equipment[i] = UNEQUIPPED; //We will use this as "Unequipped"
         }
 
-        public void setItem(int slot, uint itemSlot)
+        public void SetItem(int slot, uint itemSlot)
         {
             if (slot >= equipment.Length)
                 return;
@@ -50,7 +50,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
             equipment[slot] = itemSlot;
         }
 
-        public List<SubPacket> buildPackets(uint playerActorID)
+        public List<SubPacket> BuildPackets(uint playerActorID)
         {            
             List<SubPacket> packets = new List<SubPacket>();
             int packetCount = 0;

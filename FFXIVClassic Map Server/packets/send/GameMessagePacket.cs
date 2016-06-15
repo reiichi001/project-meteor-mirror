@@ -1,11 +1,8 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using FFXIVClassic_Map_Server.lua;
+﻿using FFXIVClassic_Map_Server.lua;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send
 {
@@ -59,7 +56,7 @@ namespace FFXIVClassic_Map_Server.packets.send
         private const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR4 = 0x48;
         private const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR5 = 0x68;
 
-        public static SubPacket buildPacket(uint sourceId, uint targetId, uint actorId, uint textOwnerActorId, ushort textId, byte log)
+        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint actorId, uint textOwnerActorId, ushort textId, byte log)
         {
             byte[] data = new byte[SIZE_GAMEMESSAGE_WITH_ACTOR1 - 0x20];
 
@@ -77,7 +74,7 @@ namespace FFXIVClassic_Map_Server.packets.send
             return new SubPacket(OPCODE_GAMEMESSAGE_WITH_ACTOR1, sourceId, targetId, data);
         }
 
-        public static SubPacket buildPacket(uint sourceId, uint targetId, uint actorId, uint textOwnerActorId, ushort textId, byte log, List<LuaParam> lParams)
+        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint actorId, uint textOwnerActorId, ushort textId, byte log, List<LuaParam> lParams)
         {
             int lParamsSize = findSizeOfParams(lParams);
             byte[] data;
@@ -112,7 +109,7 @@ namespace FFXIVClassic_Map_Server.packets.send
                     binWriter.Write((UInt32)textOwnerActorId);
                     binWriter.Write((UInt16)textId);
                     binWriter.Write((UInt16)log);
-                    LuaUtils.writeLuaParams(binWriter, lParams);
+                    LuaUtils.WriteLuaParams(binWriter, lParams);
 
                     if (lParamsSize <= 0x14-12)
                     {
@@ -125,7 +122,7 @@ namespace FFXIVClassic_Map_Server.packets.send
             return new SubPacket(opcode, sourceId, targetId, data);
         }
 
-        public static SubPacket buildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, string sender, byte log)
+        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, string sender, byte log)
         {
             byte[] data = new byte[SIZE_GAMEMESSAGE_WITH_CUSTOM_SENDER1 - 0x20];
 
@@ -143,7 +140,7 @@ namespace FFXIVClassic_Map_Server.packets.send
             return new SubPacket(OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER1, sourceId, targetId, data);
         }
 
-        public static SubPacket buildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, string sender, byte log, List<LuaParam> lParams)
+        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, string sender, byte log, List<LuaParam> lParams)
         {
             int lParamsSize = findSizeOfParams(lParams);
             byte[] data;
@@ -178,7 +175,7 @@ namespace FFXIVClassic_Map_Server.packets.send
                     binWriter.Write((UInt16)textId);
                     binWriter.Write((UInt16)log);
                     binWriter.Write(Encoding.ASCII.GetBytes(sender), 0, Encoding.ASCII.GetByteCount(sender) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(sender));
-                    LuaUtils.writeLuaParams(binWriter, lParams);
+                    LuaUtils.WriteLuaParams(binWriter, lParams);
 
                     if (lParamsSize <= 0x14 - 12)
                     {
@@ -191,7 +188,7 @@ namespace FFXIVClassic_Map_Server.packets.send
             return new SubPacket(opcode, sourceId, targetId, data);
         }
 
-        public static SubPacket buildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, uint senderDisplayNameId, byte log)
+        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, uint senderDisplayNameId, byte log)
         {
             byte[] data = new byte[SIZE_GAMEMESSAGE_WITH_DISPID_SENDER1 - 0x20];
 
@@ -209,7 +206,7 @@ namespace FFXIVClassic_Map_Server.packets.send
             return new SubPacket(OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER1, sourceId, targetId, data);
         }
 
-        public static SubPacket buildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, uint senderDisplayNameId, byte log, List<LuaParam> lParams)
+        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, uint senderDisplayNameId, byte log, List<LuaParam> lParams)
         {
             int lParamsSize = findSizeOfParams(lParams);
             byte[] data;
@@ -244,7 +241,7 @@ namespace FFXIVClassic_Map_Server.packets.send
                     binWriter.Write((UInt32)textOwnerActorId);
                     binWriter.Write((UInt16)textId);
                     binWriter.Write((UInt16)log);
-                    LuaUtils.writeLuaParams(binWriter, lParams);
+                    LuaUtils.WriteLuaParams(binWriter, lParams);
 
                     if (lParamsSize <= 0x14 - 12)
                     {
@@ -257,7 +254,7 @@ namespace FFXIVClassic_Map_Server.packets.send
             return new SubPacket(opcode, sourceId, targetId, data);
         }
 
-        public static SubPacket buildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, byte log)
+        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, byte log)
         {
             byte[] data = new byte[SIZE_GAMEMESSAGE_WITHOUT_ACTOR1 - 0x20];
 
@@ -274,7 +271,7 @@ namespace FFXIVClassic_Map_Server.packets.send
             return new SubPacket(OPCODE_GAMEMESSAGE_WITHOUT_ACTOR1, sourceId, targetId, data);
         }
 
-        public static SubPacket buildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, byte log, List<LuaParam> lParams)
+        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, byte log, List<LuaParam> lParams)
         {
             int lParamsSize = findSizeOfParams(lParams);
             byte[] data;
@@ -308,7 +305,7 @@ namespace FFXIVClassic_Map_Server.packets.send
                     binWriter.Write((UInt32)textOwnerActorId);
                     binWriter.Write((UInt16)textId);
                     binWriter.Write((UInt16)log);
-                    LuaUtils.writeLuaParams(binWriter, lParams);
+                    LuaUtils.WriteLuaParams(binWriter, lParams);
 
                     if (lParamsSize <= 0x8)
                     {

@@ -1,14 +1,11 @@
 ﻿using FFXIVClassic_Lobby_Server.dataobjects;
 using MySql.Data.MySqlClient;
 using Dapper;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FFXIVClassic_Lobby_Server.common;
 using FFXIVClassic_Lobby_Server.utils;
+using FFXIVClassic.Common;
 
 namespace FFXIVClassic_Lobby_Server
 {
@@ -16,7 +13,7 @@ namespace FFXIVClassic_Lobby_Server
 
     class Database
     {
-        public static uint getUserIdFromSession(String sessionId)
+        public static uint GetUserIdFromSession(String sessionId)
         {
             uint id = 0;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -35,7 +32,10 @@ namespace FFXIVClassic_Lobby_Server
                     }
                 }
                 catch (MySqlException e)
-                { Console.WriteLine(e); }
+                {
+                    Program.Log.Error(e.ToString());
+
+                }
                 finally
                 {
                     conn.Dispose();
@@ -44,7 +44,7 @@ namespace FFXIVClassic_Lobby_Server
             return id;
         }
 
-        public static bool reserveCharacter(uint userId, uint slot, uint serverId, String name, out uint pid, out uint cid)
+        public static bool ReserveCharacter(uint userId, uint slot, uint serverId, String name, out uint pid, out uint cid)
         {
             bool alreadyExists = false;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -88,6 +88,10 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Program.Log.Error(e.ToString());
+                   
+                    Program.Log.Error(e.ToString());
+                   
                     pid = 0;
                     cid = 0;
                 }
@@ -96,13 +100,13 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Dispose();
                 }
 
-                Log.database(String.Format("CID={0} created on 'characters' table.", cid));
+                Program.Log.Debug("[SQL] CID={0} Created on 'characters' table.", cid);
             }
 
             return alreadyExists;
         }        
 
-        public static void makeCharacter(uint accountId, uint cid, CharaInfo charaInfo)
+        public static void MakeCharacter(uint accountId, uint cid, CharaInfo charaInfo)
         {
             //Update character entry
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -179,6 +183,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Program.Log.Error(e.ToString());
+                   
                     conn.Dispose();
                     return;
                 }
@@ -202,6 +208,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Program.Log.Error(e.ToString());
+                   
                     conn.Dispose();
                     return;
                 }
@@ -222,6 +230,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Program.Log.Error(e.ToString());
+                   
 
                 }
                 finally
@@ -232,10 +242,10 @@ namespace FFXIVClassic_Lobby_Server
                 
             }
 
-            Log.database(String.Format("CID={0} state updated to active(2).", cid));
+            Program.Log.Debug("[SQL] CID={0} state updated to active(2).", cid);
         }
 
-        public static bool renameCharacter(uint userId, uint characterId, uint serverId, String newName)
+        public static bool RenameCharacter(uint userId, uint characterId, uint serverId, String newName)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -257,7 +267,7 @@ namespace FFXIVClassic_Lobby_Server
 
                     cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = "UPDATE characters SET name=@name, doRename=0 WHERE id=@cid AND userId=@uid";
+                    cmd.CommandText = "UPDATE characters SET name=@name, DoRename=0 WHERE id=@cid AND userId=@uid";
                     cmd.Prepare();
                     cmd.Parameters.AddWithValue("@uid", userId);
                     cmd.Parameters.AddWithValue("@cid", characterId);
@@ -267,6 +277,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Program.Log.Error(e.ToString());
+                   
 
                 }
                 finally
@@ -274,13 +286,13 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Dispose();
                 }
 
-                Log.database(String.Format("CID={0} name updated to \"{1}\".", characterId, newName));
+                Program.Log.Debug("[SQL] CID={0} name updated to \"{1}\".", characterId, newName);
 
                 return false;
             }
         }
 
-        public static void deleteCharacter(uint characterId, String name)
+        public static void DeleteCharacter(uint characterId, String name)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -298,6 +310,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Program.Log.Error(e.ToString());
+                   
 
                 }
                 finally
@@ -306,10 +320,10 @@ namespace FFXIVClassic_Lobby_Server
                 }
             }
 
-            Log.database(String.Format("CID={0} deleted.", characterId));
+            Program.Log.Debug("[SQL] CID={0} deleted.", characterId);
         }
 
-        public static List<World> getServers()
+        public static List<World> GetServers()
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -320,7 +334,9 @@ namespace FFXIVClassic_Lobby_Server
                     worldList = conn.Query<World>("SELECT * FROM servers WHERE isActive=true").ToList();                                       
                 }
                 catch (MySqlException e)
-                { worldList = new List<World>(); }
+                {
+                    Program.Log.Error(e.ToString());
+                    worldList = new List<World>(); }
                 finally
                 {                    
                     conn.Dispose();
@@ -329,7 +345,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static World getServer(uint serverId)
+        public static World GetServer(uint serverId)
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -340,7 +356,9 @@ namespace FFXIVClassic_Lobby_Server
                     world = conn.Query<World>("SELECT * FROM servers WHERE id=@ServerId", new {ServerId = serverId}).SingleOrDefault();                  
                 }
                 catch (MySqlException e)
-                {                    
+                {
+                    Program.Log.Error(e.ToString());
+                                       
                 }
                 finally
                 {
@@ -351,7 +369,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static List<Character> getCharacters(uint userId)
+        public static List<Character> GetCharacters(uint userId)
         {
             List<Character> characters = new List<Character>();
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -409,7 +427,7 @@ namespace FFXIVClassic_Lobby_Server
             return characters;
         }
 
-        public static Character getCharacter(uint userId, uint charId)
+        public static Character GetCharacter(uint userId, uint charId)
         {
             Character chara = null;
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -464,7 +482,7 @@ namespace FFXIVClassic_Lobby_Server
             return chara;
         }
 
-        public static Appearance getAppearance(uint charaId)
+        public static Appearance GetAppearance(uint charaId)
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -476,6 +494,8 @@ namespace FFXIVClassic_Lobby_Server
                 }
                 catch (MySqlException e)
                 {
+                    Program.Log.Error(e.ToString());
+                   
                 }
                 finally
                 {
@@ -486,7 +506,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static List<String> getReservedNames(uint userId)
+        public static List<String> GetReservedNames(uint userId)
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -497,7 +517,9 @@ namespace FFXIVClassic_Lobby_Server
                     nameList = conn.Query<String>("SELECT name FROM reserved_names WHERE userId=@UserId", new { UserId = userId }).ToList();
                 }
                 catch (MySqlException e)
-                { nameList = new List<String>(); }
+                {
+                    Program.Log.Error(e.ToString());
+                    nameList = new List<String>(); }
                 finally
                 {
                     conn.Dispose();
@@ -506,7 +528,7 @@ namespace FFXIVClassic_Lobby_Server
             }
         }
 
-        public static List<Retainer> getRetainers(uint userId)
+        public static List<Retainer> GetRetainers(uint userId)
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -517,7 +539,9 @@ namespace FFXIVClassic_Lobby_Server
                     retainerList = conn.Query<Retainer>("SELECT * FROM retainers WHERE id=@UserId ORDER BY characterId, slot", new { UserId = userId }).ToList();
                 }
                 catch (MySqlException e)
-                { retainerList = new List<Retainer>(); }
+                {
+                    Program.Log.Error(e.ToString());
+                    retainerList = new List<Retainer>(); }
                 finally
                 {
                     conn.Dispose();

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Lobby_Server.packets
 {
@@ -26,7 +23,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             this.message = message;
         }
 
-        public SubPacket buildPacket()
+        public SubPacket BuildPacket()
         {
             MemoryStream memStream = new MemoryStream(0x210);
             BinaryWriter binWriter = new BinaryWriter(memStream);

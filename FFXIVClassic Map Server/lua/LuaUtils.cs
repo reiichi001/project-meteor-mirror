@@ -1,14 +1,11 @@
-﻿using FFXIVClassic_Lobby_Server.common;
+﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.Actors;
-using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
 using MoonSharp.Interpreter;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -43,7 +40,7 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public static List<LuaParam> readLuaParams(BinaryReader reader)
+        public static List<LuaParam> ReadLuaParams(BinaryReader reader)
         {
             List<LuaParam> luaParams = new List<LuaParam>();
 
@@ -57,10 +54,10 @@ namespace FFXIVClassic_Map_Server
                 switch (code)
                 {
                     case 0x0: //Int32
-                        value = Utils.swapEndian(reader.ReadInt32());                        
+                        value = Utils.SwapEndian(reader.ReadInt32());                        
                         break;
                     case 0x1: //Int32
-                        value = Utils.swapEndian(reader.ReadUInt32());        
+                        value = Utils.SwapEndian(reader.ReadUInt32());        
                         break;          
                     case 0x2: //Null Termed String                        
                         List<byte> list = new List<byte>();
@@ -82,17 +79,17 @@ namespace FFXIVClassic_Map_Server
                         wasNil = true;
                         break;
                     case 0x6: //Actor (By Id)
-                        value = Utils.swapEndian(reader.ReadUInt32());
+                        value = Utils.SwapEndian(reader.ReadUInt32());
                         break;
                     case 0x7: //Weird one used for inventory
-                        uint type7ActorId = Utils.swapEndian(reader.ReadUInt32());
+                        uint type7ActorId = Utils.SwapEndian(reader.ReadUInt32());
                         byte type7Unknown = reader.ReadByte();
                         byte type7Slot = reader.ReadByte();
                         byte type7InventoryType = reader.ReadByte();
                         value = new Type7Param(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
                         break;  
                     case 0x9: //Two Longs (only storing first one)
-                        value = new Type9Param(Utils.swapEndian(reader.ReadUInt64()), Utils.swapEndian(reader.ReadUInt64()));
+                        value = new Type9Param(Utils.SwapEndian(reader.ReadUInt64()), Utils.SwapEndian(reader.ReadUInt64()));
                         break;
                     case 0xC: //Byte
                         value = reader.ReadByte();
@@ -117,7 +114,7 @@ namespace FFXIVClassic_Map_Server
             return luaParams;
         }
 
-        public static void writeLuaParams(BinaryWriter writer, List<LuaParam> luaParams)
+        public static void WriteLuaParams(BinaryWriter writer, List<LuaParam> luaParams)
         {
             foreach (LuaParam l in luaParams)
             {           
@@ -129,10 +126,10 @@ namespace FFXIVClassic_Map_Server
                 switch (l.typeID)
                 {
                     case 0x0: //Int32                        
-                        writer.Write((Int32)Utils.swapEndian((Int32)l.value));
+                        writer.Write((Int32)Utils.SwapEndian((Int32)l.value));
                         break;
                     case 0x1: //Int32                        
-                        writer.Write((UInt32)Utils.swapEndian((UInt32)l.value));
+                        writer.Write((UInt32)Utils.SwapEndian((UInt32)l.value));
                         break;
                     case 0x2: //Null Termed String
                         string sv = (string)l.value;
@@ -146,18 +143,18 @@ namespace FFXIVClassic_Map_Server
                     case 0x5: //Nil                        
                         break;
                     case 0x6: //Actor (By Id)
-                        writer.Write((UInt32)Utils.swapEndian((UInt32)l.value));
+                        writer.Write((UInt32)Utils.SwapEndian((UInt32)l.value));
                         break;
                     case 0x7: //Weird one used for inventory
                         Type7Param type7 = (Type7Param)l.value;
-                        writer.Write((UInt32)Utils.swapEndian((UInt32)type7.actorId));
+                        writer.Write((UInt32)Utils.SwapEndian((UInt32)type7.actorId));
                         writer.Write((Byte)type7.unknown);
                         writer.Write((Byte)type7.slot);
                         writer.Write((Byte)type7.inventoryType);
                         break;
                     case 0x9: //Two Longs (only storing first one)
-                        writer.Write((UInt64)Utils.swapEndian(((Type9Param)l.value).item1));
-                        writer.Write((UInt64)Utils.swapEndian(((Type9Param)l.value).item2));
+                        writer.Write((UInt64)Utils.SwapEndian(((Type9Param)l.value).item1));
+                        writer.Write((UInt64)Utils.SwapEndian(((Type9Param)l.value).item2));
                         break;
                     case 0xC: //Byte
                         writer.Write((Byte)l.value);
@@ -172,7 +169,7 @@ namespace FFXIVClassic_Map_Server
             writer.Write((Byte)0xF);
         }
 
-        public static List<LuaParam> readLuaParams(byte[] bytesIn)
+        public static List<LuaParam> ReadLuaParams(byte[] bytesIn)
         {
             List<LuaParam> luaParams = new List<LuaParam>();            
 
@@ -190,10 +187,10 @@ namespace FFXIVClassic_Map_Server
                         switch (code)
                         {
                             case 0x0: //Int32
-                                value = Utils.swapEndian(reader.ReadInt32());
+                                value = Utils.SwapEndian(reader.ReadInt32());
                                 break;
                             case 0x1: //Int32
-                                value = Utils.swapEndian(reader.ReadUInt32());
+                                value = Utils.SwapEndian(reader.ReadUInt32());
                                 break;
                             case 0x2: //Null Termed String                        
                                 List<byte> list = new List<byte>();
@@ -216,17 +213,17 @@ namespace FFXIVClassic_Map_Server
                                 wasNil = true;
                                 break;
                             case 0x6: //Actor (By Id)
-                                value = Utils.swapEndian(reader.ReadUInt32());
+                                value = Utils.SwapEndian(reader.ReadUInt32());
                                 break;
                             case 0x7: //Weird one used for inventory
-                                uint type7ActorId = Utils.swapEndian(reader.ReadUInt32());
+                                uint type7ActorId = Utils.SwapEndian(reader.ReadUInt32());
                                 byte type7Unknown = reader.ReadByte();
                                 byte type7Slot = reader.ReadByte();
                                 byte type7InventoryType = reader.ReadByte();
                                 value = new Type7Param(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
                                 break;
                             case 0x9: //Two Longs (only storing first one)
-                                value = new Type9Param(Utils.swapEndian(reader.ReadUInt64()), Utils.swapEndian(reader.ReadUInt64()));
+                                value = new Type9Param(Utils.SwapEndian(reader.ReadUInt64()), Utils.SwapEndian(reader.ReadUInt64()));
                                 break;
                             case 0xC: //Byte
                                 value = reader.ReadByte();
@@ -252,7 +249,7 @@ namespace FFXIVClassic_Map_Server
             return luaParams;
         }
 
-        public static List<LuaParam> createLuaParamList(DynValue fromScript)
+        public static List<LuaParam> CreateLuaParamList(DynValue fromScript)
         {
             List<LuaParam> luaParams = new List<LuaParam>();
 
@@ -260,16 +257,16 @@ namespace FFXIVClassic_Map_Server
             {
                 foreach (DynValue d in fromScript.Tuple)
                 {
-                    addToList(d, luaParams);
+                    AddToList(d, luaParams);
                 }
             }
             else
-                addToList(fromScript, luaParams);
+                AddToList(fromScript, luaParams);
 
             return luaParams;
         }
 
-        public static List<LuaParam> createLuaParamList(params object[] list)
+        public static List<LuaParam> CreateLuaParamList(params object[] list)
         {
             List<LuaParam> luaParams = new List<LuaParam>();
 
@@ -279,16 +276,16 @@ namespace FFXIVClassic_Map_Server
                 {
                     Array arrayO = (Array)o;
                     foreach (object o2 in arrayO)
-                        addToList(o2, luaParams);
+                        AddToList(o2, luaParams);
                 }
                 else
-                    addToList(o, luaParams);                     
+                    AddToList(o, luaParams);                     
             }
 
             return luaParams;
         }
 
-        private static void addToList(DynValue d, List<LuaParam> luaParams)
+        private static void AddToList(DynValue d, List<LuaParam> luaParams)
         {
             if (d.Type == DataType.Number)
             {
@@ -319,7 +316,7 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        private static void addToList(object o, List<LuaParam> luaParams)
+        private static void AddToList(object o, List<LuaParam> luaParams)
         {
             if (o is int)
             {
@@ -329,7 +326,7 @@ namespace FFXIVClassic_Map_Server
             {
                 luaParams.Add(new LuaParam(0x1, (uint)o));
             }                
-            else if (o is double)
+            else if (o is Double)
             {
                 if (((double)o) % 1 == 0)
                     luaParams.Add(new LuaParam(0x0, (int)(double)o));
@@ -367,7 +364,7 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public static object[] createLuaParamObjectList(List <LuaParam> luaParams)
+        public static object[] CreateLuaParamObjectList(List <LuaParam> luaParams)
         {
             object[] list = new object[luaParams.Count];
 
@@ -378,7 +375,7 @@ namespace FFXIVClassic_Map_Server
         }
     
       
-        public static string dumpParams(List<LuaParam> lParams)
+        public static string DumpParams(List<LuaParam> lParams)
         {
             if (lParams == null)
                 return "Param list was null?";

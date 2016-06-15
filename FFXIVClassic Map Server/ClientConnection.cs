@@ -1,18 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Net.Sockets;
-using FFXIVClassic_Lobby_Server.packets;
-using System.Diagnostics;
-using FFXIVClassic_Lobby_Server.common;
+using FFXIVClassic_Map_Server.packets;
+using FFXIVClassic.Common;
 using System.Collections.Concurrent;
-using System.IO;
-using Cyotek.Collections.Generic;
 using System.Net;
 
-namespace FFXIVClassic_Lobby_Server
+namespace FFXIVClassic_Map_Server
 {
     class ClientConnection
     {
@@ -20,54 +13,54 @@ namespace FFXIVClassic_Lobby_Server
         public Blowfish blowfish;
         public Socket socket;
         public byte[] buffer;
-        private BlockingCollection<BasePacket> sendPacketQueue = new BlockingCollection<BasePacket>(1000);
+        private BlockingCollection<BasePacket> SendPacketQueue = new BlockingCollection<BasePacket>(1000);
         public int lastPartialSize = 0;
 
         //Instance Stuff
         public uint owner = 0;
         public int connType = 0;
 
-        public void queuePacket(BasePacket packet)
+        public void QueuePacket(BasePacket packet)
         {
-            sendPacketQueue.Add(packet);
+            SendPacketQueue.Add(packet);
         }
 
-        public void queuePacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)
+        public void QueuePacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)
         {
-            sendPacketQueue.Add(BasePacket.createPacket(subpacket, isAuthed, isEncrypted));
+            SendPacketQueue.Add(BasePacket.CreatePacket(subpacket, isAuthed, isEncrypted));
         }
 
-        public void flushQueuedSendPackets()
+        public void FlushQueuedSendPackets()
         {
             if (!socket.Connected)
                 return;
 
-            while (sendPacketQueue.Count > 0)
+            while (SendPacketQueue.Count > 0)
             {
-                BasePacket packet = sendPacketQueue.Take();                
+                BasePacket packet = SendPacketQueue.Take();                
 
-                byte[] packetBytes = packet.getPacketBytes();
+                byte[] packetBytes = packet.GetPacketBytes();
 
                 try
                 {
                     socket.Send(packetBytes);
                 }
                 catch (Exception e)
-                { Log.error(String.Format("Weird case, socket was d/ced: {0}", e)); }
+                { Program.Log.Error("Weird case, socket was d/ced: {0}", e); }
             }
         }
 
-        public String getAddress()
+        public String GetAddress()
         {
             return String.Format("{0}:{1}", (socket.RemoteEndPoint as IPEndPoint).Address, (socket.RemoteEndPoint as IPEndPoint).Port);
         }
 
-        public bool isConnected()
+        public bool IsConnected()
         {
             return (socket.Poll(1, SelectMode.SelectRead) && socket.Available == 0);
         }
 
-        public void disconnect()
+        public void Disconnect()
         {
             if (socket.Connected)
                 socket.Disconnect(false);

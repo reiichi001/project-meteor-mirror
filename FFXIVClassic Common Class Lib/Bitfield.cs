@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace FFXIVClassic_Lobby_Server.common
+namespace FFXIVClassic.Common
 {
     [global::System.AttributeUsage(AttributeTargets.Field, AllowMultiple = false)]
-    sealed class BitfieldLengthAttribute : Attribute
+    public sealed class BitfieldLengthAttribute : Attribute
     {
         uint length;
 
@@ -19,7 +15,7 @@ namespace FFXIVClassic_Lobby_Server.common
         public uint Length { get { return length; } }
     }
 
-    static class PrimitiveConversion
+    public static class PrimitiveConversion
     {
         public static UInt32 ToUInt32<T>(T t) where T : struct
         {

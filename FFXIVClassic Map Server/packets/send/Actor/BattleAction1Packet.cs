@@ -1,10 +1,4 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.IO;
 
 namespace FFXIVClassic_Map_Server.packets.send.actor
 {
@@ -13,7 +7,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public const ushort OPCODE = 0x0139;
         public const uint PACKET_SIZE = 0x58;
 
-        public static SubPacket buildPacket(uint sourceId, uint targetId)
+        public static SubPacket BuildPacket(uint sourceId, uint targetId)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

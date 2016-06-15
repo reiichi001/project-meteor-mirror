@@ -1,11 +1,8 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
-using FFXIVClassic_Map_Server.lua;
+﻿using FFXIVClassic_Map_Server.lua;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.events
 {
@@ -14,7 +11,7 @@ namespace FFXIVClassic_Map_Server.packets.send.events
         public const ushort OPCODE = 0x012F;
         public const uint PACKET_SIZE = 0x90;
 
-        public static SubPacket buildPacket(uint playerActorId, uint targetActorId, string conditionName, List<LuaParam> luaParams)
+        public static SubPacket BuildPacket(uint playerActorId, uint targetActorId, string conditionName, List<LuaParam> luaParams)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -33,7 +30,7 @@ namespace FFXIVClassic_Map_Server.packets.send.events
 
                     binWriter.Seek(0x30, SeekOrigin.Begin);
 
-                    LuaUtils.writeLuaParams(binWriter, luaParams);
+                    LuaUtils.WriteLuaParams(binWriter, luaParams);
                 }
             }
 

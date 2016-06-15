@@ -1,11 +1,8 @@
 ﻿using FFXIVClassic_Lobby_Server.dataobjects;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Lobby_Server.packets
 {
@@ -23,7 +20,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             this.characterList = characterList;
         }        
 
-        public List<SubPacket> buildPackets()
+        public List<SubPacket> BuildPackets()
         {
             List<SubPacket> subPackets = new List<SubPacket>();
 
@@ -37,7 +34,7 @@ namespace FFXIVClassic_Lobby_Server.packets
 
             foreach (Character chara in characterList)
             {
-                Appearance appearance = Database.getAppearance(chara.id);
+                Appearance appearance = Database.GetAppearance(chara.id);
 
                 if (totalCount == 0 || characterCount % MAXPERPACKET == 0)
                 {
@@ -56,7 +53,7 @@ namespace FFXIVClassic_Lobby_Server.packets
                 binWriter.Seek(0x10 + (0x1D0 * characterCount), SeekOrigin.Begin);
 
                 //Write Entries
-                World world = Database.getServer(chara.serverId);
+                World world = Database.GetServer(chara.serverId);
                 string worldname = world == null ? "Unknown" : world.name;
 
                 binWriter.Write((uint)0); //???
@@ -77,8 +74,8 @@ namespace FFXIVClassic_Lobby_Server.packets
                 binWriter.Write(Encoding.ASCII.GetBytes(chara.name.PadRight(0x20, '\0'))); //Name
                 binWriter.Write(Encoding.ASCII.GetBytes(worldname.PadRight(0xE, '\0'))); //World Name
 
-                binWriter.Write(CharaInfo.buildForCharaList(chara, appearance)); //Appearance Data
-                //binWriter.Write(CharaInfo.debug()); //Appearance Data
+                binWriter.Write(CharaInfo.BuildForCharaList(chara, appearance)); //Appearance Data
+                //binWriter.Write(CharaInfo.Debug()); //Appearance Data
                 
                 characterCount++;
                 totalCount++;                

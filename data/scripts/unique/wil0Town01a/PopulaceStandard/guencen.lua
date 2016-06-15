@@ -1,7 +1,7 @@
 
 function onEventStarted(player, npc)
-    defaultWil = getStaticActor("DftWil");
-    player:sendMessage(0x20, "", "This Actorhas no dialog. Actor Class Id: " .. tostring(npc:getActorClassId()));
-   	player:endEvent();
+    defaultWil = GetStaticActor("DftWil");
+    player:SendMessage(0x20, "", "This Actorhas no dialog. Actor Class Id: " .. tostring(npc:GetActorClassId()));
+   	player:EndEvent();
 end
 

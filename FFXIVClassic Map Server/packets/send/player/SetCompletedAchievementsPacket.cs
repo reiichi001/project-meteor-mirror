@@ -1,11 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.packets;
-using System;
-using System.Collections.Generic;
+﻿using FFXIVClassic.Common;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.player
 {
@@ -30,7 +24,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
 
         public bool[] achievementFlags = new bool[1024];
 
-        public SubPacket buildPacket(uint playerActorID)
+        public SubPacket BuildPacket(uint playerActorID)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -42,7 +36,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
                     if (binStream.Length <= PACKET_SIZE - 0x20)
                         binWriter.Write(binStream);
                     else                    
-                        Log.error("Failed making SetCompletedAchievements packet. Bin Stream was too big!");                    
+                        Program.Log.Error("Failed making SetCompletedAchievements packet. Bin Stream was too big!");                    
                 }
             }
 

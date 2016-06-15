@@ -2,9 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Lobby_Server.packets
 {
@@ -22,7 +20,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             this.worldList = serverList;
         }        
 
-        public List<SubPacket> buildPackets()
+        public List<SubPacket> BuildPackets()
         {
             List<SubPacket> subPackets = new List<SubPacket>();
 

@@ -1,6 +1,6 @@
-﻿using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.packets;
+﻿using FFXIVClassic_Map_Server;
+using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.dataobjects;
@@ -75,29 +75,29 @@ namespace FFXIVClassic_Map_Server.Actors
             
         }
 
-        public override SubPacket createScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
-            lParams = LuaUtils.createLuaParamList(classPath, false, true, zoneName, "/Area/Zone/ZoneDefault", -1, (byte)1, true, false, false, false, false, false, false, false);
-            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, "ZoneDefault", lParams);
+            lParams = LuaUtils.CreateLuaParamList(classPath, false, true, zoneName, "/Area/Zone/ZoneDefault", -1, (byte)1, true, false, false, false, false, false, false, false);
+            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, "ZoneDefault", lParams);
         }
 
-        public override BasePacket getSpawnPackets(uint playerActorId)
+        public override BasePacket GetSpawnPackets(uint playerActorId)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(createAddActorPacket(playerActorId, 0));            
-            subpackets.Add(createSpeedPacket(playerActorId));
-            subpackets.Add(createSpawnPositonPacket(playerActorId, 0x1));
-            subpackets.Add(createNamePacket(playerActorId));
-            subpackets.Add(createStatePacket(playerActorId));
-            subpackets.Add(createIsZoneingPacket(playerActorId));
-            subpackets.Add(createScriptBindPacket(playerActorId));
-            return BasePacket.createPacket(subpackets, true, false);
+            subpackets.Add(CreateAddActorPacket(playerActorId, 0));            
+            subpackets.Add(CreateSpeedPacket(playerActorId));
+            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x1));
+            subpackets.Add(CreateNamePacket(playerActorId));
+            subpackets.Add(CreateStatePacket(playerActorId));
+            subpackets.Add(CreateIsZoneingPacket(playerActorId));
+            subpackets.Add(CreateScriptBindPacket(playerActorId));
+            return BasePacket.CreatePacket(subpackets, true, false);
         }
 
         #region Actor Management
 
-        public void addActorToZone(Actor actor)
+        public void AddActorToZone(Actor actor)
         {
             if (!mActorList.ContainsKey(actor.actorId))
                 mActorList.Add(actor.actorId, actor);
@@ -122,7 +122,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 mActorBlock[gridX, gridY].Add(actor);
         }
 
-        public void removeActorFromZone(Actor actor)
+        public void RemoveActorFromZone(Actor actor)
         {
             mActorList.Remove(actor.actorId);
 
@@ -146,7 +146,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 mActorBlock[gridX, gridY].Remove(actor);
         }
 
-        public void updateActorPosition(Actor actor)
+        public void UpdateActorPosition(Actor actor)
         {
             int gridX = (int)actor.positionX / boundingGridSize;
             int gridY = (int)actor.positionZ / boundingGridSize;
@@ -191,7 +191,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public List<Actor> getActorsAroundPoint(float x, float y, int checkDistance)
+        public List<Actor> GetActorsAroundPoint(float x, float y, int checkDistance)
         {
             checkDistance /= boundingGridSize;
 
@@ -234,7 +234,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return result;
         }
 
-        public List<Actor> getActorsAroundActor(Actor actor, int checkDistance)
+        public List<Actor> GetActorsAroundActor(Actor actor, int checkDistance)
         {
             checkDistance /= boundingGridSize;
 
@@ -306,7 +306,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return (Player)mActorList[id];
         }
 
-        public void clear()
+        public void Clear()
         {
             //Clear All
             mActorList.Clear();
@@ -319,12 +319,12 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public void broadcastPacketAroundActor(Actor actor, SubPacket packet)
+        public void BroadcastPacketAroundActor(Actor actor, SubPacket packet)
         {
             if (isIsolated)
                 return;
 
-            List<Actor> aroundActor = getActorsAroundActor(actor, 50);
+            List<Actor> aroundActor = GetActorsAroundActor(actor, 50);
             foreach (Actor a in aroundActor)
             {                
                 if (a is Player)
@@ -334,12 +334,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
                     SubPacket clonedPacket = new SubPacket(packet, actor.actorId);
                     Player p = (Player)a;                        
-                    p.queuePacket(clonedPacket);
+                    p.QueuePacket(clonedPacket);
                 }
             }            
         }
 
-        public void spawnActor(SpawnLocation location)
+        public void SpawnActor(SpawnLocation location)
         {
             ActorClass actorClass = Server.GetWorldManager().GetActorClass(location.classId);
             
@@ -349,7 +349,7 @@ namespace FFXIVClassic_Map_Server.Actors
             Npc npc = new Npc(mActorList.Count + 1, actorClass.actorClassId, location.uniqueId, actorId, location.x, location.y, location.z, location.rot, location.state, location.animId, actorClass.displayNameId, null, actorClass.classPath);
             npc.loadEventConditions(actorClass.eventConditions);            
 
-            addActorToZone(npc);                          
+            AddActorToZone(npc);                          
         }
 
     }

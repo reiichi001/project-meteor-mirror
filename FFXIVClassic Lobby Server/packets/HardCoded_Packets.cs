@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FFXIVClassic_Lobby_Server.packets
+﻿namespace FFXIVClassic_Lobby_Server.packets
 {
     class HardCoded_Packets
     {

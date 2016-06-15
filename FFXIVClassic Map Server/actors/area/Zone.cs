@@ -1,6 +1,6 @@
-﻿using FFXIVClassic_Lobby_Server;
-using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.packets;
+﻿using FFXIVClassic_Map_Server;
+using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
@@ -23,18 +23,18 @@ namespace FFXIVClassic_Map_Server.actors.area
 
         }
 
-        public void addPrivateArea(PrivateArea pa)
+        public void AddPrivateArea(PrivateArea pa)
         {
-            if (privateAreas.ContainsKey(pa.getPrivateAreaName()))
-                privateAreas[pa.getPrivateAreaName()][0] = pa;
+            if (privateAreas.ContainsKey(pa.GetPrivateAreaName()))
+                privateAreas[pa.GetPrivateAreaName()][0] = pa;
             else
             {
-                privateAreas[pa.getPrivateAreaName()] = new Dictionary<uint, PrivateArea>();
-                privateAreas[pa.getPrivateAreaName()][0] = pa;
+                privateAreas[pa.GetPrivateAreaName()] = new Dictionary<uint, PrivateArea>();
+                privateAreas[pa.GetPrivateAreaName()][0] = pa;
             }
         }
 
-        public PrivateArea getPrivateArea(string type, uint number)
+        public PrivateArea GetPrivateArea(string type, uint number)
         {
             if (privateAreas.ContainsKey(type))
             {
@@ -48,16 +48,16 @@ namespace FFXIVClassic_Map_Server.actors.area
                 return null;
         }
 
-        public override SubPacket createScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
             bool isEntranceDesion = false;
 
             List<LuaParam> lParams;
-            lParams = LuaUtils.createLuaParamList("/Area/Zone/" + className, false, true, zoneName, "", -1, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, true, isInstanceRaid, isEntranceDesion);
-            return ActorInstantiatePacket.buildPacket(actorId, playerActorId, actorName, className, lParams);        
+            lParams = LuaUtils.CreateLuaParamList("/Area/Zone/" + className, false, true, zoneName, "", -1, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, true, isInstanceRaid, isEntranceDesion);
+            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);        
         }
 
-        public void addSpawnLocation(SpawnLocation spawn)
+        public void AddSpawnLocation(SpawnLocation spawn)
         {
             //Is it in a private area?
             if (!spawn.privAreaName.Equals(""))
@@ -66,28 +66,28 @@ namespace FFXIVClassic_Map_Server.actors.area
                 {
                     Dictionary<uint, PrivateArea> levels = privateAreas[spawn.privAreaName];
                     if (levels.ContainsKey(spawn.privAreaLevel))
-                        levels[spawn.privAreaLevel].addSpawnLocation(spawn);
+                        levels[spawn.privAreaLevel].AddSpawnLocation(spawn);
                     else
-                        Log.error(String.Format("Tried to add a spawn location to non-existing private area level \"{0}\" in area {1} in zone {2}", spawn.privAreaName, spawn.privAreaLevel, zoneName));
+                        Program.Log.Error("Tried to add a spawn location to non-existing private area level \"{0}\" in area {1} in zone {2}", spawn.privAreaName, spawn.privAreaLevel, zoneName);
                 }
                 else
-                    Log.error(String.Format("Tried to add a spawn location to non-existing private area \"{0}\" in zone {1}", spawn.privAreaName, zoneName));
+                    Program.Log.Error("Tried to add a spawn location to non-existing private area \"{0}\" in zone {1}", spawn.privAreaName, zoneName);
             }
             else            
                 mSpawnLocations.Add(spawn);            
         }
 
-        public void spawnAllActors(bool doPrivAreas)
+        public void SpawnAllActors(bool doPrivAreas)
         {
             foreach (SpawnLocation spawn in mSpawnLocations)            
-                spawnActor(spawn);
+                SpawnActor(spawn);
 
             if (doPrivAreas)
             {
                 foreach (Dictionary<uint, PrivateArea> areas in privateAreas.Values)
                 {
                     foreach (PrivateArea pa in areas.Values)
-                        pa.spawnAllActors();
+                        pa.SpawnAllActors();
                 }
             }
         }
