@@ -18,12 +18,16 @@ namespace FFXIVClassic_Map_Server
         public static Logger Log;
 
         static void Main(string[] args)
-        {
+        {            
 #if DEBUG
             TextWriterTraceListener myWriter = new TextWriterTraceListener(System.Console.Out);
             Debug.Listeners.Add(myWriter);
 #endif
             bool startServer = true;
+
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("---------FFXIV 1.0 Map Server---------");
+            Console.ForegroundColor = ConsoleColor.Gray;
 
             //Load Config
             if (!ConfigConstants.Load())
@@ -32,8 +36,6 @@ namespace FFXIVClassic_Map_Server
             // set up logging
 
             Log = LogManager.GetCurrentClassLogger();
-
-            Program.Log.Info("---------FFXIV 1.0 Map Server---------");            
 
             Assembly assem = Assembly.GetExecutingAssembly();
             Version vers = assem.GetName().Version;
@@ -48,7 +50,7 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
                     conn.Close();
 
-                    Program.Log.Info("[OK]");
+                    Program.Log.Info("Connection ok.");
                 }
                 catch (MySqlException e)
                 {

@@ -18,6 +18,10 @@ namespace FFXIVClassic_Lobby_Server
             Debug.Listeners.Add(myWriter);
 #endif
 
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("--------FFXIV 1.0 Lobby Server--------");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
             bool startServer = true;
 
             //Load Config
@@ -25,10 +29,7 @@ namespace FFXIVClassic_Lobby_Server
                 startServer = false;
 
             Log = LogManager.GetCurrentClassLogger();
-
-            Program.Log.Info("--------FFXIV 1.0 Lobby Server--------");
-
-
+            
             Assembly assem = Assembly.GetExecutingAssembly();
             Version vers = assem.GetName().Version;
             Program.Log.Info("Version: " + vers.ToString());
@@ -42,13 +43,11 @@ namespace FFXIVClassic_Lobby_Server
                     conn.Open();
                     conn.Close();
 
-                    Program.Log.Info("[OK]");
+                    Program.Log.Info("Connection ok.");
                 }
                 catch (MySqlException e)
                 {
-                    Program.Log.Error(e.ToString());
-                    Program.Log.Error("[FAILED]");
-
+                    Program.Log.Error(e.ToString());                  
                     startServer = false; 
                 }
             }
