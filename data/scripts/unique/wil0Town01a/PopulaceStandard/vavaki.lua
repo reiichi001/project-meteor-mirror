@@ -1,6 +1,6 @@
 
 function onEventStarted(player, npc)
     defaultWil = GetStaticActor("DftWil");
-    player:RunEventFunction("delegateEvent", player, defaultWil, "defaultTalkWithVavaki_001", nil, nil, nil);
+    player:RunEventFunction("delegateEvent", player, defaultWil, "tribeTalk", nil, nil, nil);
 end
 

@@ -48,7 +48,7 @@ function onBeginLogin(player)
 end
 
 function onLogin(player)
-	player:SendMessage(0x1D,"",">Callback \"onLogin\" for player script running.");
+	player:SendMessage(0x1D,"",">Callback \"onLogin\" for player script:Running.");
 	
 	if (player:GetPlayTime(false) == 0) then
 		player:SendMessage(0x1D,"",">PlayTime == 0, new player!");

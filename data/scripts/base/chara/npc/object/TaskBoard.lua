@@ -11,8 +11,7 @@ function onEventStarted(player, npc, triggerName)
 		player:RunEventFunction("delegateEvent", player, questNOC, "pETaskBoardAskUldah", nil, nil, nil);
 	else
 		player:RunEventFunction("delegateEvent", player, questNOC, "pETaskBoardAskGridania", nil, nil, nil);
-	end
-	
+	end	
 end
 
 function onEventUpdate(player, npc, step, menuOptionSelected)
