@@ -140,7 +140,8 @@ namespace FFXIVClassic_Map_Server.packets
         public void DebugPrintSubPacket()
         {
 #if DEBUG
-            Console.BackgroundColor = ConsoleColor.DarkRed;
+            // todo: create new target for colourful packet logging
+            //Console.BackgroundColor = ConsoleColor.DarkRed;
 
             Program.Log.Debug("Size: 0x{0:X}{1}{2}", header.subpacketSize, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
             
@@ -148,12 +149,12 @@ namespace FFXIVClassic_Map_Server.packets
             {
                 Program.Log.Debug("Opcode: 0x{0:X}{1}{2}", gameMessage.opcode, Environment.NewLine, Utils.ByteArrayToHex(GetGameMessageBytes(), SUBPACKET_SIZE));
 
-                Console.BackgroundColor = ConsoleColor.DarkMagenta;
+                //Console.BackgroundColor = ConsoleColor.DarkMagenta;
 
                 Program.Log.Debug("Data: {0}{1}", Environment.NewLine, Utils.ByteArrayToHex(data, SUBPACKET_SIZE + GAMEMESSAGE_SIZE));
             }
 
-            Console.BackgroundColor = ConsoleColor.Black;
+            //Console.BackgroundColor = ConsoleColor.Black;
 #endif
         }
 

@@ -332,7 +332,8 @@ namespace FFXIVClassic_Map_Server.packets
         public void DebugPrintPacket()
         {
 #if DEBUG
-            Console.BackgroundColor = ConsoleColor.DarkYellow;
+            // todo: create new target for colourful packet logging
+            //Console.BackgroundColor = ConsoleColor.DarkYellow;
 
             Program.Log.Debug("IsAuth: {0} IsEncrypted: {1}, Size: 0x{2:X}, NumSubpackets: {3}{4}{5}", header.isAuthenticated, header.isCompressed, header.packetSize, header.numSubpackets, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
 
@@ -341,7 +342,7 @@ namespace FFXIVClassic_Map_Server.packets
                 sub.DebugPrintSubPacket();
             }
 
-            Console.BackgroundColor = ConsoleColor.Black;
+            //Console.BackgroundColor = ConsoleColor.Black;
 #endif
         }
 

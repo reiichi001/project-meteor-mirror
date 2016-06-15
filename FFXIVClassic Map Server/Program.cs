@@ -18,24 +18,21 @@ namespace FFXIVClassic_Map_Server
         public static Logger Log;
 
         static void Main(string[] args)
-        {            
+        {
+
+            // set up logging
+            Log = LogManager.GetCurrentClassLogger();
 #if DEBUG
             TextWriterTraceListener myWriter = new TextWriterTraceListener(System.Console.Out);
             Debug.Listeners.Add(myWriter);
 #endif
             bool startServer = true;
 
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("---------FFXIV 1.0 Map Server---------");
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Program.Log.Info("---------FFXIV 1.0 Map Server---------");
 
             //Load Config
             if (!ConfigConstants.Load())
                 startServer = false;
-
-            // set up logging
-
-            Log = LogManager.GetCurrentClassLogger();
 
             Assembly assem = Assembly.GetExecutingAssembly();
             Version vers = assem.GetName().Version;

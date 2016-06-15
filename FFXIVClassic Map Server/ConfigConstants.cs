@@ -19,13 +19,11 @@ namespace FFXIVClassic_Map_Server
 
         public static bool Load()
         {
-            Console.Write("Loading map_config.ini file... ");
+            Program.Log.Info("Loading map_config.ini file... ");
 
             if (!File.Exists("./map_config.ini"))
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(String.Format("[FILE NOT FOUND]"));
-                Console.ForegroundColor = ConsoleColor.Gray;
+                Program.Log.Error("[FILE NOT FOUND]");
                 return false;
             }
 
@@ -42,9 +40,7 @@ namespace FFXIVClassic_Map_Server
             ConfigConstants.DATABASE_USERNAME =     configIni.GetValue("Database", "username", "");
             ConfigConstants.DATABASE_PASSWORD =     configIni.GetValue("Database", "password", "");
 
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("[OK]");
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Program.Log.Info("[OK]");
 
             return true;
         }
