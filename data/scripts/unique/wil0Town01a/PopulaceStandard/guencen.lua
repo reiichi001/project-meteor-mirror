@@ -1,6 +1,7 @@
 
 function onEventStarted(player, npc)
     defaultWil = getStaticActor("DftWil");
-    player:runEventFunction("delegateEvent", player, defaultWil, "defaultTalkWithGuencen_001", nil, nil, nil);
+    player:sendMessage(0x20, "", "This Actorhas no dialog. Actor Class Id: " .. tostring(npc:getActorClassId()));
+   	player:endEvent();
 end
 

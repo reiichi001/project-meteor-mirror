@@ -1,6 +1,6 @@
 
 function onEventStarted(player, npc)
     defaultWil = getStaticActor("DftWil");
-    player:runEventFunction("delegateEvent", player, defaultWil, "defaultTalkWithBaterich_001", nil, nil, nil);
+    player:runEventFunction("delegateEvent", player, defaultWil, "defaultTalkWithBATERICH_100", nil, nil, nil);
 end
 
