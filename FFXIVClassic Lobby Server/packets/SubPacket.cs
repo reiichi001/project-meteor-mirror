@@ -90,14 +90,14 @@ namespace FFXIVClassic_Lobby_Server.packets
             header.subpacketSize = (ushort)(SUBPACKET_SIZE + GAMEMESSAGE_SIZE + data.Length);
         }
 
-        public SubPacket(SubPacket original, uint newTarGetId)
+        public SubPacket(SubPacket original, uint newTargetId)
         {
             this.header = new SubPacketHeader();
             this.gameMessage = original.gameMessage;
             header.subpacketSize = original.header.subpacketSize;
             header.type = original.header.type;
             header.sourceId = original.header.sourceId;
-            header.targetId = newTarGetId;
+            header.targetId = newTargetId;
             data = original.data;
         }
 

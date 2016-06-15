@@ -213,7 +213,7 @@ namespace FFXIVClassic_Lobby_Server
         {
             BasePacket newPacket = null;
 
-            //Too small to even Get length
+            //Too small to even get length
             if (bytesRead <= offset)
                 return null;
 
