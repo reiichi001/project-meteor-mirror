@@ -45,7 +45,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             this.actorClassId = classId;
 
-            loadNpcAppearance(classId);
+            LoadNpcAppearance(classId);
 
             this.classPath = classPath;
             className = classPath.Substring(classPath.LastIndexOf("/")+1);
@@ -73,7 +73,7 @@ namespace FFXIVClassic_Map_Server.Actors
             npcWork.pushCommand = 0x271D;
             npcWork.pushCommandPriority = 1;
 
-            generateActorName((int)actorNumber);            
+            GenerateActorName((int)actorNumber);            
         }
 
         public SubPacket CreateAddActorPacket(uint playerActorId)
@@ -186,7 +186,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return actorClassId;
         }
 
-        public void loadNpcAppearance(uint id)
+        public void LoadNpcAppearance(uint id)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -288,7 +288,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public void loadEventConditions(string eventConditions)
+        public void LoadEventConditions(string eventConditions)
         {
             EventList conditions = JsonConvert.DeserializeObject<EventList>(eventConditions);
             this.eventConditions = conditions;

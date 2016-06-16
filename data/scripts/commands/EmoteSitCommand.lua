@@ -8,12 +8,12 @@ function onEventStarted(player, actor, triggerName, emoteId)
 
 	if (player:GetState() == 0) then						
 		if (emoteId == 0x2712) then
-			player:changeState(11);
+			player:ChangeState(11);
 		else
-			player:changeState(13);
+			player:ChangeState(13);
 		end
 	else
-		player:changeState(0);
+		player:ChangeState(0);
 	end
 	
 	player:EndCommand();

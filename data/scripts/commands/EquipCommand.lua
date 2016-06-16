@@ -137,7 +137,7 @@ function equipItem(player, equipSlot, item)
 			
 			if (classId ~= nil) then
 				player:SendGameMessage(player, worldMaster, 30103, 0x20, 0, 0, player, classId); 
-				player:prepareClassChange(classId);
+				player:PrepareClassChange(classId);
 			end
 				
 		end		
@@ -161,23 +161,23 @@ function equipItem(player, equipSlot, item)
 		
 		--Graphic Slot was set, otherwise it's a special case
 		if (graphicSlot ~= nil) then
-			player:graphicChange(graphicSlot, item);
-			if (graphicSlot == GRAPHICSLOT_MAINHAND) then player:graphicChange(GRAPHICSLOT_OFFHAND, nil); end
+			player:GraphicChange(graphicSlot, item);
+			if (graphicSlot == GRAPHICSLOT_MAINHAND) then player:GraphicChange(GRAPHICSLOT_OFFHAND, nil); end
 		elseif (gItem:IsNailWeapon()) then
-			player:graphicChange(GRAPHICSLOT_MAINHAND, item);
-			player:graphicChange(GRAPHICSLOT_OFFHAND, item);
+			player:GraphicChange(GRAPHICSLOT_MAINHAND, item);
+			player:GraphicChange(GRAPHICSLOT_OFFHAND, item);
 		elseif (gItem:IsBowWeapon()) then
-			player:graphicChange(GRAPHICSLOT_MAINHAND, item);
-			--player:graphicChange(GRAPHICSLOT_OFFHAND, item);
+			player:GraphicChange(GRAPHICSLOT_MAINHAND, item);
+			--player:GraphicChange(GRAPHICSLOT_OFFHAND, item);
 		elseif (equipSlot == EQUIPSLOT_EARS) then
-			player:graphicChange(GRAPHICSLOT_R_EAR, item);
-			player:graphicChange(GRAPHICSLOT_L_EAR, item);
+			player:GraphicChange(GRAPHICSLOT_R_EAR, item);
+			player:GraphicChange(GRAPHICSLOT_L_EAR, item);
 		end
 	
 		--Load gearset for new class and begin class change
 		if (classId ~= nil) then			
 			loadGearset(player, classId);
-			player:doClassChange(classId);
+			player:DoClassChange(classId);
 		end
 		
 	end
@@ -194,20 +194,20 @@ function unequipItem(player, equipSlot, item)
 				
 		if (equipSlot == EQUIPSLOT_BODY) then --Show Undershirt
 			item = player:GetEquipment():GetItemAtSlot(EQUIPSLOT_UNDERSHIRT);
-			player:graphicChange(GRAPHICSLOT_BODY, item);
+			player:GraphicChange(GRAPHICSLOT_BODY, item);
 		elseif (equipSlot == EQUIPSLOT_LEGS) then --Show Undergarment
 			item = player:GetEquipment():GetItemAtSlot(EQUIPSLOT_UNDERGARMENT);
-			player:graphicChange(GRAPHICSLOT_LEGS, item);			
-		elseif  (equipSlot == EQUIPSLOT_HANDS) then player:graphicChange(15, 0, 1, 0, 0);
-		elseif  (equipSlot == EQUIPSLOT_FEET) then player:graphicChange(16, 0, 1, 0, 0);
+			player:GraphicChange(GRAPHICSLOT_LEGS, item);			
+		elseif  (equipSlot == EQUIPSLOT_HANDS) then player:GraphicChange(15, 0, 1, 0, 0);
+		elseif  (equipSlot == EQUIPSLOT_FEET) then player:GraphicChange(16, 0, 1, 0, 0);
 		else
-			if 	   (equipSlot == EQUIPSLOT_MAINHAND) then player:graphicChange(GRAPHICSLOT_MAINHAND, nil);
-			elseif (equipSlot == EQUIPSLOT_OFFHAND) then player:graphicChange(GRAPHICSLOT_OFFHAND, nil);
-			elseif (equipSlot == EQUIPSLOT_HEAD) then player:graphicChange(GRAPHICSLOT_HEAD, nil);
-			elseif (equipSlot == EQUIPSLOT_WAIST) then player:graphicChange(GRAPHICSLOT_WAIST, nil);
-			elseif (equipSlot == EQUIPSLOT_EARS) then player:graphicChange(GRAPHICSLOT_L_EAR, nil); player:graphicChange(GRAPHICSLOT_R_EAR, nil);
-			elseif (equipSlot == EQUIPSLOT_RFINGER) then player:graphicChange(GRAPHICSLOT_RFINGER, nil);
-			elseif (equipSlot == EQUIPSLOT_LFINGER) then player:graphicChange(GRAPHICSLOT_LFINGER, nil);
+			if 	   (equipSlot == EQUIPSLOT_MAINHAND) then player:GraphicChange(GRAPHICSLOT_MAINHAND, nil);
+			elseif (equipSlot == EQUIPSLOT_OFFHAND) then player:GraphicChange(GRAPHICSLOT_OFFHAND, nil);
+			elseif (equipSlot == EQUIPSLOT_HEAD) then player:GraphicChange(GRAPHICSLOT_HEAD, nil);
+			elseif (equipSlot == EQUIPSLOT_WAIST) then player:GraphicChange(GRAPHICSLOT_WAIST, nil);
+			elseif (equipSlot == EQUIPSLOT_EARS) then player:GraphicChange(GRAPHICSLOT_L_EAR, nil); player:GraphicChange(GRAPHICSLOT_R_EAR, nil);
+			elseif (equipSlot == EQUIPSLOT_RFINGER) then player:GraphicChange(GRAPHICSLOT_RFINGER, nil);
+			elseif (equipSlot == EQUIPSLOT_LFINGER) then player:GraphicChange(GRAPHICSLOT_LFINGER, nil);
 			end
 		end	
 		return true;

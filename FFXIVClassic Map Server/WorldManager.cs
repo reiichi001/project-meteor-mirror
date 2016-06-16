@@ -464,7 +464,7 @@ namespace FFXIVClassic_Map_Server
             LuaEngine.OnZoneIn(player);
         }
 
-        public void reloadZone(uint zoneId)
+        public void ReloadZone(uint zoneId)
         {
             if (!zoneList.ContainsKey(zoneId))
                 return;
