@@ -18,11 +18,11 @@ namespace FFXIVClassic_Lobby_Server
 
         public static bool Load()
         {
-            Program.Log.Info("Loading lobby_config.ini file... ");
+            Program.Log.Info("Loading lobby_config.ini file");
 
             if (!File.Exists("./lobby_config.ini"))
             {
-                Program.Log.Error("[FILE NOT FOUND]");
+                Program.Log.Error("FILE NOT FOUND!");
                 return false;
             }
 
@@ -37,8 +37,6 @@ namespace FFXIVClassic_Lobby_Server
             ConfigConstants.DATABASE_NAME =         configIni.GetValue("Database", "database", "");
             ConfigConstants.DATABASE_USERNAME =     configIni.GetValue("Database", "username", "");
             ConfigConstants.DATABASE_PASSWORD =     configIni.GetValue("Database", "password", "");
-
-            Program.Log.Info("[OK]");
 
             return true;
         }
