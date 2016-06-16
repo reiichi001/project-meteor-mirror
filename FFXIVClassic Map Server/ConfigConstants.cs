@@ -23,7 +23,7 @@ namespace FFXIVClassic_Map_Server
 
             if (!File.Exists("./map_config.ini"))
             {
-                Program.Log.Error("[FILE NOT FOUND]");
+                Program.Log.Error("FILE NOT FOUND");
                 return false;
             }
 
@@ -39,9 +39,7 @@ namespace FFXIVClassic_Map_Server
             ConfigConstants.DATABASE_NAME =         configIni.GetValue("Database", "database", "");
             ConfigConstants.DATABASE_USERNAME =     configIni.GetValue("Database", "username", "");
             ConfigConstants.DATABASE_PASSWORD =     configIni.GetValue("Database", "password", "");
-
-            Program.Log.Info("[OK]");
-
+            
             return true;
         }
     }

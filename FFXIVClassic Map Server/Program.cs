@@ -28,15 +28,13 @@ namespace FFXIVClassic_Map_Server
 #endif
             bool startServer = true;
 
-            Program.Log.Info("---------FFXIV 1.0 Map Server---------");
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("---------FFXIV 1.0 Map Server---------");
+            Console.ForegroundColor = ConsoleColor.Gray;
 
             //Load Config
             if (!ConfigConstants.Load())
                 startServer = false;
-
-            Assembly assem = Assembly.GetExecutingAssembly();
-            Version vers = assem.GetName().Version;
-            Program.Log.Info("Version: " + vers.ToString());
 
             //Test DB Connection
             Program.Log.Info("Testing DB connection... ");
