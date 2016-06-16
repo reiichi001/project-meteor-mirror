@@ -6,18 +6,18 @@ function onBeginLogin(player)
 	if (player:GetPlayTime(false) == 0) then
 		initialTown = player:GetInitialTown();
 		
-		if (initialTown == 1 and player:hasQuest(110001) == false) then
+		if (initialTown == 1 and player:HasQuest(110001) == false) then
 			player:AddQuest(110001);			
-		elseif (initialTown == 2 and player:hasQuest(110005) == false) then
+		elseif (initialTown == 2 and player:HasQuest(110005) == false) then
 			player:AddQuest(110005);
-		elseif (initialTown == 3 and player:hasQuest(110009) == false) then
+		elseif (initialTown == 3 and player:HasQuest(110009) == false) then
 			player:AddQuest(110009);
 		end
 		
 	end
 			
 	--For Opening. Set Director and reset position incase d/c
-	if	   (player:hasQuest(110001) == true) then
+	if	   (player:HasQuest(110001) == true) then
 		--player:SetDirector("openingDirector", false);
 		player.positionX = 0.016;
 		player.positionY = 10.35;
@@ -26,7 +26,7 @@ function onBeginLogin(player)
 		player.rotation = 0.025;
 		player:GetQuest(110001):ClearQuestData();
 		player:GetQuest(110001):ClearQuestFlags();
-	elseif (player:hasQuest(110005) == true) then 
+	elseif (player:HasQuest(110005) == true) then 
 		player:SetDirector("openingDirector", false);
 		player.positionX = 369.5434;
 		player.positionY = 4.21;
@@ -34,7 +34,7 @@ function onBeginLogin(player)
 		player.rotation = -1.26721;
 		player:GetQuest(110005):ClearQuestData();
 		player:GetQuest(110005):ClearQuestFlags();
-	elseif (player:hasQuest(110009) == true) then
+	elseif (player:HasQuest(110009) == true) then
 		player:SetDirector("openingDirector", false);
 		player.positionX = 5.364327;
 		player.positionY = 196.0;

@@ -622,7 +622,7 @@ namespace FFXIVClassic_Map_Server
                         client.GetActor().SendInstanceUpdate();
                         client.QueuePacket(BasePacket.CreatePacket(SendMessagePacket.BuildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Reseting zone {0}...", client.GetActor().zoneId)), true, false));
                     }
-                    Server.GetWorldManager().reloadZone(client.GetActor().zoneId);
+                    Server.GetWorldManager().ReloadZone(client.GetActor().zoneId);
                     return true;
                 }
                 #endregion

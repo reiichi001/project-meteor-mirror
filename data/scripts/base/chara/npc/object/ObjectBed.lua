@@ -13,9 +13,9 @@ function onEventUpdate(player, npc, eventStep, menuOptionSelected)
 		player:EndEvent();
 		return;
 	elseif (menuOptionSelected == 2) then
-		player:quitGame();
+		player:QuitGame();
 	elseif (menuOptionSelected == 3) then
-		player:logout();
+		player:Logout();
 	elseif (menuOptionSelected == 4) then
 		player:SendMessage(33, "", "Heck the bed");
 	end 	
