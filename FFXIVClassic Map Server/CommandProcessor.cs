@@ -455,7 +455,7 @@ namespace FFXIVClassic_Map_Server
                 return; // catch any invalid warps here
         }
 
-        private void doWeather(ConnectedPlayer client, string weatherID, string value)
+        private void DoWeather(ConnectedPlayer client, string weatherID, string value)
         {
             ushort weather = Convert.ToUInt16(weatherID);
 
@@ -499,18 +499,55 @@ namespace FFXIVClassic_Map_Server
 
         internal bool DoCommand(string input, ConnectedPlayer client)
         {
+            if (!input.Any())
+                return false;
+
             input.Trim();
-            if (input.StartsWith("!"))
-                input = input.Substring(1);
+            input = input.StartsWith("!") ? input.Substring(1) : input;
 
-            String[] split = input.Split(' ');
+            var split = input.Split('"')
+                     .Select((str, index) => index % 2 == 0
+                                           ? str.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                           : new String[] { str }
+                             )
+                     .SelectMany(str => str).ToArray();
+
             split = split.Select(temp => temp.ToLower()).ToArray(); // Ignore case on commands
-            split = split.Where(temp => temp != "").ToArray(); // strips extra whitespace from commands
-
-            // Debug
-            //SendMessage(client, string.Join(",", split));
             
-            if (split.Length >= 1)
+            var cmd = split?.ElementAt(0);
+
+            if (cmd.Any())
+            {
+                // if client isnt null, take player to be the player actor
+                var player = client?.GetActor();
+
+                if (cmd.Equals("help"))
+                {
+                    // if there's another string after this, take it as the command we want the description for
+                    if (split.Length > 1)
+                    {
+                        LuaEngine.RunGMCommand(player, split[1], null, true);
+                        return true;
+                    }
+
+                    // print out all commands
+                    foreach (var str in Directory.GetFiles("./scripts/commands/gm/"))
+                    {
+                        var c = str.Replace(".lua", "");
+                        c = c.Replace("./scripts/commands/gm/", "");
+
+                        LuaEngine.RunGMCommand(player, c, null, true);
+                    }
+                    return true;
+                }
+
+                LuaEngine.RunGMCommand(player, cmd.ToString(), split.ToArray());
+                return true;
+            }
+                // Debug
+                //SendMessage(client, string.Join(",", split));
+
+                if (split.Length >= 1)
             {
                 #region !help
                 if (split[0].Equals("help"))
@@ -582,7 +619,7 @@ namespace FFXIVClassic_Map_Server
                         {
                             try
                             {
-                                doWeather(client, split[2], split[3]);
+                                DoWeather(client, split[2], split[3]);
                                 return true;
                             }
                             catch (Exception e)
@@ -622,7 +659,7 @@ namespace FFXIVClassic_Map_Server
                         client.GetActor().SendInstanceUpdate();
                         client.QueuePacket(BasePacket.CreatePacket(SendMessagePacket.BuildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Reseting zone {0}...", client.GetActor().zoneId)), true, false));
                     }
-                    Server.GetWorldManager().reloadZone(client.GetActor().zoneId);
+                    Server.GetWorldManager().ReloadZone(client.GetActor().zoneId);
                     return true;
                 }
                 #endregion

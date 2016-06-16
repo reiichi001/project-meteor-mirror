@@ -292,7 +292,7 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 if (a is Player)
                 {
-                    if (((Player)a).customDisplayName.Equals(name))
+                    if (((Player)a).customDisplayName.ToLower().Equals(name.ToLower()))
                         return (Player)a;
                 }
             }
