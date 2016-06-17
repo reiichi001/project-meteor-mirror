@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using FFXIVClassic.Common;
+using NLog;
 
 namespace FFXIVClassic_Lobby_Server.packets
 {
@@ -26,6 +27,7 @@ namespace FFXIVClassic_Lobby_Server.packets
 
     public class SubPacket
     {
+        public static Logger Log = LogManager.GetCurrentClassLogger();
         public const int SUBPACKET_SIZE = 0x10;
         public const int GAMEMESSAGE_SIZE = 0x10;
 
@@ -141,14 +143,14 @@ namespace FFXIVClassic_Lobby_Server.packets
         {
 #if DEBUG
             // todo: create new target for colourful packet logging
-            Program.Log.Debug("Size: 0x{0:X}{1}{2}", header.subpacketSize, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
+            Log.Debug("Size: 0x{0:X}{1}{2}", header.subpacketSize, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
             
             if (header.type == 0x03)
             {
-                Program.Log.Debug("Opcode: 0x{0:X}{1}{2}", gameMessage.opcode, Environment.NewLine, Utils.ByteArrayToHex(GetGameMessageBytes(), SUBPACKET_SIZE));
+                Log.Debug("Opcode: 0x{0:X}{1}{2}", gameMessage.opcode, Environment.NewLine, Utils.ByteArrayToHex(GetGameMessageBytes(), SUBPACKET_SIZE));
             }
 
-            Program.Log.Debug("Data: {0}{1}", Environment.NewLine, Utils.ByteArrayToHex(data, SUBPACKET_SIZE + GAMEMESSAGE_SIZE));
+            Log.Debug("Data: {0}{1}", Environment.NewLine, Utils.ByteArrayToHex(data, SUBPACKET_SIZE + GAMEMESSAGE_SIZE));
 #endif
         }
 

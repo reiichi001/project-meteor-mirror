@@ -57,5 +57,9 @@ INVENTORY_EQUIPMENT_OTHERPLAYER = 0x00F9; --Max 0x23
 
 
 function printf(s, ...)
-    print(s:format(...));
+    if ... then
+        print(s:format(...));
+    else
+        print(s);
+    end;
 end;

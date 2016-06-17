@@ -3,20 +3,21 @@ require("global");
 properties = {
     permissions = 0,
     parameters = "sssssss",
-    description = [[
+    description =
+[[
 <zone> |
 <zone> <x> <y> <z> |
 <x> <y> <z> <zone> <privateArea> <target name>.
 ]],
 }
 
-function onTrigger(player, argc, p1, p2, p3, p4, privateArea, firstName, lastName)
+function onTrigger(player, argc, p1, p2, p3, p4, privateArea, name, lastName)
 
-    if firstName then
+    if name then
         if lastName then
-            player = GetWorldManager():GetPCInWorld(firstName.." "..lastName) or nil;
+            player = GetWorldManager():GetPCInWorld(name.." "..lastName) or nil;
         else
-            player = GetWorldManager():GetPCInWorld(firstName) or nil;
+            player = GetWorldManager():GetPCInWorld(name) or nil;
         end;
     end;
     
@@ -60,7 +61,7 @@ function onTrigger(player, argc, p1, p2, p3, p4, privateArea, firstName, lastNam
             local z = tonumber(applyPositionOffset(p4, player_z)) or player_z;
             if privateArea == "" then privateArea = nil end;
             player:SendMessage(messageID, sender, string.format("setting coordinates X:%d Y:%d Z:%d to new zone (%d) private area:%s", x, y, z, zone, privateArea or "unspecified"));
-            worldManager:DoZoneChange(player, zone, privateArea, 0x0F, x, y, z, 0.00);
+            worldManager:DoZoneChange(player, zone, privateArea, 0x02, x, y, z, 0.00);
         end
   
     else

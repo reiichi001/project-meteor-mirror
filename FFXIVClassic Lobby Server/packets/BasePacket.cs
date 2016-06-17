@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using FFXIVClassic.Common;
 using System.IO;
+using NLog;
 
 namespace FFXIVClassic_Lobby_Server.packets
 {
@@ -21,7 +22,7 @@ namespace FFXIVClassic_Lobby_Server.packets
 
     public class BasePacket
     {
-
+        public static Logger Log = LogManager.GetCurrentClassLogger();
         public const int TYPE_ZONE = 1;
         public const int TYPE_CHAT = 2;
         public const int BASEPACKET_SIZE = 0x10;
@@ -337,7 +338,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             // todo: create new target for colourful packet logging
             //Console.BackgroundColor = ConsoleColor.DarkYellow;
 
-            Program.Log.Debug("IsAuth: {0} Size: 0x{1:X}, NumSubpackets: {2}{3}{4}", header.isAuthenticated, header.packetSize, header.numSubpackets, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
+            Log.Debug("IsAuth: {0} Size: 0x{1:X}, NumSubpackets: {2}{3}{4}", header.isAuthenticated, header.packetSize, header.numSubpackets, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
 
             foreach (SubPacket sub in GetSubpackets())
             {

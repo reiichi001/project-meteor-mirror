@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.IO;
 using FFXIVClassic.Common;
+using NLog;
 
 namespace FFXIVClassic_Map_Server.packets
 {
@@ -19,7 +20,9 @@ namespace FFXIVClassic_Map_Server.packets
         public ulong        timestamp; //Miliseconds
     }
 
-    public class BasePacket{
+    public class BasePacket
+    {
+        public static Logger Log = LogManager.GetCurrentClassLogger();
 
         public const int TYPE_ZONE = 1;
         public const int TYPE_CHAT = 2;
@@ -335,7 +338,7 @@ namespace FFXIVClassic_Map_Server.packets
             // todo: create new target for colourful packet logging
             //Console.BackgroundColor = ConsoleColor.DarkYellow;
 
-            Program.Log.Debug("IsAuth: {0} IsEncrypted: {1}, Size: 0x{2:X}, NumSubpackets: {3}{4}{5}", header.isAuthenticated, header.isCompressed, header.packetSize, header.numSubpackets, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
+            Log.Debug("IsAuth: {0} IsEncrypted: {1}, Size: 0x{2:X}, NumSubpackets: {3}{4}{5}", header.isAuthenticated, header.isCompressed, header.packetSize, header.numSubpackets, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
 
             foreach (SubPacket sub in GetSubpackets())
             {

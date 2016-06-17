@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic_Map_Server.packets.send;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -352,5 +353,25 @@ namespace FFXIVClassic_Map_Server.Actors
             AddActorToZone(npc);                          
         }
 
+        public void ChangeWeather(ushort weather, ushort transitionTime, Player player, bool zoneWide = false)
+        {
+            weatherNormal = weather;
+
+            if (player != null && !zoneWide)
+            {
+                player.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime), true, false));
+            }
+            if (zoneWide)
+            {
+                foreach (var actor in mActorList)
+                {
+                    if (actor.Value is Player)
+                    {
+                        player = ((Player)actor.Value);
+                        player.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime), true, false));
+                    }
+                }
+            }
+        }
     }
 }

@@ -377,6 +377,16 @@ namespace FFXIVClassic_Map_Server.Actors
             // todo: handle zone?
             zone.BroadcastPacketAroundActor(this, MoveActorToPositionPacket.BuildPacket(this.actorId, this.actorId, x, y, z, rot, moveState));
         }
+
+        public Area GetZone()
+        {
+            return zone;
+        }
+
+        public uint GetZoneID()
+        {
+            return zoneId;
+        }
     }
 }
 

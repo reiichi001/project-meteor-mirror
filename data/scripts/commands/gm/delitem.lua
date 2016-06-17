@@ -3,11 +3,11 @@ require("global");
 properties = {
     permissions = 0,
     parameters = "sssss",
-    description = "adds <item> <qty> to <location> for <target>. <qty> and <location> are optional, item is added to user if <target> is nil",
+    description = "removes <item> <qty> from <location> for <target>. <qty> and <location> are optional, item is removed from user if <target> is nil",
 }
 
 function onTrigger(player, argc, item, qty, location, name, lastName)
-    local sender = "[giveitem] ";
+    local sender = "[delitem] ";
     
     if name then
         if lastName then
@@ -21,16 +21,17 @@ function onTrigger(player, argc, item, qty, location, name, lastName)
         item = tonumber(item) or nil;
         qty = tonumber(qty) or 1;
         location = tonumber(itemtype) or INVENTORY_NORMAL;
-        local added = player:GetInventory(location):AddItem(item, qty);
-        local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
-        local message = "unable to add item";
         
-        if item and added then
-            message = string.format("added item %u to %s", item, player:GetName());
+        local removed = player:GetInventory(location):removeItem(item, qty);
+        local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
+        local message = "unable to remove item";
+        
+        if item and removed then
+            message = string.format("removed item %u from %s", item, player:GetName());
         end
         player:SendMessage(messageID, sender, message);
         print(message);
     else
-        print(sender.."unable to add item, ensure player name is valid.");
+        print(sender.."unable to remove item, ensure player name is valid.");
     end;
 end;

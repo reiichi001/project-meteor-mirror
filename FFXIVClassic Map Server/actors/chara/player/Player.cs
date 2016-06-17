@@ -749,6 +749,26 @@ namespace FFXIVClassic_Map_Server.Actors
             //zone.BroadcastPacketAroundActor(this, worldMasterMessage);
         }
 
+        public void ChangeProperty(uint id, uint value, string target)
+        {
+            SetActorPropetyPacket ChangeProperty = new SetActorPropetyPacket(target);
+
+            ChangeProperty.SetTarget(target);
+            ChangeProperty.AddInt(id, value);
+            ChangeProperty.AddTarget();
+
+          /*foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
+            {
+                SubPacket ChangePropertyPacket = ChangeProperty.BuildPacket((entry.Value.actorID), (entry.Value.actorID));
+
+                BasePacket packet = BasePacket.CreatePacket(ChangePropertyPacket, true, false);
+                packet.DebugPrintPacket();
+
+                entry.Value.QueuePacket(packet);
+            }
+          */
+        }
+
         public void GraphicChange(uint slot, uint graphicId)
         {
             appearanceIds[slot] = graphicId;           

@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
+using FFXIVClassic_Map_Server.lua;
 
 namespace FFXIVClassic_Map_Server.lua
 {
@@ -37,12 +38,12 @@ namespace FFXIVClassic_Map_Server.lua
                 luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.GetName());
                 if (File.Exists(luaPath))
                 {
-                    Script script = LoadScript(luaPath);
+                    LuaScript script = LoadScript(luaPath);
 
                     if (script == null)
                         return null;
 
-                    DynValue result = RunScript(script, script.Globals["init"], target);
+                    DynValue result = script.Call(script.Globals["init"], target);
                     List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
                     return lparams;
                 }
@@ -79,7 +80,7 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (File.Exists(luaPath))
             {
-                Script script = LoadScript(luaPath);
+                LuaScript script = LoadScript(luaPath);
 
                 if (script == null)
                     return;
@@ -95,7 +96,7 @@ namespace FFXIVClassic_Map_Server.lua
 
                 //Run Script
                 if (!script.Globals.Get("onEventStarted").IsNil())
-                    RunScript(script, script.Globals["onEventStarted"], objects.ToArray());
+                    script.Call(script.Globals["onEventStarted"], objects.ToArray());
             }
             else
             {
@@ -110,14 +111,14 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (File.Exists(luaPath))
             {
-                Script script = LoadScript(luaPath);
+                LuaScript script = LoadScript(luaPath);
 
                 if (script == null)
                     return;
 
                 //Run Script
                 if (!script.Globals.Get("onSpawn").IsNil())
-                    RunScript(script, script.Globals["onSpawn"], player, target);
+                    script.Call(script.Globals["onSpawn"], player, target);
             }
             else
             {
@@ -145,7 +146,7 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (File.Exists(luaPath))
             {
-                Script script = LoadScript(luaPath);
+                LuaScript script = LoadScript(luaPath);
 
                 if (script == null)
                     return;
@@ -159,7 +160,7 @@ namespace FFXIVClassic_Map_Server.lua
 
                 //Run Script
                 if (!script.Globals.Get("onEventUpdate").IsNil())
-                    RunScript(script, script.Globals["onEventUpdate"], objects.ToArray());
+                    script.Call(script.Globals["onEventUpdate"], objects.ToArray());
             }
             else
             {
@@ -173,14 +174,14 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (File.Exists(luaPath))
             {
-                Script script = LoadScript(luaPath);
+                LuaScript script = LoadScript(luaPath);
 
                 if (script == null)
                     return;
 
                 //Run Script
                 if (!script.Globals.Get("onZoneIn").IsNil())
-                    RunScript(script, script.Globals["onZoneIn"], player);
+                    script.Call(script.Globals["onZoneIn"], player);
             }
         }
 
@@ -188,14 +189,14 @@ namespace FFXIVClassic_Map_Server.lua
         {
             if (File.Exists(FILEPATH_PLAYER))
             {
-                Script script = LoadScript(FILEPATH_PLAYER);
+                LuaScript script = LoadScript(FILEPATH_PLAYER);
 
                 if (script == null)
                     return;
 
                 //Run Script
                 if (!script.Globals.Get("onBeginLogin").IsNil())
-                    RunScript(script, script.Globals["onBeginLogin"], player);
+                    script.Call(script.Globals["onBeginLogin"], player);
             }
         }
 
@@ -203,14 +204,14 @@ namespace FFXIVClassic_Map_Server.lua
         {
             if (File.Exists(FILEPATH_PLAYER))
             {
-                Script script = LoadScript(FILEPATH_PLAYER);
+                LuaScript script = LoadScript(FILEPATH_PLAYER);
 
                 if (script == null)
                     return;
 
                 //Run Script
                 if (!script.Globals.Get("onLogin").IsNil())
-                    RunScript(script, script.Globals["onLogin"], player);
+                    script.Call(script.Globals["onLogin"], player);
             }
         }
 
@@ -224,7 +225,7 @@ namespace FFXIVClassic_Map_Server.lua
             if (File.Exists(path))
             {
                 // load global functions
-                Script script = LoadGlobals();
+                LuaScript script = LoadGlobals();
 
                 // see if this script has any syntax errors
                 try
@@ -275,7 +276,7 @@ namespace FFXIVClassic_Map_Server.lua
                                 }
                             }
                         }
-                        catch (Exception e) { Program.Log.Error("LuaEngine.RunGMCommand: " + e.Message); return; }
+                        catch (Exception e) { LuaScript.Log.Error("LuaEngine.RunGMCommand: " + e.Message); return; }
                     }
 
                     // if this isnt a console command, make sure player exists
@@ -295,7 +296,7 @@ namespace FFXIVClassic_Map_Server.lua
                     }
                     else if (help)
                     {
-                        Program.Log.Info("[Commands] [{0}]: {1}", cmd, description);
+                        LuaScript.Log.Info("[Commands] [{0}]: {1}", cmd, description);
                         return;
                     }
 
@@ -323,7 +324,7 @@ namespace FFXIVClassic_Map_Server.lua
                                     LuaParam.Add(param[i + 1]);
                                     continue;
                                 default:
-                                    Program.Log.Info("LuaEngine.RunGMCommand: {0} unknown parameter {1}.", path, parameters[i]);
+                                    LuaScript.Log.Info("LuaEngine.RunGMCommand: {0} unknown parameter {1}.", path, parameters[i]);
                                     LuaParam.Add(param[i + 1]);
                                     continue;
                             }
@@ -341,18 +342,18 @@ namespace FFXIVClassic_Map_Server.lua
                     LuaParam.Insert(1, i);
 
                     // run the script
-                    RunScript(script, script.Globals["onTrigger"], LuaParam.ToArray());
+                    script.Call(script.Globals["onTrigger"], LuaParam.ToArray());
                     return;
                 }
             }
-            Program.Log.Error("LuaEngine.RunGMCommand: Unable to find script {0}", path);
+            LuaScript.Log.Error("LuaEngine.RunGMCommand: Unable to find script {0}", path);
             return;
         }
         #endregion
 
-        public static Script LoadScript(string filename)
+        public static LuaScript LoadScript(string filename)
         {
-            Script script = LoadGlobals();
+            LuaScript script = LoadGlobals();
 
             try
             {
@@ -366,9 +367,9 @@ namespace FFXIVClassic_Map_Server.lua
             return script;
         }
 
-        public static Script LoadGlobals(Script script = null)
+        public static LuaScript LoadGlobals(LuaScript script = null)
         {
-            script = script ?? new Script();
+            script = script ?? new LuaScript();
 
             // register and load all global functions here
             ((FileSystemScriptLoader)script.Options.ScriptLoader).ModulePaths = FileSystemScriptLoader.UnpackStringPaths("./scripts/?;./scripts/?.lua");
@@ -396,14 +397,14 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (File.Exists(luaPath))
             {
-                Script script = LoadScript(luaPath);
+                LuaScript script = LoadScript(luaPath);
 
                 if (script == null)
                     return;
 
                 //Run Script
                 if (!script.Globals.Get("onTalked").IsNil())
-                    RunScript(script, script.Globals["onTalked"], player, npc);
+                    script.Call(script.Globals["onTalked"], player, npc);
             }
             else
             {
@@ -417,161 +418,19 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (File.Exists(luaPath))
             {
-                Script script = LoadScript(luaPath);
+                LuaScript script = LoadScript(luaPath);
 
                 if (script == null)
                     return;
 
                 //Run Script
                 if (!script.Globals.Get("onCommand").IsNil())
-                    RunScript(script, script.Globals["onCommand"], player, command);
+                    script.Call(script.Globals["onCommand"], player, command);
             }
             else
             {
                 SendError(player, String.Format("ERROR: Could not find script for director {0}.", director.GetName()));
             }
         }
-
-
-        #region RunScript
-        //
-        // Summary:
-        //     Calls the specified function.
-        //
-        // Parameters:
-        //   function:
-        //     The Lua/MoonSharp function to be called
-        //
-        // Returns:
-        //     The return value(s) of the function call.
-        //
-        // Exceptions:
-        //   T:System.ArgumentException:
-        //     Thrown if function is not of DataType.Function
-        public static DynValue RunScript(Script script, DynValue function)
-        {
-            DynValue res = null;
-            try
-            {
-                res = script.Call(function);
-            }
-            catch (InterpreterException e)
-            {
-                Program.Log.Error(e.DecoratedMessage);
-            }
-            return res;
-        }
-        //
-        // Summary:
-        //     Calls the specified function.
-        //
-        // Parameters:
-        //   function:
-        //     The Lua/MoonSharp function to be called
-        //
-        // Exceptions:
-        //   T:System.ArgumentException:
-        //     Thrown if function is not of DataType.Function
-        public static DynValue RunScript(Script script, object function)
-        {
-            DynValue res = null;
-            try
-            {
-                res = script.Call(function);
-            }
-            catch (InterpreterException e)
-            {
-                Program.Log.Error(e.DecoratedMessage);
-            }
-            return res;
-        }
-        //
-        // Summary:
-        //     Calls the specified function.
-        //
-        // Parameters:
-        //   function:
-        //     The Lua/MoonSharp function to be called
-        //
-        //   args:
-        //     The arguments to pass to the function.
-        //
-        // Exceptions:
-        //   T:System.ArgumentException:
-        //     Thrown if function is not of DataType.Function
-        public static DynValue RunScript(Script script, object function, params object[] args)
-        {
-            DynValue res = null;
-            try
-            {
-                res = script.Call(function, args);
-            }
-            catch (InterpreterException e)
-            {
-                Program.Log.Error(e.DecoratedMessage);
-            }
-            return res;
-        }
-        //
-        // Summary:
-        //     Calls the specified function.
-        //
-        // Parameters:
-        //   function:
-        //     The Lua/MoonSharp function to be called
-        //
-        //   args:
-        //     The arguments to pass to the function.
-        //
-        // Returns:
-        //     The return value(s) of the function call.
-        //
-        // Exceptions:
-        //   T:System.ArgumentException:
-        //     Thrown if function is not of DataType.Function
-        public static DynValue RunScript(Script script, DynValue function, params DynValue[] args)
-        {
-            DynValue res = null;
-            try
-            {
-                res = script.Call(function, args);
-            }
-            catch (InterpreterException e)
-            {
-                Program.Log.Error(e.DecoratedMessage);
-            }
-            return res;
-        }
-        //
-        // Summary:
-        //     Calls the specified function.
-        //
-        // Parameters:
-        //   function:
-        //     The Lua/MoonSharp function to be called
-        //
-        //   args:
-        //     The arguments to pass to the function.
-        //
-        // Returns:
-        //     The return value(s) of the function call.
-        //
-        // Exceptions:
-        //   T:System.ArgumentException:
-        //     Thrown if function is not of DataType.Function
-        public static DynValue RunScript(Script script, DynValue function, params object[] args)
-        {
-            DynValue res = null;
-            try
-            {
-                res = script.Call(function, args);
-            }
-            catch (InterpreterException e)
-            {
-                Program.Log.Error(e.DecoratedMessage);
-            }
-            return res;
-        }
-        #endregion
     }
 }

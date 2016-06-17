@@ -1,8 +1,7 @@
 properties = {
     permissions = 0,
     parameters = "sssss",
-    description = [[changes appearance for equipment in <slot>. Parameters: <slot> <wId> <eId> <vId> <cId>,
-                            idk what any of those mean either]],
+    description = "changes appearance for equipment in <slot>. Parameters: <slot> <wId> <eId> <vId> <cId>, (idk what any of those mean either)",
 }
 
 function onTrigger(player, argc, slot, wId, eId, vId, cId)
