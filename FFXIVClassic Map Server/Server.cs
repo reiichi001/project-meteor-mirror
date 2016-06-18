@@ -116,7 +116,7 @@ namespace FFXIVClassic_Map_Server
             }
 
             Console.ForegroundColor = ConsoleColor.White;
-            Program.Log.Debug("Map Server has started @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
+            Program.Log.Info("Map Server has started @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
             Console.ForegroundColor = ConsoleColor.Gray;
 
             mProcessor = new PacketProcessor(this, mConnectedPlayerList, mConnectionList);

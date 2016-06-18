@@ -302,7 +302,7 @@ namespace FFXIVClassic_Map_Server.Actors
             zone.BroadcastPacketAroundActor(this, ChangeSpeedPacket);
         }
 
-        public void generateActorName(int actorNumber)
+        public void GenerateActorName(int actorNumber)
         {
             //Format Class Name
             string className = this.className.Replace("Populace", "Ppl")

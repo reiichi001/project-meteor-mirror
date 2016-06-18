@@ -28,10 +28,6 @@ namespace FFXIVClassic_Lobby_Server
             if (!ConfigConstants.Load())
                 startServer = false;
             
-            Assembly assem = Assembly.GetExecutingAssembly();
-            Version vers = assem.GetName().Version;
-            Program.Log.Info("Version: " + vers.ToString());
-
             //Test DB Connection
             Program.Log.Info("Testing DB connection to \"{0}\"... ", ConfigConstants.DATABASE_HOST);
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -55,9 +51,7 @@ namespace FFXIVClassic_Lobby_Server
             {
                 Server server = new Server();
                 server.StartServer();
-
-                while (true)
-                    Thread.Sleep(1000);
+                while (true) Thread.Sleep(10000);
             }
 
             Program.Log.Info("Press any key to continue...");

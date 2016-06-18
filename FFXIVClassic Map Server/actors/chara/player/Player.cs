@@ -241,7 +241,7 @@ namespace FFXIVClassic_Map_Server.Actors
             packets.Add(_0x132Packet.BuildPacket(playerActorId, 0x4, "commandContent"));
             packets.Add(_0x132Packet.BuildPacket(playerActorId, 0x6, "commandJudgeMode"));
             packets.Add(_0x132Packet.BuildPacket(playerActorId, 0x100, "commandRequest"));
-            packets.Add(_0x132Packet.BuildPacket(playerActorId, 0x100, "widGetCreate"));
+            packets.Add(_0x132Packet.BuildPacket(playerActorId, 0x100, "widgetCreate"));
             packets.Add(_0x132Packet.BuildPacket(playerActorId, 0x100, "macroRequest"));
             return packets;
         }
@@ -386,7 +386,7 @@ namespace FFXIVClassic_Map_Server.Actors
             for (int i = 0; i < charaWork.additionalCommandAcquired.Length; i++)
             {
                 if (charaWork.additionalCommandAcquired[i] != false)
-                    propPacketUtil.AddProperty(String.Format("charaWork.AdditionalCommandAcquired[{0}]", i));
+                    propPacketUtil.AddProperty(String.Format("charaWork.additionalCommandAcquired[{0}]", i));
             }
             
             for (int i = 0; i < charaWork.parameterSave.commandSlot_compatibility.Length; i++)

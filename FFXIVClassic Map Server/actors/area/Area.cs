@@ -348,7 +348,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 return;
 
             Npc npc = new Npc(mActorList.Count + 1, actorClass.actorClassId, location.uniqueId, actorId, location.x, location.y, location.z, location.rot, location.state, location.animId, actorClass.displayNameId, null, actorClass.classPath);
-            npc.loadEventConditions(actorClass.eventConditions);            
+            npc.LoadEventConditions(actorClass.eventConditions);            
 
             AddActorToZone(npc);                          
         }

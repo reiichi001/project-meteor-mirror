@@ -12,7 +12,7 @@ emoteTable = {
 function onEventStarted(player, actor, triggerName, emoteId)
 
 	if (player:GetState() == 0) then						
-		player:doEmote(emoteId);
+		player:DoEmote(emoteId);
 	end
 	
 	player:EndCommand();

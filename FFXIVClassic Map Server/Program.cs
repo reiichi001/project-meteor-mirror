@@ -34,10 +34,6 @@ namespace FFXIVClassic_Map_Server
             if (!ConfigConstants.Load())
                 startServer = false;
 
-            Assembly assem = Assembly.GetExecutingAssembly();
-            Version vers = assem.GetName().Version;
-            Program.Log.Info("Version: " + vers.ToString());
-
             //Test DB Connection
             Program.Log.Info("Testing DB connection... ");
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))

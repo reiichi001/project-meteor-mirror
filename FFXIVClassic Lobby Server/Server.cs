@@ -81,7 +81,7 @@ namespace FFXIVClassic_Lobby_Server
             }
 
             Console.ForegroundColor = ConsoleColor.White;
-            Program.Log.Debug("Lobby Server has started @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
+            Program.Log.Info("Lobby Server has started @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
             Console.ForegroundColor = ConsoleColor.Gray;
 
             mProcessor = new PacketProcessor();
