@@ -273,8 +273,8 @@ namespace FFXIVClassic_Map_Server
                                     }
                                 }                                    
                             }
-                            
-                            LuaEngine.DoActorOnEventStarted(player.GetActor(), ownerActor, eventStart);
+
+                            player.GetActor().StartEvent(ownerActor, eventStart);
 
                             Program.Log.Debug("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.val1, eventStart.val2, eventStart.triggerName, LuaUtils.DumpParams(eventStart.luaParams));
                             break;
@@ -286,7 +286,7 @@ namespace FFXIVClassic_Map_Server
                             subpacket.DebugPrintSubPacket();
                             EventUpdatePacket eventUpdate = new EventUpdatePacket(subpacket.data);
                             Program.Log.Debug("\n===Event UPDATE===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nStep: 0x{4:X}\nParams: {5}", eventUpdate.actorID, eventUpdate.scriptOwnerActorID, eventUpdate.val1, eventUpdate.val2, eventUpdate.step, LuaUtils.DumpParams(eventUpdate.luaParams));
-
+                            /*
                             //Is it a static actor? If not look in the player's instance
                             Actor updateOwnerActor = Server.GetStaticActors(player.GetActor().currentEventOwner);
                             if (updateOwnerActor == null)
@@ -299,8 +299,10 @@ namespace FFXIVClassic_Map_Server
                                 if (updateOwnerActor == null)
                                     break;
                             }
+                            */
+                            player.GetActor().UpdateEvent(eventUpdate);
 
-                            LuaEngine.DoActorOnEventUpdated(player.GetActor(), updateOwnerActor, eventUpdate);
+                            //LuaEngine.DoActorOnEventUpdated(player.GetActor(), updateOwnerActor, eventUpdate);
                             
                             break;
                         case 0x012F:

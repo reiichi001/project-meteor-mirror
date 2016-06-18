@@ -57,13 +57,7 @@ namespace FFXIVClassic_Map_Server.lua
         }       
 
         public static void DoActorOnEventStarted(Player player, Actor target, EventStartPacket eventStart)
-        {
-            if (target is Npc)
-            {
-                ((Npc)target).DoEventStart(player, eventStart);
-                return;
-            }
-
+        {           
             string luaPath;
 
             if (target is Command)

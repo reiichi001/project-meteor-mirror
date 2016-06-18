@@ -15,6 +15,8 @@ using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.utils;
 using System;
 using System.Collections.Generic;
+using MoonSharp.Interpreter;
+using FFXIVClassic_Map_Server.packets.receive.events;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -82,8 +84,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public uint currentCommand = 0;
         public string currentCommandName = "";
-        
-        public uint eventMenuId = 0;
+
+        public Coroutine currentEventRunning;
 
         //Player Info
         public uint[] timers = new uint[20];
@@ -1118,6 +1120,35 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePacket(spacket);
         }
 
+        public void StartEvent(Actor owner, EventStartPacket start)
+        {
+            //Have to do this to combine LuaParams
+            List<Object> objects = new List<Object>();
+            objects.Add(this);
+            objects.Add(owner);
+            objects.Add(start.triggerName);
+
+            if (start.luaParams != null)
+                objects.AddRange(LuaUtils.CreateLuaParamObjectList(start.luaParams));
+
+            if (owner is Npc)
+            {
+                currentEventRunning = ((Npc)owner).GetEventStartCoroutine(this);
+                currentEventRunning.Resume(objects.ToArray());
+            }
+            else
+                LuaEngine.DoActorOnEventStarted(this, owner, start);
+        }
+
+        public void UpdateEvent(EventUpdatePacket update)
+        {
+            if (currentEventRunning == null)
+                return;
+
+            if (currentEventRunning.State == CoroutineState.Suspended)
+                currentEventRunning.Resume(LuaUtils.CreateLuaParamObjectList(update.luaParams));
+        }
+
         public void KickEvent(Actor actor, string conditionName, params object[] parameters)
         {
             if (actor == null)
@@ -1150,7 +1181,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
             currentEventOwner = 0;
             currentEventName = "";
-            eventMenuId = 0;
         }
 
         public void EndCommand()
@@ -1161,16 +1191,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
             currentCommand = 0;
             currentCommandName = "";
-        }
-
-        public void SetCurrentMenuId(uint id)
-        {
-            eventMenuId = id;
-        }
-
-        public uint GetCurrentMenuId()
-        {
-            return eventMenuId;
         }
 
         public void SendInstanceUpdate()

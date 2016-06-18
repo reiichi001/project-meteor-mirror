@@ -47,7 +47,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                     break;
             }
         }
-       
+
         public bool IsClientConnectionsReady()
         {
             return (zoneConnection != null && chatConnection != null);
@@ -57,7 +57,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         {
             zoneConnection.Disconnect();
             chatConnection.Disconnect();
-        }      
+        }
 
         public bool IsDisconnected()
         {
@@ -71,7 +71,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void QueuePacket(SubPacket subPacket, bool isAuthed, bool isEncrypted)
         {
-                zoneConnection.QueuePacket(subPacket, isAuthed, isEncrypted);
+            zoneConnection.QueuePacket(subPacket, isAuthed, isEncrypted);
         }
 
         public Player GetActor()
@@ -97,7 +97,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         }
 
         public void UpdatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
-        {            
+        {
             playerActor.oldPositionX = playerActor.positionX;
             playerActor.oldPositionY = playerActor.positionY;
             playerActor.oldPositionZ = playerActor.positionZ;
@@ -110,11 +110,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
             playerActor.moveState = moveState;
 
             GetActor().zone.UpdateActorPosition(GetActor());
-             
-        }            
-        
+
+        }
+
         public void UpdateInstance(List<Actor> list)
-        {            
+        {
             List<BasePacket> basePackets = new List<BasePacket>();
             List<SubPacket> RemoveActorSubpackets = new List<SubPacket>();
             List<SubPacket> posUpdateSubpackets = new List<SubPacket>();
@@ -125,7 +125,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 if (!list.Contains(actorInstanceList[i]))
                 {
                     GetActor().QueuePacket(RemoveActorPacket.BuildPacket(playerActor.actorId, actorInstanceList[i].actorId));
-                    actorInstanceList.RemoveAt(i);                    
+                    actorInstanceList.RemoveAt(i);
                 }
             }
 
@@ -145,7 +145,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 {
                     GetActor().QueuePacket(actor.GetSpawnPackets(playerActor.actorId, 1));
                     GetActor().QueuePacket(actor.GetInitPackets(playerActor.actorId));
-                    GetActor().QueuePacket(actor.GetSetEventStatusPackets(playerActor.actorId));                   
+                    GetActor().QueuePacket(actor.GetSetEventStatusPackets(playerActor.actorId));
                     actorInstanceList.Add(actor);
 
                     if (actor is Npc)

@@ -45,6 +45,21 @@ function onEventStarted(player, npc)
 	end
 
 	player:RunEventFunction("welcomeTalk", nil, saySheetId, player);
+	coroutine.yield();
+	
+	while (true) do	
+		player:RunEventFunction("selectMode", nil, npc:GetActorClassId(), false, 1000001); --Step 2, state your business
+		choice = coroutine.yield();
+		
+		if (choice == 3) then
+			
+		elseif (choice == 4) then
+			player:EndEvent();
+			break;
+		end
+		
+	end
+	
 end
 
 function onEventUpdate(player, npc, step, menuOptionSelected)
