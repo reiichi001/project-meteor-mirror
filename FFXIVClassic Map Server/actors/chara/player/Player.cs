@@ -82,9 +82,6 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint currentEventOwner = 0;
         public string currentEventName = "";
 
-        public uint currentCommand = 0;
-        public string currentCommandName = "";
-
         public Coroutine currentEventRunning;
 
         //Player Info
@@ -1137,7 +1134,11 @@ namespace FFXIVClassic_Map_Server.Actors
                 currentEventRunning.Resume(objects.ToArray());
             }
             else
-                LuaEngine.DoActorOnEventStarted(this, owner, start);
+            {
+                currentEventRunning = LuaEngine.DoActorOnEventStarted(this, owner, start);
+                currentEventRunning.Resume(objects.ToArray());
+            }
+                
         }
 
         public void UpdateEvent(EventUpdatePacket update)
@@ -1181,18 +1182,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
             currentEventOwner = 0;
             currentEventName = "";
+            currentEventRunning = null;
         }
-
-        public void EndCommand()
-        {
-            SubPacket p = EndEventPacket.BuildPacket(actorId, currentCommand, currentCommandName);
-            p.DebugPrintSubPacket();
-            QueuePacket(p);
-
-            currentCommand = 0;
-            currentCommandName = "";
-        }
-
+        
         public void SendInstanceUpdate()
         {
            

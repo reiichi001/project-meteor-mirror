@@ -246,12 +246,8 @@ namespace FFXIVClassic_Map_Server
                             */
 
                             Actor ownerActor = Server.GetStaticActors(eventStart.scriptOwnerActorID);
-                            if (ownerActor != null && ownerActor is Command)
-                            {
-                                player.GetActor().currentCommand = eventStart.scriptOwnerActorID;
-                                player.GetActor().currentCommandName = eventStart.triggerName;
-                            }
-                            else
+                            
+                            if (ownerActor != null)           
                             {
                                 player.GetActor().currentEventOwner = eventStart.scriptOwnerActorID;
                                 player.GetActor().currentEventName = eventStart.triggerName;

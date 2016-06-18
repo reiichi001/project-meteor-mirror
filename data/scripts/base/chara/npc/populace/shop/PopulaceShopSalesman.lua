@@ -39,7 +39,7 @@ function init(npc)
 	return false, false, 0, 0;	
 end
 
-function onEventStarted(player, npc)
+function onEventStarted(player, npc, triggerName)
 
 	require("/unique/".. npc.zone.zoneName .."/PopulaceShopSalesman/" .. npc:GetUniqueId())
 	
