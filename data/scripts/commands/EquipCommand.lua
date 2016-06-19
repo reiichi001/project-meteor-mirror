@@ -69,7 +69,7 @@ function onEventStarted(player, actor, triggerName, invActionInfo, param1, param
 		end
 	end
 	
-	player:EndCommand();	
+	player:EndEvent();	
 end
 
 function loadGearset(player, classId)	

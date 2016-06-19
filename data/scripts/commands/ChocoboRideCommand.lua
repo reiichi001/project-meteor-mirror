@@ -42,6 +42,6 @@ function onEventStarted(player, actor, triggerName, isGoobbue)
 		player:ChangeState(0); 
 	end
 	
-	player:EndCommand();
+	player:EndEvent();
 	
 end

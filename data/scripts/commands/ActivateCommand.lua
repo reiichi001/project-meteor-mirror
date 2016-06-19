@@ -14,7 +14,7 @@ function onEventStarted(player, command, triggerName)
 		player:ChangeState(0); 
 	end
 		
-	player:EndCommand();
+	player:endEvent();
 	
 	--For Opening Tutorial
 	if (player:HasQuest("Man0l0") or player:HasQuest("Man0g0") or player:HasQuest("Man0u0")) then

@@ -247,11 +247,10 @@ namespace FFXIVClassic_Map_Server
 
                             Actor ownerActor = Server.GetStaticActors(eventStart.scriptOwnerActorID);
                             
-                            if (ownerActor != null)           
-                            {
-                                player.GetActor().currentEventOwner = eventStart.scriptOwnerActorID;
-                                player.GetActor().currentEventName = eventStart.triggerName;
-                            }
+                     
+                            player.GetActor().currentEventOwner = eventStart.scriptOwnerActorID;
+                            player.GetActor().currentEventName = eventStart.triggerName;
+                    
 
                             if (ownerActor == null)
                             {

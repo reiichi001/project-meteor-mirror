@@ -16,7 +16,7 @@ function onEventStarted(player, actor, triggerName)
 		player:SendGameMessage(worldMaster, 32503, 0x20);
 	end
 
-	player:EndCommand();
+	player:EndEvent();
 	
 end
 

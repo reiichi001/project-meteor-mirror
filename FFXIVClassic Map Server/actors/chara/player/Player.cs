@@ -1131,7 +1131,19 @@ namespace FFXIVClassic_Map_Server.Actors
             if (owner is Npc)
             {
                 currentEventRunning = ((Npc)owner).GetEventStartCoroutine(this);
-                currentEventRunning.Resume(objects.ToArray());
+
+                if (currentEventRunning != null)
+                {
+                    try
+                    {
+                        currentEventRunning.Resume(objects.ToArray());
+                    }
+                    catch (ScriptRuntimeException e)
+                    {
+                        Program.Log.Error("[LUA] {0}", e.Message);
+                        EndEvent();
+                    }
+                }
             }
             else
             {

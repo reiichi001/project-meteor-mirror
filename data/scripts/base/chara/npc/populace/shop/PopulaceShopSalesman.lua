@@ -29,11 +29,7 @@ finishTalkTurn() - Done at the end.
 
 --]]
 
-function callClientFunction(player, functionName, ...)
-	player:RunEventFunction(functionName, ...);
-	result = coroutine.yield();
-	return result;
-end
+require ("global")
 
 function init(npc)
 	return false, false, 0, 0;	

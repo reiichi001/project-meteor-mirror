@@ -14,6 +14,6 @@ function onEventStarted(player, actor, triggerName, name, arg1, arg2, arg3, acto
 		GetWorldManager():CreateInvitePartyGroup(player, actorId);
 	end
 	
-	player:EndCommand();
+	player:EndEvent();
 	
 end
