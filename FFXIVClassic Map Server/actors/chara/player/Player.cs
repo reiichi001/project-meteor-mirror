@@ -1144,11 +1144,31 @@ namespace FFXIVClassic_Map_Server.Actors
                         EndEvent();
                     }
                 }
+                else
+                {
+                    EndEvent();
+                }
             }
             else
             {
                 currentEventRunning = LuaEngine.DoActorOnEventStarted(this, owner, start);
-                currentEventRunning.Resume(objects.ToArray());
+
+                if (currentEventRunning != null)
+                {
+                    try
+                    {
+                        currentEventRunning.Resume(objects.ToArray());
+                    }
+                    catch (ScriptRuntimeException e)
+                    {
+                        Program.Log.Error("[LUA] {0}", e.Message);
+                        EndEvent();
+                    }
+                }
+                else
+                {
+                    EndEvent();
+                }
             }
                 
         }
@@ -1159,8 +1179,18 @@ namespace FFXIVClassic_Map_Server.Actors
                 return;
 
             if (currentEventRunning.State == CoroutineState.Suspended)
-                currentEventRunning.Resume(LuaUtils.CreateLuaParamObjectList(update.luaParams));
-        }
+            {
+                try
+                {
+                    currentEventRunning.Resume(LuaUtils.CreateLuaParamObjectList(update.luaParams));
+                }
+                catch (ScriptRuntimeException e)
+                {
+                    Program.Log.Error("[LUA] {0}", e.Message);
+                    EndEvent();
+                }
+            }
+        } 
 
         public void KickEvent(Actor actor, string conditionName, params object[] parameters)
         {

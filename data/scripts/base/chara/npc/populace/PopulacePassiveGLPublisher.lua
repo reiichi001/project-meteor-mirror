@@ -19,19 +19,20 @@ confirmDiscardGuildleve(nil, questId)
 askRetryRegionalleve(questId, leveAllowances)
 finishTalkTurn()
 
-Menu Ids:
-
 --]]
+
+require ("global")
 
 function init(npc)
 	return false, false, 0, 0;	
 end
 
 function onEventStarted(player, npc)
-	player:RunEventFunction("talkOfferWelcome", player, 1);
+	callClientFunction(player, "talkOfferWelcome", player, 1);
+	player:EndEvent();
 end
 
 function onEventUpdate(player, npc, step, menuOptionSelected, lsName, lsCrest)
-	--player:RunEventFunction("askOfferQuest", player, 1000);
-	player:EndEvent();
+	--callClientFunction(player, "askOfferQuest", player, 1000);
+	
 end
