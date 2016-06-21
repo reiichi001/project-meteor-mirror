@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using FFXIVClassic.Common;
+using NLog;
+using NLog.Targets;
 
 namespace FFXIVClassic_Map_Server.packets
 {
@@ -155,16 +158,6 @@ namespace FFXIVClassic_Map_Server.packets
                     ConsoleOutputColor.DarkMagenta);
             }
 #endif
-        }
-    }
-
-    public static class LoggerExtensions
-    {
-        public static void ColorDebug(this Logger logger, string message, ConsoleOutputColor color)
-        {
-            var logEvent = new LogEventInfo(LogLevel.Debug, logger.Name, message);
-            logEvent.Properties["color"] = (int) color;
-            logger.Log(logEvent);
         }
     }
 }
