@@ -1,13 +1,7 @@
-function onEventStarted(player, npc)
-	defaultWil = GetStaticActor("DftWil");
-	player:RunEventFunction("delegateEvent", player, defaultWil, "defaultTalkWithYhahamariyo_001", nil, nil, nil);
-	--player:RunEventFunction("delegateEvent", player, defaultWil, "defaultTalkWithYhahamariyo_002", nil, nil, nil);
-	--player:RunEventFunction("delegateEvent", player, defaultWil, "defaultTalkWithYhahamariyo_003", nil, nil, nil);
-	
-end
+require ("global")
 
-function onEventUpdate(player, npc, blah, menuSelect)
-	
-	player:EndEvent();
-	
+function onEventStarted(player, npc)
+    defaultWil = GetStaticActor("DftWil");
+	callClientFunction(player, "delegateEvent", player, defaultWil, "defaultTalkWithYhahamariyo_001", nil, nil, nil);
+	player:endEvent();
 end
