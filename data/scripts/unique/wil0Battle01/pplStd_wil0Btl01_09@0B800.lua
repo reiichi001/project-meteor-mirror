@@ -1,16 +1,8 @@
-require("/quests/man/man0u0")
-
-function init(npc)
-	return "/Chara/Npc/Populace/PopulaceStandard", false, false, false, false, false, npc:GetActorClassId(), false, false, 0, 1, "TEST";	
-end
+require ("global")
+require ("quests/man/man0u0")
 
 function onEventStarted(player, npc, triggerName)
-
+	man0u0Quest = GetStaticActor("Man0u0");	
 	
-end
-
-function onEventUpdate(player, npc)	
-
 	player:EndEvent();
-	
 end

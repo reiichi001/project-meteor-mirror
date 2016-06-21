@@ -1,20 +1,8 @@
-function init(npc)
-	return "/Chara/Npc/Populace/PopulaceStandard", false, false, false, false, false, npc:GetActorClassId(), false, false, 0, 1, "TEST";	
-end
+require ("global")
+require ("quests/man/man0l0")
 
 function onEventStarted(player, npc, triggerName)
-
 	man0l0Quest = GetStaticActor("Man0l0");
-
-	if (triggerName == "talkDefault") then
-		--player:RunEventFunction("delegateEvent", player, man0l0Quest, "processEvent000_9", nil, nil, nil);
-		player:RunEventFunction("delegateEvent", player, man0l0Quest, "processEvent000_14", nil, nil, nil);
-	else
-		player:EndEvent();
-	end
-	
-end
-
-function onEventUpdate(player, npc)	
-	player:EndEvent();
+	callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEvent000_14", nil, nil, nil);
+	player:EndEvent();	
 end

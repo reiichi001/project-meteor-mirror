@@ -1,8 +1,5 @@
-require("/quests/man/man0l0")
-
-function init(npc)
-	return "/Chara/Npc/Populace/PopulaceTutorial", false, false, false, false, false, npc:GetActorClassId(), false, false, 0, 1, "TEST";	
-end
+require ("global")
+require ("quests/man/man0l0")
 
 function onSpawn(player, npc)
 
@@ -21,18 +18,9 @@ function onSpawn(player, npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-
-	if (triggerName == "pushDefault") then
-		man0l0Quest = GetStaticActor("Man0l0");
-		player:RunEventFunction("delegateEvent", player, man0l0Quest, "processEventNewRectAsk", nil);
-	else
-		player:EndEvent();
-	end
+	man0l0Quest = GetStaticActor("Man0l0");
+	choice = callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEventNewRectAsk", nil);	
 	
-end
-
-function onEventUpdate(player, npc, resultId, choice)
-
 	if (resultId == 0x2B9EBC42) then
 		player:EndEvent();
 		player:SetDirector("QuestDirectorMan0l001", true);
@@ -46,10 +34,9 @@ function onEventUpdate(player, npc, resultId, choice)
 	else
 		if (choice == 1) then	
 			man0l0Quest = player:GetQuest("Man0l0");
-			player:RunEventFunction("delegateEvent", player, man0l0Quest, "processEvent000_2", nil, nil, nil, nil);
-		else
-			player:EndEvent();
+			callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEvent000_2", nil, nil, nil, nil);		
 		end
 	end
 	
+	player:EndEvent();
 end

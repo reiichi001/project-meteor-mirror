@@ -2,6 +2,6 @@ require ("global")
 
 function onEventStarted(player, npc)
     defaultWil = GetStaticActor("DftWil");
-	callClientFunction(player, "delegateEvent", player, defaultSea, "defaultTalkWithJenlyns_001", nil, nil, nil);
+	callClientFunction(player, "delegateEvent", player, defaultWil, "defaultTalkWithJenlyns_001", nil, nil, nil);
 	player:endEvent();
 end
