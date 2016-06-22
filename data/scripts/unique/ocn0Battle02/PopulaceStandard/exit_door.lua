@@ -21,7 +21,8 @@ function onEventStarted(player, npc, triggerName)
 	man0l0Quest = GetStaticActor("Man0l0");
 	choice = callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEventNewRectAsk", nil);	
 	
-	if (resultId == 0x2B9EBC42) then
+	if (choice == 1) then
+		callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEvent000_2", nil, nil, nil, nil);
 		player:EndEvent();
 		player:SetDirector("QuestDirectorMan0l001", true);
 		
@@ -30,13 +31,8 @@ function onEventStarted(player, npc, triggerName)
 		player:SendGameMessage(player, worldMaster, 50011, 0x20);	
 
 		GetWorldManager():DoPlayerMoveInZone(player, 9);
-		player:KickEvent(player:GetDirector(), "noticeEvent", true);		
+		player:KickEvent(player:GetDirector(), "noticeEvent", true);
 	else
-		if (choice == 1) then	
-			man0l0Quest = player:GetQuest("Man0l0");
-			callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEvent000_2", nil, nil, nil, nil);		
-		end
-	end
-	
-	player:EndEvent();
+		player:EndEvent();
+	end	
 end

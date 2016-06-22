@@ -6,7 +6,7 @@ function onSpawn(player, npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-	man0u0Quest = GetStaticActor("Man0u0");	
+	man0u0Quest = player:GetQuest("Man0u0");
 	
 	if (man0u0Quest ~= nil) then
 		if (triggerName == "pushDefault") then

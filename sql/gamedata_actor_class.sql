@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 6/19/2016 11:23:44 PM
+Date: 6/21/2016 10:49:37 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -2752,7 +2752,7 @@ INSERT INTO `gamedata_actor_class` VALUES ('1090368', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1090369', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1090370', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1090371', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('1090372', '/Chara/Npc/Populace/PopulaceStandard', '0', '{\r\n  \"talkEventConditions\": [\r\n    {\r\n      \"unknown1\": 4,\r\n      \"unknown2\": 0,\r\n      \"conditionName\": \"talkDefault\"\r\n    }\r\n  ],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('1090372', '/Chara/Npc/Populace/PopulaceStandard', '0', '{\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"pushWithCircleEventConditions\": [\r\n    {\r\n      \"radius\": \"20.0\",\r\n      \"outwards\": \"false\",\r\n      \"silent\": \"true\",\r\n      \"conditionName\": \"pushDefault\"\r\n    }\r\n  ]\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('1090373', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1090374', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1090375', '/Chara/Npc/Populace/PopulaceStandard', '0', '{\r\n  \"talkEventConditions\": [\r\n    {\r\n      \"unknown1\": 4,\r\n      \"unknown2\": 0,\r\n      \"conditionName\": \"talkDefault\"\r\n    }\r\n  ],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
@@ -2764,7 +2764,7 @@ INSERT INTO `gamedata_actor_class` VALUES ('1090380', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1090381', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1090382', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1090383', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('1090384', '/Chara/Npc/Object/OpeningStoperF0B1', '0', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 1,\r\n      \"unknown2\": 0,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": [\r\n    {\r\n	\"conditionName\": \"exit\",\r\n	\"radius\": 40.0,\r\n	\"silent\": true,\r\n	\"outwards\": true\r\n    },\r\n    {\r\n	\"conditionName\": \"caution\",\r\n	\"radius\": 30.0,\r\n	\"silent\": true,\r\n	\"outwards\": true\r\n    }\r\n  ],\r\n  \"pushWithBoxEventConditions\": []\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('1090384', '/Chara/Npc/Object/OpeningStoperF0B1', '0', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 1,\r\n      \"unknown2\": 0,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": [\r\n    {\r\n	\"conditionName\": \"exit\",\r\n	\"radius\": 40.0,\r\n	\"silent\": true,\r\n	\"outwards\": true\r\n    },\r\n    {\r\n	\"conditionName\": \"caution\",\r\n	\"radius\": 30.0,\r\n	\"silent\": true,\r\n	\"outwards\": true\r\n    }\r\n  ]\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('1090385', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1090386', '/Chara/Npc/Populace/PopulaceStandard', '0', '{\r\n  \"talkEventConditions\": [\r\n    {\r\n      \"unknown1\": 4,\r\n      \"unknown2\": 0,\r\n      \"conditionName\": \"talkDefault\"\r\n    }\r\n  ],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('1090387', '/Chara/Npc/Populace/PopulaceStandard', '0', '{\r\n  \"talkEventConditions\": [\r\n    {\r\n      \"unknown1\": 4,\r\n      \"unknown2\": 0,\r\n      \"conditionName\": \"talkDefault\"\r\n    }\r\n  ],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
@@ -3527,7 +3527,7 @@ INSERT INTO `gamedata_actor_class` VALUES ('1280125', '', '4010015', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1280126', '', '4010014', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1280127', '', '4010014', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1290001', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('1290002', '/Chara/Npc/Object/PrivateAreaMasterExit', '0', null);
+INSERT INTO `gamedata_actor_class` VALUES ('1290002', '/Chara/Npc/Object/PrivateAreaMasterExit', '0', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": [\r\n    {\r\n	\"conditionName\": \"exit\",\r\n	\"radius\": 30.0,\r\n	\"silent\": true,\r\n	\"outwards\": true\r\n    },\r\n    {\r\n	\"conditionName\": \"caution\",\r\n	\"radius\": 20.0,\r\n	\"silent\": true,\r\n	\"outwards\": true\r\n    }\r\n  ]\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('1290003', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1290004', '/Chara/Npc/Object/BgKeepout', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1290005', '', '0', null);
@@ -7175,24 +7175,24 @@ INSERT INTO `gamedata_actor_class` VALUES ('5000119', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('5000120', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('5000121', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('5900001', '/Chara/Npc/MapObj/DoorStandard', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
-INSERT INTO `gamedata_actor_class` VALUES ('5900002', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900003', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900004', '', '0', null);
+INSERT INTO `gamedata_actor_class` VALUES ('5900002', '/Chara/Npc/MapObj/DoorStandard', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('5900003', '/Chara/Npc/MapObj/DoorStandard', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('5900004', '/Chara/Npc/MapObj/DoorStandard', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('5900005', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900006', '', '0', null);
+INSERT INTO `gamedata_actor_class` VALUES ('5900006', '/Chara/Npc/MapObj/MapObjOnlyShowHide', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('5900007', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('5900008', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('5900009', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900010', '/Chara/Npc/MapObj/MapObjPortDoor', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900011', '/Chara/Npc/MapObj/MapObjShipPort', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900012', '/Chara/Npc/MapObj/MapObjPortDoor', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900013', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900014', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900015', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900016', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900017', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900018', '', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('5900019', '', '0', null);
+INSERT INTO `gamedata_actor_class` VALUES ('5900010', '/Chara/Npc/MapObj/MapObjPortDoor', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('5900011', '/Chara/Npc/MapObj/MapObjShipPort', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('5900012', '/Chara/Npc/MapObj/MapObjPortDoor', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('5900013', '/Chara/Npc/MapObj/MapObjShipRouteLand', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('5900014', '/Chara/Npc/MapObj/MapObjShipRouteLand', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('5900015', '/Chara/Npc/MapObj/DoorServer', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('5900016', '/Chara/Npc/MapObj/DoorServer', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('5900017', '/Chara/Npc/MapObj/MapObjTutorial', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('5900018', '/Chara/Npc/MapObj/MapObjTutorial', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('5900019', '/Chara/Npc/MapObj/MapObjTutorial', '0', '{  \r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ]\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('5900020', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('5900021', '', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('5900022', '', '0', null);
