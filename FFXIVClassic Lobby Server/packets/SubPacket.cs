@@ -145,7 +145,7 @@ namespace FFXIVClassic_Lobby_Server.packets
         {
 #if DEBUG
             logger.ColorDebug(
-                string.Format("Size:0x{0:X} Opcode:0x{1:X}{2}{3}", header.subpacketSize, header.type,
+                string.Format("Size:0x{0:X} Opcode:0x{1:X}{2}{3}", header.subpacketSize, gameMessage.opcode,
                     Environment.NewLine,
                     Utils.ByteArrayToHex(GetHeaderBytes())), ConsoleOutputColor.DarkRed);
 
