@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using FFXIVClassic.Common;
 using NLog;
 using NLog.Targets;
