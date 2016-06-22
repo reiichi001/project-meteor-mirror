@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 6/21/2016 10:49:44 PM
+Date: 6/21/2016 11:00:17 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -659,4 +659,4 @@ INSERT INTO `server_spawn_locations` VALUES ('625', '5900001', 'guild_lnc', '206
 INSERT INTO `server_spawn_locations` VALUES ('626', '5900001', 'guild_arc', '206', '', '0', '227', '12', '-1264', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('627', '5900001', 'guild_cnj', '206', '', '0', '-325', '8', '-1669', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('628', '5900004', 'door1', '184', '', '0', '-14', '196', '112', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('629', '5900004', 'door2', '184', '\r\n', '0', '12', '196', '184', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('629', '5900004', 'door2', '184', '', '0', '12', '196', '184', '0', '0', '0', null);
