@@ -601,6 +601,21 @@ namespace FFXIVClassic_Map_Server.Actors
                 playerSession.QueuePacket(subpacket, true, false);
         }
 
+        public void SendPacket(string path)
+        {
+            try
+            {
+                BasePacket packet = new BasePacket(path);
+
+                packet.ReplaceActorID(actorId);
+                QueuePacket(packet);
+            }
+            catch (Exception e)
+            {
+                this.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "[SendPacket]", "Unable to send packet.");
+            }
+        }
+
         public void BroadcastPacket(SubPacket packet, bool sendToSelf)
         {
             if (sendToSelf)            
@@ -747,26 +762,6 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             //SubPacket worldMasterMessage = 
             //zone.BroadcastPacketAroundActor(this, worldMasterMessage);
-        }
-
-        public void ChangeProperty(uint id, uint value, string target)
-        {
-            SetActorPropetyPacket ChangeProperty = new SetActorPropetyPacket(target);
-
-            ChangeProperty.SetTarget(target);
-            ChangeProperty.AddInt(id, value);
-            ChangeProperty.AddTarget();
-
-          /*foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-            {
-                SubPacket ChangePropertyPacket = ChangeProperty.BuildPacket((entry.Value.actorID), (entry.Value.actorID));
-
-                BasePacket packet = BasePacket.CreatePacket(ChangePropertyPacket, true, false);
-                packet.DebugPrintPacket();
-
-                entry.Value.QueuePacket(packet);
-            }
-          */
         }
 
         public void GraphicChange(uint slot, uint graphicId)

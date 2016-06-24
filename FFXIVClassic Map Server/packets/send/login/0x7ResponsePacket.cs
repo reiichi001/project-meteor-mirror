@@ -5,7 +5,7 @@ namespace FFXIVClassic_Map_Server.packets.send.login
 {
     class Login0x7ResponsePacket
     {
-        public static BasePacket BuildPacket(uint actorID, uint time)
+        public static BasePacket BuildPacket(uint actorID, uint time, uint type)
         {
             byte[] data = new byte[0x18];
 
@@ -16,7 +16,7 @@ namespace FFXIVClassic_Map_Server.packets.send.login
                     try
                     {
                         binWriter.Write((short)0x18);
-                        binWriter.Write((short)0x8);
+                        binWriter.Write((short)type);
                         binWriter.Write((uint)0);
                         binWriter.Write((uint)0);
                         binWriter.Write((uint)0xFFFFFD7F);

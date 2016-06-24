@@ -112,7 +112,7 @@ namespace FFXIVClassic_Map_Server
 
                     if (packet.header.connectionType == BasePacket.TYPE_ZONE)
                     {
-                        while (!mPlayers.ContainsKey(client.owner))
+                        while (mPlayers != null && !mPlayers.ContainsKey(client.owner))
                         { }
                         player = mPlayers[client.owner];
                     }
@@ -127,9 +127,9 @@ namespace FFXIVClassic_Map_Server
                     player.SetConnection(packet.header.connectionType, client);
 
                     if (packet.header.connectionType == BasePacket.TYPE_ZONE)
-                        Program.Log.Debug("Got {0} connection for ActorID {1} @ {2}.", "zone", actorID, client.GetAddress());
+                        Program.Log.Info("Got {0} connection for ActorID {1} @ {2}.", "zone", actorID, client.GetAddress());
                     else if (packet.header.connectionType == BasePacket.TYPE_CHAT)
-                        Program.Log.Debug("Got {0} connection for ActorID {1} @ {2}.", "chat", actorID, client.GetAddress());
+                        Program.Log.Info("Got {0} connection for ActorID {1} @ {2}.", "chat", actorID, client.GetAddress());
 
                     //Create player actor
                     reply1.DebugPrintPacket();
@@ -139,12 +139,14 @@ namespace FFXIVClassic_Map_Server
                 }
                 else if (subpacket.header.type == 0x07)
                 {
-                    BasePacket init = Login0x7ResponsePacket.BuildPacket(BitConverter.ToUInt32(packet.data, 0x10), Utils.UnixTimeStampUTC());
+                    BasePacket init = Login0x7ResponsePacket.BuildPacket(BitConverter.ToUInt32(packet.data, 0x10), Utils.UnixTimeStampUTC(), 0x08);
                     //client.QueuePacket(init);
                 }
                 else if (subpacket.header.type == 0x08)
                 {
                     //Response, client's current [actorID][time]
+                    //BasePacket init = Login0x7ResponsePacket.BuildPacket(BitConverter.ToUInt32(packet.data, 0x10), Utils.UnixTimeStampUTC(), 0x07);
+                    //client.QueuePacket(init);
                     packet.DebugPrintPacket();
                 }
                 else if (subpacket.header.type == 0x03)
@@ -154,7 +156,7 @@ namespace FFXIVClassic_Map_Server
                     if(mPlayers.ContainsKey(client.owner))
                         player = mPlayers[client.owner];
 
-                    if (player == null)
+                    if (player == null || !player.IsClientConnectionsReady())
                         return;
 
                     //Normal Game Opcode

@@ -70,7 +70,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     String input = Console.ReadLine();
                     Log.Info("[Console Input] " + input);
-                    cp.DoCommand(input, null);  
+                    cp.DoCommand(input, null);
                 }
             }
 

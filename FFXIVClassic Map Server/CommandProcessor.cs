@@ -35,25 +35,6 @@ namespace FFXIVClassic_Map_Server
             mConnectedPlayerList = playerList;
         }
 
-        public void SendPacket(ConnectedPlayer client, string path)
-        {
-            BasePacket packet = new BasePacket(path);
-
-            if (client != null)
-            {
-                packet.ReplaceActorID(client.actorID);
-                client.QueuePacket(packet);
-            }
-            else
-            {
-                foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-                {
-                    packet.ReplaceActorID(entry.Value.actorID);
-                    entry.Value.QueuePacket(packet);
-                }
-            }
-        }
-
         public void ChangeProperty(uint id, uint value, string target)
         {
             SetActorPropetyPacket ChangeProperty = new SetActorPropetyPacket(target);
@@ -87,7 +68,7 @@ namespace FFXIVClassic_Map_Server
 
         internal bool DoCommand(string input, ConnectedPlayer client)
         {
-            if (!input.Any())
+            if (!input.Any() || input.Equals(""))
                 return false;
 
             input.Trim();
@@ -102,7 +83,7 @@ namespace FFXIVClassic_Map_Server
 
             split = split.Select(temp => temp.ToLower()).ToArray(); // Ignore case on commands
 
-            var cmd = split?.ElementAt(0);
+            var cmd = split[0];
 
             if (cmd.Any())
             {
@@ -138,6 +119,8 @@ namespace FFXIVClassic_Map_Server
             if (split.Length >= 1)
             {
             
+                // TODO: reloadzones
+
             #region !reloaditems
             if (split[0].Equals("reloaditems"))
                 {
@@ -148,24 +131,6 @@ namespace FFXIVClassic_Map_Server
                     Program.Log.Info(String.Format("Loaded {0} items.", gamedataItems.Count));
                     SendMessage(client, String.Format("Loaded {0} items.", gamedataItems.Count));
                     return true;
-                }
-                #endregion
-
-                #region !sendpacket
-                else if (split[0].Equals("sendpacket"))
-                {
-                    if (split.Length < 2)
-                        return false;
-
-                    try
-                    {
-                        SendPacket(client, "./packets/" + split[1]);
-                        return true;
-                    }
-                    catch (Exception e)
-                    {
-                        Program.Log.Error("Could not load packet: " + e);
-                    }
                 }
                 #endregion
 

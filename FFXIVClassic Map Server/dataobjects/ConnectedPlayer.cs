@@ -71,7 +71,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void QueuePacket(SubPacket subPacket, bool isAuthed, bool isEncrypted)
         {
-                zoneConnection.QueuePacket(subPacket, isAuthed, isEncrypted);
+            zoneConnection.QueuePacket(subPacket, isAuthed, isEncrypted);
         }
 
         public Player GetActor()
@@ -97,7 +97,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         }
 
         public void UpdatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
-        {            
+        {
             playerActor.oldPositionX = playerActor.positionX;
             playerActor.oldPositionY = playerActor.positionY;
             playerActor.oldPositionZ = playerActor.positionZ;
