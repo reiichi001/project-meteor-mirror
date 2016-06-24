@@ -1,15 +1,14 @@
+require ("global")
+
 function onEventStarted(player, npc)
 	defaultSea = GetStaticActor("DftSea");
-	player:RunEventFunction("delegateEvent", player, defaultSea, "defaultTalkWithInn_Desk", nil, nil, nil);
+	choice = callClientFunction(player, "delegateEvent", player, defaultSea, "defaultTalkWithInn_Desk", nil, nil, nil);
 	
-end
-
-function onEventUpdate(player, npc, blah, menuSelect)
-
-	if (menuSelect == 1) then
-		GetWorldManager():DoZoneChange(player, 12);
+	if (choice == 1) then
+		GetWorldManager():DoZoneChange(player, 13);
+	elseif (choice == 2) then
+		--Do Set Homepoint
 	end
 	
-	player:EndEvent();
-	
+	player:EndEvent();	
 end

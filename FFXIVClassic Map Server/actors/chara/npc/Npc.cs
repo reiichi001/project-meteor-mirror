@@ -181,6 +181,11 @@ namespace FFXIVClassic_Map_Server.Actors
             return BasePacket.CreatePacket(propPacketUtil.Done(), true, false);
         }
 
+        public string GetUniqueId()
+        {
+            return uniqueIdentifier;
+        }
+
         public uint GetActorClassId()
         {
             return actorClassId;
@@ -296,7 +301,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public List<LuaParam> DoActorInit(Player player)
         {
-            Script parent = null, child = null;
+            LuaScript parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
@@ -322,45 +327,37 @@ namespace FFXIVClassic_Map_Server.Actors
             return lparams;          
         }
 
-        public void DoEventStart(Player player, EventStartPacket eventStart)
+        public Coroutine GetEventStartCoroutine(Player player)
         {
-            Script parent = null, child = null;
+            LuaScript parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
             if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
                 child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
-            if (parent == null)
+            if (parent == null && child == null)
             {
                 LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
-                return;
+                return null;
             }
 
-            //Have to do this to combine LuaParams
-            List<Object> objects = new List<Object>();
-            objects.Add(player);
-            objects.Add(this);
-            objects.Add(eventStart.triggerName);
-
-            if (eventStart.luaParams != null)
-                objects.AddRange(LuaUtils.CreateLuaParamObjectList(eventStart.luaParams));
-
             //Run Script
-            DynValue result;
+            Coroutine coroutine;            
 
             if (child != null && !child.Globals.Get("onEventStarted").IsNil())
-                result = child.Call(child.Globals["onEventStarted"], objects.ToArray());
+                coroutine = child.CreateCoroutine(child.Globals["onEventStarted"]).Coroutine;
             else if (!parent.Globals.Get("onEventStarted").IsNil())
-                result = parent.Call(parent.Globals["onEventStarted"], objects.ToArray());
+                coroutine = parent.CreateCoroutine(parent.Globals["onEventStarted"]).Coroutine;
             else
-                return;
+                return null;
 
+            return coroutine;
         }
 
         public void DoEventUpdate(Player player, EventUpdatePacket eventUpdate)
         {
-            Script parent = null, child = null;
+            LuaScript parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
@@ -394,7 +391,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         internal void DoOnActorSpawn(Player player)
         {
-            Script parent = null, child = null;
+           LuaScript parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");

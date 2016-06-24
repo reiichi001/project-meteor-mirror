@@ -15,6 +15,8 @@ using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.utils;
 using System;
 using System.Collections.Generic;
+using MoonSharp.Interpreter;
+using FFXIVClassic_Map_Server.packets.receive.events;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -80,10 +82,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint currentEventOwner = 0;
         public string currentEventName = "";
 
-        public uint currentCommand = 0;
-        public string currentCommandName = "";
-        
-        public uint eventMenuId = 0;
+        public Coroutine currentEventRunning;
 
         //Player Info
         public uint[] timers = new uint[20];
@@ -1133,6 +1132,81 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePacket(spacket);
         }
 
+        public void StartEvent(Actor owner, EventStartPacket start)
+        {
+            //Have to do this to combine LuaParams
+            List<Object> objects = new List<Object>();
+            objects.Add(this);
+            objects.Add(owner);
+            objects.Add(start.triggerName);
+
+            if (start.luaParams != null)
+                objects.AddRange(LuaUtils.CreateLuaParamObjectList(start.luaParams));
+
+            if (owner is Npc)
+            {
+                currentEventRunning = ((Npc)owner).GetEventStartCoroutine(this);
+
+                if (currentEventRunning != null)
+                {
+                    try
+                    {
+                        currentEventRunning.Resume(objects.ToArray());
+                    }
+                    catch (ScriptRuntimeException e)
+                    {
+                        Program.Log.Error("[LUA] {0}", e.Message);
+                        EndEvent();
+                    }
+                }
+                else
+                {
+                    EndEvent();
+                }
+            }
+            else
+            {
+                currentEventRunning = LuaEngine.DoActorOnEventStarted(this, owner, start);
+
+                if (currentEventRunning != null)
+                {
+                    try
+                    {
+                        currentEventRunning.Resume(objects.ToArray());
+                    }
+                    catch (ScriptRuntimeException e)
+                    {
+                        Program.Log.Error("[LUA] {0}", e.Message);
+                        EndEvent();
+                    }
+                }
+                else
+                {
+                    EndEvent();
+                }
+            }
+                
+        }
+
+        public void UpdateEvent(EventUpdatePacket update)
+        {
+            if (currentEventRunning == null)
+                return;
+
+            if (currentEventRunning.State == CoroutineState.Suspended)
+            {
+                try
+                {
+                    currentEventRunning.Resume(LuaUtils.CreateLuaParamObjectList(update.luaParams));
+                }
+                catch (ScriptRuntimeException e)
+                {
+                    Program.Log.Error("[LUA] {0}", e.Message);
+                    EndEvent();
+                }
+            }
+        } 
+
         public void KickEvent(Actor actor, string conditionName, params object[] parameters)
         {
             if (actor == null)
@@ -1165,29 +1239,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
             currentEventOwner = 0;
             currentEventName = "";
-            eventMenuId = 0;
+            currentEventRunning = null;
         }
-
-        public void EndCommand()
-        {
-            SubPacket p = EndEventPacket.BuildPacket(actorId, currentCommand, currentCommandName);
-            p.DebugPrintSubPacket();
-            QueuePacket(p);
-
-            currentCommand = 0;
-            currentCommandName = "";
-        }
-
-        public void SetCurrentMenuId(uint id)
-        {
-            eventMenuId = id;
-        }
-
-        public uint GetCurrentMenuId()
-        {
-            return eventMenuId;
-        }
-
+        
         public void SendInstanceUpdate()
         {
            

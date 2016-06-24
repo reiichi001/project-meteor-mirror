@@ -1,28 +1,56 @@
+--[[
+
+PopulaceLinkshellManager Script
+
+Functions:
+
+eventTalkStep1(noLinkshellActive) - Says intro. If noLinkshellActive = true, say newbie stuff.
+eventTalkStep2(noLinkshellActive) - Shows menu, if noLinkshellActive = true, only give ability to make linkshell.
+eventTalkStepMakeupDone() - Confirm when creating LS
+eventTalkStepModifyDone() - Confirm when modding LS
+eventTalkStepBreakDone() - Confirm when deleting LS
+
+--]]
+
+require ("global")
+
 function init(npc)
 	return false, false, 0, 0;
 end
 
-function onEventStarted(player, npc)
-	isNew = false;
-	player:RunEventFunction("eventTalkStep1", isNew);
+function createLinkshell(name, crest)
+	
 end
 
-function onEventUpdate(player, npc, step, menuOptionSelected, lsName, lsCrest)
-
-	if (menuOptionSelected == nil) then
-		player:EndEvent();
-		return;
-	end
-
-	isNew = false;
-	if (menuOptionSelected == 1) then
-		player:RunEventFunction("eventTalkStep2", isNew);
-	elseif (menuOptionSelected == 10) then
-		player:EndEvent();
-		return;
-	elseif (menuOptionSelected == 3) then
-		--createLinkshell
-		player:RunEventFunction("eventTalkStepMakeupDone", isNew);
-	end	
+function modifyLinkshell(name, crest)
 	
+end
+
+function disbandLinkshell(name, crest)
+	
+end
+
+function onEventStarted(player, npc, triggerName)
+
+	hasNoActiveLS = false;
+	
+	callClientFunction(player, "eventTalkStep1", hasNoActiveLS);
+	command, lsName, crestId = callClientFunction(player, "eventTalkStep2", hasNoActiveLS);
+	
+	--Create
+	if (result == 3) then
+		createLinkshell(lsName, crestId);
+		callClientFunction(player, "eventTalkStepMakeupDone");		
+	--Modify
+	elseif (result == 1) then
+		modifyLinkshell(lsName, crestId);
+		callClientFunction(player, "eventTalkStepModifyDone");		
+	--Disband
+	elseif (result == 5) then
+		disbandLinkshell(lsName, crestId);
+		callClientFunction(player, "eventTalkStepBreakDone");	
+	end
+	
+	player:endEvent();
+		
 end

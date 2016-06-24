@@ -1,3 +1,5 @@
+require ("global")
+
 function init(npc)
 	return false, false, 0, 0;	
 end
@@ -44,18 +46,18 @@ function onEventStarted(player, npc)
 		saySheetId = 19;
 	end
 
-	player:RunEventFunction("welcomeTalk", nil, saySheetId, player);
-end
-
-function onEventUpdate(player, npc, step, menuOptionSelected)
+	callClientFunction(player, "welcomeTalk", nil, saySheetId, player);
 	
-	--player:RunEventFunction("cashbackTalkCommand", 22004, 22004, 22004, 22004, 22004, 22004, 22004, 22004, 22004, 22004, 22004); --Refund Abilities???
-	--player:RunEventFunction("cashbackTalk", 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1); --Refund items???
-	
-	if (menuOptionSelected == 4) then
-		player:EndEvent();
-	else
-		player:RunEventFunction("selectMode", nil, npc:GetActorClassId(), false, 1000001); --Step 2, state your business
+	while (true) do	
+		choice = callClientFunction(player, "selectMode", nil, npc:GetActorClassId(), false, 1000001); --Step 2, state your business
+		
+		if (choice == 3) then
+			
+		elseif (choice == 4) then
+			player:EndEvent();
+			break;
+		end
+		
 	end
 	
 end

@@ -51,10 +51,13 @@ INVENTORY_KEYITEMS = 0x0064; --Max 0x500
 INVENTORY_EQUIPMENT = 0x00FE; --Max 0x23
 INVENTORY_EQUIPMENT_OTHERPLAYER = 0x00F9; --Max 0x23
 
+--UTILS
 
-
-
-
+function callClientFunction(player, functionName, ...)
+	player:RunEventFunction(functionName, ...);
+	result = coroutine.yield();
+	return result;
+end
 
 function printf(s, ...)
     if ... then

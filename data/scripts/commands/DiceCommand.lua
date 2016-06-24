@@ -15,7 +15,7 @@ function onEventStarted(player, actor, triggerName, maxNumber)
 	worldMaster = GetWorldMaster();
 	player:SendGameMessage(player, worldMaster, 25342, 0x20, result, maxNumber);
 				
-	player:EndCommand();
+	player:EndEvent();
 	
 end
 

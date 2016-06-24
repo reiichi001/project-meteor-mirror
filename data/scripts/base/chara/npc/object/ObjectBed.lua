@@ -1,25 +1,21 @@
+require ("global")
 
 function init(npc)
 	return false, false, 0, 0;	
 end
 
 function onEventStarted(player, npc, triggerName)
-	player:RunEventFunction("askLogout", player);
-end
 
-function onEventUpdate(player, npc, eventStep, menuOptionSelected)	
+	choice = callClientFunction(player, "askLogout", player);
 	
-	if (menuOptionSelected == 1) then 
-		player:EndEvent();
-		return;
-	elseif (menuOptionSelected == 2) then
+	if (choice == 2) then
 		player:QuitGame();
-	elseif (menuOptionSelected == 3) then
+	elseif (choice == 3) then
 		player:Logout();
-	elseif (menuOptionSelected == 4) then
+	elseif (choice == 4) then
 		player:SendMessage(33, "", "Heck the bed");
-	end 	
+	end
 	
 	player:EndEvent();
-		
+	
 end

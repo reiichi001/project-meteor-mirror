@@ -8,22 +8,42 @@ eventRegion(numAnima)
 eventAetheryte(region, animaCost1, animaCost2, animaCost3, animaCost4, animaCost5, animaCost6)
 eventConfirm(isReturn, isInBattle, cityReturnNum, 138821, forceAskReturnOnly)
 
-Menu Ids:
-
-Region Menu:	0
-Aetheryte Menu:	1
-Confirm Menu:	2
-
 --]]
 
+require ("global")
+
+function doTeleport(region, aetheryte)
+end
+
 function onEventStarted(player, actor, triggerName, isTeleport)
-	if (isTeleport == 0) then
-		player:SetCurrentMenuId(0);
-		player:RunEventFunction("delegateCommand", actor, "eventRegion", 100);
+	if (isTeleport == 0) then		
+		while (true) do
+			regionChoice = callClientFunction(player, "delegateCommand", actor, "eventRegion", 100);
+			
+			if (regionChoice == nil) then break	end
+		
+			while (true) do
+				aetheryteChoice = callClientFunction(player, "delegateCommand", actor, "eventAetheryte", regionChoice, 2, 2, 2, 4, 4, 4);
+				
+				if (aetheryteChoice == nil) then break end
+				
+				confirmChoice = callClientFunction(player, "delegateCommand", actor, "eventConfirm", false, false, 1, 138824, false);
+				
+				if (confirmChoice == 1) then
+					doTeleport(regionChoice, aetheryteChoice);								
+				end
+				
+				player:endEvent();
+				return;
+								
+			end
+			
+		end
 	else
-		player:SetCurrentMenuId(2);
-		player:RunEventFunction("delegateCommand", actor, "eventConfirm", true, false, 1, 0x138824, false);
-	end		
+		callClientFunction(player, "delegateCommand", actor, "eventConfirm", true, false, 1, 0x138824, false);
+	end	
+
+	player:endEvent();
 end
 
 function onEventUpdate(player, actor, step, arg1)

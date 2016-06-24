@@ -36,7 +36,7 @@ namespace FFXIVClassic_Map_Server.Actors
         protected Dictionary<uint, Actor> mActorList = new Dictionary<uint, Actor>();
         protected List<Actor>[,] mActorBlock;
 
-        Script areaScript;
+        LuaScript areaScript;
 
         public Area(uint id, string zoneName, ushort regionId, string className, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
             : base(id)

@@ -57,14 +57,8 @@ namespace FFXIVClassic_Map_Server.lua
             return null;
         }
 
-        public static void DoActorOnEventStarted(Player player, Actor target, EventStartPacket eventStart)
-        {
-            if (target is Npc)
-            {
-                ((Npc)target).DoEventStart(player, eventStart);
-                return;
-            }
-
+        public static Coroutine DoActorOnEventStarted(Player player, Actor target, EventStartPacket eventStart)
+        {           
             string luaPath;
 
             if (target is Command)
@@ -83,24 +77,17 @@ namespace FFXIVClassic_Map_Server.lua
                 LuaScript script = LoadScript(luaPath);
 
                 if (script == null)
-                    return;
+                    return null;
 
-                //Have to Do this to combine LuaParams
-                List<Object> objects = new List<Object>();
-                objects.Add(player);
-                objects.Add(target);
-                objects.Add(eventStart.triggerName);
-
-                if (eventStart.luaParams != null)
-                    objects.AddRange(LuaUtils.CreateLuaParamObjectList(eventStart.luaParams));
-
-                //Run Script
                 if (!script.Globals.Get("onEventStarted").IsNil())
-                    script.Call(script.Globals["onEventStarted"], objects.ToArray());
+                    return script.CreateCoroutine(script.Globals["onEventStarted"]).Coroutine;
+                else
+                    return null;
             }
             else
             {
                 SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+                return null;
             }
 
         }

@@ -1,5 +1,7 @@
+require ("global")
 
 function onEventStarted(player, npc)
 	defaultSea = GetStaticActor("DftSea");
-	player:RunEventFunction("delegateEvent", player, defaultSea, "defaultTalkWithGnibnpha_001", nil, nil, nil);
+	callClientFunction(player, "delegateEvent", player, defaultSea, "defaultTalkWithGnibnpha_001", nil, nil, nil);
+	player:endEvent();
 end

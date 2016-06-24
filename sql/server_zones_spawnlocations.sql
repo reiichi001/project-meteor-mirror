@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 6/12/2016 9:25:16 PM
+Date: 6/21/2016 11:00:04 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -31,7 +31,7 @@ INSERT INTO `server_zones_spawnlocations` VALUES ('2', '133', null, '15', '-444.
 INSERT INTO `server_zones_spawnlocations` VALUES ('3', '175', null, '15', '-110.157', '202', '171.345', '0');
 INSERT INTO `server_zones_spawnlocations` VALUES ('4', '193', null, '15', '0.016', '10.35', '-36.91', '0.025');
 INSERT INTO `server_zones_spawnlocations` VALUES ('5', '166', null, '15', '356.09', '3.74', '-701.62', '-1.4');
-INSERT INTO `server_zones_spawnlocations` VALUES ('6', '175', 'PrivateAreaMasterPast', '15', '12.63', '196.05', '131.01', '-1.34');
+INSERT INTO `server_zones_spawnlocations` VALUES ('6', '184', null, '15', '12.63', '196.05', '131.01', '-1.34');
 INSERT INTO `server_zones_spawnlocations` VALUES ('7', '128', null, '15', '-8.48', '45.36', '139.5', '2.02');
 INSERT INTO `server_zones_spawnlocations` VALUES ('8', '230', 'PrivateAreaMasterPast', '15', '-838.1', '6', '231.94', '1.1');
 INSERT INTO `server_zones_spawnlocations` VALUES ('9', '193', null, '16', '-5', '16.35', '6', '0.5');
