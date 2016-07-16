@@ -419,6 +419,8 @@ namespace FFXIVClassic_Map_Server
                             player.oldRotation = player.rotation = reader.GetFloat(4);
                             player.currentMainState = reader.GetUInt16(5);
                             player.zoneId = reader.GetUInt32(6);
+                            player.isZoning = true;
+                            player.zone = Server.GetWorldManager().GetZone(player.zoneId);
                             player.gcCurrent = reader.GetByte(7);
                             player.gcRankLimsa = reader.GetByte(8);
                             player.gcRankGridania = reader.GetByte(9);

@@ -1,37 +1,40 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using FFXIVClassic.Common;
+using NLog;
+using NLog.Targets;
 
 namespace FFXIVClassic_Map_Server.packets
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct SubPacketHeader
     {
-        public ushort       subpacketSize;
-        public ushort       type;
-        public uint         sourceId; 
-        public uint         targetId;
-        public uint         unknown1;
+        public ushort subpacketSize;
+        public ushort type;
+        public uint sourceId;
+        public uint targetId;
+        public uint unknown1;
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct GameMessageHeader
     {
-        public ushort       unknown4; //Always 0x14
-        public ushort       opcode;
-        public uint         unknown5; 
-        public uint         timestamp;
-        public uint         unknown6;
+        public ushort unknown4; //Always 0x14
+        public ushort opcode;
+        public uint unknown5;
+        public uint timestamp;
+        public uint unknown6;
     }
 
     public class SubPacket
     {
         public const int SUBPACKET_SIZE = 0x10;
         public const int GAMEMESSAGE_SIZE = 0x10;
-
-        public SubPacketHeader  header;
+        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
+        public byte[] data;
         public GameMessageHeader gameMessage;
-        public byte[]           data;
+
+        public SubPacketHeader header;
 
         public unsafe SubPacket(byte[] bytes, ref int offset)
         {
@@ -40,14 +43,15 @@ namespace FFXIVClassic_Map_Server.packets
 
             fixed (byte* pdata = &bytes[offset])
             {
-                header = (SubPacketHeader)Marshal.PtrToStructure(new IntPtr(pdata), typeof(SubPacketHeader));
+                header = (SubPacketHeader) Marshal.PtrToStructure(new IntPtr(pdata), typeof(SubPacketHeader));
             }
 
             if (header.type == 0x3)
             {
                 fixed (byte* pdata = &bytes[offset + SUBPACKET_SIZE])
                 {
-                    gameMessage = (GameMessageHeader)Marshal.PtrToStructure(new IntPtr(pdata), typeof(GameMessageHeader));
+                    gameMessage =
+                        (GameMessageHeader) Marshal.PtrToStructure(new IntPtr(pdata), typeof(GameMessageHeader));
                 }
             }
 
@@ -70,8 +74,8 @@ namespace FFXIVClassic_Map_Server.packets
 
         public SubPacket(ushort opcode, uint sourceId, uint targetId, byte[] data)
         {
-            this.header = new SubPacketHeader();
-            this.gameMessage = new GameMessageHeader();
+            header = new SubPacketHeader();
+            gameMessage = new GameMessageHeader();
 
             gameMessage.opcode = opcode;
             header.sourceId = sourceId;
@@ -87,13 +91,13 @@ namespace FFXIVClassic_Map_Server.packets
 
             this.data = data;
 
-            header.subpacketSize = (ushort)(SUBPACKET_SIZE + GAMEMESSAGE_SIZE + data.Length);
+            header.subpacketSize = (ushort) (SUBPACKET_SIZE + GAMEMESSAGE_SIZE + data.Length);
         }
 
         public SubPacket(SubPacket original, uint newTargetId)
         {
-            this.header = new SubPacketHeader();
-            this.gameMessage = original.gameMessage;
+            header = new SubPacketHeader();
+            gameMessage = original.gameMessage;
             header.subpacketSize = original.header.subpacketSize;
             header.type = original.header.type;
             header.sourceId = original.header.sourceId;
@@ -103,10 +107,10 @@ namespace FFXIVClassic_Map_Server.packets
 
         public byte[] GetHeaderBytes()
         {
-            int size = Marshal.SizeOf(header);
-            byte[] arr = new byte[size];
+            var size = Marshal.SizeOf(header);
+            var arr = new byte[size];
 
-            IntPtr ptr = Marshal.AllocHGlobal(size);
+            var ptr = Marshal.AllocHGlobal(size);
             Marshal.StructureToPtr(header, ptr, true);
             Marshal.Copy(ptr, arr, 0, size);
             Marshal.FreeHGlobal(ptr);
@@ -115,10 +119,10 @@ namespace FFXIVClassic_Map_Server.packets
 
         public byte[] GetGameMessageBytes()
         {
-            int size = Marshal.SizeOf(gameMessage);
-            byte[] arr = new byte[size];
+            var size = Marshal.SizeOf(gameMessage);
+            var arr = new byte[size];
 
-            IntPtr ptr = Marshal.AllocHGlobal(size);
+            var ptr = Marshal.AllocHGlobal(size);
             Marshal.StructureToPtr(gameMessage, ptr, true);
             Marshal.Copy(ptr, arr, 0, size);
             Marshal.FreeHGlobal(ptr);
@@ -127,7 +131,7 @@ namespace FFXIVClassic_Map_Server.packets
 
         public byte[] GetBytes()
         {
-            byte[] outBytes = new byte[header.subpacketSize];
+            var outBytes = new byte[header.subpacketSize];
             Array.Copy(GetHeaderBytes(), 0, outBytes, 0, SUBPACKET_SIZE);
 
             if (header.type == 0x3)
@@ -140,23 +144,20 @@ namespace FFXIVClassic_Map_Server.packets
         public void DebugPrintSubPacket()
         {
 #if DEBUG
-            // todo: create new target for colourful packet logging
-            //Console.BackgroundColor = ConsoleColor.DarkRed;
+            logger.ColorDebug(
+                string.Format("Size:0x{0:X} Opcode:0x{1:X}{2}{3}", header.subpacketSize, gameMessage.opcode,
+                    Environment.NewLine,
+                    Utils.ByteArrayToHex(GetHeaderBytes())), ConsoleOutputColor.DarkRed);
 
-            Program.Log.Debug("Size: 0x{0:X}{1}{2}", header.subpacketSize, Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes()));
-            
             if (header.type == 0x03)
             {
-                Program.Log.Debug("Opcode: 0x{0:X}{1}{2}", gameMessage.opcode, Environment.NewLine, Utils.ByteArrayToHex(GetGameMessageBytes(), SUBPACKET_SIZE));
+                logger.ColorDebug(Utils.ByteArrayToHex(GetGameMessageBytes(), SUBPACKET_SIZE),
+                    ConsoleOutputColor.DarkRed);
 
-                //Console.BackgroundColor = ConsoleColor.DarkMagenta;
-
-                Program.Log.Debug("Data: {0}{1}", Environment.NewLine, Utils.ByteArrayToHex(data, SUBPACKET_SIZE + GAMEMESSAGE_SIZE));
+                logger.ColorDebug(Utils.ByteArrayToHex(data, SUBPACKET_SIZE + GAMEMESSAGE_SIZE),
+                    ConsoleOutputColor.DarkMagenta);
             }
-
-            //Console.BackgroundColor = ConsoleColor.Black;
 #endif
         }
-
     }
 }

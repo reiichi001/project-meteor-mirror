@@ -20,9 +20,7 @@ namespace FFXIVClassic_Lobby_Server
             TextWriterTraceListener myWriter = new TextWriterTraceListener(System.Console.Out);
             Debug.Listeners.Add(myWriter);
 #endif
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("--------FFXIV 1.0 Lobby Server--------");
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Program.Log.Info("--------FFXIV 1.0 Lobby Server--------");
 
             bool startServer = true;
 
@@ -31,7 +29,7 @@ namespace FFXIVClassic_Lobby_Server
                 startServer = false;
             
             //Test DB Connection
-            Program.Log.Info("Testing DB connection to \"{0}\"", ConfigConstants.DATABASE_HOST);
+            Program.Log.Info("Testing DB connection to \"{0}\"... ", ConfigConstants.DATABASE_HOST);
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try

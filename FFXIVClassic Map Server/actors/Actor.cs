@@ -11,7 +11,7 @@ using FFXIVClassic_Map_Server.actors.area;
 namespace FFXIVClassic_Map_Server.Actors
 {
     class Actor
-    {               
+    {
         public uint actorId;
         public string actorName;
 
@@ -58,12 +58,12 @@ namespace FFXIVClassic_Map_Server.Actors
         public SubPacket CreateAddActorPacket(uint playerActorId, byte val)
         {
             return AddActorPacket.BuildPacket(actorId, playerActorId, val);
-        } 
+        }
 
         public SubPacket CreateNamePacket(uint playerActorId)
         {
             return SetActorNamePacket.BuildPacket(actorId, playerActorId, displayNameId, displayNameId == 0xFFFFFFFF | displayNameId == 0x0 ? customDisplayName : "");
-        }        
+        }
 
         public SubPacket CreateSpeedPacket(uint playerActorId)
         {
@@ -95,10 +95,10 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             SubPacket spawnPacket;
 
-                spawnPacket = SetActorPositionPacket.BuildPacket(actorId, playerActorId, 0xFFFFFFFF, positionX, positionY, positionZ, rotation, spawnType, false);
-       
+            spawnPacket = SetActorPositionPacket.BuildPacket(actorId, playerActorId, 0xFFFFFFFF, positionX, positionY, positionZ, rotation, spawnType, false);
+
             //return SetActorPositionPacket.BuildPacket(actorId, playerActorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
-            
+
             spawnPacket.DebugPrintSubPacket();
 
             return spawnPacket;
@@ -124,8 +124,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (eventConditions.talkEventConditions != null)
             {
-                foreach (EventList.TalkEventCondition condition in eventConditions.talkEventConditions)                
-                    subpackets.Add(SetTalkEventCondition.BuildPacket(playerActorId, actorId, condition));                
+                foreach (EventList.TalkEventCondition condition in eventConditions.talkEventConditions)
+                    subpackets.Add(SetTalkEventCondition.BuildPacket(playerActorId, actorId, condition));
             }
 
             if (eventConditions.noticeEventConditions != null)
@@ -171,8 +171,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (eventConditions.talkEventConditions != null)
             {
-                foreach (EventList.TalkEventCondition condition in eventConditions.talkEventConditions)                
-                    subpackets.Add(SetEventStatus.BuildPacket(playerActorId, actorId, true, 1, condition.conditionName)); 
+                foreach (EventList.TalkEventCondition condition in eventConditions.talkEventConditions)
+                    subpackets.Add(SetEventStatus.BuildPacket(playerActorId, actorId, true, 1, condition.conditionName));
             }
 
             if (eventConditions.noticeEventConditions != null)
@@ -219,7 +219,7 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         public virtual BasePacket GetSpawnPackets(uint playerActorId)
-        {            
+        {
             return GetSpawnPackets(playerActorId, 0x1);
         }
 
@@ -229,13 +229,13 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateAddActorPacket(playerActorId, 8));
             subpackets.AddRange(GetEventConditionPackets(playerActorId));
             subpackets.Add(CreateSpeedPacket(playerActorId));
-            subpackets.Add(CreateSpawnPositonPacket(playerActorId, spawnType));            
+            subpackets.Add(CreateSpawnPositonPacket(playerActorId, spawnType));
             subpackets.Add(CreateNamePacket(playerActorId));
             subpackets.Add(CreateStatePacket(playerActorId));
             subpackets.Add(CreateIsZoneingPacket(playerActorId));
             subpackets.Add(CreateScriptBindPacket(playerActorId));
             return BasePacket.CreatePacket(subpackets, true, false);
-        }        
+        }
 
         public virtual BasePacket GetInitPackets(uint playerActorId)
         {
@@ -301,7 +301,7 @@ namespace FFXIVClassic_Map_Server.Actors
             SubPacket ChangeSpeedPacket = SetActorSpeedPacket.BuildPacket(actorId, actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2]);
             zone.BroadcastPacketAroundActor(this, ChangeSpeedPacket);
         }
-        
+
         public void GenerateActorName(int actorNumber)
         {
             //Format Class Name
@@ -311,7 +311,7 @@ namespace FFXIVClassic_Map_Server.Actors
                                              .Replace("MapObj", "Map")
                                              .Replace("Object", "Obj")
                                              .Replace("Retainer", "Rtn")
-                                             .Replace("Standard", "Std");            
+                                             .Replace("Standard", "Std");
             className = Char.ToLowerInvariant(className[0]) + className.Substring(1);
 
             //Format Zone Name
@@ -335,7 +335,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 className = className.Substring(0, 20 - zoneName.Length);
             }
             catch (ArgumentOutOfRangeException e)
-            {}
+            { }
 
             //Convert actor number to base 63
             string classNumber = Utils.ToStringBase63(actorNumber);
@@ -349,6 +349,44 @@ namespace FFXIVClassic_Map_Server.Actors
             actorName = String.Format("{0}_{1}_{2}@{3:X3}{4:X2}", className, zoneName, classNumber, zoneId, privLevel);
         }
 
+        public List<float> GetPos()
+        {
+            List<float> pos = new List<float>();
+
+            pos.Add(positionX);
+            pos.Add(positionY);
+            pos.Add(positionZ);
+            pos.Add(rotation);
+            pos.Add(zoneId);
+
+            return pos;
+        }
+
+        public void SetPos(float x, float y, float z, float rot = 0, uint zoneId = 0)
+        {
+            oldPositionX = positionX;
+            oldPositionY = positionY;
+            oldPositionZ = positionZ;
+            oldRotation = rotation;
+
+            positionX = x;
+            positionY = y;
+            positionZ = z;
+            rotation = rot;
+
+            // todo: handle zone?
+            zone.BroadcastPacketAroundActor(this, MoveActorToPositionPacket.BuildPacket(this.actorId, this.actorId, x, y, z, rot, moveState));
+        }
+
+        public Area GetZone()
+        {
+            return zone;
+        }
+
+        public uint GetZoneID()
+        {
+            return zoneId;
+        }
     }
 }
 

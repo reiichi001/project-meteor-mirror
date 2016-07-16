@@ -87,14 +87,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             AddItem(itemId, quantity, 1);
         }
 
-        public void AddItem(uint itemId, int quantity, byte quality)
+        public bool AddItem(uint itemId, int quantity, byte quality)
         {
             if (!IsSpaceForAdd(itemId, quantity))
-                return;
+                return false;
 
             Item gItem = Server.GetItemGamedata(itemId);
             List<ushort> slotsToUpdate = new List<ushort>();
             List<SubPacket> addItemPackets = new List<SubPacket>();
+
+            if (gItem == null)
+            {
+                Program.Log.Error("Inventory.AddItem: unable to find item %u", itemId);
+                return false;
+            }
 
             //Check if item id exists 
             int quantityCount = quantity;
@@ -152,6 +158,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             owner.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
             owner.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
+            return true;
         }
 
         public void AddItem(uint[] itemId)

@@ -600,6 +600,21 @@ namespace FFXIVClassic_Map_Server.Actors
                 playerSession.QueuePacket(subpacket, true, false);
         }
 
+        public void SendPacket(string path)
+        {
+            try
+            {
+                BasePacket packet = new BasePacket(path);
+
+                packet.ReplaceActorID(actorId);
+                QueuePacket(packet);
+            }
+            catch (Exception e)
+            {
+                this.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "[SendPacket]", "Unable to send packet.");
+            }
+        }
+
         public void BroadcastPacket(SubPacket packet, bool sendToSelf)
         {
             if (sendToSelf)            

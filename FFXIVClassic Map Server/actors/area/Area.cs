@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic_Map_Server.packets.send;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -35,7 +36,7 @@ namespace FFXIVClassic_Map_Server.Actors
         protected Dictionary<uint, Actor> mActorList = new Dictionary<uint, Actor>();
         protected List<Actor>[,] mActorBlock;
 
-        Script areaScript;
+        LuaScript areaScript;
 
         public Area(uint id, string zoneName, ushort regionId, string className, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
             : base(id)
@@ -292,7 +293,7 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 if (a is Player)
                 {
-                    if (((Player)a).customDisplayName.Equals(name))
+                    if (((Player)a).customDisplayName.ToLower().Equals(name.ToLower()))
                         return (Player)a;
                 }
             }
@@ -352,5 +353,25 @@ namespace FFXIVClassic_Map_Server.Actors
             AddActorToZone(npc);                          
         }
 
+        public void ChangeWeather(ushort weather, ushort transitionTime, Player player, bool zoneWide = false)
+        {
+            weatherNormal = weather;
+
+            if (player != null && !zoneWide)
+            {
+                player.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime), true, false));
+            }
+            if (zoneWide)
+            {
+                foreach (var actor in mActorList)
+                {
+                    if (actor.Value is Player)
+                    {
+                        player = ((Player)actor.Value);
+                        player.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime), true, false));
+                    }
+                }
+            }
+        }
     }
 }

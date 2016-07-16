@@ -28,9 +28,7 @@ namespace FFXIVClassic_Map_Server
 #endif
             bool startServer = true;
 
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("---------FFXIV 1.0 Map Server---------");
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Program.Log.Info("---------FFXIV 1.0 Map Server---------");
 
             //Load Config
             if (!ConfigConstants.Load())
@@ -72,7 +70,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     String input = Console.ReadLine();
                     Log.Info("[Console Input] " + input);
-                    cp.DoCommand(input, null);  
+                    cp.DoCommand(input, null);
                 }
             }
 

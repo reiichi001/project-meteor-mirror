@@ -301,7 +301,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public List<LuaParam> DoActorInit(Player player)
         {
-            Script parent = null, child = null;
+            LuaScript parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
@@ -329,7 +329,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public Coroutine GetEventStartCoroutine(Player player)
         {
-            Script parent = null, child = null;
+            LuaScript parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
@@ -357,7 +357,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void DoEventUpdate(Player player, EventUpdatePacket eventUpdate)
         {
-            Script parent = null, child = null;
+            LuaScript parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
@@ -391,7 +391,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         internal void DoOnActorSpawn(Player player)
         {
-            Script parent = null, child = null;
+           LuaScript parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
