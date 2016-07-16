@@ -1140,7 +1140,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     }
                     catch (ScriptRuntimeException e)
                     {
-                        Program.Log.Error("[LUA] {0}", e.Message);
+                        Program.Log.Error("[LUA] {0}", e.DecoratedMessage);
                         EndEvent();
                     }
                 }
@@ -1161,7 +1161,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     }
                     catch (ScriptRuntimeException e)
                     {
-                        Program.Log.Error("[LUA] {0}", e.Message);
+                        Program.Log.Error("[LUA] {0}", e.DecoratedMessage);
                         EndEvent();
                     }
                 }
@@ -1186,7 +1186,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
                 catch (ScriptRuntimeException e)
                 {
-                    Program.Log.Error("[LUA] {0}", e.Message);
+                    Program.Log.Error("[LUA] {0}", e.DecoratedMessage);
                     EndEvent();
                 }
             }
