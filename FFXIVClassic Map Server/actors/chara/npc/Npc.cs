@@ -336,7 +336,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
                 child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
-            if (parent == null && child == null)
+            if (parent == null)
             {
                 LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
                 return null;
@@ -347,7 +347,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (child != null && !child.Globals.Get("onEventStarted").IsNil())
                 coroutine = child.CreateCoroutine(child.Globals["onEventStarted"]).Coroutine;
-            else if (!parent.Globals.Get("onEventStarted").IsNil())
+            else if (parent.Globals.Get("onEventStarted") != null && !parent.Globals.Get("onEventStarted").IsNil())
                 coroutine = parent.CreateCoroutine(parent.Globals["onEventStarted"]).Coroutine;
             else
                 return null;
