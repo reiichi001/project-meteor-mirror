@@ -99,7 +99,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             //return SetActorPositionPacket.BuildPacket(actorId, playerActorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
 
-            spawnPacket.DebugPrintSubPacket();
+            //spawnPacket.DebugPrintSubPacket();
 
             return spawnPacket;
         }

@@ -94,7 +94,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 string classPathFake = "/Chara/Npc/Populace/PopulaceStandard";
                 string classNameFake = "PopulaceStandard";
                 lParams = LuaUtils.CreateLuaParamList(classPathFake, false, false, false, false, false, 0xF47F6, false, false, 0, 0);
-                ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams).DebugPrintSubPacket();
+                //ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams).DebugPrintSubPacket();
                 return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams);
             }
             else
@@ -108,7 +108,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 lParams.Insert(6, new LuaParam(0, (int)actorClassId));
             }
 
-            ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams).DebugPrintSubPacket();
+            //ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams).DebugPrintSubPacket();
             return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
         }
 

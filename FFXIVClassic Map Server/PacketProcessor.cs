@@ -303,7 +303,7 @@ namespace FFXIVClassic_Map_Server
                             
                             break;
                         case 0x012F:
-                            subpacket.DebugPrintSubPacket();
+                            //subpacket.DebugPrintSubPacket();
                             ParameterDataRequestPacket paramRequest = new ParameterDataRequestPacket(subpacket.data);
                             if (paramRequest.paramName.Equals("charaWork/exp"))
                                 player.GetActor().SendCharaExpInfo();
