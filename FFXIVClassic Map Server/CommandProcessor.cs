@@ -88,7 +88,7 @@ namespace FFXIVClassic_Map_Server
             if (cmd.Any())
             {
                 // if client isnt null, take player to be the player actor
-                var player = client?.GetActor();
+                var player = client.GetActor();
 
                 if (cmd.Equals("help"))
                 {

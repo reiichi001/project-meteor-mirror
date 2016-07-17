@@ -5,6 +5,6 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-	player:callClientFunction(player, "bookTalk");
+	callClientFunction(player, "bookTalk");
 	player:EndEvent();
 end
