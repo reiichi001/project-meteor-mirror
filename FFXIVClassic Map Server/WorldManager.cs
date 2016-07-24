@@ -198,6 +198,7 @@ namespace FFXIVClassic_Map_Server
                                     id,
                                     classPath,                                    
                                     displayNameId,
+                                    propertyFlags,
                                     eventConditions
                                     FROM gamedata_actor_class
                                     WHERE classPath <> ''
@@ -213,13 +214,15 @@ namespace FFXIVClassic_Map_Server
                             string classPath = reader.GetString("classPath");
                             uint nameId = reader.GetUInt32("displayNameId");
                             string eventConditions = null;
-                            
-                            if (!reader.IsDBNull(3))
+
+                            uint propertyFlags = reader.GetUInt32("propertyFlags");
+
+                            if (!reader.IsDBNull(4))
                                 eventConditions = reader.GetString("eventConditions");
                             else
                                 eventConditions = "{}";
 
-                            ActorClass actorClass = new ActorClass(id, classPath, nameId, eventConditions);
+                            ActorClass actorClass = new ActorClass(id, classPath, nameId, propertyFlags, eventConditions);
                             actorClasses.Add(id, actorClass);
                             count++;
                         }

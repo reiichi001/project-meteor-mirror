@@ -1,0 +1,38 @@
+charaWork.property[0]: E14B0CA8
+charaWork.property[1]: 2138FD71
+charaWork.property[2]: 7B675313
+charaWork.property[3]: 83AF687B
+charaWork.property[4]: FBFBCFB1
+charaWork.property[5]: D0528D6D
+charaWork.property[6]: FB2031F0
+charaWork.property[7]: FC4FC79E
+charaWork.property[8]: ED3BE8EF
+charaWork.property[9]: B2E211F9
+charaWork.property[10]: CF333207
+charaWork.property[11]: D2C07981
+charaWork.property[12]: A0304DFD
+charaWork.property[13]: C0F3DA5F
+charaWork.property[14]: 29A79FF3
+charaWork.property[15]: 51CF95E0
+charaWork.property[16]: 8EAB1D96
+charaWork.property[17]: DD73A95
+charaWork.property[18]: 880CC775
+charaWork.property[19]: 62B8BF8D
+charaWork.property[20]: 2EC61BC3
+charaWork.property[21]: 73F6A7F0
+charaWork.property[22]: A3E164C0
+charaWork.property[23]: EA58AAF0
+charaWork.property[24]: 8A9C7FDC
+charaWork.property[25]: 8678D367
+charaWork.property[26]: EB129AED
+charaWork.property[27]: F7E9CEB6
+charaWork.property[28]: A1CB539F
+charaWork.property[29]: 6F821E02
+charaWork.property[30]: 66C0E093
+charaWork.property[31]: A6EDF047
+
+AetheryteParent/MiningPoint, 0, 1, 
+Populace Achievement, 0, 1, 4
+DoorStandard/BgKeepout/Chocobostop/MarketEntrance/ObjectEventDoor/RetainerFurniture, 0
+
+

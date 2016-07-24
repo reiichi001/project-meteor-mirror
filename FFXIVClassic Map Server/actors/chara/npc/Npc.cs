@@ -1,5 +1,6 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors;
+using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
@@ -26,7 +27,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public NpcWork npcWork = new NpcWork();
 
-        public Npc(int actorNumber, uint classId, string uniqueId, uint zoneId, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, uint displayNameId, string customDisplayName, string classPath)
+        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, uint zoneId, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, string customDisplayName)
             : base((4 << 28 | zoneId << 19 | (uint)actorNumber))  
         {
             this.positionX = posX;
@@ -35,7 +36,7 @@ namespace FFXIVClassic_Map_Server.Actors
             this.rotation = rot;
             this.animationId = animationId;
 
-            this.displayNameId = displayNameId;
+            this.displayNameId = actorClass.displayNameId;
             this.customDisplayName = customDisplayName;
 
             this.uniqueIdentifier = uniqueId;
@@ -43,11 +44,11 @@ namespace FFXIVClassic_Map_Server.Actors
             this.zoneId = zoneId;
             this.zone = Server.GetWorldManager().GetZone(zoneId);
 
-            this.actorClassId = classId;
+            this.actorClassId = actorClass.actorClassId;
 
-            LoadNpcAppearance(classId);
+            LoadNpcAppearance(actorClass.actorClassId);
 
-            this.classPath = classPath;
+            this.classPath = actorClass.classPath;
             className = classPath.Substring(classPath.LastIndexOf("/")+1);
 
             charaWork.battleSave.potencial = 1.0f;
@@ -58,17 +59,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.parameterSave.hp[0] = 500;
             charaWork.parameterSave.hpMax[0] = 500;
-            charaWork.property[0] = 1;
-            charaWork.property[1] = 1;
+
+            for (int i = 0; i < 32; i++ )            
+                charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);            
 
             if (className.Equals("JellyfishScenarioLimsaLv00"))
             {
                 charaWork.property[2] = 1;
                 npcWork.hateType = 1;
             }
-
-            charaWork.property[3] = 1;
-            charaWork.property[4] = 1;
 
             npcWork.pushCommand = 0x271D;
             npcWork.pushCommandPriority = 1;
