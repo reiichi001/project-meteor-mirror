@@ -19,6 +19,8 @@
 -- Table structure for table `gamedata_items_accessory`
 --
 
+SET autocommit = 0;
+
 DROP TABLE IF EXISTS `gamedata_items_accessory`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
@@ -325,5 +327,7 @@ UNLOCK TABLES;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+COMMIT;
 
 -- Dump completed on 2016-06-07 22:54:51
