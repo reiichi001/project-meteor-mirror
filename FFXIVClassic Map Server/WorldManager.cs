@@ -360,12 +360,10 @@ namespace FFXIVClassic_Map_Server
         //Moves actor to new zone, and sends packets to spawn at the given coords.
         public void DoZoneChange(Player player, uint destinationZoneId, string destinationPrivateArea, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
         {
-            Area oldZone;
-
+            Area oldZone = player.zone;
             //Remove player from currentZone if transfer else it's login
             if (player.zone != null)
             {
-                oldZone = player.zone;
                 oldZone.RemoveActorFromZone(player);
             }
 
@@ -376,9 +374,20 @@ namespace FFXIVClassic_Map_Server
                 newArea = GetZone(destinationZoneId);
             else
                 newArea = GetZone(destinationZoneId).GetPrivateArea(destinationPrivateArea, 0);
+
             //This server does not contain that zoneId
             if (newArea == null)
+            {
+                if (oldZone != null)
+                {
+                    oldZone.AddActorToZone(player);
+                }
+
+                var message = "WorldManager.DoZoneChange: unable to change areas, new area is not valid.";
+                player.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM, "[Debug]", message);
+                Program.Log.Debug(message);
                 return;
+            }
 
             newArea.AddActorToZone(player);
 
