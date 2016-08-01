@@ -24,6 +24,7 @@ namespace FFXIVClassic_Map_Server
         private DebugProg debug = new DebugProg();
         private WorldMaster worldMaster = new WorldMaster();
         private Dictionary<uint, Zone> zoneList;
+        private Dictionary<uint, List<SeamlessBoundry>> seamlessBoundryList;
         private Dictionary<uint, ZoneEntrance> zoneEntranceList;
         private Dictionary<uint, ActorClass> actorClasses = new Dictionary<uint,ActorClass>();
 
@@ -182,6 +183,67 @@ namespace FFXIVClassic_Map_Server
             }
 
             Program.Log.Info(String.Format("Loaded {0} zone spawn locations.", count));
+        }
+
+        public void LoadSeamlessBoundryList()
+        {
+            seamlessBoundryList = new Dictionary<uint, List<SeamlessBoundry>();
+            int count = 0;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT 
+                                    *
+                                    FROM server_seamless_zonechange_bounds";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint id = reader.GetUInt32("id");
+                            uint regionId = reader.GetUInt32("regionId");
+                            uint zoneId1 = reader.GetUInt32("zoneId1");
+                            uint zoneId2 = reader.GetUInt32("zoneId2");
+
+                            float z1_x1 = reader.GetFloat("zone1_boundingbox_x1");
+                            float z1_y1 = reader.GetFloat("zone1_boundingbox_y1");
+                            float z1_x2 = reader.GetFloat("zone1_boundingbox_x2");
+                            float z1_y2 = reader.GetFloat("zone1_boundingbox_y2");
+
+                            float z2_x1 = reader.GetFloat("zone2_boundingbox_x1");
+                            float z2_y1 = reader.GetFloat("zone2_boundingbox_y1");
+                            float z2_x2 = reader.GetFloat("zone2_boundingbox_x2");
+                            float z2_y2 = reader.GetFloat("zone2_boundingbox_y2");
+
+                            float m_x1 = reader.GetFloat("merge_boundingbox_x1");
+                            float m_y1 = reader.GetFloat("merge_boundingbox_y1");
+                            float m_x2 = reader.GetFloat("merge_boundingbox_x2");
+                            float m_y2 = reader.GetFloat("merge_boundingbox_y2");
+                            
+                            if (!seamlessBoundryList.ContainsKey(regionId))
+                                seamlessBoundryList.Add(regionId, new List<SeamlessBoundry>());
+
+                            seamlessBoundryList[regionId].Add(new SeamlessBoundry(regionId, zoneId1, zoneId2, z1_x1, z1_y1, z1_x2, z1_y2, z2_x1, z2_y1, z2_x2, z2_y2, m_x1, m_y1, m_x2, m_y2));
+
+                            count++;
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            Program.Log.Info(String.Format("Loaded {0} region seamless boundries.", count));
         }
 
         public void LoadActorClasses()
@@ -369,6 +431,17 @@ namespace FFXIVClassic_Map_Server
             player.zoneId2 = mergedZone.actorId;
 
             LuaEngine.OnZoneIn(player);
+        }
+
+        //Checks all seamless bounding boxes in region to see if player needs to merge or zonechange
+        public void SeamlessCheck(Player player)
+        {
+            if (player.zone == null)
+                return;
+
+            uint regionId = player.zone.regionId;
+
+
         }
 
         //Moves actor to new zone, and sends packets to spawn at the given zone entrance

@@ -83,6 +83,7 @@ namespace FFXIVClassic_Map_Server
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneList();
             mWorldManager.LoadZoneEntranceList();
+            mWorldManager.LoadSeamlessBoundryList();
             mWorldManager.LoadActorClasses();
             mWorldManager.LoadSpawnLocations();
             mWorldManager.SpawnAllActors();
