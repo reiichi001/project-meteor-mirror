@@ -311,7 +311,7 @@ namespace FFXIVClassic_Map_Server.utils
 
         }
 
-        public void GetStaticActors()
+        public static void GetStaticActors()
         {
             using (MemoryStream s = new MemoryStream(File.ReadAllBytes("D:\\luadec\\script\\staticactorr9w.luab")))
             {
@@ -348,6 +348,53 @@ namespace FFXIVClassic_Map_Server.utils
             }
 
             return;
+        }
+
+        public static void GenerateScriptsForNPCs()
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    //Load Last 5 Completed
+                    string query = @"
+                                    SELECT uniqueId FROM server_spawn_locations WHERE zoneId = 206";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string name = reader.GetString("uniqueId");
+
+                            if (name == null || name.Equals(""))
+                                continue;
+
+                            string nameCapital = name.Substring(0, 1).ToUpper() + name.Substring(1);
+
+                            string template = File.ReadAllText("D:\\Coding\\FFXIV Related\\ffxiv-classic-map-server\\FFXIVClassic Map Server\\bin\\Debug\\scripts\\unique\\wil0Town01\\PopulaceStandard\\bertram.lua");
+
+                            template = template.Replace("defaultWil", "defaultFst");
+                            template = template.Replace("DftWil", "DftFst");
+                            template = template.Replace("Bertram", nameCapital);
+
+                            File.WriteAllText(String.Format("D:\\Coding\\FFXIV Related\\ffxiv-classic-map-server\\FFXIVClassic Map Server\\bin\\Debug\\scripts\\unique\\fst0Town01a\\PopulaceStandard\\{0}.lua", name), template);
+                        }
+                    }
+
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
         }
     }
 }
