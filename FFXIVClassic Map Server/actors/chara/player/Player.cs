@@ -1244,9 +1244,10 @@ namespace FFXIVClassic_Map_Server.Actors
         
         public void SendInstanceUpdate()
         {
-           
-            //Update Instance
 
+            Server.GetWorldManager().SeamlessCheck(this);
+
+            //Update Instance
             List<Actor> aroundMe = new List<Actor>();
 
             aroundMe.AddRange(zone.GetActorsAroundActor(this, 50));

@@ -187,7 +187,7 @@ namespace FFXIVClassic_Map_Server
 
         public void LoadSeamlessBoundryList()
         {
-            seamlessBoundryList = new Dictionary<uint, List<SeamlessBoundry>();
+            seamlessBoundryList = new Dictionary<uint, List<SeamlessBoundry>>();
             int count = 0;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -412,6 +412,8 @@ namespace FFXIVClassic_Map_Server
             player.zone2 = null;
             player.zoneId2 = 0;
 
+            player.SendMessage(0x20, "", "Doing Seamless Zone Change");
+
             LuaEngine.OnZoneIn(player);
         }
 
@@ -430,18 +432,78 @@ namespace FFXIVClassic_Map_Server
             player.zone2 = mergedZone;
             player.zoneId2 = mergedZone.actorId;
 
+            player.SendMessage(0x20, "", "Merging Zones");
+
             LuaEngine.OnZoneIn(player);
         }
 
         //Checks all seamless bounding boxes in region to see if player needs to merge or zonechange
         public void SeamlessCheck(Player player)
         {
+            //Check if you are in a seamless bounding box
+            //WorldMaster.DoSeamlessCheck(this) -- Return 
+
+            /*
+             * Find what bounding box in region I am in
+             * ->If none, ignore
+             * ->If zone box && is my zone, ignore
+             * ->If zone box && is not my zone, DoSeamlessZoneChange
+             * ->If merge box, MergeZones
+             */
+
             if (player.zone == null)
                 return;
 
             uint regionId = player.zone.regionId;
 
+            if (!seamlessBoundryList.ContainsKey(regionId))
+                return;
 
+            foreach (SeamlessBoundry bounds in seamlessBoundryList[regionId])
+            {
+                if (CheckPosInBounds(player.positionX, player.positionZ, bounds.zone1_x1, bounds.zone1_y1, bounds.zone1_x2, bounds.zone1_y2))
+                {
+                    if (player.zoneId == bounds.zoneId1 && player.zoneId2 == 0)
+                        return;
+
+                    DoSeamlessZoneChange(player, bounds.zoneId1);
+                }
+                else if (CheckPosInBounds(player.positionX, player.positionZ, bounds.zone2_x1, bounds.zone2_y1, bounds.zone2_x2, bounds.zone2_y2))
+                {
+                    if (player.zoneId == bounds.zoneId2 && player.zoneId2 == 0)
+                        return;
+
+                    DoSeamlessZoneChange(player, bounds.zoneId2);
+                }
+                else if (CheckPosInBounds(player.positionX, player.positionZ, bounds.merge_x1, bounds.merge_y1, bounds.merge_x2, bounds.merge_y2))
+                {
+                    uint merged;
+                    if (player.zoneId == bounds.zoneId1)
+                        merged = bounds.zoneId2;
+                    else
+                        merged = bounds.zoneId1;
+
+                    //Already merged
+                    if (player.zoneId2 == merged)
+                        return;
+
+                    MergeZones(player, merged);
+                }
+            }
+        }
+
+        public bool CheckPosInBounds(float x, float y, float x1, float y1, float x2, float y2)
+        {
+            bool xIsGood = false;
+            bool yIsGood = false;
+
+            if ((x1 < x && x < x2) || (x1 > x && x > x2))
+                xIsGood = true;
+
+            if ((y1 < y && y < y2) || (y1 > y && y > y2))
+                yIsGood = true;
+
+            return xIsGood && yIsGood;
         }
 
         //Moves actor to new zone, and sends packets to spawn at the given zone entrance
