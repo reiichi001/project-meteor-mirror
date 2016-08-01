@@ -25,8 +25,9 @@ namespace FFXIVClassic_Map_Server.Actors
         public ushort moveState, oldMoveState;
         public float[] moveSpeeds = new float[5];
 
-        public uint zoneId;
+        public uint zoneId, zoneId2;
         public Area zone = null;
+        public Area zone2 = null;
         public bool isZoning = false;
 
         public bool spawnedFirstTime = false;

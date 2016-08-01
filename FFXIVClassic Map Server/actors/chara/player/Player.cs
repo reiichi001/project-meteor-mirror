@@ -1246,8 +1246,14 @@ namespace FFXIVClassic_Map_Server.Actors
         {
            
             //Update Instance
-            playerSession.UpdateInstance(zone.GetActorsAroundActor(this, 50));            
-        
+
+            List<Actor> aroundMe = new List<Actor>();
+
+            aroundMe.AddRange(zone.GetActorsAroundActor(this, 50));
+            if (zone2 != null)
+                aroundMe.AddRange(zone2.GetActorsAroundActor(this, 50));
+            playerSession.UpdateInstance(aroundMe);
+
         }
 
     }

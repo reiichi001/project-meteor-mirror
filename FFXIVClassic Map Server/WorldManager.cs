@@ -324,7 +324,7 @@ namespace FFXIVClassic_Map_Server
                 z.SpawnAllActors(true);
         }
 
-        //Moves the actor to the new zone if exists. No packets are sent nor position changed.
+        //Moves the actor to the new zone if exists. No packets are sent nor position changed. Merged zone is removed.
         public void DoSeamlessZoneChange(Player player, uint destinationZoneId)
         {
             Area oldZone;
@@ -343,6 +343,30 @@ namespace FFXIVClassic_Map_Server
                 return;
 
             newZone.AddActorToZone(player);
+
+            player.zone = newZone;
+            player.zoneId = destinationZoneId;
+
+            player.zone2 = null;
+            player.zoneId2 = 0;
+
+            LuaEngine.OnZoneIn(player);
+        }
+
+        //Adds a second zone to pull actors from. Used for an improved seamless zone change.
+        public void MergeZones(Player player, uint mergedZoneId)
+        {           
+            //Add player to new zone and update
+            Zone mergedZone = GetZone(mergedZoneId);
+
+            //This server does not contain that zoneId
+            if (mergedZone == null)
+                return;
+
+            mergedZone.AddActorToZone(player);
+
+            player.zone2 = mergedZone;
+            player.zoneId2 = mergedZone.actorId;
 
             LuaEngine.OnZoneIn(player);
         }
