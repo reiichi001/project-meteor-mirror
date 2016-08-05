@@ -465,6 +465,12 @@ namespace FFXIVClassic_Map_Server.Actors
             return BasePacket.CreatePacket(propPacketUtil.Done(), true, false);
         }
 
+        public void SendSeamlessZoneInPackets()
+        {
+            QueuePacket(SetMusicPacket.BuildPacket(actorId, zone.bgmDay, SetMusicPacket.EFFECT_FADEIN));
+            QueuePacket(SetWeatherPacket.BuildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR, 1));
+        }
+
         public void SendZoneInPackets(WorldManager world, ushort spawnType)
         {
             QueuePacket(SetActorIsZoningPacket.BuildPacket(actorId, actorId, false));
