@@ -412,6 +412,8 @@ namespace FFXIVClassic_Map_Server
             player.zone2 = null;
             player.zoneId2 = 0;
 
+            player.SendSeamlessZoneInPackets();
+
             player.SendMessage(0x20, "", "Doing Seamless Zone Change");
 
             LuaEngine.OnZoneIn(player);
