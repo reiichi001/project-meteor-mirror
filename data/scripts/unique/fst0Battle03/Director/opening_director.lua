@@ -1,14 +1,10 @@
+require ("global")
 require("/quests/man/man0g0")
 
 function onEventStarted(player, actor, triggerName)	
 
 	man0g0Quest = GetStaticActor("Man0g0");	
-	player:RunEventFunction("delegateEvent", player, man0g0Quest, "processTtrNomal001withHQ", nil, nil, nil, nil);
-	
-end
-
-function onEventUpdate(player, npc, resultId)	
-
+	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrNomal001withHQ", nil, nil, nil, nil);
 	player:EndEvent();
 	
 end

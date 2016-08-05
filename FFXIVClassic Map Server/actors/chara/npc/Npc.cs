@@ -335,7 +335,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
                 child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
-            if (parent == null)
+            if (parent == null && child == null)
             {
                 LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
                 return null;
@@ -363,9 +363,9 @@ namespace FFXIVClassic_Map_Server.Actors
             if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
                 child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
-            if (parent == null)
+            if (parent == null && child == null)
             {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
+                //LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
                 return;
             }
 
@@ -397,19 +397,19 @@ namespace FFXIVClassic_Map_Server.Actors
             if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
                 child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
 
-            if (parent == null)
+            if (parent == null && child == null)
             {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
+                //LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
                 return;
             }
                
             //Run Script
-            if (child != null && !child.Globals.Get("onSpawn").IsNil())
+            if (child != null && child.Globals["onSpawn"] != null)
                 child.Call(child.Globals["onSpawn"], player, this);
-            else if (!parent.Globals.Get("onSpawn").IsNil())
+            else if (parent != null && parent.Globals["onSpawn"] != null)
                 parent.Call(parent.Globals["onSpawn"], player, this);
             else
-                return;                
+                return;          
         }
     }
 }

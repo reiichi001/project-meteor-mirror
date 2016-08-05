@@ -39,6 +39,10 @@ function onEventStarted(player, npc, triggerName)
 
 	require("/unique/".. npc.zone.zoneName .."/PopulaceShopSalesman/" .. npc:GetUniqueId())	
 	
+	if (shopInfo.shopCurrancy == nil) then
+		shopInfo.shopCurrancy = 1000001;
+	end
+	
 	callClientFunction(player, "welcomeTalk", shopInfo.welcomeText, player);	
 	
 	while (true) do
@@ -85,13 +89,14 @@ function processNormalShop(player, choice)
 		callClientFunction(player, "openShopBuy", player, shopInfo.shopPack, shopInfo.shopCurrancy);
 		
 		while (true) do		
-			buyResult = callClientFunction(player, "selectShopBuy", player);
+			buyResult, index, quantity = callClientFunction(player, "selectShopBuy", player);
 			
+			player:GetInventory(location):AddItem(3020308, 1);
 			if (buyResult == 0) then
 				callClientFunction(player, "closeShopBuy", player);					
 				break;
 			else
-				player:SendMessage(0x20, "", "Player bought a thing at slot " .. tostring(buyResult)..".");
+				player:SendMessage(0x20, "", "Player bought a thing at slot " .. tostring(buyResult).. " with quantity "..tostring(index)..".");
 			end
 			
 		end		
@@ -106,6 +111,12 @@ function processNormalShop(player, choice)
 				break;
 			else
 				player:SendMessage(0x20, "", "Player sold a thing at slot " .. tostring(sellResult)..".");
+				
+				itemToSell = player:GetInventory(0x00):GetItemBySlot(sellResult.slot);	
+				gItemTOSell = GetItemGamedata(itemToSell.itemId);
+				
+				player:GetInventory(0x63):AddItem(shopInfo.shopCurrancy, gItemTOSell.sellPrice);
+				player:GetInventory(0x00):RemoveItemAtSlot(sellResult.slot);
 			end
 			
 		end
@@ -123,8 +134,8 @@ function processMultiShop(player, choice, sellType)
 		callClientFunction(player, "openShopBuy", player, shopInfo.shopPack[choice], shopInfo.shopCurrancy);
 		
 		while (true) do		
-			buyResult = callClientFunction(player, "selectShopBuy", player);
-			
+			buyResult, index, quantity = callClientFunction(player, "selectShopBuy", player);
+			player:GetInventory(location):AddItem(3020308, 1);
 			if (buyResult == 0) then
 				callClientFunction(player, "closeShopBuy", player);					
 				break;
@@ -133,7 +144,7 @@ function processMultiShop(player, choice, sellType)
 			end
 			
 		end		
-	elseif (choice == 5) then
+	elseif (choice == 0) then
 		callClientFunction(player, "openShopSell", player);
 
 		while (true) do		
