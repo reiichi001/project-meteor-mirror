@@ -8,6 +8,8 @@ Date: 6/21/2016 10:49:37 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
+SET autocommit = 0;
+
 -- ----------------------------
 -- Table structure for gamedata_actor_class
 -- ----------------------------
@@ -8006,3 +8008,5 @@ INSERT INTO `gamedata_actor_class` VALUES ('9220405', '', '2', null);
 INSERT INTO `gamedata_actor_class` VALUES ('9220406', '', '2', null);
 INSERT INTO `gamedata_actor_class` VALUES ('9220407', '', '2', null);
 INSERT INTO `gamedata_actor_class` VALUES ('9220408', '', '2', null);
+
+COMMIT;

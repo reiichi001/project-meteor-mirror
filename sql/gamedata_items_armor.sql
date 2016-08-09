@@ -19,6 +19,8 @@
 -- Table structure for table `gamedata_items_armor`
 --
 
+SET autocommit = 0;
+
 DROP TABLE IF EXISTS `gamedata_items_armor`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
