@@ -3,7 +3,12 @@ require("global");
 properties = {
     permissions = 0,
     parameters = "ssss",
-    description = "usage: <id> <updateTime> <zonewide>.",
+    description =
+[[
+Change the weather visual to <id> and optional <transition> for player.
+!weather <id> |
+!weather <id> <transition> |
+]],
 }
 
 function onTrigger(player, argc, weather, updateTime, zonewide)
@@ -16,12 +21,14 @@ function onTrigger(player, argc, weather, updateTime, zonewide)
         weather = tonumber(weather) or 0;
         updateTime = tonumber(updateTime) or 0;
         zonewide = tonumber(zonewide) or 0;
-        message = "changed weather to %u ";
+        message = string.format("changed weather to %u ", weather);
+        
         if zonewide ~= 0 then
             message = string.format(message.."for zone %u", player:GetZoneID());
         else
             message = string.format(message.."%s", player:GetName());
         end;
+        
         -- weatherid, updateTime
         player:GetZone():ChangeWeather(weather, updateTime, player, zonewide ~= 0);
         player:SendMessage(messageID, sender, message);
