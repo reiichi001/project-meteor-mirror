@@ -7,7 +7,9 @@ Target Database: ffxiv_server
 Date: 8/14/2016 9:43:11 AM
 */
 
-SET FOREIGN_KEY_CHECKS=0;
+SET FOREIGN_KEY_CHECKS = 0;
+SET autocommit = 0;
+
 -- ----------------------------
 -- Table structure for server_seamless_zonechange_bounds
 -- ----------------------------
@@ -36,3 +38,5 @@ CREATE TABLE `server_seamless_zonechange_bounds` (
 -- ----------------------------
 INSERT INTO `server_seamless_zonechange_bounds` VALUES ('1', '103', '155', '206', '115', '-1219', '55', '-1217', '33', '95', '-1279', '-1261', '55', '-1219', '95', '-1261');
 INSERT INTO `server_seamless_zonechange_bounds` VALUES ('2', '103', '155', '150', '255', '-1139', '304', '-1125', '304', '338', '-1066', '-1046', '255', '-1125', '338', '-1066');
+
+COMMIT;

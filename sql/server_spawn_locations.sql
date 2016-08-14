@@ -7,7 +7,9 @@ Target Database: ffxiv_server
 Date: 8/14/2016 9:43:16 AM
 */
 
-SET FOREIGN_KEY_CHECKS=0;
+SET FOREIGN_KEY_CHECKS = 0;
+SET autocommit = 0;
+
 -- ----------------------------
 -- Table structure for server_spawn_locations
 -- ----------------------------
@@ -755,3 +757,5 @@ INSERT INTO `server_spawn_locations` VALUES ('723', '1001432', 'mathye', '155', 
 INSERT INTO `server_spawn_locations` VALUES ('724', '1000951', 'lonsygg', '155', '', '0', '162.79', '-1.48', '-1153.32', '1.94', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('727', '1200021', 'testship', '230', '', '0', '-897', '0', '239', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('728', '1200052', '', '155', '', '0', '100', '7', '-1200', '0', '0', '0', null);
+
+COMMIT;

@@ -7,7 +7,9 @@ Target Database: ffxiv_server
 Date: 8/14/2016 9:43:28 AM
 */
 
-SET FOREIGN_KEY_CHECKS=0;
+SET FOREIGN_KEY_CHECKS = 0;
+SET autocommit = 0;
+
 -- ----------------------------
 -- Table structure for server_zones
 -- ----------------------------
@@ -142,3 +144,5 @@ INSERT INTO `server_zones` VALUES ('267', '109', null, 'Rivenroad', '', '0', '0'
 INSERT INTO `server_zones` VALUES ('268', '109', null, 'Rivenroad', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('269', '101', null, 'Locke\'s Lie', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('270', '101', null, 'Turtleback Island', '', '0', '0', '0', '0', '0', '0', '0', '0');
+
+COMMIT;
