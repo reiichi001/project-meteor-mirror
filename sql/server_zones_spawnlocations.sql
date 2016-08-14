@@ -7,7 +7,9 @@ Target Database: ffxiv_server
 Date: 8/14/2016 9:43:22 AM
 */
 
-SET FOREIGN_KEY_CHECKS=0;
+SET FOREIGN_KEY_CHECKS = 0;
+SET autocommit = 0;
+
 -- ----------------------------
 -- Table structure for server_zones_spawnlocations
 -- ----------------------------
@@ -39,3 +41,5 @@ INSERT INTO `server_zones_spawnlocations` VALUES ('10', '166', null, '16', '356.
 INSERT INTO `server_zones_spawnlocations` VALUES ('11', '244', null, '15', '0.048', '0', '-5.737', '0');
 INSERT INTO `server_zones_spawnlocations` VALUES ('12', '244', null, '15', '-160.048', '0', '-165.737', '0');
 INSERT INTO `server_zones_spawnlocations` VALUES ('13', '244', null, '15', '160.048', '0', '154.263', '0');
+
+COMMIT;

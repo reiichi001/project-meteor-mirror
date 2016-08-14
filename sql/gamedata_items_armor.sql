@@ -3648,6 +3648,8 @@ INSERT INTO `gamedata_items_armor` VALUES (9050078,0,0,0,0,0,-1,0,-1,0,-1,0,-1,0
 INSERT INTO `gamedata_items_armor` VALUES (9050079,0,0,0,0,0,-1,0,-1,0,-1,0,-1,0);
 INSERT INTO `gamedata_items_armor` VALUES (9050080,0,0,0,0,0,-1,0,-1,0,-1,0,-1,0);
 INSERT INTO `gamedata_items_armor` VALUES (9050081,0,0,0,0,0,-1,0,-1,0,-1,0,-1,0);
+
+COMMIT;
 /*!40000 ALTER TABLE `gamedata_items_armor` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
