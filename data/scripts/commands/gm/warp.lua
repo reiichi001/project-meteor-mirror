@@ -7,7 +7,7 @@ properties = {
 [[
 <zone> |
 <zone> <x> <y> <z> |
-<x> <y> <z> <zone> <privateArea> <target name>.
+<zone> <x> <y> <z> <privateArea> <target name>.
 ]],
 }
 
