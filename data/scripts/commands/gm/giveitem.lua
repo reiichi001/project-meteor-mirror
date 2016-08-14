@@ -3,12 +3,20 @@ require("global");
 properties = {
     permissions = 0,
     parameters = "sssss",
-    description = "adds <item> <qty> to <location> for <target>. <qty> and <location> are optional, item is added to user if <target> is nil",
+    description = 
+[[
+Adds <item> <qty> to <location> for player or <targetname>.
+!giveitem <item> <qty> |
+!giveitem <item> <qty> <location> |
+!giveitem <item> <qty> <location> <targetname> |
+]],
 }
 
 function onTrigger(player, argc, item, qty, location, name, lastName)
     local sender = "[giveitem] ";
-    
+    local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
+    local message = string.format("Unable to add item %u", item);
+     
     if name then
         if lastName then
             player = GetWorldManager():GetPCInWorld(name.." "..lastName) or nil;
@@ -20,17 +28,28 @@ function onTrigger(player, argc, item, qty, location, name, lastName)
     if player then
         item = tonumber(item) or nil;
         qty = tonumber(qty) or 1;
-        location = tonumber(itemtype) or INVENTORY_NORMAL;
-        local added = player:GetInventory(location):AddItem(item, qty);
-        local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
-        local message = "unable to add item";
         
-        if item and added then
-            message = string.format("added item %u to %s", item, player:GetName());
-        end
-        player:SendMessage(messageID, sender, message);
-        print(message);
+		if location then 
+			location =  tonumber(location) or _G[string.upper(location)];
+            
+            if not location then
+                player:SendMessage(messageID, sender, "Unknown item location.");
+                return;
+            end;                
+        else
+            location = INVENTORY_NORMAL;
+        end;
+        
+        local added = player:getInventory(location):addItem(item, qty, 1);
+        
+        if added then
+            message = string.format("Added item %u of kind %u to %s", item, location, player:GetName());
+        end;        
     else
-        print(sender.."unable to add item, ensure player name is valid.");
+        print(sender.."[giveitem] Unable to add item, ensure player name is valid.");
+        return;
     end;
+    
+    player:SendMessage(messageID, sender, message);
+    print(message);
 end;

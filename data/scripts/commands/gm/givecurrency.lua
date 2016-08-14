@@ -2,11 +2,16 @@ require("global");
 
 properties = {
     permissions = 0,
-    parameters = "sss",
-    description = "adds <currency> to self or <target>.",
+    parameters = "ssss",
+    description = 
+[[
+Adds currency <qty> to player or <targetname>
+!addcurrency <item> <qty> |
+!addcurrency <item> <qty> <targetname> |
+]],
 }
 
-function onTrigger(player, argc, currency, name, lastName)
+function onTrigger(player, argc, currency, qty, name, lastName)
     local sender = "[givecurrency] ";
     
     if name then
@@ -19,10 +24,10 @@ function onTrigger(player, argc, currency, name, lastName)
     
     if player then
         currency = tonumber(currency) or nil;
-        qty = 1;
+        qty = tonumber(qty) or 1;
         location = INVENTORY_CURRENCY;
         
-        local added = player:GetInventory(location):AddItem(currency, qty);
+        local added = player:GetInventory(location):AddItem(currency, qty, 1);
         local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
         local message = "unable to add currency";
         

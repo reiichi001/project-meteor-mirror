@@ -3,11 +3,18 @@ require("global");
 properties = {
     permissions = 0,
     parameters = "sssss",
-    description = "removes <item> <qty> from <location> for <target>. <qty> and <location> are optional, item is removed from user if <target> is nil",
+    description = 
+[[
+Removes <item> <qty> from <location> for player or <targetname>.
+!delitem <item> <qty> |
+!delitem <item> <qty> <location> |
+!delitem <item> <qty> <location> <targetname> |
+]],
 }
 
 function onTrigger(player, argc, item, qty, location, name, lastName)
     local sender = "[delitem] ";
+    local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
     
     if name then
         if lastName then
@@ -20,18 +27,29 @@ function onTrigger(player, argc, item, qty, location, name, lastName)
     if player then
         item = tonumber(item) or nil;
         qty = tonumber(qty) or 1;
-        location = tonumber(itemtype) or INVENTORY_NORMAL;
         
-        local removed = player:GetInventory(location):removeItem(item, qty);
-        local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
-        local message = "unable to remove item";
+		if location then 
+			location =  tonumber(location) or _G[string.upper(location)];
+            
+            if location == nil then
+                player:SendMessage(messageID, sender, "Unknown item location.");
+                return;
+            end;                
+        else
+            location = INVENTORY_NORMAL;
+        end;
         
-        if item and removed then
-            message = string.format("removed item %u from %s", item, player:GetName());
-        end
-        player:SendMessage(messageID, sender, message);
-        print(message);
+        local removed = player:GetInventory(location):RemoveItem(item, qty);
+        
+        if removed then  -- RemoveItem() currently returns nothing for verification, this statement can't work
+            message = string.format("Removed item %u of kind %u to %s", item, location, player:GetName());
+        end;        
     else
-        print(sender.."unable to remove item, ensure player name is valid.");
+        print(sender.."[giveitem] Unable to remove item, ensure player name is valid.");
+        return;
     end;
+    
+    local message = string.format("Attempting to remove item %u of kind %u from %s", item, location, player:GetName());
+    player:SendMessage(messageID, sender, message);
+    print(message);
 end;

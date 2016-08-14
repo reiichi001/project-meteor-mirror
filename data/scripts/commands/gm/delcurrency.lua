@@ -2,11 +2,16 @@ require("global");
 
 properties = {
     permissions = 0,
-    parameters = "sssss",
-    description = "removes <currency> <qty> from <target>, currency is removed from user if <target> is nil",
+    parameters = "ssss",
+    description = 
+[[
+Removes currency <qty> from player or <targetname>
+!delcurrency <item> <qty> |
+!delcurrency <item> <qty> <targetname> |
+]],
 }
 
-function onTrigger(player, argc, currency, qty, location, name, lastName)
+function onTrigger(player, argc, currency, qty, name, lastName)
     local sender = "[delcurrency] ";
     
     if name then
@@ -19,12 +24,11 @@ function onTrigger(player, argc, currency, qty, location, name, lastName)
     
     if player then
         currency = tonumber(currency) or nil;
-        qty = 1;
-        location = INVENTORY_CURRENCY;
+        qty = tonumber(qty) or 1;
         
-        local removed = player:GetInventory(location):removecurrency(currency, qty);
+        local removed = player:GetInventory(INVENTORY_CURRENCY):RemoveItem(currency, qty);
         local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
-        local message = "unable to remove currency";
+        local message = "Attempting to remove currency" -- "unable to remove currency";
         
         if currency and removed then
             message = string.format("removed currency %u from %s", currency, player:GetName());
