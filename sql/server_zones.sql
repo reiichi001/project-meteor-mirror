@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 6/12/2016 9:25:09 PM
+Date: 8/14/2016 9:43:28 AM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -42,7 +42,7 @@ INSERT INTO `server_zones` VALUES ('134', '202', 'sea0Market01', 'Market Wards',
 INSERT INTO `server_zones` VALUES ('135', '101', 'sea0Field04', 'Upper La Noscea', 'ZoneMasterSeaS0', '60', '60', '21', '0', '0', '1', '0', '0');
 INSERT INTO `server_zones` VALUES ('137', '101', null, 'U\'Ghamaro Mines', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('138', '101', null, 'La Noscea', '', '60', '60', '21', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('139', '101', null, 'The Cieldalaes', '', '0', '0', '0', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('139', '112', 'sea0Field01a', 'The Cieldalaes', 'ZoneMasterSeaS0', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('140', '101', null, 'Sailors Ward', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('141', '101', 'sea0Field01a', 'Lower La Noscea', 'ZoneMasterSeaS0', '60', '60', '21', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('143', '102', 'roc0Field01', 'Coerthas Central Highlands', 'ZoneMasterRocR0', '55', '55', '15', '0', '0', '1', '0', '0');
@@ -63,7 +63,7 @@ INSERT INTO `server_zones` VALUES ('158', '103', 'fst0Dungeon02', 'The Tam-Tara 
 INSERT INTO `server_zones` VALUES ('159', '103', 'fst0Dungeon03', 'The Thousand Maws of Toto-Rak', 'ZoneMasterFstF0', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('160', '204', 'fst0Market01', 'Market Wards', 'ZoneMasterMarketFstF0', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('161', '103', null, 'Peasants Ward', '', '0', '0', '0', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('162', '103', null, 'Central Shroud', '', '52', '52', '13', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('162', '103', 'fst0Field01a', 'Central Shroud', 'ZoneMasterFstF0', '52', '52', '13', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('164', '106', 'fst0Battle01', 'Central Shroud', 'ZoneMasterBattleFstF0', '0', '0', '13', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('165', '106', 'fst0Battle02', 'Central Shroud', 'ZoneMasterBattleFstF0', '0', '0', '13', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('166', '106', 'fst0Battle03', 'Central Shroud', 'ZoneMasterBattleFstF0', '0', '0', '13', '0', '0', '0', '0', '0');
@@ -99,16 +99,16 @@ INSERT INTO `server_zones` VALUES ('201', '111', null, '-', '', '0', '0', '0', '
 INSERT INTO `server_zones` VALUES ('204', '101', 'sea0Field02a', 'Western La Noscea', '', '60', '60', '21', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('205', '101', 'sea0Field03a', 'Eastern La Noscea', '', '60', '60', '21', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('206', '103', 'fst0Town01a', 'Gridania', 'ZoneMasterFstF0', '51', '51', '13', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('207', '103', null, 'North Shroud', '', '52', '52', '13', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('208', '103', null, 'South Shroud', '', '52', '52', '13', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('207', '103', 'fst0Field03a', 'North Shroud', 'ZoneMasterFstF0', '52', '52', '13', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('208', '103', 'fst0Field05a', 'South Shroud', 'ZoneMasterFstF0', '52', '52', '13', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('209', '104', 'wil0Town01a', 'Ul\'dah', 'ZoneMasterWilW0', '66', '66', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('210', '104', null, 'Eastern Thanalan', '', '68', '68', '25', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('211', '104', null, 'Western Thanalan', '', '68', '68', '25', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('230', '101', 'sea0Town01a', 'Limsa Lominsa', 'ZoneMasterSeaS0', '59', '59', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('231', '102', 'roc0Dungeon01', 'Dzemael Darkhold', '', '0', '0', '0', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('232', '101', 'sea0Office01', 'Maelstrom Command', '', '0', '0', '0', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('233', '104', 'wil0Office01', 'Hall of Flames', '', '0', '0', '0', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('234', '103', 'fst0Office01', 'Adders\' Nest', '', '0', '0', '0', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('232', '202', 'sea0Office01', 'Maelstrom Command', 'ZoneMasterOfficeSeaS0', '3', '0', '0', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('233', '205', 'wil0Office01', 'Hall of Flames', 'ZoneMasterOfficeWilW0', '4', '0', '0', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('234', '204', 'fst0Office01', 'Adders\' Nest', 'ZoneMasterOfficeFstF0', '2', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('235', '101', null, 'Shposhae', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('236', '101', null, 'Locke\'s Lie', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('237', '101', null, 'Turtleback Island', '', '0', '0', '0', '0', '0', '0', '0', '0');

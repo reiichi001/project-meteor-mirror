@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 6/21/2016 11:00:04 PM
+Date: 8/14/2016 9:43:22 AM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
