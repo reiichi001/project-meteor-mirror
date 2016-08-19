@@ -704,11 +704,6 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePacket(SetMusicPacket.BuildPacket(actorId, musicId, 1));
         }
 
-        public void ChangeMusicWithEffect(ushort musicId, ushort effect)
-        {
-            QueuePacket(SetMusicPacket.BuildPacket(actorId, musicId, effect));
-        }
-
         public void SendChocoboAppearance()
         {
             BroadcastPacket(SetCurrentMountChocoboPacket.BuildPacket(actorId, chocoboAppearance), true);
@@ -1268,17 +1263,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
         }
 
-        public void issueChocobo(byte appearanceId, string name)
+        public void IssueChocobo(byte appearanceId, string nameResponse)
         {
-            Database.IssuePlayerChocobo(this, appearanceId, name);
+            Database.IssuePlayerChocobo(this, appearanceId, nameResponse);
             hasChocobo = true;
             chocoboAppearance = appearanceId;
-            chocoboName = name;
-        }
-
-        public void changeChocoboAppearance(int appearanceId)
-        {
-
+            chocoboName = nameResponse;
         }
     }
 }

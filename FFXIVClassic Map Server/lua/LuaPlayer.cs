@@ -25,6 +25,11 @@ namespace FFXIVClassic_Map_Server.lua
             player.playerSession.QueuePacket(SetWeatherPacket.BuildPacket(player.actorId, weatherID, 1), true, false);
         }
 
+        public void IssueChocobo(int appearanceId, string name)
+        {
+            player.IssueChocobo((byte) appearanceId, name);
+        }
+
         public void GetParameter(string paramName)
         {
 
