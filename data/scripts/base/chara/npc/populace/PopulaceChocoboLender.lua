@@ -21,12 +21,16 @@ end
 
 function onEventStarted(player, npc, triggerName)
 	
-	local curLevel = 20;
-	local hasIssuance = true;
+	local curLevel = 20; -- TODO: pull from character
+	local hasIssuance = true; -- TODO: pull from character
 	local hasChocobo = player.hasChocobo;
 
-	if (player.isGM and hasChocobo == false) then
+	if (player.isGM and hasChocobo == false) then -- Let GMs auto have the issuance for debugging 
 		hasIssuance = true;
+	end
+
+	if (hasChocobo) then
+		hasIssuance = false;
 	end
 
 	local rentPrice = 800;
@@ -34,26 +38,28 @@ function onEventStarted(player, npc, triggerName)
 	local hasFunds = (playerFunds >= rentPrice);
 
 	callClientFunction(player, "eventTalkWelcome", player);
-	menuChoice = callClientFunction(player, "eventAskMainMenu", player, curLevel, hasFunds, hasIssuance, hasChocobo, hasChocobo, 4);
+	local menuChoice = callClientFunction(player, "eventAskMainMenu", player, curLevel, hasFunds, hasIssuance, hasChocobo, hasChocobo, 4);
 
 	if (menuChoice == 1) then -- Issuance option
 		callClientFunction(player, "eventTalkMyChocobo", player);
-		nameResponse = callClientFunction(player, "eventSetChocoboName", false);
+		local nameResponse = callClientFunction(player, "eventSetChocoboName", false);
 
 		if (nameResponse == "") then -- Cancel Chocobo naming
-			callClientFunction(player, "eventCancelChocoboName", player);
+			local cancelState = callClientFunction(player, "eventCancelChocoboName", player);
+			--Do anything with cancel state?
 		end
 
-		appearance = 1; -- TODO: pull correct appearance based on GC
-		--player:issueChocobo(appearance, nameResponse);
+		local appearance = 1; -- TODO: pull correct appearance based on GC
+		player:IssueChocobo(appearance, nameResponse);
 		if (nameResponse ~= "") then -- Successfully named Chocobo
 			callClientFunction(player, "eventAfterChocoboName", player);
 		end
-	elseif(menuChoice == 2 and hasChocobo) then -- Summon Bird
-		player:ChangeMusic(83);
-		player:SendChocoboAppearance();
-		player:SendGameMessage(player, worldMaster, 26001, 0x20);
-		player:SetMountState(1);
+		
+		mountChocobo(player);
+		teleportOutOfCity(player);
+	elseif(menuChoice == 2) then -- Summon Bird
+		mountChocobo(player);
+		teleportOutOfCity(player);
 	elseif(menuChoice == 3) then -- Change Barding
 		callClientFunction(player, "eventTalkStepBreak", player);
 	elseif(menuChoice == 5) then -- Rent Bird
@@ -67,4 +73,27 @@ function onEventStarted(player, npc, triggerName)
 	end
 
 	player:EndEvent();
+end
+
+function mountChocobo(player)
+	--TODO fix this
+	--[[
+	player:ChangeMusic(83);
+	player:SendChocoboAppearance();
+	player:SendGameMessage(player, worldMaster, 26001, 0x20);
+	player:SetMountState(1);
+	]]
+end
+
+function teleportOutOfCity(player) 
+	--TODO: Teleport out of city
+	local zoneId = player:GetPos()[4];
+	local worldManager = GetWorldManager();
+	if(zoneId == 155) then --Gridania
+		worldManager:DoZoneChange(player, 150, nil, 0x02, 319, 4, -996, 0.00);
+	elseif(zoneId == 133) then -- Limsa
+		worldManager:DoZoneChange(player, 133, nil, 0x02, -73, 30, 169, 2);
+	elseif(zoneId == 175) then -- Ul'dah
+
+	end
 end
