@@ -10,6 +10,7 @@ using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.actors.chara.player;
+using FFXIVClassic_Map_Server.packets.receive.supportdesk;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -1246,6 +1247,166 @@ namespace FFXIVClassic_Map_Server
             return cheevosPacket.BuildPacket(player.actorId);
         }
 
+        public static void SaveSupportTicket(GMSupportTicketPacket gmTicket)
+        {
+            string query;
+            MySqlCommand cmd;
 
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO supportdesk_tickets
+                    (id, title, body, langCode)
+                    VALUES
+                    (@id, @title, @body, @langCode)
+                    ON DUPLICATE KEY UPDATE
+                    questData = @questData, questFlags = @questFlags
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@id", gmTicket.ticketIssueIndex);
+                    cmd.Parameters.AddWithValue("@title", gmTicket.ticketTitle);
+                    cmd.Parameters.AddWithValue("@body", gmTicket.ticketBody);
+                    cmd.Parameters.AddWithValue("@langCode", gmTicket.langCode);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static string[] getFAQNames(uint lanCode=1)
+        {
+            string[] faqs = null;
+            List<string> raw = new List<string>();
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT
+                                    id,
+                                    label,
+                                    sort,
+                                    FROM supportdesk_faqs
+                                    ORDER BY sort";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint id = reader.GetUInt32(0);
+                            string label = reader.GetString(1);
+                            raw.Add(label);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                    faqs = raw.ToArray();
+                }
+            }
+            return faqs;
+        }
+
+        public static string getFAQBody(uint id, uint lanCode=1)
+        {
+            string body = string.Empty;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT
+                                    body
+                                    FROM supportdesk_faqs
+                                    WHERE id=" + id;
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            body = reader.GetString(2);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return body;
+        }
+
+        public static string[] getIssues(uint lanCode = 1)
+        {
+            string[] issues = null;
+            List<string> raw = new List<string>();
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT
+                                    id,
+                                    title,
+                                    sort,
+                                    FROM supportdesk_issues
+                                    ORDER BY sort";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint id = reader.GetUInt32(0);
+                            string label = reader.GetString(1);
+                            raw.Add(label);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                    issues = raw.ToArray();
+                }
+            }
+            return issues;
+        }
     }
 }
