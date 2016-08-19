@@ -1406,5 +1406,43 @@ namespace FFXIVClassic_Map_Server
             }
             return issues;
         }
+
+        public static void IssuePlayerChocobo(Player player, byte appearanceId, string name)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO characters_chocobo
+                    (characterId, hasChocobo, chocoboAppearance, chocoboName)
+                    VALUES
+                    (@characterId, @hasChocobo, @chocoboAppearance, @chocoboName)
+                    ON DUPLICATE KEY UPDATE
+                    hasChocobo=@hasChocobo, chocoboAppearance=@chocoboAppearance, chocoboName=@chocoboName";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@characterId", player.actorId);
+                    cmd.Parameters.AddWithValue("@hasChocobo", 1);
+                    cmd.Parameters.AddWithValue("@chocoboAppearance", appearanceId);
+                    cmd.Parameters.AddWithValue("@chocoboName", name);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
     }
 }
