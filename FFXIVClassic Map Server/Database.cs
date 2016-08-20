@@ -1260,12 +1260,11 @@ namespace FFXIVClassic_Map_Server
 
                     query = @"
                     INSERT INTO supportdesk_tickets
-                    (id, title, body, langCode)
+                    (title, body, langCode)
                     VALUES
-                    (@id, @title, @body, @langCode)";
+                    (@title, @body, @langCode)";
 
                     cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@id", gmTicket.ticketIssueIndex);
                     cmd.Parameters.AddWithValue("@title", gmTicket.ticketTitle);
                     cmd.Parameters.AddWithValue("@body", gmTicket.ticketBody);
                     cmd.Parameters.AddWithValue("@langCode", gmTicket.langCode);
@@ -1283,7 +1282,7 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public static string[] getFAQNames(uint lanCode = 1)
+        public static string[] getFAQNames(uint langCode = 1)
         {
             string[] faqs = null;
             List<string> raw = new List<string>();
@@ -1295,20 +1294,21 @@ namespace FFXIVClassic_Map_Server
 
                     string query = @"
                                     SELECT
-                                    id,
-                                    label,
-                                    sort
+                                    title
                                     FROM supportdesk_faqs
-                                    ORDER BY sort";
+                                    WHERE languageCode = @langCode
+                                    ORDER BY slot
+                                    ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Parameters.AddWithValue("@langCode", langCode);
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            uint id = reader.GetUInt32(0);
-                            string label = reader.GetString(1);
+                            string label = reader.GetString(0);
                             raw.Add(label);
                         }
                     }
@@ -1326,7 +1326,7 @@ namespace FFXIVClassic_Map_Server
             return faqs;
         }
 
-        public static string getFAQBody(uint id, uint lanCode = 1)
+        public static string getFAQBody(uint slot, uint langCode = 1)
         {
             string body = string.Empty;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -1339,10 +1339,11 @@ namespace FFXIVClassic_Map_Server
                                     SELECT
                                     body
                                     FROM supportdesk_faqs
-                                    WHERE id=@id";
+                                    WHERE slot=@slot and languageCode=@langCode";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@id", id);
+                    cmd.Parameters.AddWithValue("@slot", slot);
+                    cmd.Parameters.AddWithValue("@langCode", langCode);
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
@@ -1376,11 +1377,9 @@ namespace FFXIVClassic_Map_Server
 
                     string query = @"
                                     SELECT
-                                    id,
-                                    title,
-                                    sort
+                                    title
                                     FROM supportdesk_issues
-                                    ORDER BY sort";
+                                    ORDER BY slot";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -1388,8 +1387,7 @@ namespace FFXIVClassic_Map_Server
                     {
                         while (reader.Read())
                         {
-                            uint id = reader.GetUInt32(0);
-                            string label = reader.GetString(1);
+                            string label = reader.GetString(0);
                             raw.Add(label);
                         }
                     }

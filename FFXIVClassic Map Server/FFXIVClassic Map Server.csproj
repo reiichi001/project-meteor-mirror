@@ -123,7 +123,6 @@
     <Compile Include="lua\LuaNpc.cs" />
     <Compile Include="lua\LuaPlayer.cs" />
     <Compile Include="lua\LuaScript.cs" />
-    <Compile Include="managers\SupportDeskManager.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\ChatMessagePacket.cs" />
