@@ -374,17 +374,17 @@ namespace FFXIVClassic_Map_Server
                         //Request for FAQ/Info List
                         case 0x01D0:
                             FaqListRequestPacket faqRequest = new FaqListRequestPacket(subpacket.data);
-                            client.QueuePacket(BasePacket.CreatePacket(FaqListResponsePacket.BuildPacket(player.actorID, new string[] { "Testing FAQ1", "Coded style!" }), true, false));
+                            client.QueuePacket(BasePacket.CreatePacket(FaqListResponsePacket.BuildPacket(player.actorID, Database.getFAQNames(faqRequest.langCode)), true, false));
                             break;
                         //Request for body of a faq/info selection
                         case 0x01D1:
                             FaqBodyRequestPacket faqBodyRequest = new FaqBodyRequestPacket(subpacket.data);
-                            client.QueuePacket(BasePacket.CreatePacket(FaqBodyResponsePacket.BuildPacket(player.actorID, "HERE IS A GIANT BODY. Nothing else to say!"), true, false));
+                            client.QueuePacket(BasePacket.CreatePacket(FaqBodyResponsePacket.BuildPacket(player.actorID, Database.getFAQBody(faqBodyRequest.faqIndex, faqBodyRequest.langCode)), true, false));
                             break;
                         //Request issue list
                         case 0x01D2:
                             GMTicketIssuesRequestPacket issuesRequest = new GMTicketIssuesRequestPacket(subpacket.data);
-                            client.QueuePacket(BasePacket.CreatePacket(IssueListResponsePacket.BuildPacket(player.actorID, new string[] { "Test1", "Test2", "Test3", "Test4", "Test5" }), true, false));
+                            client.QueuePacket(BasePacket.CreatePacket(IssueListResponsePacket.BuildPacket(player.actorID, Database.getIssues(issuesRequest.langCode)), true, false));
                             break;
                         //Request if GM ticket exists
                         case 0x01D3:
@@ -392,12 +392,13 @@ namespace FFXIVClassic_Map_Server
                             break;
                         //Request for GM response message
                         case 0x01D4:
-                            client.QueuePacket(BasePacket.CreatePacket(GMTicketPacket.BuildPacket(player.actorID, "This is a GM Ticket Title", "This is a GM Ticket Body."), true, false));
+                            client.QueuePacket(BasePacket.CreatePacket(GMTicketPacket.BuildPacket(player.actorID, "Ticket Title", "Enter your Help request here."), true, false));
                             break;
                         //GM Ticket Sent
                         case 0x01D5:
                             GMSupportTicketPacket gmTicket = new GMSupportTicketPacket(subpacket.data);
                             Program.Log.Info("Got GM Ticket: \n" + gmTicket.ticketTitle + "\n" + gmTicket.ticketBody);
+                            Database.SaveSupportTicket(gmTicket);
                             client.QueuePacket(BasePacket.CreatePacket(GMTicketSentResponsePacket.BuildPacket(player.actorID, true), true, false));
                             break;
                         //Request to end ticket

@@ -1263,5 +1263,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
         }
 
+        public void IssueChocobo(byte appearanceId, string nameResponse)
+        {
+            Database.IssuePlayerChocobo(this, appearanceId, nameResponse);
+            hasChocobo = true;
+            chocoboAppearance = appearanceId;
+            chocoboName = nameResponse;
+        }
     }
 }
