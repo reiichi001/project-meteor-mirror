@@ -829,7 +829,7 @@ namespace FFXIVClassic_Map_Server
                         {
                             ushort equipSlot = reader.GetUInt16(0);
                             ulong uniqueItemId = reader.GetUInt16(1);
-                            InventoryItem item = player.GetInventory(Inventory.NORMAL).GetItemById(uniqueItemId);
+                            InventoryItem item = player.GetInventory(Inventory.NORMAL).GetItemByUniqueId(uniqueItemId);
                             equipment[equipSlot] = item;
                         }
                     }
@@ -1247,10 +1247,11 @@ namespace FFXIVClassic_Map_Server
             return cheevosPacket.BuildPacket(player.actorId);
         }
 
-        public static void SaveSupportTicket(GMSupportTicketPacket gmTicket)
+        public static bool SaveSupportTicket(GMSupportTicketPacket gmTicket, string playerName)
         {
             string query;
             MySqlCommand cmd;
+            bool wasError = false;
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -1260,15 +1261,91 @@ namespace FFXIVClassic_Map_Server
 
                     query = @"
                     INSERT INTO supportdesk_tickets
-                    (title, body, langCode)
+                    (name, title, body, langCode)
                     VALUES
-                    (@title, @body, @langCode)";
+                    (@name, @title, @body, @langCode)";
 
                     cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@name", playerName);
                     cmd.Parameters.AddWithValue("@title", gmTicket.ticketTitle);
                     cmd.Parameters.AddWithValue("@body", gmTicket.ticketBody);
                     cmd.Parameters.AddWithValue("@langCode", gmTicket.langCode);
 
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                    wasError = true;
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            return wasError;
+        }
+
+        public static bool isTicketOpen(string playerName)
+        {
+            bool isOpen = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT
+                                    isOpen
+                                    FROM supportdesk_tickets
+                                    WHERE name = @name
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Parameters.AddWithValue("@name", playerName);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            isOpen = reader.GetBoolean(0);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();                   
+                }
+            }
+
+            return isOpen;
+        }
+
+        public static void closeTicket(string playerName)
+        {
+            bool isOpen = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    UPDATE
+                                    supportdesk_tickets
+                                    SET isOpen = 0
+                                    WHERE name = @name
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@name", playerName);
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
@@ -1442,5 +1519,41 @@ namespace FFXIVClassic_Map_Server
                 }
             }
         }
+
+        public static void ChangePlayerChocoboAppearance(Player player, byte appearanceId)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    UPDATE characters_chocobo
+                    SET
+                    chocoboAppearance=@chocoboAppearance
+                    WHERE
+                    characterId = @characterId";                    
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@characterId", player.actorId);
+                    cmd.Parameters.AddWithValue("@chocoboAppearance", appearanceId);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+        
     }
 }

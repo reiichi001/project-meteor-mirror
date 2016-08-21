@@ -959,6 +959,14 @@ namespace FFXIVClassic_Map_Server.Actors
                 return null;
         }
 
+        public int GetCurrentGil()
+        {
+            if (GetInventory(Inventory.CURRENCY).HasItem(1000001))
+                return GetInventory(Inventory.CURRENCY).GetItemByCatelogId(1000001).quantity;
+            else
+                return 0;
+        }
+
         public Actor GetActorInInstance(uint actorId)
         {
             foreach (Actor a in playerSession.actorInstanceList)
@@ -1269,6 +1277,12 @@ namespace FFXIVClassic_Map_Server.Actors
             hasChocobo = true;
             chocoboAppearance = appearanceId;
             chocoboName = nameResponse;
+        }
+
+        public void ChangeChocoboAppearance(byte appearanceId)
+        {
+            Database.ChangePlayerChocoboAppearance(this, appearanceId);
+            chocoboAppearance = appearanceId;
         }
     }
 }

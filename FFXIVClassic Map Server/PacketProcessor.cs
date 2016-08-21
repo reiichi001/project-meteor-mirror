@@ -388,7 +388,7 @@ namespace FFXIVClassic_Map_Server
                             break;
                         //Request if GM ticket exists
                         case 0x01D3:
-                            client.QueuePacket(BasePacket.CreatePacket(StartGMTicketPacket.BuildPacket(player.actorID, false), true, false));
+                            client.QueuePacket(BasePacket.CreatePacket(StartGMTicketPacket.BuildPacket(player.actorID, Database.isTicketOpen(player.GetActor().customDisplayName)), true, false));
                             break;
                         //Request for GM response message
                         case 0x01D4:
@@ -398,11 +398,16 @@ namespace FFXIVClassic_Map_Server
                         case 0x01D5:
                             GMSupportTicketPacket gmTicket = new GMSupportTicketPacket(subpacket.data);
                             Program.Log.Info("Got GM Ticket: \n" + gmTicket.ticketTitle + "\n" + gmTicket.ticketBody);
-                            Database.SaveSupportTicket(gmTicket);
-                            client.QueuePacket(BasePacket.CreatePacket(GMTicketSentResponsePacket.BuildPacket(player.actorID, true), true, false));
+                            bool wasError = Database.SaveSupportTicket(gmTicket, player.GetActor().customDisplayName);
+                            client.QueuePacket(BasePacket.CreatePacket(GMTicketSentResponsePacket.BuildPacket(player.actorID, !wasError), true, false));
+
+                            if (!wasError)
+                                client.QueuePacket(BasePacket.CreatePacket(StartGMTicketPacket.BuildPacket(player.actorID, true), true, false));
+
                             break;
                         //Request to end ticket
                         case 0x01D6:
+                            Database.closeTicket(player.GetActor().customDisplayName);
                             client.QueuePacket(BasePacket.CreatePacket(EndGMTicketPacket.BuildPacket(player.actorID), true, false));
                             break;
                         default:
