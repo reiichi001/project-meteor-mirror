@@ -15,6 +15,18 @@ eventTalkStepBreak(player) - Finishes talkTurn and says a goodbye
 
 require ("global")
 
+local gcIssuances = {
+	[1500006] = 2001004,
+	[1500061] = 2001005,
+	[1000840] = 2001006
+};
+
+local startAppearances = {
+	[1500006] = CHOCOBO_LIMSA1,
+	[1500061] = CHOCOBO_GRIDANIA1,
+	[1000840] = CHOCOBO_ULDAH1
+};
+
 function init(npc)
 	return false, false, 0, 0;	
 end
@@ -22,52 +34,44 @@ end
 function onEventStarted(player, npc, triggerName)
 	
 	local curLevel = 20; -- TODO: pull from character
-	local hasIssuance = true; -- TODO: pull from character
+	local hasIssuance = player:GetInventory(INVENTORY_KEYITEMS):HasItem(gcIssuances[npc:GetActorClassId()]);
 	local hasChocobo = player.hasChocobo;
-
+	
 	if (player.isGM and hasChocobo == false) then -- Let GMs auto have the issuance for debugging 
 		hasIssuance = true;
-	end
-
-	if (hasChocobo) then
-		hasIssuance = false;
-	end
+	end	
 
 	local rentPrice = 800;
-	local playerFunds = 0; --TODO: pull character's money
-	local hasFunds = (playerFunds >= rentPrice);
+	local hasFunds = (player:GetCurrentGil() >= rentPrice);
 
 	callClientFunction(player, "eventTalkWelcome", player);
-	local menuChoice = callClientFunction(player, "eventAskMainMenu", player, curLevel, hasFunds, hasIssuance, hasChocobo, hasChocobo, 4);
+	
+	local menuChoice = callClientFunction(player, "eventAskMainMenu", player, curLevel, hasFunds, hasIssuance, true, true, player.chocoboAppearance);
 
 	if (menuChoice == 1) then -- Issuance option
 		callClientFunction(player, "eventTalkMyChocobo", player);
-		local nameResponse = callClientFunction(player, "eventSetChocoboName", false);
+		local nameResponse = callClientFunction(player, "eventSetChocoboName", true);
 
 		if (nameResponse == "") then -- Cancel Chocobo naming
-			local cancelState = callClientFunction(player, "eventCancelChocoboName", player);
-			--Do anything with cancel state?
+			callClientFunction(player, "eventCancelChocoboName", player);
+			callClientFunction(player, "eventTalkStepBreak", player);
+			player:EndEvent();
+			return;
+		else		
+			local appearance = startAppearances[npc:GetActorClassId()];
+			player:IssueChocobo(appearance, nameResponse);
+			callClientFunction(player, "eventAfterChocoboName", player);			
+			mountChocobo(player);
+			teleportOutOfCity(player, npc);
 		end
-
-		local appearance = 1; -- TODO: pull correct appearance based on GC
-		player:IssueChocobo(appearance, nameResponse);
-		if (nameResponse ~= "") then -- Successfully named Chocobo
-			callClientFunction(player, "eventAfterChocoboName", player);
-		end
-		
-		mountChocobo(player);
-		teleportOutOfCity(player);
+				
 	elseif(menuChoice == 2) then -- Summon Bird
+		teleportOutOfCity(player, npc);
 		mountChocobo(player);
-		teleportOutOfCity(player);
 	elseif(menuChoice == 3) then -- Change Barding
 		callClientFunction(player, "eventTalkStepBreak", player);
 	elseif(menuChoice == 5) then -- Rent Bird
-		if (hasFunds == false) then -- Not enough money
-			-- Do not enough money action??
-		else
-			--Issue rental chocobo
-		end
+		issueRentalChocobo(player);
 	else
 		callClientFunction(player, "eventTalkStepBreak", player);
 	end
@@ -76,24 +80,29 @@ function onEventStarted(player, npc, triggerName)
 end
 
 function mountChocobo(player)
-	--TODO fix this
-	--[[
+	local worldMaster = GetWorldMaster();
 	player:ChangeMusic(83);
 	player:SendChocoboAppearance();
 	player:SendGameMessage(player, worldMaster, 26001, 0x20);
 	player:SetMountState(1);
-	]]
 end
 
-function teleportOutOfCity(player) 
-	--TODO: Teleport out of city
+function issueRentalChocobo(player)
+	--TODO: Write issue rental chocobo code
+end
+
+function teleportOutOfCity(player, npc) 
 	local zoneId = player:GetPos()[4];
 	local worldManager = GetWorldManager();
-	if(zoneId == 155) then --Gridania
-		worldManager:DoZoneChange(player, 150, nil, 0x02, 319, 4, -996, 0.00);
-	elseif(zoneId == 133) then -- Limsa
-		worldManager:DoZoneChange(player, 133, nil, 0x02, -73, 30, 169, 2);
-	elseif(zoneId == 175) then -- Ul'dah
-
+	local exitPoints = {
+		[1500061] = {150, 319, 4, 996, 0.00}, -- Gridania
+		[1500006] = {133, -83, 30, 169, 2.00}, -- Limsa
+		[1000840] = {170, -32, 183, -74, 2} -- Ul'dah
+	};
+	--print "Getting exit point for npc [" ..npc:GetActorClassId().."]";
+	local exitPoint = exitPoints[npc:GetActorClassId()];
+	if (exitPoint == nil) then
+		return
 	end
+	worldManager:DoZoneChange(player, exitPoint[0], nil, 0x02, exitPoint[1], exitPoint[2], exitPoint[3], exitPoint[4]);
 end
