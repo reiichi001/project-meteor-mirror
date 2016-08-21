@@ -1138,10 +1138,10 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePacket(InventoryEndChangePacket.BuildPacket(toBeExamined.actorId, actorId));
         }
 
-        public void SendRequestedInfo(params object[] parameters)
+        public void SendDataPacket(params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
-            SubPacket spacket = InfoRequestResponsePacket.BuildPacket(actorId, actorId, lParams);
+            SubPacket spacket = GenericDataPacket.BuildPacket(actorId, actorId, lParams);
             spacket.DebugPrintSubPacket();
             QueuePacket(spacket);
         }

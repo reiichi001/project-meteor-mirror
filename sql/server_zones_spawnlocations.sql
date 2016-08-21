@@ -4,12 +4,10 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 8/14/2016 9:43:22 AM
+Date: 8/21/2016 7:50:14 PM
 */
 
-SET FOREIGN_KEY_CHECKS = 0;
-SET autocommit = 0;
-
+SET FOREIGN_KEY_CHECKS=0;
 -- ----------------------------
 -- Table structure for server_zones_spawnlocations
 -- ----------------------------
@@ -23,7 +21,7 @@ CREATE TABLE `server_zones_spawnlocations` (
   `spawnZ` float NOT NULL,
   `spawnRotation` float NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records 
@@ -41,5 +39,6 @@ INSERT INTO `server_zones_spawnlocations` VALUES ('10', '166', null, '16', '356.
 INSERT INTO `server_zones_spawnlocations` VALUES ('11', '244', null, '15', '0.048', '0', '-5.737', '0');
 INSERT INTO `server_zones_spawnlocations` VALUES ('12', '244', null, '15', '-160.048', '0', '-165.737', '0');
 INSERT INTO `server_zones_spawnlocations` VALUES ('13', '244', null, '15', '160.048', '0', '154.263', '0');
-
-COMMIT;
+INSERT INTO `server_zones_spawnlocations` VALUES ('14', '150', null, '15', '333.271', '5.889', '-943.275', '0.794');
+INSERT INTO `server_zones_spawnlocations` VALUES ('15', '133', null, '15', '-8.062', '45.429', '139.364', '2.955');
+INSERT INTO `server_zones_spawnlocations` VALUES ('16', '170', null, '15', '-27.015', '181.798', '-79.72', '2.513');

@@ -27,6 +27,12 @@ local startAppearances = {
 	[1000840] = CHOCOBO_ULDAH1
 };
 
+local cityExits = {
+	[1500006] = 15,
+	[1500061] = 14,
+	[1000840] = 16
+};
+
 function init(npc)
 	return false, false, 0, 0;	
 end
@@ -60,14 +66,18 @@ function onEventStarted(player, npc, triggerName)
 		else		
 			local appearance = startAppearances[npc:GetActorClassId()];
 			player:IssueChocobo(appearance, nameResponse);
-			callClientFunction(player, "eventAfterChocoboName", player);			
+			callClientFunction(player, "eventAfterChocoboName", player);
 			mountChocobo(player);
-			teleportOutOfCity(player, npc);
+			GetWorldManager():DoZoneChange(player, cityExits[npc:GetActorClassId()]);			
+			player:SendGameMessage(player, GetWorldMaster(), 25248, 0x20, 2001007);
+			player:SendDataPacket("attention", GetWorldMaster(), "", 25248, 2001007);
+			player:EndEvent();
+			return;
 		end
 				
 	elseif(menuChoice == 2) then -- Summon Bird
-		teleportOutOfCity(player, npc);
 		mountChocobo(player);
+		GetWorldManager():DoZoneChange(player, cityExits[npc:GetActorClassId()]);
 	elseif(menuChoice == 3) then -- Change Barding
 		callClientFunction(player, "eventTalkStepBreak", player);
 	elseif(menuChoice == 5) then -- Rent Bird
@@ -80,29 +90,12 @@ function onEventStarted(player, npc, triggerName)
 end
 
 function mountChocobo(player)
-	local worldMaster = GetWorldMaster();
-	player:ChangeMusic(83);
 	player:SendChocoboAppearance();
-	player:SendGameMessage(player, worldMaster, 26001, 0x20);
 	player:SetMountState(1);
+	player:ChangeSpeed(0.0, 5.0, 10.0);
+	player:ChangeState(15);
 end
 
 function issueRentalChocobo(player)
 	--TODO: Write issue rental chocobo code
-end
-
-function teleportOutOfCity(player, npc) 
-	local zoneId = player:GetPos()[4];
-	local worldManager = GetWorldManager();
-	local exitPoints = {
-		[1500061] = {150, 319, 4, 996, 0.00}, -- Gridania
-		[1500006] = {133, -83, 30, 169, 2.00}, -- Limsa
-		[1000840] = {170, -32, 183, -74, 2} -- Ul'dah
-	};
-	--print "Getting exit point for npc [" ..npc:GetActorClassId().."]";
-	local exitPoint = exitPoints[npc:GetActorClassId()];
-	if (exitPoint == nil) then
-		return
-	end
-	worldManager:DoZoneChange(player, exitPoint[0], nil, 0x02, exitPoint[1], exitPoint[2], exitPoint[3], exitPoint[4]);
 end
