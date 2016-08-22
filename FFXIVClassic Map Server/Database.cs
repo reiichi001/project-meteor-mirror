@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.utils;
-using FFXIVClassic_Map_Server.packets;
+
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.Actors;

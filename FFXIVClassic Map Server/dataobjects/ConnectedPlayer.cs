@@ -1,6 +1,6 @@
 ﻿using FFXIVClassic_Map_Server;
 using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.packets;
+
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;

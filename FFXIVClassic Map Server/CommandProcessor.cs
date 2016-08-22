@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Map_Server.packets;
+
 using System.IO;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server;

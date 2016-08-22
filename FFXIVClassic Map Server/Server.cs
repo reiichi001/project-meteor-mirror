@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Map_Server.packets;
+
 using FFXIVClassic.Common;
 using NLog;
 using FFXIVClassic_Map_Server.Actors;

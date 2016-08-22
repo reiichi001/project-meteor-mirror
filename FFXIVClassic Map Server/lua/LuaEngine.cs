@@ -1,4 +1,4 @@
-﻿using FFXIVClassic_Map_Server.packets;
+﻿
 using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
 using FFXIVClassic_Map_Server.lua;
+using FFXIVClassic.Common;
 
 namespace FFXIVClassic_Map_Server.lua
 {

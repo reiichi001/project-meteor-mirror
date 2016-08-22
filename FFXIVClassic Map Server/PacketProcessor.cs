@@ -1,5 +1,5 @@
 ﻿using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.packets;
+
 using System;
 using System.Collections.Generic;
 using System.IO;

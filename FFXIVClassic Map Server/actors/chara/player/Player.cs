@@ -1,5 +1,5 @@
 ﻿using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.packets;
+
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.dataobjects;
@@ -7,8 +7,6 @@ using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using FFXIVClassic_Map_Server.packets.send.actor.events;
-using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.events;
 using FFXIVClassic_Map_Server.packets.send.list;
 using FFXIVClassic_Map_Server.packets.send.player;
@@ -17,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using MoonSharp.Interpreter;
 using FFXIVClassic_Map_Server.packets.receive.events;
+using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 
 namespace FFXIVClassic_Map_Server.Actors
 {

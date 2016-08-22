@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 
+using FFXIVClassic.Common;
+
 namespace FFXIVClassic_Map_Server.packets.send
 {
     class _0x02Packet

@@ -1,4 +1,5 @@
-﻿using FFXIVClassic_Map_Server.packets;
+﻿
+using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using System.Collections.Generic;

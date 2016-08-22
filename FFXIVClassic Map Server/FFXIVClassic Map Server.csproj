@@ -121,7 +121,6 @@
     <Compile Include="lua\LuaPlayer.cs" />
     <Compile Include="lua\LuaScript.cs" />
     <Compile Include="PacketProcessor.cs" />
-    <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\ChatMessagePacket.cs" />
     <Compile Include="packets\receive\events\EventUpdatePacket.cs" />
     <Compile Include="packets\receive\events\EventStartPacket.cs" />
@@ -255,7 +254,6 @@
     <Compile Include="packets\send\_0x02Packet.cs" />
     <Compile Include="packets\send\_0x10Packet.cs" />
     <Compile Include="packets\send\_0xE2Packet.cs" />
-    <Compile Include="packets\SubPacket.cs" />
     <Compile Include="packets\receive\PingPacket.cs" />
     <Compile Include="packets\receive\UpdatePlayerPositionPacket.cs" />
     <Compile Include="Program.cs" />

@@ -1,9 +1,12 @@
-﻿using FFXIVClassic_Map_Server.actors;
+﻿using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.actors;
 using System;
 using System.IO;
 using System.Text;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor.events
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor.events
 {
     class SetEmoteEventCondition
     {

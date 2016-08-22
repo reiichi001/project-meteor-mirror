@@ -1,8 +1,8 @@
-﻿using FFXIVClassic_Map_Server.packets;
+﻿
+using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send.actor.inventory;
-using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using System;
 using System.Collections.Generic;
 using System.Linq;

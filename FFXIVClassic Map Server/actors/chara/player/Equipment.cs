@@ -1,7 +1,6 @@
 ﻿using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send.actor.inventory;
-using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using System.Collections.Generic;
 
 namespace FFXIVClassic_Map_Server.actors.chara.player

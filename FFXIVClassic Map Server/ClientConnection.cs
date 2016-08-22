@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
-using FFXIVClassic_Map_Server.packets;
+
 using FFXIVClassic.Common;
 using System.Collections.Concurrent;
 using System.Net;

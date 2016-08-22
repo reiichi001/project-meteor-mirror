@@ -89,7 +89,6 @@
     <Compile Include="Database.cs" />
     <Compile Include="dataobjects\World.cs" />
     <Compile Include="PacketProcessor.cs" />
-    <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\CharacterModifyPacket.cs" />
     <Compile Include="packets\receive\SecurityHandshakePacket.cs" />
     <Compile Include="packets\receive\SelectCharacterPacket.cs" />
@@ -99,7 +98,6 @@
     <Compile Include="packets\send\ErrorPacket.cs" />
     <Compile Include="packets\HardCoded_Packets.cs" />
     <Compile Include="packets\send\SelectCharacterConfirmPacket.cs" />
-    <Compile Include="packets\SubPacket.cs" />
     <Compile Include="packets\send\CharacterListPacket.cs" />
     <Compile Include="packets\send\ImportListPacket.cs" />
     <Compile Include="packets\send\AccountListPacket.cs" />

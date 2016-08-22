@@ -1,6 +1,8 @@
 ﻿using FFXIVClassic.Common;
 using System.IO;
 
+using FFXIVClassic.Common;
+
 namespace FFXIVClassic_Map_Server.packets.send.player
 {
     class SetCompletedAchievementsPacket

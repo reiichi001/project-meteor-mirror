@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FFXIVClassic.Common;
+using System;
 using System.IO;
 
 namespace FFXIVClassic_Map_Server.packets.receive

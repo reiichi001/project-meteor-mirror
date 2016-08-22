@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor
 {
     class ActorInstantiatePacket
     {

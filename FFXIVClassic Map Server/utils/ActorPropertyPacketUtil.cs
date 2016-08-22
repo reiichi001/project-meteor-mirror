@@ -1,7 +1,8 @@
-﻿using FFXIVClassic_Map_Server.packets;
+﻿
 using System.Collections.Generic;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.Actors;
+using FFXIVClassic.Common;
 
 namespace FFXIVClassic_Map_Server.utils
 {

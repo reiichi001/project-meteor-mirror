@@ -1,6 +1,8 @@
 ﻿using System.IO;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor
 {
     class _0xFPacket
     {

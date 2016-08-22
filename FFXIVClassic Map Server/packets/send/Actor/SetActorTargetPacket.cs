@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FFXIVClassic.Common;
+using System;
 
 namespace FFXIVClassic_Map_Server.packets.send.actor
 {

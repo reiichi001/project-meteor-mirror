@@ -4,7 +4,7 @@ using FFXIVClassic.Common;
 using NLog;
 using NLog.Targets;
 
-namespace FFXIVClassic_Map_Server.packets
+namespace FFXIVClassic.Common
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct SubPacketHeader

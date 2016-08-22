@@ -1,4 +1,6 @@
-﻿namespace FFXIVClassic_Map_Server.packets.send.player
+﻿using FFXIVClassic.Common;
+
+namespace FFXIVClassic_Map_Server.packets.send.player
 {
     class SetCurrentMountGoobbuePacket
     {

@@ -1,4 +1,7 @@
-﻿using System;
+﻿using FFXIVClassic.Common;
+using System;
+
+using FFXIVClassic.Common;
 
 namespace FFXIVClassic_Map_Server.packets.send.player
 {

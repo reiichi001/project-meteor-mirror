@@ -1,4 +1,8 @@
-﻿namespace FFXIVClassic_Map_Server.packets.send.supportdesk
+﻿using FFXIVClassic.Common;
+
+using FFXIVClassic.Common;
+
+namespace FFXIVClassic_Map_Server.packets.send.supportdesk
 {
     class GMTicketSentResponsePacket
     {

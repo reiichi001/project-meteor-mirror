@@ -1,7 +1,9 @@
 ﻿using FFXIVClassic_Map_Server.dataobjects;
 using System.IO;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor.inventory
 {
     class InventoryListX01Packet
     {

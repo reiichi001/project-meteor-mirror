@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using FFXIVClassic.Common;
 using NLog;
 using NLog.Targets;
 
-namespace FFXIVClassic_Lobby_Server.packets
+namespace FFXIVClassic.Common
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct BasePacketHeader
     {
         public byte isAuthenticated;
-        public byte isEncrypted;
+        public byte isCompressed;
         public ushort connectionType;
         public ushort packetSize;
         public ushort numSubpackets;
@@ -163,7 +162,8 @@ namespace FFXIVClassic_Lobby_Server.packets
                         {
                             var read = binreader.ReadUInt32();
                             if (read == 0x029B2941 || read == 0x02977DC7 || read == 0x0297D2C8 || read == 0x0230d573 ||
-                                read == 0x23317df || read == 0x23344a3 || read == 0x1730bdb) //Original ID
+                                read == 0x23317df || read == 0x23344a3 || read == 0x1730bdb || read == 0x6c)
+                                //Original ID
                             {
                                 binWriter.BaseStream.Seek(binreader.BaseStream.Position - 0x4, SeekOrigin.Begin);
                                 binWriter.Write(actorID);
@@ -201,8 +201,8 @@ namespace FFXIVClassic_Lobby_Server.packets
         {
 #if DEBUG
             logger.ColorDebug(
-                string.Format("IsAuth:{0} Size:0x{1:X}, NumSubpackets:{2}{3}{4}",
-                    header.isAuthenticated, header.packetSize, header.numSubpackets,
+                string.Format("IsAuth:{0} IsEncrypted:{1}, Size:0x{2:X}, NumSubpackets:{3}{4}{5}",
+                    header.isAuthenticated, header.isCompressed, header.packetSize, header.numSubpackets,
                     Environment.NewLine, Utils.ByteArrayToHex(GetHeaderBytes())), ConsoleOutputColor.DarkYellow);
 
             foreach (var sub in GetSubpackets())
@@ -214,14 +214,14 @@ namespace FFXIVClassic_Lobby_Server.packets
 
         #region Utility Functions
 
-        public static BasePacket CreatePacket(List<SubPacket> subpackets, bool isAuthed, bool isEncrypted)
+        public static BasePacket CreatePacket(List<SubPacket> subpackets, bool isAuthed, bool isCompressed)
         {
             //Create Header
             var header = new BasePacketHeader();
             byte[] data = null;
 
             header.isAuthenticated = isAuthed ? (byte) 1 : (byte) 0;
-            header.isEncrypted = isEncrypted ? (byte) 1 : (byte) 0;
+            header.isCompressed = isCompressed ? (byte) 1 : (byte) 0;
             header.numSubpackets = (ushort) subpackets.Count;
             header.packetSize = BASEPACKET_SIZE;
             header.timestamp = Utils.MilisUnixTimeStampUTC();
@@ -247,14 +247,14 @@ namespace FFXIVClassic_Lobby_Server.packets
             return packet;
         }
 
-        public static BasePacket CreatePacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)
+        public static BasePacket CreatePacket(SubPacket subpacket, bool isAuthed, bool isCompressed)
         {
             //Create Header
             var header = new BasePacketHeader();
             byte[] data = null;
 
             header.isAuthenticated = isAuthed ? (byte) 1 : (byte) 0;
-            header.isEncrypted = isEncrypted ? (byte) 1 : (byte) 0;
+            header.isCompressed = isCompressed ? (byte) 1 : (byte) 0;
             header.numSubpackets = 1;
             header.packetSize = BASEPACKET_SIZE;
             header.timestamp = Utils.MilisUnixTimeStampUTC();
@@ -274,7 +274,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             return packet;
         }
 
-        public static BasePacket CreatePacket(byte[] data, bool isAuthed, bool isEncrypted)
+        public static BasePacket CreatePacket(byte[] data, bool isAuthed, bool isCompressed)
         {
             Debug.Assert(data != null);
 
@@ -282,7 +282,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             var header = new BasePacketHeader();
 
             header.isAuthenticated = isAuthed ? (byte) 1 : (byte) 0;
-            header.isEncrypted = isEncrypted ? (byte) 1 : (byte) 0;
+            header.isCompressed = isCompressed ? (byte) 1 : (byte) 0;
             header.numSubpackets = 1;
             header.packetSize = BASEPACKET_SIZE;
             header.timestamp = Utils.MilisUnixTimeStampUTC();
