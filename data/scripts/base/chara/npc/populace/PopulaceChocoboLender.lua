@@ -71,6 +71,13 @@ function onEventStarted(player, npc, triggerName)
 			GetWorldManager():DoZoneChange(player, cityExits[npc:GetActorClassId()]);			
 			player:SendGameMessage(player, GetWorldMaster(), 25248, 0x20, 2001007);
 			player:SendDataPacket("attention", GetWorldMaster(), "", 25248, 2001007);
+			
+			if (player:GetInventory(INVENTORY_KEYITEMS):HasItem(2001007) == false) then
+				player:GetInventory(INVENTORY_KEYITEMS):AddItem(2001007);
+			end
+			
+			player:GetInventory(INVENTORY_KEYITEMS):RemoveItem(gcIssuances[npc:GetActorClassId()], 1);
+			
 			player:EndEvent();
 			return;
 		end
