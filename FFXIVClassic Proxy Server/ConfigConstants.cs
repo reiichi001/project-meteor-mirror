@@ -18,15 +18,15 @@ namespace FFXIVClassic_World_Server
 
         public static bool Load()
         {
-            Program.Log.Info("Loading config.ini");
+            Program.Log.Info("Loading world_config.ini");
 
-            if (!File.Exists("./config.ini"))
+            if (!File.Exists("./world_config.ini"))
             {
                 Program.Log.Error("FILE NOT FOUND!");
                 return false;
             }
 
-            INIFile configIni = new INIFile("./config.ini");
+            INIFile configIni = new INIFile("./world_config.ini");
 
             ConfigConstants.OPTIONS_BINDIP =        configIni.GetValue("General", "server_ip", "127.0.0.1");
             ConfigConstants.OPTIONS_PORT =          configIni.GetValue("General", "server_port", "54994");

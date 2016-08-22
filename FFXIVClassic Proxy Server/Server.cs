@@ -18,6 +18,8 @@ namespace FFXIVClassic_World_Server
 
         private Socket mServerSocket;
 
+        WorldManager worldManager;
+
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private Dictionary<uint, Session> mSessionList = new Dictionary<uint, Session>();
 
@@ -33,7 +35,10 @@ namespace FFXIVClassic_World_Server
 
         public bool StartServer()
         {
-          
+            worldManager = new WorldManager(this);
+            worldManager.LoadZoneServerList();
+            worldManager.ConnectToZoneServers();
+
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), int.Parse(ConfigConstants.OPTIONS_PORT));
 
             try
@@ -63,7 +68,7 @@ namespace FFXIVClassic_World_Server
             }
 
             Console.ForegroundColor = ConsoleColor.White;
-            Program.Log.Info("Map Server has started @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
+            Program.Log.Info("World Server accepting connections @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
             Console.ForegroundColor = ConsoleColor.Gray;
             
             return true;
