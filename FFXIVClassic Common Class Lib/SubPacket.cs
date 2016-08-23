@@ -72,26 +72,38 @@ namespace FFXIVClassic.Common
             offset += header.subpacketSize;
         }
 
-        public SubPacket(ushort opcode, uint sourceId, uint targetId, byte[] data)
+        public SubPacket(ushort opcode, uint sourceId, uint targetId, byte[] data) : this(true, opcode, sourceId, targetId, data) { }
+
+        public SubPacket(bool isGameMessage, ushort opcode, uint sourceId, uint targetId, byte[] data)
         {
             header = new SubPacketHeader();
-            gameMessage = new GameMessageHeader();
 
-            gameMessage.opcode = opcode;
+            if (isGameMessage)
+            {
+                gameMessage = new GameMessageHeader();
+                gameMessage.opcode = opcode;
+                gameMessage.timestamp = Utils.UnixTimeStampUTC();
+                gameMessage.unknown4 = 0x14;
+                gameMessage.unknown5 = 0x00;
+                gameMessage.unknown6 = 0x00;
+            }
+
             header.sourceId = sourceId;
             header.targetId = targetId;
 
-            gameMessage.timestamp = Utils.UnixTimeStampUTC();
+            if (isGameMessage)
+                header.type = 0x03;
+            else
+                header.type = opcode;
 
-            header.type = 0x03;
             header.unknown1 = 0x00;
-            gameMessage.unknown4 = 0x14;
-            gameMessage.unknown5 = 0x00;
-            gameMessage.unknown6 = 0x00;
 
             this.data = data;
 
-            header.subpacketSize = (ushort) (SUBPACKET_SIZE + GAMEMESSAGE_SIZE + data.Length);
+            header.subpacketSize = (ushort) (SUBPACKET_SIZE + data.Length);
+
+            if (isGameMessage)
+                header.subpacketSize += GAMEMESSAGE_SIZE;
         }
 
         public SubPacket(SubPacket original, uint newTargetId)
@@ -158,6 +170,6 @@ namespace FFXIVClassic.Common
                     ConsoleOutputColor.DarkMagenta);
             }
 #endif
-        }
+        }        
     }
 }

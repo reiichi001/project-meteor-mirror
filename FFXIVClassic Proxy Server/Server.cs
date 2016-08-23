@@ -21,7 +21,8 @@ namespace FFXIVClassic_World_Server
         WorldManager worldManager;
 
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
-        private Dictionary<uint, Session> mSessionList = new Dictionary<uint, Session>();
+        private Dictionary<uint, Session> mZoneSessionList = new Dictionary<uint, Session>();
+        private Dictionary<uint, Session> mChatSessionList = new Dictionary<uint, Session>();
 
         public Server()
         {
@@ -120,7 +121,36 @@ namespace FFXIVClassic_World_Server
                 }
                 mServerSocket.BeginAccept(new AsyncCallback(AcceptCallback), mServerSocket);
             }
-        }        
+        }
+
+        public void AddSession(uint id)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void RemoveSession(uint id)
+        {
+            if (mChatSessionList.ContainsKey(id)) {
+                mChatSessionList[id].clientSocket.Disconnect();
+                mConnectionList.Remove(mChatSessionList[id].clientSocket);
+                mChatSessionList.Remove(id);
+            }
+
+            if (mZoneSessionList.ContainsKey(id))
+            {
+                mZoneSessionList[id].clientSocket.Disconnect();
+                mConnectionList.Remove(mZoneSessionList[id].clientSocket);
+                mZoneSessionList.Remove(id);
+            }
+        }
+
+        public Session GetSession(uint targetSession)
+        {
+            if (mZoneSessionList.ContainsKey(targetSession))
+                return mZoneSessionList[targetSession];
+            else
+                return null;
+        }
 
         /// <summary>
         /// Receive Callback. Reads in incoming data, converting them to base packets. Base packets are sent to be parsed. If not enough data at the end to build a basepacket, move to the beginning and prepend.
@@ -202,7 +232,7 @@ namespace FFXIVClassic_World_Server
                     }
                 }
             }
-        }
+        }     
 
         /// <summary>
         /// Builds a packet from the incoming buffer + offset. If a packet can be built, it is returned else null.
@@ -241,6 +271,11 @@ namespace FFXIVClassic_World_Server
 
         #endregion
 
+
+        public WorldManager GetWorldManager()
+        {
+            return worldManager;
+        }
         
     }
 }

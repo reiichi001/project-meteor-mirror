@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic.Common;
 
 namespace FFXIVClassic_World_Server.DataObjects
 {
@@ -12,6 +13,7 @@ namespace FFXIVClassic_World_Server.DataObjects
     {
         public readonly string zoneServerIp;
         public readonly int zoneServerPort;
+        public readonly int[] ownedZoneIds;
         public bool isConnected = false;
         public Socket zoneServerConnection;
 
@@ -36,5 +38,21 @@ namespace FFXIVClassic_World_Server.DataObjects
             catch (Exception e)
             { Program.Log.Error("Failed to connect"); return; }            
         }
+
+        public void SendPacket(SubPacket subpacket)
+        {
+            if (isConnected)
+            {
+                byte[] packetBytes = subpacket.GetBytes();
+
+                try
+                {
+                    zoneServerConnection.Send(packetBytes);
+                }
+                catch (Exception e)
+                { Program.Log.Error("Weird case, socket was d/ced: {0}", e); }
+            }    
+        }
+
     }
 }

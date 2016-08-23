@@ -88,10 +88,10 @@ namespace FFXIVClassic_World_Server
         public void DoZoneServerChange(Session session, uint zoneEntrance)
         {
             /*
-            ->Tell old server to save session info and remove
+            ->Tell old server to save session info and remove session. Start zone packets.
             ->Update the position to zoneEntrance
             ->Update routing
-            ->Tell new server to load session info and add
+            ->Tell new server to load session info and add session. Send end zone packets.
             */
         }
 
