@@ -18,7 +18,8 @@ namespace FFXIVClassic_World_Server
 
         private Socket mServerSocket;
 
-        WorldManager worldManager;
+        WorldManager mWorldManager;
+        PacketProcessor mPacketProcessor;
 
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private Dictionary<uint, Session> mZoneSessionList = new Dictionary<uint, Session>();
@@ -36,9 +37,10 @@ namespace FFXIVClassic_World_Server
 
         public bool StartServer()
         {
-            worldManager = new WorldManager(this);
-            worldManager.LoadZoneServerList();
-            worldManager.ConnectToZoneServers();
+            mPacketProcessor = new PacketProcessor(this);
+            mWorldManager = new WorldManager(this);
+            mWorldManager.LoadZoneServerList();
+            mWorldManager.ConnectToZoneServers();            
 
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), int.Parse(ConfigConstants.OPTIONS_PORT));
 
@@ -123,33 +125,61 @@ namespace FFXIVClassic_World_Server
             }
         }
 
-        public void AddSession(uint id)
+        public void AddSession(ClientConnection connection, Session.Channel type, uint id)
         {
-            throw new NotImplementedException();
-        }
+            Session session = new Session(id, connection, type);
 
-        public void RemoveSession(uint id)
-        {
-            if (mChatSessionList.ContainsKey(id)) {
-                mChatSessionList[id].clientSocket.Disconnect();
-                mConnectionList.Remove(mChatSessionList[id].clientSocket);
-                mChatSessionList.Remove(id);
-            }
-
-            if (mZoneSessionList.ContainsKey(id))
+            switch (type)
             {
-                mZoneSessionList[id].clientSocket.Disconnect();
-                mConnectionList.Remove(mZoneSessionList[id].clientSocket);
-                mZoneSessionList.Remove(id);
+                case Session.Channel.ZONE:
+                    if (!mZoneSessionList.ContainsKey(id))
+                        mZoneSessionList.Add(id, session);
+                break;
+                case Session.Channel.CHAT:
+                    if (!mChatSessionList.ContainsKey(id))
+                        mChatSessionList.Add(id, session);
+                break;
             }
         }
 
-        public Session GetSession(uint targetSession)
+        public void RemoveSession(Session.Channel type, uint id)
         {
-            if (mZoneSessionList.ContainsKey(targetSession))
-                return mZoneSessionList[targetSession];
-            else
-                return null;
+            switch (type)
+            {
+                case Session.Channel.ZONE:                    
+                    if (mZoneSessionList.ContainsKey(id))
+                    {
+                        mZoneSessionList[id].clientSocket.Disconnect();
+                        mConnectionList.Remove(mZoneSessionList[id].clientSocket);
+                        mZoneSessionList.Remove(id);
+                    }
+                    break;
+                case Session.Channel.CHAT:
+                    if (mChatSessionList.ContainsKey(id))
+                    {
+                        mChatSessionList[id].clientSocket.Disconnect();
+                        mConnectionList.Remove(mChatSessionList[id].clientSocket);
+                        mChatSessionList.Remove(id);
+                    }
+                    break;
+            }          
+        }
+
+        public Session GetSession(uint targetSession, Session.Channel type = Session.Channel.ZONE)
+        {
+            switch (type)
+            {
+                case Session.Channel.ZONE:
+                    if (mZoneSessionList.ContainsKey(targetSession))
+                        return mZoneSessionList[targetSession];
+                    break;
+                case Session.Channel.CHAT:
+                    if (mChatSessionList.ContainsKey(targetSession))
+                        return mChatSessionList[targetSession];
+                    break;
+            }
+            
+            return null;
         }
 
         /// <summary>
@@ -191,7 +221,7 @@ namespace FFXIVClassic_World_Server
                             break;
                         else
                         {
-                            //mProcessor.ProcessPacket(conn, basePacket);
+                            mPacketProcessor.ProcessPacket(conn, basePacket);
                         }
                             
                     }
@@ -274,7 +304,7 @@ namespace FFXIVClassic_World_Server
 
         public WorldManager GetWorldManager()
         {
-            return worldManager;
+            return mWorldManager;
         }
         
     }

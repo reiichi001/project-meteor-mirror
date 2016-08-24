@@ -1,4 +1,6 @@
 ﻿using FFXIVClassic.Common;
+using FFXIVClassic_World_Server.DataObjects;
+using FFXIVClassic_World_Server.Packets.Receive;
 using FFXIVClassic_World_Server.Packets.Send.Login;
 using System;
 using System.Collections.Generic;
@@ -42,7 +44,9 @@ namespace FFXIVClassic_World_Server
             {
                 //Initial Connect Packet, Create session
                 if (subpacket.header.type == 0x01)
-                {                                        
+                {
+
+                    #region Hardcoded replies                                
                     packet.DebugPrintPacket();
                     byte[] reply1Data = {
                                             0x01, 0x00, 0x00, 0x00, 0x28, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -69,34 +73,15 @@ namespace FFXIVClassic_World_Server
                             binReader.BaseStream.Seek(0x14, SeekOrigin.Begin);
                             binReader.Write((UInt32)Utils.UnixTimeStampUTC());
                         }
-                    }                   
-
-                    //Read in Actor Id that owns this connection
-                    uint actorID = 0;
-                    using (MemoryStream mem = new MemoryStream(packet.data))
-                    {
-                        using (BinaryReader binReader = new BinaryReader(mem))
-                        {
-                            try
-                            {
-                                byte[] readIn = new byte[12];
-                                binReader.BaseStream.Seek(0x14, SeekOrigin.Begin);
-                                binReader.Read(readIn, 0, 12);
-                                actorID = UInt32.Parse(Encoding.ASCII.GetString(readIn));
-                            }
-                            catch (Exception)
-                            { }
-                        }
                     }
+                    #endregion
 
-                    mServer.AddSession(actorID);
-                    
+                    HelloPacket hello = new HelloPacket(packet.data);
+
                     if (packet.header.connectionType == BasePacket.TYPE_ZONE)
-                        Program.Log.Info("Got {0} connection for ActorID {1} @ {2}.", "zone", actorID, client.GetAddress());
+                        mServer.AddSession(client, Session.Channel.ZONE, hello.sessionId);
                     else if (packet.header.connectionType == BasePacket.TYPE_CHAT)
-                        Program.Log.Info("Got {0} connection for ActorID {1} @ {2}.", "chat", actorID, client.GetAddress());
-
-                    break;
+                        mServer.AddSession(client, Session.Channel.CHAT, hello.sessionId);                    
                 }
                 //Ping from World Server
                 else if (subpacket.header.type == 0x07)

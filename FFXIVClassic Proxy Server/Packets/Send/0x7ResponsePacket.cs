@@ -6,9 +6,12 @@ namespace FFXIVClassic_World_Server.Packets.Send.Login
 {
     class Login0x7ResponsePacket
     {
+        public const ushort OPCODE = 0x0008;
+        public const uint PACKET_SIZE = 0x18;
+
         public static SubPacket BuildPacket(uint actorID)
         {
-            byte[] data = new byte[0x18];
+            byte[] data = new byte[PACKET_SIZE];
 
             using (MemoryStream mem = new MemoryStream(data))
             {
@@ -17,15 +20,14 @@ namespace FFXIVClassic_World_Server.Packets.Send.Login
                     try
                     {
                         binWriter.Write((UInt32)actorID);
-                        binWriter.Write((UInt32)type);
+                        binWriter.Write((UInt32)Utils.UnixTimeStampUTC());
                     }
                     catch (Exception)
-                    {                        
-                    }
+                    {}
                 }
             }
 
-            return BasePacket.CreatePacket(data, false, false);
+            return new SubPacket(false, OPCODE, 0, 0, data);
         }
     }
 }
