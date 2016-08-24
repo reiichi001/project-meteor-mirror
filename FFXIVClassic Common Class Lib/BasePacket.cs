@@ -5,6 +5,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using NLog;
 using NLog.Targets;
+using Ionic.Zlib;
 
 namespace FFXIVClassic.Common
 {
@@ -343,6 +344,28 @@ namespace FFXIVClassic.Common
                 blowfish.Decipher(data, offset + 0x10, header.subpacketSize - 0x10);
 
                 offset += header.subpacketSize;
+            }
+        }
+
+        public static unsafe void DecompressPacket(ref BasePacket packet)
+        {
+            using (var compressedStream = new MemoryStream(packet.data))
+            using (var zipStream = new ZlibStream(compressedStream, Ionic.Zlib.CompressionMode.Decompress))
+            using (var resultStream = new MemoryStream())
+            {
+                zipStream.CopyTo(resultStream);
+                packet.data = resultStream.ToArray();
+            }
+        }
+
+        public static unsafe void CompressPacket(ref BasePacket packet)
+        {
+            using (var compressedStream = new MemoryStream(packet.data))
+            using (var zipStream = new ZlibStream(compressedStream, Ionic.Zlib.CompressionMode.Compress))
+            using (var resultStream = new MemoryStream())
+            {
+                zipStream.CopyTo(resultStream);
+                packet.data = resultStream.ToArray();
             }
         }
 

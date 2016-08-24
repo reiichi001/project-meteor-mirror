@@ -4,7 +4,7 @@ using System.IO;
 
 namespace FFXIVClassic_World_Server.Packets.Send.Login
 {
-    class Login0x7ResponsePacket
+    class _0x8PingPacket
     {
         public const ushort OPCODE = 0x0008;
         public const uint PACKET_SIZE = 0x18;
