@@ -149,16 +149,16 @@ namespace FFXIVClassic_World_Server
                 case Session.Channel.ZONE:                    
                     if (mZoneSessionList.ContainsKey(id))
                     {
-                        mZoneSessionList[id].clientSocket.Disconnect();
-                        mConnectionList.Remove(mZoneSessionList[id].clientSocket);
+                        mZoneSessionList[id].clientConnection.Disconnect();
+                        mConnectionList.Remove(mZoneSessionList[id].clientConnection);
                         mZoneSessionList.Remove(id);
                     }
                     break;
                 case Session.Channel.CHAT:
                     if (mChatSessionList.ContainsKey(id))
                     {
-                        mChatSessionList[id].clientSocket.Disconnect();
-                        mConnectionList.Remove(mChatSessionList[id].clientSocket);
+                        mChatSessionList[id].clientConnection.Disconnect();
+                        mConnectionList.Remove(mChatSessionList[id].clientConnection);
                         mChatSessionList.Remove(id);
                     }
                     break;

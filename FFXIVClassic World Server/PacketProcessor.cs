@@ -41,6 +41,8 @@ namespace FFXIVClassic_World_Server
             List<SubPacket> subPackets = packet.GetSubpackets();
             foreach (SubPacket subpacket in subPackets)
             {
+                subpacket.DebugPrintSubPacket();
+
                 //Initial Connect Packet, Create session
                 if (subpacket.header.type == 0x01)
                 {                    

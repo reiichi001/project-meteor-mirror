@@ -16,7 +16,7 @@ namespace FFXIVClassic_World_Server.DataObjects
         public readonly Channel type;
         public ZoneServer routing1, routing2;
 
-        public Session(ulong sessionId, ClientConnection connection, Channel type)
+        public Session(uint sessionId, ClientConnection connection, Channel type)
         {
             this.sessionId = sessionId;
             this.clientConnection = connection;

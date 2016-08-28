@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>FFXIVClassic_World_Server</RootNamespace>
     <AssemblyName>FFXIVClassic World Server</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -69,7 +70,9 @@
     <Compile Include="DataObjects\Session.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="Packets\Receive\HelloPacket.cs" />
-    <Compile Include="Packets\Send\0x7ResponsePacket.cs" />
+    <Compile Include="Packets\Send\_0x2Packet.cs" />
+    <Compile Include="Packets\Send\_0x7Packet.cs" />
+    <Compile Include="Packets\Send\_0x8PingPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server.cs" />
