@@ -133,6 +133,11 @@ namespace FFXIVClassic_Map_Server.Actors
             className = "Player";
             currentSubState = SetActorStatePacket.SUB_STATE_PLAYER;
 
+            moveSpeeds[0] = SetActorSpeedPacket.DEFAULT_STOP;
+            moveSpeeds[1] = SetActorSpeedPacket.DEFAULT_WALK;
+            moveSpeeds[2] = SetActorSpeedPacket.DEFAULT_RUN;
+            moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_RUN;
+
             inventories[Inventory.NORMAL] = new Inventory(this, MAXSIZE_INVENTORY_NORMAL, Inventory.NORMAL);
             inventories[Inventory.KEYITEMS] = new Inventory(this, MAXSIZE_INVENTORY_KEYITEMS, Inventory.KEYITEMS);
             inventories[Inventory.CURRENCY] = new Inventory(this, MAXSIZE_INVENTORY_CURRANCY, Inventory.CURRENCY);
