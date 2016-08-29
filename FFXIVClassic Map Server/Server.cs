@@ -38,12 +38,7 @@ namespace FFXIVClassic_Map_Server
         {
             mSelf = this;
         }
-
-        public static Server GetServer()
-        {
-            return mSelf;
-        }
-
+        
         public bool StartServer()
         {           
             mStaticActors = new StaticActors(STATIC_ACTORS_PATH);
@@ -178,25 +173,7 @@ namespace FFXIVClassic_Map_Server
                 mServerSocket.BeginAccept(new AsyncCallback(AcceptCallback), mServerSocket);
             }
         }
-
-        public static Actor GetStaticActors(uint id)
-        {
-            return mStaticActors.GetActor(id);
-        }
-
-        public static Actor GetStaticActors(string name)
-        {
-            return mStaticActors.FindStaticActor(name);
-        }
-
-        public static Item GetItemGamedata(uint id)
-        {
-            if (mGamedataItems.ContainsKey(id))
-                return mGamedataItems[id];
-            else
-                return null;
-        }
-
+        
         /// <summary>
         /// Receive Callback. Reads in incoming data, converting them to base packets. Base packets are sent to be parsed. If not enough data at the end to build a basepacket, move to the beginning and prepend.
         /// </summary>
@@ -268,6 +245,11 @@ namespace FFXIVClassic_Map_Server
 
         #endregion
 
+        public static Server GetServer()
+        {
+            return mSelf;
+        }
+
         public static ZoneConnection GetWorldConnection()
         {
             return mWorldConnection;
@@ -281,6 +263,24 @@ namespace FFXIVClassic_Map_Server
         public static Dictionary<uint, Item> GetGamedataItems()
         {
             return mGamedataItems;
+        }
+
+        public static Actor GetStaticActors(uint id)
+        {
+            return mStaticActors.GetActor(id);
+        }
+
+        public static Actor GetStaticActors(string name)
+        {
+            return mStaticActors.FindStaticActor(name);
+        }
+
+        public static Item GetItemGamedata(uint id)
+        {
+            if (mGamedataItems.ContainsKey(id))
+                return mGamedataItems[id];
+            else
+                return null;
         }
 
     }

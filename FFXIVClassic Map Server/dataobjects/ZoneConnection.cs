@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Collections.Generic;
 
-namespace FFXIVClassic_Map_Server
+namespace FFXIVClassic_Map_Server.dataobjects
 {
     class ZoneConnection
     {

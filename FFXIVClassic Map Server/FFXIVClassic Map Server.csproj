@@ -91,7 +91,7 @@
     <Compile Include="actors\quest\Quest.cs" />
     <Compile Include="actors\StaticActors.cs" />
     <Compile Include="actors\world\WorldMaster.cs" />
-    <Compile Include="ZoneConnection.cs" />
+    <Compile Include="dataobjects\ZoneConnection.cs" />
     <Compile Include="CommandProcessor.cs" />
     <Compile Include="ConfigConstants.cs" />
     <Compile Include="Database.cs" />
