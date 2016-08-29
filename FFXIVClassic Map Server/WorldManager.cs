@@ -60,10 +60,13 @@ namespace FFXIVClassic_Map_Server
                                     canRideChocobo,
                                     canStealth,
                                     isInstanceRaid
-                                    FROM server_zones 
-                                    WHERE zoneName IS NOT NULL";
+                                    FROM server_zones
+                                    WHERE zoneName IS NOT NULL and serverIp = @ip and serverPort = @port";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Parameters.AddWithValue("@ip", ConfigConstants.OPTIONS_BINDIP);
+                    cmd.Parameters.AddWithValue("@port", ConfigConstants.OPTIONS_PORT);
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
@@ -268,14 +271,21 @@ namespace FFXIVClassic_Map_Server
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
-                        {
+                        {                            
+                            uint zoneId = reader.GetUInt32("zoneId");
+                            uint classId = reader.GetUInt32("actorClassId");
+                            if (!actorClasses.ContainsKey(classId))
+                                continue;
+                            if (!zoneList.ContainsKey(zoneId))
+                                continue;
+                            Zone zone = zoneList[zoneId];
+                            if (zone == null)
+                                continue;
+
                             string customName = null;
                             if (!reader.IsDBNull(11))
                                 customName = reader.GetString("customDisplayName");
-
-                            uint classId = reader.GetUInt32("actorClassId");
-                            string uniqueId = reader.GetString("uniqueId");
-                            uint zoneId = reader.GetUInt32("zoneId");
+                            string uniqueId = reader.GetString("uniqueId");                          
                             string privAreaName = reader.GetString("privateAreaName");
                             uint privAreaLevel = reader.GetUInt32("privateAreaLevel");
                             float x = reader.GetFloat("positionX");
@@ -284,16 +294,7 @@ namespace FFXIVClassic_Map_Server
                             float rot = reader.GetFloat("rotation");
                             ushort state = reader.GetUInt16("actorState");
                             uint animId = reader.GetUInt32("animationId");
-
-                            if (!actorClasses.ContainsKey(classId))                                
-                                continue;
-                            if (!zoneList.ContainsKey(zoneId))
-                                continue;
-
-                            Zone zone = zoneList[zoneId];
-                            if (zone == null)
-                                continue;
-
+                            
                             SpawnLocation spawn = new SpawnLocation(classId, uniqueId, zoneId, privAreaName, privAreaLevel, x, y, z, rot, state, animId);
 
                             zone.AddSpawnLocation(spawn);
