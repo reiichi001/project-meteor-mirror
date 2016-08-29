@@ -12,36 +12,31 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.dataobjects
 {
-    class ConnectedPlayer
+    class Session
     {
-        public uint actorID = 0;
+        public uint id = 0;
         Player playerActor;
         public List<Actor> actorInstanceList = new List<Actor>();
-
-        public uint languageCode = 1;
-
-        private ZoneConnection zoneConnection;
-
+        public uint languageCode = 1;        
         private uint lastPingPacket = Utils.UnixTimeStampUTC();
 
         public string errorMessage = "";
 
-        public ConnectedPlayer(ZoneConnection zc, uint actorId)
+        public Session(uint sessionId)
         {
-            zoneConnection = zc;
-            this.actorID = actorId;
-            playerActor = new Player(this, actorId);
+            this.id = sessionId;
+            playerActor = new Player(this, sessionId);
             actorInstanceList.Add(playerActor);
         }
 
         public void QueuePacket(BasePacket basePacket)
         {
-            zoneConnection.QueuePacket(basePacket);
+            Server.GetWorldConnection().QueuePacket(basePacket);
         }
 
         public void QueuePacket(SubPacket subPacket, bool isAuthed, bool isEncrypted)
         {
-            zoneConnection.QueuePacket(subPacket, isAuthed, isEncrypted);
+            Server.GetWorldConnection().QueuePacket(subPacket, isAuthed, isEncrypted);
         }
 
         public Player GetActor()

@@ -25,28 +25,18 @@ namespace FFXIVClassic_Map_Server
     {
         Server mServer;
         CommandProcessor cp;
-        Dictionary<uint, ConnectedPlayer> mPlayers;
 
-        public PacketProcessor(Server server, Dictionary<uint, ConnectedPlayer> playerList)
+        public PacketProcessor(Server server)
         {
-            mPlayers = playerList;
             mServer = server;
-            cp = new CommandProcessor(playerList);
+            cp = new CommandProcessor();
         }     
 
         public void ProcessPacket(ZoneConnection client, SubPacket subpacket)
         {                      
     
-                ConnectedPlayer player = null;
-
-                if(mPlayers.ContainsKey(subpacket.header.targetId))
-                    player = mPlayers[subpacket.header.targetId];
-
-                if (player == null)
-                {
-                    player = new ConnectedPlayer(client, subpacket.header.targetId);
-                }
-
+                Session session = mServer.GetSession(subpacket.header.targetId);
+                
                 subpacket.DebugPrintSubPacket();
 
                 //Normal Game Opcode
@@ -56,20 +46,19 @@ namespace FFXIVClassic_Map_Server
                     case 0x0001:
                         //subpacket.DebugPrintSubPacket();
                         PingPacket pingPacket = new PingPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(PongPacket.BuildPacket(player.actorID, pingPacket.time), true, false));
-                        player.Ping();
+                        client.QueuePacket(BasePacket.CreatePacket(PongPacket.BuildPacket(session.id, pingPacket.time), true, false));
+                        session.Ping();
                         break;
                     //Unknown
                     case 0x0002:
 
                         subpacket.DebugPrintSubPacket();
 
-                        player = new ConnectedPlayer(client, subpacket.header.targetId);
-                        mPlayers[subpacket.header.targetId] = player;
+                        session = mServer.AddSession(subpacket.header.targetId);
 
-                        client.QueuePacket(_0x2Packet.BuildPacket(player.actorID), true, false);
+                        client.QueuePacket(_0x2Packet.BuildPacket(session.id), true, false);
 
-                        Server.GetWorldManager().DoLogin(player.GetActor());
+                        Server.GetWorldManager().DoLogin(session.GetActor());
 
                         break;
                     //Chat Received
@@ -80,17 +69,17 @@ namespace FFXIVClassic_Map_Server
 
                         if (chatMessage.message.StartsWith("!"))
                         {
-                            if (cp.DoCommand(chatMessage.message, player))
+                            if (cp.DoCommand(chatMessage.message, session))
                                 return; ;
-                        }                           
+                        }
 
-                        player.GetActor().BroadcastPacket(SendMessagePacket.BuildPacket(player.actorID, player.actorID, chatMessage.logType, player.GetActor().customDisplayName, chatMessage.message), false);
+                        session.GetActor().BroadcastPacket(SendMessagePacket.BuildPacket(session.id, session.id, chatMessage.logType, session.GetActor().customDisplayName, chatMessage.message), false);
 
                         break;
                     //Langauge Code
                     case 0x0006:
                         LangaugeCodePacket langCode = new LangaugeCodePacket(subpacket.data);
-                        player.languageCode = langCode.languageCode;
+                        session.languageCode = langCode.languageCode;
                         break;
                     //Unknown - Happens a lot at login, then once every time player zones
                     case 0x0007:
@@ -102,11 +91,11 @@ namespace FFXIVClassic_Map_Server
                         //Update Position
                         //subpacket.DebugPrintSubPacket();
                         UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
-                        player.UpdatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
-                        player.GetActor().SendInstanceUpdate();
+                        session.UpdatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
+                        session.GetActor().SendInstanceUpdate();
 
-                        if (player.GetActor().IsInZoneChange())
-                            player.GetActor().SetZoneChanging(false);
+                        if (session.GetActor().IsInZoneChange())
+                            session.GetActor().SetZoneChanging(false);
 
                         break;
                     //Set Target 
@@ -114,13 +103,13 @@ namespace FFXIVClassic_Map_Server
                         //subpacket.DebugPrintSubPacket();
 
                         SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
-                        player.GetActor().currentTarget = setTarget.actorID;
-                        player.GetActor().BroadcastPacket(SetActorTargetAnimatedPacket.BuildPacket(player.actorID, player.actorID, setTarget.actorID), true);
+                        session.GetActor().currentTarget = setTarget.actorID;
+                        session.GetActor().BroadcastPacket(SetActorTargetAnimatedPacket.BuildPacket(session.id, session.id, setTarget.actorID), true);
                         break;
                     //Lock Target
                     case 0x00CC:
                         LockTargetPacket lockTarget = new LockTargetPacket(subpacket.data);
-                        player.GetActor().currentLockedTarget = lockTarget.actorID;
+                        session.GetActor().currentLockedTarget = lockTarget.actorID;
                         break;
                     //Start Event
                     case 0x012D:
@@ -143,19 +132,19 @@ namespace FFXIVClassic_Map_Server
                         Actor ownerActor = Server.GetStaticActors(eventStart.scriptOwnerActorID);
                             
                      
-                        player.GetActor().currentEventOwner = eventStart.scriptOwnerActorID;
-                        player.GetActor().currentEventName = eventStart.triggerName;
+                        session.GetActor().currentEventOwner = eventStart.scriptOwnerActorID;
+                        session.GetActor().currentEventName = eventStart.triggerName;
                     
 
                         if (ownerActor == null)
                         {
                             //Is it a instance actor?
-                            ownerActor = Server.GetWorldManager().GetActorInWorld(player.GetActor().currentEventOwner);
+                            ownerActor = Server.GetWorldManager().GetActorInWorld(session.GetActor().currentEventOwner);
                             if (ownerActor == null)
                             {
                                 //Is it a Director?
-                                if (player.GetActor().currentDirector != null && player.GetActor().currentEventOwner == player.GetActor().currentDirector.actorId)
-                                    ownerActor = player.GetActor().currentDirector;
+                                if (session.GetActor().currentDirector != null && session.GetActor().currentEventOwner == session.GetActor().currentDirector.actorId)
+                                    ownerActor = session.GetActor().currentDirector;
                                 else
                                 {
                                     Program.Log.Debug("\n===Event START===\nCould not find actor 0x{0:X} for event started by caller: 0x{1:X}\nEvent Starter: {2}\nParams: {3}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.triggerName, LuaUtils.DumpParams(eventStart.luaParams));
@@ -164,7 +153,7 @@ namespace FFXIVClassic_Map_Server
                             }                                    
                         }
 
-                        player.GetActor().StartEvent(ownerActor, eventStart);
+                        session.GetActor().StartEvent(ownerActor, eventStart);
 
                         Program.Log.Debug("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.val1, eventStart.val2, eventStart.triggerName, LuaUtils.DumpParams(eventStart.luaParams));
                         break;
@@ -178,42 +167,42 @@ namespace FFXIVClassic_Map_Server
                         Program.Log.Debug("\n===Event UPDATE===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nStep: 0x{4:X}\nParams: {5}", eventUpdate.actorID, eventUpdate.scriptOwnerActorID, eventUpdate.val1, eventUpdate.val2, eventUpdate.step, LuaUtils.DumpParams(eventUpdate.luaParams));
                         /*
                         //Is it a static actor? If not look in the player's instance
-                        Actor updateOwnerActor = Server.GetStaticActors(player.GetActor().currentEventOwner);
+                        Actor updateOwnerActor = Server.GetStaticActors(session.GetActor().currentEventOwner);
                         if (updateOwnerActor == null)
                         {
-                            updateOwnerActor = Server.GetWorldManager().GetActorInWorld(player.GetActor().currentEventOwner);
+                            updateOwnerActor = Server.GetWorldManager().GetActorInWorld(session.GetActor().currentEventOwner);
 
-                            if (player.GetActor().currentDirector != null && player.GetActor().currentEventOwner == player.GetActor().currentDirector.actorId)
-                                updateOwnerActor = player.GetActor().currentDirector;
+                            if (session.GetActor().currentDirector != null && session.GetActor().currentEventOwner == session.GetActor().currentDirector.actorId)
+                                updateOwnerActor = session.GetActor().currentDirector;
 
                             if (updateOwnerActor == null)
                                 break;
                         }
                         */
-                        player.GetActor().UpdateEvent(eventUpdate);
+                        session.GetActor().UpdateEvent(eventUpdate);
 
-                        //LuaEngine.DoActorOnEventUpdated(player.GetActor(), updateOwnerActor, eventUpdate);
+                        //LuaEngine.DoActorOnEventUpdated(session.GetActor(), updateOwnerActor, eventUpdate);
                             
                         break;
                     case 0x012F:
                         //subpacket.DebugPrintSubPacket();
                         ParameterDataRequestPacket paramRequest = new ParameterDataRequestPacket(subpacket.data);
                         if (paramRequest.paramName.Equals("charaWork/exp"))
-                            player.GetActor().SendCharaExpInfo();
+                            session.GetActor().SendCharaExpInfo();
                         break;
                     /* RECRUITMENT */
                     //Start Recruiting
                     case 0x01C3:
                         StartRecruitingRequestPacket recruitRequestPacket = new StartRecruitingRequestPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(StartRecruitingResponse.BuildPacket(player.actorID, true), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(StartRecruitingResponse.BuildPacket(session.id, true), true, false));
                         break;
                     //End Recruiting
                     case 0x01C4:
-                        client.QueuePacket(BasePacket.CreatePacket(EndRecruitmentPacket.BuildPacket(player.actorID), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(EndRecruitmentPacket.BuildPacket(session.id), true, false));
                         break;
                     //Party Window Opened, Request State
                     case 0x01C5:
-                        client.QueuePacket(BasePacket.CreatePacket(RecruiterStatePacket.BuildPacket(player.actorID, true, true, 1), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(RecruiterStatePacket.BuildPacket(session.id, true, true, 1), true, false));
                         break;
                     //Search Recruiting
                     case 0x01C7:
@@ -229,7 +218,7 @@ namespace FFXIVClassic_Map_Server
                         details.subTaskId = 1;
                         details.comment = "This is a test details packet sent by the server. No implementation has been Created yet...";
                         details.num[0] = 1;
-                        client.QueuePacket(BasePacket.CreatePacket(CurrentRecruitmentDetailsPacket.BuildPacket(player.actorID, details), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(CurrentRecruitmentDetailsPacket.BuildPacket(session.id, details), true, false));
                         break;
                     //Accepted Recruiting
                     case 0x01C6:
@@ -238,64 +227,64 @@ namespace FFXIVClassic_Map_Server
                     /* SOCIAL STUFF */
                     case 0x01C9:
                         AddRemoveSocialPacket addBlackList = new AddRemoveSocialPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(BlacklistAddedPacket.BuildPacket(player.actorID, true, addBlackList.name), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(BlacklistAddedPacket.BuildPacket(session.id, true, addBlackList.name), true, false));
                         break;
                     case 0x01CA:
                         AddRemoveSocialPacket RemoveBlackList = new AddRemoveSocialPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(BlacklistRemovedPacket.BuildPacket(player.actorID, true, RemoveBlackList.name), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(BlacklistRemovedPacket.BuildPacket(session.id, true, RemoveBlackList.name), true, false));
                         break;
                     case 0x01CB:
                         int offset1 = 0;
-                        client.QueuePacket(BasePacket.CreatePacket(SendBlacklistPacket.BuildPacket(player.actorID, new String[] { "Test" }, ref offset1), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(SendBlacklistPacket.BuildPacket(session.id, new String[] { "Test" }, ref offset1), true, false));
                         break;
                     case 0x01CC:
                         AddRemoveSocialPacket addFriendList = new AddRemoveSocialPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(FriendlistAddedPacket.BuildPacket(player.actorID, true, (uint)addFriendList.name.GetHashCode(), true, addFriendList.name), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(FriendlistAddedPacket.BuildPacket(session.id, true, (uint)addFriendList.name.GetHashCode(), true, addFriendList.name), true, false));
                         break;
                     case 0x01CD:
                         AddRemoveSocialPacket RemoveFriendList = new AddRemoveSocialPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(FriendlistRemovedPacket.BuildPacket(player.actorID, true, RemoveFriendList.name), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(FriendlistRemovedPacket.BuildPacket(session.id, true, RemoveFriendList.name), true, false));
                         break;
                     case 0x01CE:
                         int offset2 = 0;
-                        client.QueuePacket(BasePacket.CreatePacket(SendFriendlistPacket.BuildPacket(player.actorID, new Tuple<long, string>[] { new Tuple<long, string>(01, "Test2") }, ref offset2), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(SendFriendlistPacket.BuildPacket(session.id, new Tuple<long, string>[] { new Tuple<long, string>(01, "Test2") }, ref offset2), true, false));
                         break;
                     case 0x01CF:
-                        client.QueuePacket(BasePacket.CreatePacket(FriendStatusPacket.BuildPacket(player.actorID, null), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(FriendStatusPacket.BuildPacket(session.id, null), true, false));
                         break;
                     /* SUPPORT DESK STUFF */
                     //Request for FAQ/Info List
                     case 0x01D0:
                         FaqListRequestPacket faqRequest = new FaqListRequestPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(FaqListResponsePacket.BuildPacket(player.actorID, new string[] { "Testing FAQ1", "Coded style!" }), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(FaqListResponsePacket.BuildPacket(session.id, new string[] { "Testing FAQ1", "Coded style!" }), true, false));
                         break;
                     //Request for body of a faq/info selection
                     case 0x01D1:
                         FaqBodyRequestPacket faqBodyRequest = new FaqBodyRequestPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(FaqBodyResponsePacket.BuildPacket(player.actorID, "HERE IS A GIANT BODY. Nothing else to say!"), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(FaqBodyResponsePacket.BuildPacket(session.id, "HERE IS A GIANT BODY. Nothing else to say!"), true, false));
                         break;
                     //Request issue list
                     case 0x01D2:
                         GMTicketIssuesRequestPacket issuesRequest = new GMTicketIssuesRequestPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(IssueListResponsePacket.BuildPacket(player.actorID, new string[] { "Test1", "Test2", "Test3", "Test4", "Test5" }), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(IssueListResponsePacket.BuildPacket(session.id, new string[] { "Test1", "Test2", "Test3", "Test4", "Test5" }), true, false));
                         break;
                     //Request if GM ticket exists
                     case 0x01D3:
-                        client.QueuePacket(BasePacket.CreatePacket(StartGMTicketPacket.BuildPacket(player.actorID, false), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(StartGMTicketPacket.BuildPacket(session.id, false), true, false));
                         break;
                     //Request for GM response message
                     case 0x01D4:
-                        client.QueuePacket(BasePacket.CreatePacket(GMTicketPacket.BuildPacket(player.actorID, "This is a GM Ticket Title", "This is a GM Ticket Body."), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(GMTicketPacket.BuildPacket(session.id, "This is a GM Ticket Title", "This is a GM Ticket Body."), true, false));
                         break;
                     //GM Ticket Sent
                     case 0x01D5:
                         GMSupportTicketPacket gmTicket = new GMSupportTicketPacket(subpacket.data);
                         Program.Log.Info("Got GM Ticket: \n" + gmTicket.ticketTitle + "\n" + gmTicket.ticketBody);
-                        client.QueuePacket(BasePacket.CreatePacket(GMTicketSentResponsePacket.BuildPacket(player.actorID, true), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(GMTicketSentResponsePacket.BuildPacket(session.id, true), true, false));
                         break;
                     //Request to end ticket
                     case 0x01D6:
-                        client.QueuePacket(BasePacket.CreatePacket(EndGMTicketPacket.BuildPacket(player.actorID), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(EndGMTicketPacket.BuildPacket(session.id), true, false));
                         break;
                     default:
                         Program.Log.Debug("Unknown command 0x{0:X} received.", subpacket.gameMessage.opcode);

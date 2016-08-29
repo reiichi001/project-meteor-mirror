@@ -17,7 +17,6 @@ namespace FFXIVClassic_Map_Server
         public const int FFXIV_MAP_PORT = 54992;
         public const int BUFFER_SIZE = 0xFFFF; //Max basepacket size is 0xFFFF
         public const int BACKLOG = 100;
-        public const int HEALTH_THREAD_SLEEP_TIME = 5;
 
         public const string STATIC_ACTORS_PATH = "./staticactors.bin";
 
@@ -25,39 +24,15 @@ namespace FFXIVClassic_Map_Server
 
         private Socket mServerSocket;
 
-        private Dictionary<uint, ConnectedPlayer> mConnectedPlayerList = new Dictionary<uint, ConnectedPlayer>();
-        private ZoneConnection mWorldConnection = new ZoneConnection();
+        private Dictionary<uint, Session> mSessionList = new Dictionary<uint, Session>();        
         private LuaEngine mLuaEngine = new LuaEngine();
 
+        private static ZoneConnection mWorldConnection = new ZoneConnection();
         private static WorldManager mWorldManager;
-        private static Dictionary<uint, Item> gamedataItems;
+        private static Dictionary<uint, Item> mGamedataItems;
         private static StaticActors mStaticActors;
 
-        private PacketProcessor mProcessor;
-
-        private Thread mConnectionHealthThread;
-        private bool killHealthThread = false;
-
-        private void ConnectionHealth()
-        {
-            Program.Log.Info("Connection Health thread started; it will run every {0} seconds.", HEALTH_THREAD_SLEEP_TIME);
-            while (!killHealthThread)
-            {
-                lock (mConnectedPlayerList)
-                {
-                    List<ConnectedPlayer> dcedPlayers = new List<ConnectedPlayer>();
-                    foreach (ConnectedPlayer cp in mConnectedPlayerList.Values)
-                    {
-                        if (cp.CheckIfDCing())
-                            dcedPlayers.Add(cp);
-                    }
-
-                    foreach (ConnectedPlayer cp in dcedPlayers)
-                        cp.GetActor().CleanupAndSave();
-                }
-                Thread.Sleep(HEALTH_THREAD_SLEEP_TIME * 1000);
-            }
-        }
+        private PacketProcessor mProcessor;        
 
         public Server()
         {
@@ -70,15 +45,11 @@ namespace FFXIVClassic_Map_Server
         }
 
         public bool StartServer()
-        {
-            mConnectionHealthThread = new Thread(new ThreadStart(ConnectionHealth));
-            mConnectionHealthThread.Name = "MapThread:Health";
-            //mConnectionHealthThread.Start();
-
+        {           
             mStaticActors = new StaticActors(STATIC_ACTORS_PATH);
 
-            gamedataItems = Database.GetItemGamedata();
-            Program.Log.Info("Loaded {0} items.", gamedataItems.Count);
+            mGamedataItems = Database.GetItemGamedata();
+            Program.Log.Info("Loaded {0} items.", mGamedataItems.Count);
 
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneList();
@@ -119,21 +90,55 @@ namespace FFXIVClassic_Map_Server
             Program.Log.Info("Map Server has started @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
             Console.ForegroundColor = ConsoleColor.Gray;
 
-            mProcessor = new PacketProcessor(this, mConnectedPlayerList);
+            mProcessor = new PacketProcessor(this);
 
             //mGameThread = new Thread(new ThreadStart(mProcessor.update));
             //mGameThread.Start();
             return true;
         }
 
-        public void RemovePlayer(Player player)
+        #region Session Handling
+
+        public Session AddSession(uint id)
         {
-            lock (mConnectedPlayerList)
+            Session session = new Session(id);
+            mSessionList.Add(id, session);
+            return session;
+        }
+
+        public void RemoveSession(uint id)
+        {
+            if (mSessionList.ContainsKey(id))
             {
-                if (mConnectedPlayerList.ContainsKey(player.actorId))
-                    mConnectedPlayerList.Remove(player.actorId);
+                mSessionList[id].GetActor().CleanupAndSave();
+                mSessionList.Remove(id);
             }
         }
+
+        public Session GetSession(uint id)
+        {
+            if (mSessionList.ContainsKey(id))
+                return mSessionList[id];
+            else
+                return null;
+        }
+
+        public Session GetSession(string name)
+        {
+            foreach (Session s in mSessionList.Values)
+            {
+                if (s.GetActor().customDisplayName.Equals(name))
+                    return s;
+            }
+            return null;
+        }
+
+        public Dictionary<uint, Session> GetSessionList()
+        {
+            return mSessionList;
+        }
+
+        #endregion
 
         #region Socket Handling
         private void AcceptCallback(IAsyncResult result)
@@ -186,8 +191,8 @@ namespace FFXIVClassic_Map_Server
 
         public static Item GetItemGamedata(uint id)
         {
-            if (gamedataItems.ContainsKey(id))
-                return gamedataItems[id];
+            if (mGamedataItems.ContainsKey(id))
+                return mGamedataItems[id];
             else
                 return null;
         }
@@ -263,20 +268,19 @@ namespace FFXIVClassic_Map_Server
 
         #endregion
 
+        public static ZoneConnection GetWorldConnection()
+        {
+            return mWorldConnection;
+        }
 
         public static WorldManager GetWorldManager()
         {
             return mWorldManager;
         }
-
-        public Dictionary<uint, ConnectedPlayer> GetConnectedPlayerList()
-        {
-            return mConnectedPlayerList;
-        }
-
+        
         public static Dictionary<uint, Item> GetGamedataItems()
         {
-            return gamedataItems;
+            return mGamedataItems;
         }
 
     }

@@ -123,9 +123,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public PlayerWork playerWork = new PlayerWork();
 
-        public ConnectedPlayer playerSession;
+        public Session playerSession;
 
-        public Player(ConnectedPlayer cp, uint actorID) : base(actorID)
+        public Player(Session cp, uint actorID) : base(actorID)
         {
             playerSession = cp;
             actorName = String.Format("_pc{0:00000000}", actorID);
@@ -649,12 +649,10 @@ namespace FFXIVClassic_Map_Server.Actors
         {                        
             //Remove actor from zone and main server list
             zone.RemoveActorFromZone(this);
-            Server.GetServer().RemovePlayer(this);
 
             //Save Player
             Database.SavePlayerPlayTime(this);
             Database.SavePlayerPosition(this);
-
             Program.Log.Info("{0} has been logged out and saved.", this.customDisplayName);
         }
 

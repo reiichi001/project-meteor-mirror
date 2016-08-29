@@ -110,7 +110,7 @@
     <Compile Include="actors\chara\player\PlayerWork.cs" />
     <Compile Include="dataobjects\DBWorld.cs" />
     <Compile Include="dataobjects\InventoryItem.cs" />
-    <Compile Include="dataobjects\ConnectedPlayer.cs" />
+    <Compile Include="dataobjects\Session.cs" />
     <Compile Include="dataobjects\Item.cs" />
     <Compile Include="dataobjects\RecruitmentDetails.cs" />
     <Compile Include="dataobjects\SearchEntry.cs" />
