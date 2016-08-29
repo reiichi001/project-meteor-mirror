@@ -24,12 +24,10 @@ namespace FFXIVClassic_Map_Server
     class PacketProcessor
     {
         Server mServer;
-        CommandProcessor cp;
 
         public PacketProcessor(Server server)
         {
             mServer = server;
-            cp = new CommandProcessor();
         }     
 
         public void ProcessPacket(ZoneConnection client, SubPacket subpacket)
@@ -69,7 +67,7 @@ namespace FFXIVClassic_Map_Server
 
                         if (chatMessage.message.StartsWith("!"))
                         {
-                            if (cp.DoCommand(chatMessage.message, session))
+                            if (Server.GetCommandProcessor().DoCommand(chatMessage.message, session))
                                 return; ;
                         }
 

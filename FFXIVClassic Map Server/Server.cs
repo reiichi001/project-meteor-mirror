@@ -25,6 +25,7 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<uint, Session> mSessionList = new Dictionary<uint, Session>();        
         private LuaEngine mLuaEngine = new LuaEngine();
 
+        private static CommandProcessor mCommandProcessor = new CommandProcessor();
         private static ZoneConnection mWorldConnection = new ZoneConnection();
         private static WorldManager mWorldManager;
         private static Dictionary<uint, Item> mGamedataItems;
@@ -120,7 +121,7 @@ namespace FFXIVClassic_Map_Server
         {
             foreach (Session s in mSessionList.Values)
             {
-                if (s.GetActor().customDisplayName.Equals(name))
+                if (s.GetActor().customDisplayName.ToLower().Equals(name.ToLower()))
                     return s;
             }
             return null;
@@ -246,6 +247,11 @@ namespace FFXIVClassic_Map_Server
         public static Server GetServer()
         {
             return mSelf;
+        }
+
+        public static CommandProcessor GetCommandProcessor()
+        {
+            return mCommandProcessor;
         }
 
         public static ZoneConnection GetWorldConnection()
