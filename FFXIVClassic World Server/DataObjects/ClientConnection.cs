@@ -35,7 +35,9 @@ namespace FFXIVClassic_World_Server
 
             while (SendPacketQueue.Count > 0)
             {
-                BasePacket packet = SendPacketQueue.Take();                
+                BasePacket packet = SendPacketQueue.Take();
+
+                packet.DebugPrintPacket();
 
                 byte[] packetBytes = packet.GetPacketBytes();
 

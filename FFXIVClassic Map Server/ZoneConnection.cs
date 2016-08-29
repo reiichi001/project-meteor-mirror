@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using FFXIVClassic.Common;
 using System.Collections.Concurrent;
 using System.Net;
+using System.Collections.Generic;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -17,7 +18,9 @@ namespace FFXIVClassic_Map_Server
 
         public void QueuePacket(BasePacket packet)
         {
-            //SendPacketQueue.Add(packet);
+            List<SubPacket> subPackets = packet.GetSubpackets();
+            foreach (SubPacket s in subPackets)
+                SendPacketQueue.Add(s);
         }
 
         public void QueuePacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)

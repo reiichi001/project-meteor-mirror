@@ -136,6 +136,7 @@ namespace FFXIVClassic_World_Server
 
         public void OnReceiveSubPacketFromZone(ZoneServer zoneServer, SubPacket subpacket)
         {
+            subpacket.DebugPrintSubPacket();
             uint sessionId = subpacket.header.targetId;
 
             if (mZoneSessionList.ContainsKey(sessionId))
