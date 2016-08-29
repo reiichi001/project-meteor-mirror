@@ -75,6 +75,7 @@ namespace FFXIVClassic_World_Server
                 {
                     //Send to the correct zone server
                     uint targetSession = subpacket.header.targetId;
+                    mServer.GetSession(targetSession).routing1 = Server.GetServer().GetWorldManager().mZoneServerList["127.0.0.1:1989"];
 
                     if (mServer.GetSession(targetSession).routing1 != null)
                         mServer.GetSession(targetSession).routing1.SendPacket(subpacket);
@@ -85,7 +86,7 @@ namespace FFXIVClassic_World_Server
                 else
                     packet.DebugPrintPacket();
             }
-        }        
+        }    
 
     }
 }

@@ -20,48 +20,18 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public uint languageCode = 1;
 
-        private ClientConnection zoneConnection;
-        private ClientConnection chatConnection;
+        private ZoneConnection zoneConnection;
 
         private uint lastPingPacket = Utils.UnixTimeStampUTC();
 
         public string errorMessage = "";
 
-        public ConnectedPlayer(uint actorId)
+        public ConnectedPlayer(ZoneConnection zc, uint actorId)
         {
+            zoneConnection = zc;
             this.actorID = actorId;
             playerActor = new Player(this, actorId);
             actorInstanceList.Add(playerActor);
-        }
-
-        public void SetConnection(int type, ClientConnection conn)
-        {
-            conn.connType = type;
-            switch (type)
-            {
-                case BasePacket.TYPE_ZONE:
-                    zoneConnection = conn;
-                    break;
-                case BasePacket.TYPE_CHAT:
-                    chatConnection = conn;
-                    break;
-            }
-        }
-
-        public bool IsClientConnectionsReady()
-        {
-            return (zoneConnection != null && chatConnection != null);
-        }
-
-        public void Disconnect()
-        {
-            zoneConnection.Disconnect();
-            chatConnection.Disconnect();
-        }
-
-        public bool IsDisconnected()
-        {
-            return (!zoneConnection.IsConnected() && !chatConnection.IsConnected());
         }
 
         public void QueuePacket(BasePacket basePacket)

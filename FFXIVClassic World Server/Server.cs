@@ -75,55 +75,7 @@ namespace FFXIVClassic_World_Server
             Console.ForegroundColor = ConsoleColor.Gray;
             
             return true;
-        }        
-
-        #region Socket Handling
-        private void AcceptCallback(IAsyncResult result)
-        {
-            ClientConnection conn = null;
-            Socket socket = (System.Net.Sockets.Socket)result.AsyncState;
-
-            try
-            {
-                conn = new ClientConnection();
-                conn.socket = socket.EndAccept(result);
-                conn.buffer = new byte[BUFFER_SIZE];
-
-                lock (mConnectionList)
-                {
-                    mConnectionList.Add(conn);
-                }
-
-                Program.Log.Info("Connection {0}:{1} has connected.", (conn.socket.RemoteEndPoint as IPEndPoint).Address, (conn.socket.RemoteEndPoint as IPEndPoint).Port);
-                //Queue recieving of data from the connection
-                conn.socket.BeginReceive(conn.buffer, 0, conn.buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), conn);
-                //Queue the accept of the next incomming connection
-                mServerSocket.BeginAccept(new AsyncCallback(AcceptCallback), mServerSocket);
-            }
-            catch (SocketException)
-            {
-                if (conn != null)
-                {
-
-                    lock (mConnectionList)
-                    {
-                        mConnectionList.Remove(conn);
-                    }
-                }
-                mServerSocket.BeginAccept(new AsyncCallback(AcceptCallback), mServerSocket);
-            }
-            catch (Exception)
-            {
-                if (conn != null)
-                {
-                    lock (mConnectionList)
-                    {
-                        mConnectionList.Remove(conn);
-                    }
-                }
-                mServerSocket.BeginAccept(new AsyncCallback(AcceptCallback), mServerSocket);
-            }
-        }
+        }                
 
         public void AddSession(ClientConnection connection, Session.Channel type, uint id)
         {
@@ -182,6 +134,70 @@ namespace FFXIVClassic_World_Server
             return null;
         }
 
+        public void OnReceiveSubPacketFromZone(ZoneServer zoneServer, SubPacket subpacket)
+        {
+            uint sessionId = subpacket.header.targetId;
+
+            if (mZoneSessionList.ContainsKey(sessionId))
+            {
+                ClientConnection conn = mZoneSessionList[sessionId].clientConnection;
+                conn.QueuePacket(subpacket, true, false);
+            }
+        }
+
+        public WorldManager GetWorldManager()
+        {
+            return mWorldManager;
+        }
+
+        #region Socket Handling
+        private void AcceptCallback(IAsyncResult result)
+        {
+            ClientConnection conn = null;
+            Socket socket = (System.Net.Sockets.Socket)result.AsyncState;
+
+            try
+            {
+                conn = new ClientConnection();
+                conn.socket = socket.EndAccept(result);
+                conn.buffer = new byte[BUFFER_SIZE];
+
+                lock (mConnectionList)
+                {
+                    mConnectionList.Add(conn);
+                }
+
+                Program.Log.Info("Connection {0}:{1} has connected.", (conn.socket.RemoteEndPoint as IPEndPoint).Address, (conn.socket.RemoteEndPoint as IPEndPoint).Port);
+                //Queue recieving of data from the connection
+                conn.socket.BeginReceive(conn.buffer, 0, conn.buffer.Length, SocketFlags.None, new AsyncCallback(ReceiveCallback), conn);
+                //Queue the accept of the next incomming connection
+                mServerSocket.BeginAccept(new AsyncCallback(AcceptCallback), mServerSocket);
+            }
+            catch (SocketException)
+            {
+                if (conn != null)
+                {
+
+                    lock (mConnectionList)
+                    {
+                        mConnectionList.Remove(conn);
+                    }
+                }
+                mServerSocket.BeginAccept(new AsyncCallback(AcceptCallback), mServerSocket);
+            }
+            catch (Exception)
+            {
+                if (conn != null)
+                {
+                    lock (mConnectionList)
+                    {
+                        mConnectionList.Remove(conn);
+                    }
+                }
+                mServerSocket.BeginAccept(new AsyncCallback(AcceptCallback), mServerSocket);
+            }
+        }
+
         /// <summary>
         /// Receive Callback. Reads in incoming data, converting them to base packets. Base packets are sent to be parsed. If not enough data at the end to build a basepacket, move to the beginning and prepend.
         /// </summary>
@@ -214,7 +230,7 @@ namespace FFXIVClassic_World_Server
                     //Build packets until can no longer or out of data
                     while (true)
                     {
-                        BasePacket basePacket = BuildPacket(ref offset, conn.buffer, bytesRead);
+                        BasePacket basePacket = BasePacket.CreatePacket(ref offset, conn.buffer, bytesRead);
 
                         //If can't build packet, break, else process another
                         if (basePacket == null)
@@ -264,48 +280,7 @@ namespace FFXIVClassic_World_Server
             }
         }     
 
-        /// <summary>
-        /// Builds a packet from the incoming buffer + offset. If a packet can be built, it is returned else null.
-        /// </summary>
-        /// <param name="offset">Current offset in buffer.</param>
-        /// <param name="buffer">Incoming buffer.</param>
-        /// <returns>Returns either a BasePacket or null if not enough data.</returns>
-        public BasePacket BuildPacket(ref int offset, byte[] buffer, int bytesRead)
-        {
-            BasePacket newPacket = null;
-
-            //Too small to even get length
-            if (bytesRead <= offset)
-                return null;
-
-            ushort packetSize = BitConverter.ToUInt16(buffer, offset);
-
-            //Too small to whole packet
-            if (bytesRead < offset + packetSize)
-                return null;
-
-            if (buffer.Length < offset + packetSize)
-                return null;
-
-            try
-            {
-                newPacket = new BasePacket(buffer, ref offset);
-            }
-            catch (OverflowException)
-            {
-                return null;
-            }
-
-            return newPacket;
-        }
-
         #endregion
 
-
-        public WorldManager GetWorldManager()
-        {
-            return mWorldManager;
-        }
-        
     }
 }

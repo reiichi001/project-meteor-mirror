@@ -295,6 +295,41 @@ namespace FFXIVClassic.Common
             return packet;
         }
 
+        /// <summary>
+        /// Builds a packet from the incoming buffer + offset. If a packet can be built, it is returned else null.
+        /// </summary>
+        /// <param name="offset">Current offset in buffer.</param>
+        /// <param name="buffer">Incoming buffer.</param>
+        /// <returns>Returns either a BasePacket or null if not enough data.</returns>
+        public static BasePacket CreatePacket(ref int offset, byte[] buffer, int bytesRead)
+        {
+            BasePacket newPacket = null;
+
+            //Too small to even get length
+            if (bytesRead <= offset)
+                return null;
+
+            ushort packetSize = BitConverter.ToUInt16(buffer, offset);
+
+            //Too small to whole packet
+            if (bytesRead < offset + packetSize)
+                return null;
+
+            if (buffer.Length < offset + packetSize)
+                return null;
+
+            try
+            {
+                newPacket = new BasePacket(buffer, ref offset);
+            }
+            catch (OverflowException)
+            {
+                return null;
+            }
+
+            return newPacket;
+        }
+
         public static unsafe void EncryptPacket(Blowfish blowfish, BasePacket packet)
         {
             var data = packet.data;

@@ -153,6 +153,41 @@ namespace FFXIVClassic.Common
             return outBytes;
         }
 
+        /// <summary>
+        /// Builds a packet from the incoming buffer + offset. If a packet can be built, it is returned else null.
+        /// </summary>
+        /// <param name="offset">Current offset in buffer.</param>
+        /// <param name="buffer">Incoming buffer.</param>
+        /// <returns>Returns either a BasePacket or null if not enough data.</returns>
+        public static SubPacket CreatePacket(ref int offset, byte[] buffer, int bytesRead)
+        {
+            SubPacket newPacket = null;
+
+            //Too small to even get length
+            if (bytesRead <= offset)
+                return null;
+
+            ushort packetSize = BitConverter.ToUInt16(buffer, offset);
+
+            //Too small to whole packet
+            if (bytesRead < offset + packetSize)
+                return null;
+
+            if (buffer.Length < offset + packetSize)
+                return null;
+
+            try
+            {
+                newPacket = new SubPacket(buffer, ref offset);
+            }
+            catch (OverflowException)
+            {
+                return null;
+            }
+
+            return newPacket;
+        }
+
         public void DebugPrintSubPacket()
         {
 #if DEBUG
@@ -169,6 +204,9 @@ namespace FFXIVClassic.Common
                 logger.ColorDebug(Utils.ByteArrayToHex(data, SUBPACKET_SIZE + GAMEMESSAGE_SIZE),
                     ConsoleOutputColor.DarkMagenta);
             }
+            else
+                logger.ColorDebug(Utils.ByteArrayToHex(data, SUBPACKET_SIZE),
+                    ConsoleOutputColor.DarkMagenta);
 #endif
         }        
     }

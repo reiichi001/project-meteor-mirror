@@ -7,27 +7,22 @@ using System.Net;
 
 namespace FFXIVClassic_Map_Server
 {
-    class ClientConnection
+    class ZoneConnection
     {
         //Connection stuff
-        public Blowfish blowfish;
         public Socket socket;
         public byte[] buffer;
-        private BlockingCollection<BasePacket> SendPacketQueue = new BlockingCollection<BasePacket>(1000);
+        private BlockingCollection<SubPacket> SendPacketQueue = new BlockingCollection<SubPacket>(1000);
         public int lastPartialSize = 0;
-
-        //Instance Stuff
-        public uint owner = 0;
-        public int connType = 0;
 
         public void QueuePacket(BasePacket packet)
         {
-            SendPacketQueue.Add(packet);
+            //SendPacketQueue.Add(packet);
         }
 
         public void QueuePacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)
         {
-            SendPacketQueue.Add(BasePacket.CreatePacket(subpacket, isAuthed, isEncrypted));
+            SendPacketQueue.Add(subpacket);
         }
 
         public void FlushQueuedSendPackets()
@@ -37,9 +32,9 @@ namespace FFXIVClassic_Map_Server
 
             while (SendPacketQueue.Count > 0)
             {
-                BasePacket packet = SendPacketQueue.Take();                
+                SubPacket packet = SendPacketQueue.Take();
 
-                byte[] packetBytes = packet.GetPacketBytes();
+                byte[] packetBytes = packet.GetBytes();
 
                 try
                 {

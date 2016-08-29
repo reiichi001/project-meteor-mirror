@@ -14,7 +14,7 @@ namespace FFXIVClassic_World_Server
     class WorldManager
     {
         private Server mServer;
-        private Dictionary<string, ZoneServer> mZoneServerList;
+        public Dictionary<string, ZoneServer> mZoneServerList;
 
         public WorldManager(Server server)
         {
