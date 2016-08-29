@@ -2,11 +2,9 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using FFXIVClassic_Map_Server.dataobjects;
 
 using FFXIVClassic.Common;
-using NLog;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 
@@ -53,11 +51,11 @@ namespace FFXIVClassic_Map_Server
             mWorldManager.LoadSpawnLocations();
             mWorldManager.SpawnAllActors();
 
-            IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), int.Parse(ConfigConstants.OPTIONS_PORT));
+            IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), int.Parse(ConfigConstants.OPTIONS_PORT));
 
             try
             {
-                mServerSocket = new System.Net.Sockets.Socket(serverEndPoint.Address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                mServerSocket = new Socket(serverEndPoint.Address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             }
             catch (Exception e)
             {
