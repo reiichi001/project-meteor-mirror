@@ -21,6 +21,12 @@ namespace FFXIVClassic_World_Server
 #if DEBUG
             TextWriterTraceListener myWriter = new TextWriterTraceListener(System.Console.Out);
             Debug.Listeners.Add(myWriter);
+
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                System.Threading.Thread.Sleep(5000);
+            }
+
 #endif
             bool startServer = true;
 
