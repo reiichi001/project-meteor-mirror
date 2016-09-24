@@ -136,14 +136,16 @@ namespace FFXIVClassic_World_Server
 
         public void OnReceiveSubPacketFromZone(ZoneServer zoneServer, SubPacket subpacket)
         {
-            subpacket.DebugPrintSubPacket();
+            //subpacket.DebugPrintSubPacket();
             uint sessionId = subpacket.header.targetId;
 
             if (mZoneSessionList.ContainsKey(sessionId))
             {
                 ClientConnection conn = mZoneSessionList[sessionId].clientConnection;
                 conn.QueuePacket(subpacket, true, false);
+                conn.FlushQueuedSendPackets();
             }
+            
         }
 
         public WorldManager GetWorldManager()

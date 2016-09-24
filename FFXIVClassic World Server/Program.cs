@@ -24,7 +24,7 @@ namespace FFXIVClassic_World_Server
 
             if (System.Diagnostics.Debugger.IsAttached)
             {
-                System.Threading.Thread.Sleep(5000);
+                System.Threading.Thread.Sleep(15000);
             }
 
 #endif

@@ -87,13 +87,17 @@ namespace FFXIVClassic_Map_Server.Actors
             List<LuaParam> lParams;
 
             Player player = Server.GetWorldManager().GetPCInWorld(playerActorId);
-            lParams = DoActorInit(player);            
+            lParams = DoActorInit(player);
+
+            if (lParams != null && lParams.Count >= 3 && lParams[2].typeID == 0 && (int)lParams[2].value == 0)
+                isStatic = true;
 
             if (lParams == null)
             {
                 string classPathFake = "/Chara/Npc/Populace/PopulaceStandard";
                 string classNameFake = "PopulaceStandard";
                 lParams = LuaUtils.CreateLuaParamList(classPathFake, false, false, false, false, false, 0xF47F6, false, false, 0, 0);
+                isStatic = true;
                 //ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams).DebugPrintSubPacket();
                 return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams);
             }

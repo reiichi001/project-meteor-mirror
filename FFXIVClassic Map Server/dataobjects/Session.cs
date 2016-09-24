@@ -104,6 +104,10 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
                 if (actorInstanceList.Contains(actor))
                 {
+                    //Don't send for static characters (npcs)
+                    if (actor is Character && ((Character)actor).isStatic)
+                        continue;
+
                     GetActor().QueuePacket(actor.CreatePositionUpdatePacket(playerActor.actorId));
                 }
                 else

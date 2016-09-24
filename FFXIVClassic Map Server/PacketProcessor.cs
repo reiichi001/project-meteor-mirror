@@ -31,12 +31,9 @@ namespace FFXIVClassic_Map_Server
         }     
 
         public void ProcessPacket(ZoneConnection client, SubPacket subpacket)
-        {                      
-    
+        {                          
                 Session session = mServer.GetSession(subpacket.header.targetId);
                 
-                subpacket.DebugPrintSubPacket();
-
                 //Normal Game Opcode
                 switch (subpacket.gameMessage.opcode)
                 {
@@ -57,6 +54,8 @@ namespace FFXIVClassic_Map_Server
                         client.QueuePacket(_0x2Packet.BuildPacket(session.id), true, false);
 
                         Server.GetWorldManager().DoLogin(session.GetActor());
+
+                        client.FlushQueuedSendPackets();
 
                         break;
                     //Chat Received

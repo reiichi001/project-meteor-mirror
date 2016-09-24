@@ -36,6 +36,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public const int L_INDEXFINGER = 26;
         public const int UNKNOWN = 27;
 
+        public bool isStatic = false;
+
         public uint modelId;
         public uint[] appearanceIds = new uint[28];
 
