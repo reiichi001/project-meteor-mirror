@@ -8,6 +8,7 @@ using System.IO;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.lua;
+using FFXIVClassic_Map_Server.Actors;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -74,7 +75,9 @@ namespace FFXIVClassic_Map_Server
             if (cmd.Any())
             {
                 // if client isnt null, take player to be the player actor
-                var player = session.GetActor();
+                Player player = null;
+                if (session != null)
+                    player = session.GetActor();
 
                 if (cmd.Equals("help"))
                 {

@@ -37,6 +37,18 @@ namespace FFXIVClassic_Map_Server
                 //Normal Game Opcode
                 switch (subpacket.gameMessage.opcode)
                 {
+                    //World Server - End Session
+                    case 0x1000:
+                        session.GetActor().CleanupAndSave();
+                        break;
+                    //World Server - End Session and Zone
+                    case 0x1001:
+
+                        session.GetActor().CleanupAndSave();
+                        break;
+                    //World Server - Begin Session
+                    case 0x1002:
+                        break;                    
                     //Ping
                     case 0x0001:
                         //subpacket.DebugPrintSubPacket();
@@ -86,7 +98,7 @@ namespace FFXIVClassic_Map_Server
                     //Update Position
                     case 0x00CA:
                         //Update Position
-                        //subpacket.DebugPrintSubPacket();
+                        subpacket.DebugPrintSubPacket();
                         UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
                         session.UpdatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
                         session.GetActor().SendInstanceUpdate();

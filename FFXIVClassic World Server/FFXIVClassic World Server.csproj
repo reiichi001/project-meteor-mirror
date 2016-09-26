@@ -73,6 +73,9 @@
     <Compile Include="Packets\Send\_0x2Packet.cs" />
     <Compile Include="Packets\Send\_0x7Packet.cs" />
     <Compile Include="Packets\Send\_0x8PingPacket.cs" />
+    <Compile Include="Packets\WorldPackets\Send\SessionBeginPacket.cs" />
+    <Compile Include="Packets\WorldPackets\Send\SessionEndZonePacket.cs" />
+    <Compile Include="Packets\WorldPackets\Send\SessionEndPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server.cs" />

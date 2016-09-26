@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic.Common;
+using FFXIVClassic_World_Server.Packets.WorldPackets.Send;
 
 namespace FFXIVClassic_World_Server.DataObjects
 {
@@ -134,6 +135,15 @@ namespace FFXIVClassic_World_Server.DataObjects
             }
         }
 
+        public void SendGoodbye(Session session)
+        {
+            SendPacket(SessionEndPacket.BuildPacket(session));
+        }
+
+        public void SendSessionEnd(Session session, uint destinationZoneId, string destinationPrivateArea, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
+        {
+            SendPacket(SessionEndAndZonePacket.BuildPacket(session, destinationZoneId, destinationPrivateArea, spawnType, spawnX, spawnY, spawnZ, spawnRotation));
+        }
 
     }
 }

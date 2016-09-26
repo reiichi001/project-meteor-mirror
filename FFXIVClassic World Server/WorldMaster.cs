@@ -15,6 +15,7 @@ namespace FFXIVClassic_World_Server
     {
         private Server mServer;
         public Dictionary<string, ZoneServer> mZoneServerList;
+        private Dictionary<uint, ZoneEntrance> zoneEntranceList;
 
         public WorldManager(Server server)
         {
@@ -65,6 +66,57 @@ namespace FFXIVClassic_World_Server
             }
             
         }
+
+        public void LoadZoneEntranceList()
+        {
+            zoneEntranceList = new Dictionary<uint, ZoneEntrance>();
+            int count = 0;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT 
+                                    id,
+                                    zoneId,
+                                    spawnType,
+                                    spawnX,
+                                    spawnY,
+                                    spawnZ,
+                                    spawnRotation,
+                                    privateAreaName
+                                    FROM server_zones_spawnlocations";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint id = reader.GetUInt32(0);
+                            string privArea = null;
+
+                            if (!reader.IsDBNull(7))
+                                privArea = reader.GetString(7);
+
+                            ZoneEntrance entance = new ZoneEntrance(reader.GetUInt32(1), privArea, reader.GetByte(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6));
+                            zoneEntranceList[id] = entance;
+                            count++;
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                { Console.WriteLine(e); }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            Program.Log.Info(String.Format("Loaded {0} zone spawn locations.", count));
+        }
         
         public void ConnectToZoneServers()
         {
@@ -87,23 +139,20 @@ namespace FFXIVClassic_World_Server
         //Moves actor to new zone, and sends packets to spawn at the given zone entrance
         public void DoZoneServerChange(Session session, uint zoneEntrance)
         {
-            /*
-            ->Tell old server to save session info and remove session. Start zone packets.
-            ->Update the position to zoneEntrance
-            ->Update routing
-            ->Tell new server to load session info and add session. Send end zone packets.
-            */
+            if (!zoneEntranceList.ContainsKey(zoneEntrance))
+            {
+                Program.Log.Error("Given zone entrance was not found: " + zoneEntrance);
+                return;
+            }
+
+            ZoneEntrance ze = zoneEntranceList[zoneEntrance];
+            DoZoneServerChange(session, ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
         }
 
         //Moves actor to new zone, and sends packets to spawn at the given coords.
         public void DoZoneServerChange(Session session, uint destinationZoneId, string destinationPrivateArea, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
         {
-            /*
-           ->Tell old server to save session info and remove
-           ->Update the position to params
-           ->Update routing
-           ->Tell new server to load session info and add           
-           */
+            session.routing1.SendSessionEnd(session, destinationZoneId, destinationPrivateArea, spawnType, spawnX, spawnY, spawnZ, spawnRotation);
         }
 
         //Login Zone In

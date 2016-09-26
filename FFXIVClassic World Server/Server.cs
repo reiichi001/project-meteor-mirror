@@ -40,6 +40,7 @@ namespace FFXIVClassic_World_Server
             mPacketProcessor = new PacketProcessor(this);
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneServerList();
+            mWorldManager.LoadZoneEntranceList();
             mWorldManager.ConnectToZoneServers();            
 
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), int.Parse(ConfigConstants.OPTIONS_PORT));
@@ -135,10 +136,9 @@ namespace FFXIVClassic_World_Server
         }
 
         public void OnReceiveSubPacketFromZone(ZoneServer zoneServer, SubPacket subpacket)
-        {
-            //subpacket.DebugPrintSubPacket();
+        {            
             uint sessionId = subpacket.header.targetId;
-
+          
             if (mZoneSessionList.ContainsKey(sessionId))
             {
                 ClientConnection conn = mZoneSessionList[sessionId].clientConnection;
