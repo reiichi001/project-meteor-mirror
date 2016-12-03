@@ -30,7 +30,7 @@ namespace FFXIVClassic_Map_Server
             INIFile configIni = new INIFile("./map_config.ini");
 
             ConfigConstants.OPTIONS_BINDIP =        configIni.GetValue("General", "server_ip", "127.0.0.1");
-            ConfigConstants.OPTIONS_PORT =          configIni.GetValue("General", "server_port", "54992");
+            ConfigConstants.OPTIONS_PORT =          configIni.GetValue("General", "server_port", "1989");
             ConfigConstants.OPTIONS_TIMESTAMP =     configIni.GetValue("General", "showtimestamp", "true").ToLower().Equals("true");
 
             ConfigConstants.DATABASE_WORLDID =      UInt32.Parse(configIni.GetValue("Database", "worldid", "0"));

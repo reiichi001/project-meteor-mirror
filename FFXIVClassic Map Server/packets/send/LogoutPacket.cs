@@ -1,4 +1,6 @@
-﻿namespace FFXIVClassic_Map_Server.packets.send
+﻿using FFXIVClassic.Common;
+
+namespace FFXIVClassic_Map_Server.packets.send
 {
     class LogoutPacket
     {

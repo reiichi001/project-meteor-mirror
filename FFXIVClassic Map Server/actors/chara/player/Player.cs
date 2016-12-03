@@ -1,5 +1,5 @@
 ﻿using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.packets;
+
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.dataobjects;
@@ -7,8 +7,6 @@ using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using FFXIVClassic_Map_Server.packets.send.actor.events;
-using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.events;
 using FFXIVClassic_Map_Server.packets.send.list;
 using FFXIVClassic_Map_Server.packets.send.player;
@@ -17,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using MoonSharp.Interpreter;
 using FFXIVClassic_Map_Server.packets.receive.events;
+using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -85,6 +84,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public Coroutine currentEventRunning;
 
         //Player Info
+        public uint destinationZone;
+        public ushort destinationSpawnType;
         public uint[] timers = new uint[20];
         public ushort currentJob;
         public uint currentTitle;
@@ -124,9 +125,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public PlayerWork playerWork = new PlayerWork();
 
-        public ConnectedPlayer playerSession;
+        public Session playerSession;
 
-        public Player(ConnectedPlayer cp, uint actorID) : base(actorID)
+        public Player(Session cp, uint actorID) : base(actorID)
         {
             playerSession = cp;
             actorName = String.Format("_pc{0:00000000}", actorID);
@@ -258,9 +259,9 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
             return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
-        }        
+        }
 
-        public override BasePacket GetSpawnPackets(uint playerActorId, uint spawnType)
+        public override BasePacket GetSpawnPackets(uint playerActorId, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket(playerActorId, 8));
@@ -481,7 +482,7 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePacket(SetMapPacket.BuildPacket(actorId, zone.regionId, zone.actorId));
 
             QueuePacket(GetSpawnPackets(actorId, spawnType));            
-            GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
+            //GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
 
             #region grouptest
             //Retainers
@@ -653,16 +654,39 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         public void CleanupAndSave()
-        {                        
+        {
+            playerSession.LockUpdates(true);
+
             //Remove actor from zone and main server list
             zone.RemoveActorFromZone(this);
-            Server.GetServer().RemovePlayer(this);
+
+            //Set Destination to 0
+            this.destinationZone = 0;
+            this.destinationSpawnType = 0;
 
             //Save Player
             Database.SavePlayerPlayTime(this);
             Database.SavePlayerPosition(this);
+        }
 
-            Program.Log.Info("{0} has been logged out and saved.", this.customDisplayName);
+        public void CleanupAndSave(uint destinationZone, ushort spawnType, float destinationX, float destinationY, float destinationZ, float destinationRot)
+        {
+            playerSession.LockUpdates(true);
+
+            //Remove actor from zone and main server list
+            zone.RemoveActorFromZone(this);
+
+            //Set destination
+            this.destinationZone = destinationZone;
+            this.destinationSpawnType = spawnType;
+            this.positionX = destinationX;
+            this.positionY = destinationY;
+            this.positionZ = destinationZ;
+            this.rotation = destinationRot;
+
+            //Save Player
+            Database.SavePlayerPlayTime(this);
+            Database.SavePlayerPosition(this);            
         }
 
         public Area GetZone()
@@ -731,7 +755,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendGameMessage(Actor sourceActor, Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
         {
-            if (msgParams.Length == 0)
+            if (msgParams == null || msgParams.Length == 0)
             {
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, sourceActor.actorId, textIdOwner.actorId, textId, log));
             }
@@ -741,7 +765,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendGameMessage(Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
         {
-            if (msgParams.Length == 0)
+            if (msgParams == null || msgParams.Length == 0)
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log));
             else
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log, LuaUtils.CreateLuaParamList(msgParams)));
@@ -749,7 +773,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendGameMessage(Actor textIdOwner, ushort textId, byte log, string customSender, params object[] msgParams)
         {
-            if (msgParams.Length == 0)
+            if (msgParams == null || msgParams.Length == 0)
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log));
             else
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log, LuaUtils.CreateLuaParamList(msgParams)));
@@ -757,7 +781,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendGameMessage(Actor textIdOwner, ushort textId, byte log, uint displayId, params object[] msgParams)
         {
-            if (msgParams.Length == 0)
+            if (msgParams == null || msgParams.Length == 0)
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log));
             else
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log, LuaUtils.CreateLuaParamList(msgParams)));

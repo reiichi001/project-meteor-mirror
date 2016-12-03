@@ -1,7 +1,8 @@
-﻿using System;
+﻿using FFXIVClassic.Common;
+using System;
 using System.IO;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor
+namespace  FFXIVClassic_Map_Server.packets.send.actor
 {
     class SetActorSpeedPacket
     {

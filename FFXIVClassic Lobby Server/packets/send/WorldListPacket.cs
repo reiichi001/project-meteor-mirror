@@ -1,4 +1,5 @@
-﻿using FFXIVClassic_Lobby_Server.dataobjects;
+﻿using FFXIVClassic.Common;
+using FFXIVClassic_Lobby_Server.dataobjects;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -93,7 +93,7 @@
     <Compile Include="actors\quest\Quest.cs" />
     <Compile Include="actors\StaticActors.cs" />
     <Compile Include="actors\world\WorldMaster.cs" />
-    <Compile Include="ClientConnection.cs" />
+    <Compile Include="dataobjects\ZoneConnection.cs" />
     <Compile Include="CommandProcessor.cs" />
     <Compile Include="ConfigConstants.cs" />
     <Compile Include="Database.cs" />
@@ -112,7 +112,7 @@
     <Compile Include="actors\chara\player\PlayerWork.cs" />
     <Compile Include="dataobjects\DBWorld.cs" />
     <Compile Include="dataobjects\InventoryItem.cs" />
-    <Compile Include="dataobjects\ConnectedPlayer.cs" />
+    <Compile Include="dataobjects\Session.cs" />
     <Compile Include="dataobjects\Item.cs" />
     <Compile Include="dataobjects\RecruitmentDetails.cs" />
     <Compile Include="dataobjects\SeamlessBoundry.cs" />
@@ -124,7 +124,6 @@
     <Compile Include="lua\LuaPlayer.cs" />
     <Compile Include="lua\LuaScript.cs" />
     <Compile Include="PacketProcessor.cs" />
-    <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\ChatMessagePacket.cs" />
     <Compile Include="packets\receive\events\EventUpdatePacket.cs" />
     <Compile Include="packets\receive\events\EventStartPacket.cs" />
@@ -258,9 +257,13 @@
     <Compile Include="packets\send\_0x02Packet.cs" />
     <Compile Include="packets\send\_0x10Packet.cs" />
     <Compile Include="packets\send\_0xE2Packet.cs" />
-    <Compile Include="packets\SubPacket.cs" />
     <Compile Include="packets\receive\PingPacket.cs" />
     <Compile Include="packets\receive\UpdatePlayerPositionPacket.cs" />
+    <Compile Include="packets\WorldPackets\Receive\ErrorPacket.cs" />
+    <Compile Include="packets\WorldPackets\Receive\SessionEndPacket.cs" />
+    <Compile Include="packets\WorldPackets\Receive\SessionBeginPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\SessionBeginConfirmPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\SessionEndConfirmPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="lua\LuaUtils.cs" />
@@ -286,6 +289,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
+    <Compile Include="packets\WorldPackets\Send\WorldRequestZoneChangePacket.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">

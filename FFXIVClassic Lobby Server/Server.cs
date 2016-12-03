@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using FFXIVClassic_Lobby_Server.packets;
+
 using FFXIVClassic.Common;
 using NLog;
 

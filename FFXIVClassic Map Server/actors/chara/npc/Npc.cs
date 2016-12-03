@@ -4,7 +4,7 @@ using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
-using FFXIVClassic_Map_Server.packets;
+
 using FFXIVClassic_Map_Server.packets.receive.events;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.utils;
@@ -86,13 +86,17 @@ namespace FFXIVClassic_Map_Server.Actors
             List<LuaParam> lParams;
 
             Player player = Server.GetWorldManager().GetPCInWorld(playerActorId);
-            lParams = DoActorInit(player);            
+            lParams = DoActorInit(player);
+
+            if (lParams != null && lParams.Count >= 3 && lParams[2].typeID == 0 && (int)lParams[2].value == 0)
+                isStatic = true;
 
             if (lParams == null)
             {
                 string classPathFake = "/Chara/Npc/Populace/PopulaceStandard";
                 string classNameFake = "PopulaceStandard";
                 lParams = LuaUtils.CreateLuaParamList(classPathFake, false, false, false, false, false, 0xF47F6, false, false, 0, 0);
+                isStatic = true;
                 //ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams).DebugPrintSubPacket();
                 return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams);
             }
@@ -111,7 +115,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
         }
 
-        public override BasePacket GetSpawnPackets(uint playerActorId, uint spawnType)
+        public override BasePacket GetSpawnPackets(uint playerActorId, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket(playerActorId));

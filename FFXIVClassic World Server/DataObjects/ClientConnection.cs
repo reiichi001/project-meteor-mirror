@@ -1,24 +1,22 @@
 ﻿using System;
 using System.Net.Sockets;
-using FFXIVClassic_Map_Server.packets;
-using FFXIVClassic.Common;
 using System.Collections.Concurrent;
 using System.Net;
+using FFXIVClassic.Common;
+using FFXIVClassic_World_Server.DataObjects;
 
-namespace FFXIVClassic_Map_Server
+namespace FFXIVClassic_World_Server
 {
     class ClientConnection
     {
         //Connection stuff
-        public Blowfish blowfish;
         public Socket socket;
         public byte[] buffer;
         private BlockingCollection<BasePacket> SendPacketQueue = new BlockingCollection<BasePacket>(1000);
         public int lastPartialSize = 0;
 
         //Instance Stuff
-        public uint owner = 0;
-        public int connType = 0;
+        public Session owner;
 
         public void QueuePacket(BasePacket packet)
         {
@@ -37,8 +35,8 @@ namespace FFXIVClassic_Map_Server
 
             while (SendPacketQueue.Count > 0)
             {
-                BasePacket packet = SendPacketQueue.Take();                
-
+                BasePacket packet = SendPacketQueue.Take();
+                
                 byte[] packetBytes = packet.GetPacketBytes();
 
                 try

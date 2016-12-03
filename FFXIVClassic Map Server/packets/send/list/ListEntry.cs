@@ -1,4 +1,6 @@
-﻿namespace FFXIVClassic_Map_Server.packets.send.list
+﻿using FFXIVClassic.Common;
+
+namespace FFXIVClassic_Map_Server.packets.send.list
 {
     class ListEntry
     {

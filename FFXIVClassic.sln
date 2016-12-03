@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClassic Map Server", "FFXIVClassic Map Server\FFXIVClassic Map Server.csproj", "{E8FA2784-D4B9-4711-8CC6-712A4B1CD54F}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -14,6 +14,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClassic Lobby Server",
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClassic Common Class Lib", "FFXIVClassic Common Class Lib\FFXIVClassic Common Class Lib.csproj", "{3A3D6626-C820-4C18-8C81-64811424F20E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FFXIVClassic World Server", "FFXIVClassic World Server\FFXIVClassic World Server.csproj", "{3067889D-8A50-40D6-9CD5-23AA8EA96F26}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3A3D6626-C820-4C18-8C81-64811424F20E} = {3A3D6626-C820-4C18-8C81-64811424F20E}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +38,10 @@ Global
 		{3A3D6626-C820-4C18-8C81-64811424F20E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A3D6626-C820-4C18-8C81-64811424F20E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A3D6626-C820-4C18-8C81-64811424F20E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3067889D-8A50-40D6-9CD5-23AA8EA96F26}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3067889D-8A50-40D6-9CD5-23AA8EA96F26}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3067889D-8A50-40D6-9CD5-23AA8EA96F26}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3067889D-8A50-40D6-9CD5-23AA8EA96F26}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

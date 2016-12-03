@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor
 {
     class SetActorPositionPacket
     {
@@ -22,7 +24,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
         public const float INNPOS_Z     = 165.050003f;
         public const float INNPOS_ROT   =  -1.530000f;
 
-        public static SubPacket BuildPacket(uint sourceActorID, uint targetActorID, uint actorId, float x, float y, float z, float rotation, uint spawnType, bool isZoningPlayer)
+        public static SubPacket BuildPacket(uint sourceActorID, uint targetActorID, uint actorId, float x, float y, float z, float rotation, ushort spawnType, bool isZoningPlayer)
         {
             byte[] data = new byte[PACKET_SIZE-0x20];
 

@@ -63,14 +63,14 @@ namespace FFXIVClassic_Map_Server
             if (startServer)
             {
                 Server server = new Server();
-                CommandProcessor cp = new CommandProcessor(server.GetConnectedPlayerList());
+                
                 server.StartServer();
 
                 while (startServer)
                 {
                     String input = Console.ReadLine();
                     Log.Info("[Console Input] " + input);
-                    cp.DoCommand(input, null);
+                    Server.GetCommandProcessor().DoCommand(input, null);
                 }
             }
 

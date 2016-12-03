@@ -1,6 +1,6 @@
 ﻿using FFXIVClassic_Map_Server;
 using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.packets;
+
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
@@ -12,66 +12,33 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.dataobjects
 {
-    class ConnectedPlayer
+    class Session
     {
-        public uint actorID = 0;
+        public uint id = 0;
         Player playerActor;
         public List<Actor> actorInstanceList = new List<Actor>();
-
-        public uint languageCode = 1;
-
-        private ClientConnection zoneConnection;
-        private ClientConnection chatConnection;
-
+        public uint languageCode = 1;        
         private uint lastPingPacket = Utils.UnixTimeStampUTC();
+
+        public bool isUpdatesLocked = true;
 
         public string errorMessage = "";
 
-        public ConnectedPlayer(uint actorId)
+        public Session(uint sessionId)
         {
-            this.actorID = actorId;
-            playerActor = new Player(this, actorId);
+            this.id = sessionId;
+            playerActor = new Player(this, sessionId);
             actorInstanceList.Add(playerActor);
-        }
-
-        public void SetConnection(int type, ClientConnection conn)
-        {
-            conn.connType = type;
-            switch (type)
-            {
-                case BasePacket.TYPE_ZONE:
-                    zoneConnection = conn;
-                    break;
-                case BasePacket.TYPE_CHAT:
-                    chatConnection = conn;
-                    break;
-            }
-        }
-
-        public bool IsClientConnectionsReady()
-        {
-            return (zoneConnection != null && chatConnection != null);
-        }
-
-        public void Disconnect()
-        {
-            zoneConnection.Disconnect();
-            chatConnection.Disconnect();
-        }
-
-        public bool IsDisconnected()
-        {
-            return (!zoneConnection.IsConnected() && !chatConnection.IsConnected());
         }
 
         public void QueuePacket(BasePacket basePacket)
         {
-            zoneConnection.QueuePacket(basePacket);
+            Server.GetWorldConnection().QueuePacket(basePacket);
         }
 
         public void QueuePacket(SubPacket subPacket, bool isAuthed, bool isEncrypted)
         {
-            zoneConnection.QueuePacket(subPacket, isAuthed, isEncrypted);
+            Server.GetWorldConnection().QueuePacket(subPacket, isAuthed, isEncrypted);
         }
 
         public Player GetActor()
@@ -98,6 +65,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void UpdatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
         {
+            if (isUpdatesLocked)
+                return;
+
             playerActor.oldPositionX = playerActor.positionX;
             playerActor.oldPositionY = playerActor.positionY;
             playerActor.oldPositionZ = playerActor.positionZ;
@@ -115,6 +85,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void UpdateInstance(List<Actor> list)
         {
+            if (isUpdatesLocked)
+                return;
+
             List<BasePacket> basePackets = new List<BasePacket>();
             List<SubPacket> RemoveActorSubpackets = new List<SubPacket>();
             List<SubPacket> posUpdateSubpackets = new List<SubPacket>();
@@ -139,6 +112,10 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
                 if (actorInstanceList.Contains(actor))
                 {
+                    //Don't send for static characters (npcs)
+                    if (actor is Character && ((Character)actor).isStatic)
+                        continue;
+
                     GetActor().QueuePacket(actor.CreatePositionUpdatePacket(playerActor.actorId));
                 }
                 else
@@ -163,5 +140,10 @@ namespace FFXIVClassic_Map_Server.dataobjects
             actorInstanceList.Clear();
         }
 
+
+        public void LockUpdates(bool f)
+        {
+            isUpdatesLocked = f;
+        }
     }
 }

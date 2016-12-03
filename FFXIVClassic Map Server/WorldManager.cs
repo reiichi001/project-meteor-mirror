@@ -61,10 +61,13 @@ namespace FFXIVClassic_Map_Server
                                     canRideChocobo,
                                     canStealth,
                                     isInstanceRaid
-                                    FROM server_zones 
-                                    WHERE zoneName IS NOT NULL";
+                                    FROM server_zones
+                                    WHERE zoneName IS NOT NULL and serverIp = @ip and serverPort = @port";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Parameters.AddWithValue("@ip", ConfigConstants.OPTIONS_BINDIP);
+                    cmd.Parameters.AddWithValue("@port", ConfigConstants.OPTIONS_PORT);
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
@@ -333,14 +336,21 @@ namespace FFXIVClassic_Map_Server
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
-                        {
+                        {                            
+                            uint zoneId = reader.GetUInt32("zoneId");
+                            uint classId = reader.GetUInt32("actorClassId");
+                            if (!actorClasses.ContainsKey(classId))
+                                continue;
+                            if (!zoneList.ContainsKey(zoneId))
+                                continue;
+                            Zone zone = zoneList[zoneId];
+                            if (zone == null)
+                                continue;
+
                             string customName = null;
                             if (!reader.IsDBNull(11))
                                 customName = reader.GetString("customDisplayName");
-
-                            uint classId = reader.GetUInt32("actorClassId");
-                            string uniqueId = reader.GetString("uniqueId");
-                            uint zoneId = reader.GetUInt32("zoneId");
+                            string uniqueId = reader.GetString("uniqueId");                          
                             string privAreaName = reader.GetString("privateAreaName");
                             uint privAreaLevel = reader.GetUInt32("privateAreaLevel");
                             float x = reader.GetFloat("positionX");
@@ -349,16 +359,7 @@ namespace FFXIVClassic_Map_Server
                             float rot = reader.GetFloat("rotation");
                             ushort state = reader.GetUInt16("actorState");
                             uint animId = reader.GetUInt32("animationId");
-
-                            if (!actorClasses.ContainsKey(classId))                                
-                                continue;
-                            if (!zoneList.ContainsKey(zoneId))
-                                continue;
-
-                            Zone zone = zoneList[zoneId];
-                            if (zone == null)
-                                continue;
-
+                            
                             SpawnLocation spawn = new SpawnLocation(classId, uniqueId, zoneId, privAreaName, privAreaLevel, x, y, z, rot, state, animId);
 
                             zone.AddSpawnLocation(spawn);
@@ -523,14 +524,7 @@ namespace FFXIVClassic_Map_Server
 
         //Moves actor to new zone, and sends packets to spawn at the given coords.
         public void DoZoneChange(Player player, uint destinationZoneId, string destinationPrivateArea, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
-        {
-            Area oldZone = player.zone;
-            //Remove player from currentZone if transfer else it's login
-            if (player.zone != null)
-            {
-                oldZone.RemoveActorFromZone(player);
-            }
-
+        {       
             //Add player to new zone and update
             Area newArea;
 
@@ -542,15 +536,16 @@ namespace FFXIVClassic_Map_Server
             //This server does not contain that zoneId
             if (newArea == null)
             {
-                if (oldZone != null)
-                {
-                    oldZone.AddActorToZone(player);
-                }
-
-                var message = "WorldManager.DoZoneChange: unable to change areas, new area is not valid.";
-                player.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM, "[Debug]", message);
-                Program.Log.Debug(message);
+                Program.Log.Debug("Request to change to zone not on this server by: {0}.", player.customDisplayName);
+                RequestWorldServerZoneChange(player, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation);
                 return;
+            }
+
+            Area oldZone = player.zone;
+            //Remove player from currentZone if transfer else it's login
+            if (player.zone != null)
+            {
+                oldZone.RemoveActorFromZone(player);
             }
 
             newArea.AddActorToZone(player);
@@ -613,8 +608,8 @@ namespace FFXIVClassic_Map_Server
             }            
         }
 
-        //Login Zone In
-        public void DoLogin(Player player)
+        //Session started, zone into world
+        public void DoZoneIn(Player player, bool isLogin, ushort spawnType)
         {
             //Add player to new zone and update
             Zone zone = GetZone(player.zoneId);
@@ -625,15 +620,25 @@ namespace FFXIVClassic_Map_Server
 
             //Set the current zone and add player
             player.zone = zone;
-
-            LuaEngine.OnBeginLogin(player);
             
             zone.AddActorToZone(player);
             
             //Send packets            
-            player.SendZoneInPackets(this, 0x1);
+            if (!isLogin)
+            {
+                player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
+                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x2), true, false);
+                player.SendZoneInPackets(this, spawnType);
+            }
 
-            LuaEngine.OnLogin(player);
+            player.SendZoneInPackets(this, spawnType);
+
+            player.destinationZone = 0;
+            player.destinationSpawnType = 0;
+            Database.SavePlayerPosition(player);
+
+            player.playerSession.LockUpdates(false);
+
             LuaEngine.OnZoneIn(player);
         }
 
@@ -646,6 +651,12 @@ namespace FFXIVClassic_Map_Server
             //zone.clear();
             //LoadNPCs(zone.actorId);
 
+        }
+
+        private void RequestWorldServerZoneChange(Player player, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
+        {
+            ZoneConnection zc = Server.GetWorldConnection();
+            zc.RequestZoneChange(player.playerSession.id, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation);
         }
 
         public Player GetPCInWorld(string name)

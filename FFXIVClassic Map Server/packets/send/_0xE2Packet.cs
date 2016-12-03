@@ -1,5 +1,7 @@
 ﻿using System;
 
+using FFXIVClassic.Common;
+
 namespace FFXIVClassic_Map_Server.packets.send
 {
     class _0xE2Packet
