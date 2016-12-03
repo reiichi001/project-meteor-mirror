@@ -95,6 +95,9 @@ namespace FFXIVClassic_Map_Server
 
         public Session AddSession(uint id)
         {
+            if (mSessionList.ContainsKey(id))
+                return mSessionList[id];
+
             Session session = new Session(id);
             mSessionList.Add(id, session);
             return session;
@@ -104,8 +107,7 @@ namespace FFXIVClassic_Map_Server
         {
             if (mSessionList.ContainsKey(id))
             {
-                mSessionList[id].GetActor().CleanupAndSave();
-                mSessionList.Remove(id);
+                mSessionList.Remove(id);                
             }
         }
 
@@ -244,6 +246,11 @@ namespace FFXIVClassic_Map_Server
 
         #endregion
 
+        public static ZoneConnection GetWorldConnection()
+        {
+            return mWorldConnection;
+        }
+
         public static Server GetServer()
         {
             return mSelf;
@@ -252,12 +259,7 @@ namespace FFXIVClassic_Map_Server
         public static CommandProcessor GetCommandProcessor()
         {
             return mCommandProcessor;
-        }
-
-        public static ZoneConnection GetWorldConnection()
-        {
-            return mWorldConnection;
-        }
+        }        
 
         public static WorldManager GetWorldManager()
         {

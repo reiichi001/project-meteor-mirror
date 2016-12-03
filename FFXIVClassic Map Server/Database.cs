@@ -258,6 +258,8 @@ namespace FFXIVClassic_Map_Server
                     positionY = @y,
                     positionZ = @z,
                     rotation = @rot,
+                    destinationZoneId = @destZone,
+                    destinationSpawnType = @destSpawn,
                     currentZoneId = @zoneId
                     WHERE id = @charaId
                     ";
@@ -269,6 +271,8 @@ namespace FFXIVClassic_Map_Server
                     cmd.Parameters.AddWithValue("@z", player.positionZ);
                     cmd.Parameters.AddWithValue("@rot", player.rotation);
                     cmd.Parameters.AddWithValue("@zoneId", player.zoneId);
+                    cmd.Parameters.AddWithValue("@destZone", player.destinationZone);
+                    cmd.Parameters.AddWithValue("@destSpawn", player.destinationSpawnType);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -402,7 +406,9 @@ namespace FFXIVClassic_Map_Server
                     tribe,
                     restBonus,
                     achievementPoints,
-                    playTime
+                    playTime,
+                    destinationZoneId,
+                    destinationSpawnType
                     FROM characters WHERE id = @charId";                    
 
                     cmd = new MySqlCommand(query, conn);
@@ -419,8 +425,7 @@ namespace FFXIVClassic_Map_Server
                             player.oldRotation = player.rotation = reader.GetFloat(4);
                             player.currentMainState = reader.GetUInt16(5);
                             player.zoneId = reader.GetUInt32(6);
-                            player.isZoning = true;
-                            player.zone = Server.GetWorldManager().GetZone(player.zoneId);
+                            player.isZoning = true;                            
                             player.gcCurrent = reader.GetByte(7);
                             player.gcRankLimsa = reader.GetByte(8);
                             player.gcRankGridania = reader.GetByte(9);
@@ -434,6 +439,13 @@ namespace FFXIVClassic_Map_Server
                             player.playerWork.restBonusExpRate = reader.GetInt32(17);
                             player.achievementPoints = reader.GetUInt32(18);
                             player.playTime = reader.GetUInt32(19);
+                            player.destinationZone = reader.GetUInt32("destinationZoneId");
+                            player.destinationSpawnType = reader.GetByte("destinationSpawnType");
+
+                            if (player.destinationZone != 0)
+                                player.zoneId = player.destinationZone;
+
+                            player.zone = Server.GetWorldManager().GetZone(player.zoneId);
                         }
                     }
                   

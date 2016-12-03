@@ -84,6 +84,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public Coroutine currentEventRunning;
 
         //Player Info
+        public uint destinationZone;
+        public ushort destinationSpawnType;
         public uint[] timers = new uint[20];
         public ushort currentJob;
         public uint currentTitle;
@@ -257,9 +259,9 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
             return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
-        }        
+        }
 
-        public override BasePacket GetSpawnPackets(uint playerActorId, uint spawnType)
+        public override BasePacket GetSpawnPackets(uint playerActorId, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket(playerActorId, 8));
@@ -646,14 +648,47 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         public void CleanupAndSave()
-        {                        
+        {
+            playerSession.LockUpdates(true);
+
             //Remove actor from zone and main server list
             zone.RemoveActorFromZone(this);
+
+            //Set Destination to 0
+            this.destinationZone = 0;
+            this.destinationSpawnType = 0;
 
             //Save Player
             Database.SavePlayerPlayTime(this);
             Database.SavePlayerPosition(this);
-            Program.Log.Info("{0} has been logged out and saved.", this.customDisplayName);
+
+            Server.GetServer().RemoveSession(playerSession.id);
+
+            Program.Log.Info("{0} has been removed from the session list.", this.customDisplayName);
+        }
+
+        public void CleanupAndSave(uint destinationZone, ushort spawnType, float destinationX, float destinationY, float destinationZ, float destinationRot)
+        {
+            playerSession.LockUpdates(true);
+
+            //Remove actor from zone and main server list
+            zone.RemoveActorFromZone(this);
+
+            //Set destination
+            this.destinationZone = destinationZone;
+            this.destinationSpawnType = spawnType;
+            this.positionX = destinationX;
+            this.positionY = destinationY;
+            this.positionZ = destinationZ;
+            this.rotation = destinationRot;
+
+            //Save Player
+            Database.SavePlayerPlayTime(this);
+            Database.SavePlayerPosition(this);
+
+            Server.GetServer().RemoveSession(playerSession.id);
+
+            Program.Log.Info("{0} has been removed from the session list.", this.customDisplayName);
         }
 
         public Area GetZone()

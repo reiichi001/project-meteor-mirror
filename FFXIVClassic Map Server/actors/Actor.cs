@@ -70,7 +70,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return SetActorSpeedPacket.BuildPacket(actorId, playerActorId);
         }
 
-        public SubPacket CreateSpawnPositonPacket(uint playerActorId, uint spawnType)
+        public SubPacket CreateSpawnPositonPacket(uint playerActorId, ushort spawnType)
         {
             SubPacket spawnPacket;
             if (!spawnedFirstTime && playerActorId == actorId)
@@ -91,7 +91,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return spawnPacket;
         }
 
-        public SubPacket CreateSpawnTeleportPacket(uint playerActorId, uint spawnType)
+        public SubPacket CreateSpawnTeleportPacket(uint playerActorId, ushort spawnType)
         {
             SubPacket spawnPacket;
 
@@ -223,7 +223,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return GetSpawnPackets(playerActorId, 0x1);
         }
 
-        public virtual BasePacket GetSpawnPackets(uint playerActorId, uint spawnType)
+        public virtual BasePacket GetSpawnPackets(uint playerActorId, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket(playerActorId, 8));

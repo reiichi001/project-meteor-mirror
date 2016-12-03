@@ -5,6 +5,7 @@ using FFXIVClassic.Common;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Collections.Generic;
+using FFXIVClassic_Map_Server.packets.WorldPackets.Send;
 
 namespace FFXIVClassic_Map_Server.dataobjects
 {
@@ -62,6 +63,12 @@ namespace FFXIVClassic_Map_Server.dataobjects
         {
             if (socket.Connected)
                 socket.Disconnect(false);
+        }
+
+        public void RequestZoneChange(uint sessionId, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
+        {
+            WorldRequestZoneChangePacket.BuildPacket(sessionId, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation).DebugPrintSubPacket();
+            QueuePacket(WorldRequestZoneChangePacket.BuildPacket(sessionId, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation), true, false);
         }
     }
 }

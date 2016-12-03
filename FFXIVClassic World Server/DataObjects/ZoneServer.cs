@@ -14,17 +14,25 @@ namespace FFXIVClassic_World_Server.DataObjects
     {
         public readonly string zoneServerIp;
         public readonly int zoneServerPort;
-        public readonly int[] ownedZoneIds;
+        public readonly List<uint> ownedZoneIds;
         public bool isConnected = false;
         public Socket zoneServerConnection;
-        private ClientConnection conn;
+        private ClientConnection conn;        
 
         private byte[] buffer = new byte[0xFFFF];
 
-        public ZoneServer(string ip, int port)
+        public ZoneServer(string ip, int port, uint firstId)
         {
             zoneServerIp = ip;
             zoneServerPort = port;
+
+            ownedZoneIds = new List<uint>();
+            ownedZoneIds.Add(firstId);
+        }
+
+        public void AddLoadedZone(uint id)
+        {
+            ownedZoneIds.Add(id);
         }
 
         public void Connect()
@@ -135,14 +143,19 @@ namespace FFXIVClassic_World_Server.DataObjects
             }
         }
 
-        public void SendGoodbye(Session session)
+        public void SendSessionStart(Session session)
+        {
+            SendPacket(SessionBeginPacket.BuildPacket(session));
+        }
+
+        public void SendSessionEnd(Session session)
         {
             SendPacket(SessionEndPacket.BuildPacket(session));
         }
 
         public void SendSessionEnd(Session session, uint destinationZoneId, string destinationPrivateArea, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
         {
-            SendPacket(SessionEndAndZonePacket.BuildPacket(session, destinationZoneId, destinationPrivateArea, spawnType, spawnX, spawnY, spawnZ, spawnRotation));
+            SendPacket(SessionEndPacket.BuildPacket(session, destinationZoneId, destinationPrivateArea, spawnType, spawnX, spawnY, spawnZ, spawnRotation));
         }
 
     }

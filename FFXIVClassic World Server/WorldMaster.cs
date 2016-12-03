@@ -34,6 +34,7 @@ namespace FFXIVClassic_World_Server
 
                     string query = @"
                                     SELECT 
+                                    id,
                                     serverIp,
                                     serverPort
                                     FROM server_zones 
@@ -45,15 +46,18 @@ namespace FFXIVClassic_World_Server
                     {
                         while (reader.Read())
                         {
-                            string ip = reader.GetString(0);
-                            int port = reader.GetInt32(1);
+                            uint id = reader.GetUInt32(0); 
+                            string ip = reader.GetString(1);
+                            int port = reader.GetInt32(2);
                             string address = ip + ":" + port;
 
                             if (!mZoneServerList.ContainsKey(address))
                             {
-                                ZoneServer zone = new ZoneServer(ip, port);
+                                ZoneServer zone = new ZoneServer(ip, port, id);
                                 mZoneServerList.Add(address, zone);
                             }
+                            else
+                                mZoneServerList[address].AddLoadedZone(id);
                         }
                     }
                 }
@@ -130,6 +134,17 @@ namespace FFXIVClassic_World_Server
             }
         }
 
+        public ZoneServer GetZoneServer(uint zoneId)
+        {
+            foreach (ZoneServer zs in mZoneServerList.Values)
+            {
+                if (zs.ownedZoneIds.Contains(zoneId))
+                    return zs;
+            }
+
+            return null;
+        }
+
         //Moves the actor to the new zone if exists. No packets are sent nor position changed.
         public void DoSeamlessZoneServerChange(Session session, uint destinationZoneId)
         {
@@ -157,13 +172,9 @@ namespace FFXIVClassic_World_Server
 
         //Login Zone In
         public void DoLogin(Session session)
-        {
-            /*
-           ->Update routing
-           ->Tell new server to load session info and add           
-           */
-
-            
+        {            
+            session.routing1 = GetZoneServer(Database.GetCurrentZoneForSession(session.sessionId));
+            session.routing1.SendSessionStart(session);            
         }
 
         public class ZoneEntrance

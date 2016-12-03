@@ -20,6 +20,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public uint languageCode = 1;        
         private uint lastPingPacket = Utils.UnixTimeStampUTC();
 
+        public bool isUpdatesLocked = false;
+
         public string errorMessage = "";
 
         public Session(uint sessionId)
@@ -63,6 +65,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void UpdatePlayerActorPosition(float x, float y, float z, float rot, ushort moveState)
         {
+            if (isUpdatesLocked)
+                return;
+
             playerActor.oldPositionX = playerActor.positionX;
             playerActor.oldPositionY = playerActor.positionY;
             playerActor.oldPositionZ = playerActor.positionZ;
@@ -80,6 +85,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void UpdateInstance(List<Actor> list)
         {
+            if (isUpdatesLocked)
+                return;
+
             List<BasePacket> basePackets = new List<BasePacket>();
             List<SubPacket> RemoveActorSubpackets = new List<SubPacket>();
             List<SubPacket> posUpdateSubpackets = new List<SubPacket>();
@@ -132,5 +140,10 @@ namespace FFXIVClassic_Map_Server.dataobjects
             actorInstanceList.Clear();
         }
 
+
+        public void LockUpdates(bool f)
+        {
+            isUpdatesLocked = f;
+        }
     }
 }

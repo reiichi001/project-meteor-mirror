@@ -18,6 +18,8 @@ using FFXIVClassic_Map_Server.packets.send.recruitment;
 using FFXIVClassic_Map_Server.packets.receive.events;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.Actors;
+using FFXIVClassic_Map_Server.packets.WorldPackets.Send;
+using FFXIVClassic_Map_Server.packets.WorldPackets.Receive;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -33,22 +35,35 @@ namespace FFXIVClassic_Map_Server
         public void ProcessPacket(ZoneConnection client, SubPacket subpacket)
         {                          
                 Session session = mServer.GetSession(subpacket.header.targetId);
-                
+
+                if (session == null && subpacket.gameMessage.opcode != 0x1000)
+                    return;
+
                 //Normal Game Opcode
                 switch (subpacket.gameMessage.opcode)
                 {
-                    //World Server - End Session
+                    //World Server - Session Begin
                     case 0x1000:
-                        session.GetActor().CleanupAndSave();
-                        break;
-                    //World Server - End Session and Zone
-                    case 0x1001:
+                        subpacket.DebugPrintSubPacket();
+                        session = mServer.AddSession(subpacket.header.targetId);
 
-                        session.GetActor().CleanupAndSave();
+                        if (session.GetActor().destinationZone != 0)
+                            Server.GetWorldManager().DoZoneIn(session.GetActor(), false, session.GetActor().destinationSpawnType);
+                        
+                        client.FlushQueuedSendPackets();
                         break;
-                    //World Server - Begin Session
-                    case 0x1002:
-                        break;                    
+                    //World Server - Session End
+                    case 0x1001:
+                        SessionEndPacket endSessionPacket = new SessionEndPacket(subpacket.data);
+
+                        if (endSessionPacket.destinationZoneId == 0)
+                            session.GetActor().CleanupAndSave();
+                        else                        
+                            session.GetActor().CleanupAndSave(endSessionPacket.destinationZoneId, endSessionPacket.destinationSpawnType, endSessionPacket.destinationX, endSessionPacket.destinationY, endSessionPacket.destinationZ, endSessionPacket.destinationRot);                        
+
+                        client.QueuePacket(SessionEndConfirmPacket.BuildPacket(session, endSessionPacket.destinationZoneId), true, false);
+                        client.FlushQueuedSendPackets();
+                        break;                             
                     //Ping
                     case 0x0001:
                         //subpacket.DebugPrintSubPacket();
@@ -60,12 +75,12 @@ namespace FFXIVClassic_Map_Server
                     case 0x0002:
 
                         subpacket.DebugPrintSubPacket();
-
                         session = mServer.AddSession(subpacket.header.targetId);
-
                         client.QueuePacket(_0x2Packet.BuildPacket(session.id), true, false);
 
-                        Server.GetWorldManager().DoLogin(session.GetActor());
+                        LuaEngine.OnBeginLogin(session.GetActor());
+                        Server.GetWorldManager().DoZoneIn(session.GetActor(), true, 0x1);
+                        LuaEngine.OnLogin(session.GetActor());
 
                         client.FlushQueuedSendPackets();
 
@@ -98,7 +113,6 @@ namespace FFXIVClassic_Map_Server
                     //Update Position
                     case 0x00CA:
                         //Update Position
-                        subpacket.DebugPrintSubPacket();
                         UpdatePlayerPositionPacket posUpdate = new UpdatePlayerPositionPacket(subpacket.data);
                         session.UpdatePlayerActorPosition(posUpdate.x, posUpdate.y, posUpdate.z, posUpdate.rot, posUpdate.moveState);
                         session.GetActor().SendInstanceUpdate();

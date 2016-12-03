@@ -1,5 +1,6 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_World_Server.DataObjects;
+using FFXIVClassic_World_Server.Packets.WorldPackets.Receive;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -138,7 +139,58 @@ namespace FFXIVClassic_World_Server
         public void OnReceiveSubPacketFromZone(ZoneServer zoneServer, SubPacket subpacket)
         {            
             uint sessionId = subpacket.header.targetId;
-          
+
+            if (subpacket.gameMessage.opcode >= 0x1000)
+            {
+                subpacket.DebugPrintSubPacket();
+                uint targetSession = subpacket.header.targetId;
+                Session session = GetSession(targetSession);
+
+                switch (subpacket.gameMessage.opcode)
+                {
+                    //Session Begin Confirm
+                    case 0x1000:
+                        SessionBeginConfirmPacket beginConfirmPacket = new SessionBeginConfirmPacket(subpacket.data);
+
+                        if (beginConfirmPacket.invalidPacket || beginConfirmPacket.errorCode == 0)
+                            Program.Log.Error("Session {0} had a error beginning session.", beginConfirmPacket.sessionId);
+
+                        break;
+                    //Session End Confirm
+                    case 0x1001:
+                        SessionEndConfirmPacket endConfirmPacket = new SessionEndConfirmPacket(subpacket.data);
+
+                        if (!endConfirmPacket.invalidPacket && endConfirmPacket.errorCode == 0)
+                        {
+                            //Check destination, if != 0, update route and start new session
+                            if (endConfirmPacket.destinationZone != 0)
+                            {
+                                session.routing1 = Server.GetServer().GetWorldManager().GetZoneServer(endConfirmPacket.destinationZone);
+                                session.routing1.SendSessionStart(session);
+                            }
+                            else
+                            {
+                                RemoveSession(Session.Channel.ZONE, endConfirmPacket.sessionId);
+                                RemoveSession(Session.Channel.CHAT, endConfirmPacket.sessionId);
+                            }
+                        }
+                        else
+                            Program.Log.Error("Session {0} had an error ending session.", endConfirmPacket.sessionId);
+
+                        break;
+                    //Zone Change Request
+                    case 0x1002:
+                        WorldRequestZoneChangePacket zoneChangePacket = new WorldRequestZoneChangePacket(subpacket.data);
+
+                        if (!zoneChangePacket.invalidPacket)
+                        {
+                            GetWorldManager().DoZoneServerChange(session, zoneChangePacket.destinationZoneId, "", zoneChangePacket.destinationSpawnType, zoneChangePacket.destinationX, zoneChangePacket.destinationY, zoneChangePacket.destinationZ, zoneChangePacket.destinationRot);
+                        }
+
+                        break;
+                }
+            }
+
             if (mZoneSessionList.ContainsKey(sessionId))
             {
                 ClientConnection conn = mZoneSessionList[sessionId].clientConnection;

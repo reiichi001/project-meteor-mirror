@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigConstants.cs" />
+    <Compile Include="Database.cs" />
     <Compile Include="DataObjects\ClientConnection.cs" />
     <Compile Include="DataObjects\ZoneServer.cs" />
     <Compile Include="DataObjects\Session.cs" />
@@ -73,8 +74,10 @@
     <Compile Include="Packets\Send\_0x2Packet.cs" />
     <Compile Include="Packets\Send\_0x7Packet.cs" />
     <Compile Include="Packets\Send\_0x8PingPacket.cs" />
+    <Compile Include="Packets\WorldPackets\Receive\SessionBeginConfirmPacket.cs" />
+    <Compile Include="Packets\WorldPackets\Receive\WorldRequestZoneChangePacket.cs" />
+    <Compile Include="Packets\WorldPackets\Receive\SessionEndConfirmPacket.cs" />
     <Compile Include="Packets\WorldPackets\Send\SessionBeginPacket.cs" />
-    <Compile Include="Packets\WorldPackets\Send\SessionEndZonePacket.cs" />
     <Compile Include="Packets\WorldPackets\Send\SessionEndPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -384,9 +384,8 @@ namespace FFXIVClassic_Map_Server
                     oldZone.AddActorToZone(player);
                 }
 
-                var message = "WorldManager.DoZoneChange: unable to change areas, new area is not valid.";
-                player.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM, "[Debug]", message);
-                Program.Log.Debug(message);
+                Program.Log.Debug("Request to change to zone not on this server by: {0}.", player.customDisplayName);
+                RequestWorldServerZoneChange(player, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation);
                 return;
             }
 
@@ -450,8 +449,8 @@ namespace FFXIVClassic_Map_Server
             }            
         }
 
-        //Login Zone In
-        public void DoLogin(Player player)
+        //Session started, zone into world
+        public void DoZoneIn(Player player, bool isLogin, ushort spawnType)
         {
             //Add player to new zone and update
             Zone zone = GetZone(player.zoneId);
@@ -462,15 +461,19 @@ namespace FFXIVClassic_Map_Server
 
             //Set the current zone and add player
             player.zone = zone;
-
-            LuaEngine.OnBeginLogin(player);
             
             zone.AddActorToZone(player);
             
             //Send packets            
-            player.SendZoneInPackets(this, 0x1);
+            if (!isLogin)
+            {
+                player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
+                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x0), true, false);
+                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x0), true, false);
+            }
 
-            LuaEngine.OnLogin(player);
+            player.SendZoneInPackets(this, spawnType);
+            
             LuaEngine.OnZoneIn(player);
         }
 
@@ -483,6 +486,12 @@ namespace FFXIVClassic_Map_Server
             //zone.clear();
             //LoadNPCs(zone.actorId);
 
+        }
+
+        private void RequestWorldServerZoneChange(Player player, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
+        {
+            ZoneConnection zc = Server.GetWorldConnection();
+            zc.RequestZoneChange(player.playerSession.id, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation);
         }
 
         public Player GetPCInWorld(string name)
