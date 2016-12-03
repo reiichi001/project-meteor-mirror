@@ -476,7 +476,7 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePacket(SetMapPacket.BuildPacket(actorId, zone.regionId, zone.actorId));
 
             QueuePacket(GetSpawnPackets(actorId, spawnType));            
-            GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
+            //GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
 
             #region grouptest
             //Retainers
@@ -661,10 +661,6 @@ namespace FFXIVClassic_Map_Server.Actors
             //Save Player
             Database.SavePlayerPlayTime(this);
             Database.SavePlayerPosition(this);
-
-            Server.GetServer().RemoveSession(playerSession.id);
-
-            Program.Log.Info("{0} has been removed from the session list.", this.customDisplayName);
         }
 
         public void CleanupAndSave(uint destinationZone, ushort spawnType, float destinationX, float destinationY, float destinationZ, float destinationRot)
@@ -684,11 +680,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             //Save Player
             Database.SavePlayerPlayTime(this);
-            Database.SavePlayerPosition(this);
-
-            Server.GetServer().RemoveSession(playerSession.id);
-
-            Program.Log.Info("{0} has been removed from the session list.", this.customDisplayName);
+            Database.SavePlayerPosition(this);            
         }
 
         public Area GetZone()

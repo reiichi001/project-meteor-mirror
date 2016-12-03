@@ -49,7 +49,9 @@ namespace FFXIVClassic_Map_Server
 
                         if (session.GetActor().destinationZone != 0)
                             Server.GetWorldManager().DoZoneIn(session.GetActor(), false, session.GetActor().destinationSpawnType);
-                        
+
+                        Program.Log.Info("{0} has been added to the session list.", session.GetActor().customDisplayName);
+
                         client.FlushQueuedSendPackets();
                         break;
                     //World Server - Session End
@@ -59,7 +61,10 @@ namespace FFXIVClassic_Map_Server
                         if (endSessionPacket.destinationZoneId == 0)
                             session.GetActor().CleanupAndSave();
                         else                        
-                            session.GetActor().CleanupAndSave(endSessionPacket.destinationZoneId, endSessionPacket.destinationSpawnType, endSessionPacket.destinationX, endSessionPacket.destinationY, endSessionPacket.destinationZ, endSessionPacket.destinationRot);                        
+                            session.GetActor().CleanupAndSave(endSessionPacket.destinationZoneId, endSessionPacket.destinationSpawnType, endSessionPacket.destinationX, endSessionPacket.destinationY, endSessionPacket.destinationZ, endSessionPacket.destinationRot);
+
+                        Server.GetServer().RemoveSession(session.id);
+                        Program.Log.Info("{0} has been removed from the session list.", session.GetActor().customDisplayName);
 
                         client.QueuePacket(SessionEndConfirmPacket.BuildPacket(session, endSessionPacket.destinationZoneId), true, false);
                         client.FlushQueuedSendPackets();

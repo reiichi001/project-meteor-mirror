@@ -20,7 +20,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public uint languageCode = 1;        
         private uint lastPingPacket = Utils.UnixTimeStampUTC();
 
-        public bool isUpdatesLocked = false;
+        public bool isUpdatesLocked = true;
 
         public string errorMessage = "";
 

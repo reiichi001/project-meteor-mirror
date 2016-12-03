@@ -45,7 +45,7 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Send
                     try
                     {
                         binWriter.Write((UInt32)destinationZoneId);
-                        binWriter.Write((UInt32)spawnType);
+                        binWriter.Write((UInt16)spawnType);
                         binWriter.Write((Single)spawnX);
                         binWriter.Write((Single)spawnY);
                         binWriter.Write((Single)spawnZ);
