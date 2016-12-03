@@ -474,6 +474,10 @@ namespace FFXIVClassic_Map_Server
 
             player.SendZoneInPackets(this, spawnType);
 
+            player.destinationZone = 0;
+            player.destinationSpawnType = 0;
+            Database.SavePlayerPosition(player);
+
             player.playerSession.LockUpdates(false);
 
             LuaEngine.OnZoneIn(player);
