@@ -749,7 +749,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendGameMessage(Actor sourceActor, Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
         {
-            if (msgParams.Length == 0)
+            if (msgParams == null || msgParams.Length == 0)
             {
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, sourceActor.actorId, textIdOwner.actorId, textId, log));
             }
@@ -759,7 +759,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendGameMessage(Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
         {
-            if (msgParams.Length == 0)
+            if (msgParams == null || msgParams.Length == 0)
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log));
             else
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log, LuaUtils.CreateLuaParamList(msgParams)));
@@ -767,7 +767,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendGameMessage(Actor textIdOwner, ushort textId, byte log, string customSender, params object[] msgParams)
         {
-            if (msgParams.Length == 0)
+            if (msgParams == null || msgParams.Length == 0)
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log));
             else
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log, LuaUtils.CreateLuaParamList(msgParams)));
@@ -775,7 +775,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendGameMessage(Actor textIdOwner, ushort textId, byte log, uint displayId, params object[] msgParams)
         {
-            if (msgParams.Length == 0)
+            if (msgParams == null || msgParams.Length == 0)
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log));
             else
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log, LuaUtils.CreateLuaParamList(msgParams)));

@@ -77,6 +77,7 @@
     <Compile Include="Packets\WorldPackets\Receive\SessionBeginConfirmPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\WorldRequestZoneChangePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\SessionEndConfirmPacket.cs" />
+    <Compile Include="Packets\WorldPackets\Send\ErrorPacket.cs" />
     <Compile Include="Packets\WorldPackets\Send\SessionBeginPacket.cs" />
     <Compile Include="Packets\WorldPackets\Send\SessionEndPacket.cs" />
     <Compile Include="Program.cs" />

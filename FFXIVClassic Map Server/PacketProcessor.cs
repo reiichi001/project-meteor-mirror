@@ -42,6 +42,16 @@ namespace FFXIVClassic_Map_Server
                 //Normal Game Opcode
                 switch (subpacket.gameMessage.opcode)
                 {
+                    //World Server - Error
+                    case 0x100A:
+                        ErrorPacket worldError = new ErrorPacket(subpacket.data);
+                        switch (worldError.errorCode)
+                        {
+                            case 0x01:
+                                session.GetActor().SendGameMessage(Server.GetWorldManager().GetActor(), 60005, 0x20);
+                                break;
+                        }
+                        break;
                     //World Server - Session Begin
                     case 0x1000:
                         subpacket.DebugPrintSubPacket();

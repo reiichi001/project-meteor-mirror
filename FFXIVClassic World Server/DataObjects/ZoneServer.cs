@@ -35,7 +35,7 @@ namespace FFXIVClassic_World_Server.DataObjects
             ownedZoneIds.Add(id);
         }
 
-        public void Connect()
+        public bool Connect()
         {
             Program.Log.Info("Connecting to zone server @ {0}:{1}", zoneServerIp, zoneServerPort);
             IPEndPoint remoteEP = new IPEndPoint(IPAddress.Parse(zoneServerIp), zoneServerPort);
@@ -60,7 +60,9 @@ namespace FFXIVClassic_World_Server.DataObjects
                 }
             }
             catch (Exception e)
-            { Program.Log.Error("Failed to connect"); return; }            
+            { Program.Log.Error("Failed to connect"); return false; }
+
+            return true;
         }
 
         public void SendPacket(SubPacket subpacket)

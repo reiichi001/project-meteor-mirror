@@ -1,5 +1,6 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_World_Server.DataObjects;
+using FFXIVClassic_World_Server.Packets.WorldPackets.Send;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -167,7 +168,13 @@ namespace FFXIVClassic_World_Server
         //Moves actor to new zone, and sends packets to spawn at the given coords.
         public void DoZoneServerChange(Session session, uint destinationZoneId, string destinationPrivateArea, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
         {
-            session.routing1.SendSessionEnd(session, destinationZoneId, destinationPrivateArea, spawnType, spawnX, spawnY, spawnZ, spawnRotation);
+            ZoneServer zs = GetZoneServer(destinationZoneId);
+            if (zs.isConnected)
+                session.routing1.SendSessionEnd(session, destinationZoneId, destinationPrivateArea, spawnType, spawnX, spawnY, spawnZ, spawnRotation);
+            else if (zs.Connect())
+                session.routing1.SendSessionEnd(session, destinationZoneId, destinationPrivateArea, spawnType, spawnX, spawnY, spawnZ, spawnRotation);
+            else            
+                session.routing1.SendPacket(ErrorPacket.BuildPacket(session, 1));            
         }
 
         //Login Zone In

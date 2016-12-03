@@ -256,6 +256,7 @@
     <Compile Include="packets\send\_0xE2Packet.cs" />
     <Compile Include="packets\receive\PingPacket.cs" />
     <Compile Include="packets\receive\UpdatePlayerPositionPacket.cs" />
+    <Compile Include="packets\WorldPackets\Receive\ErrorPacket.cs" />
     <Compile Include="packets\WorldPackets\Receive\SessionEndPacket.cs" />
     <Compile Include="packets\WorldPackets\Receive\SessionBeginPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\SessionBeginConfirmPacket.cs" />
