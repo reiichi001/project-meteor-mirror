@@ -1,0 +1,41 @@
+﻿using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.actors.group;
+using FFXIVClassic_Map_Server.dataobjects;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace FFXIVClassic_Map_Server.packets.send.group
+{
+    class CreateNamedGroup
+    {
+        public const ushort OPCODE = 0x0188;
+        public const uint PACKET_SIZE = 0x60;
+
+        public static SubPacket buildPacket(uint playerActorID, Group group)
+        {
+            byte[] data = new byte[PACKET_SIZE - 0x20];
+
+            using (MemoryStream mem = new MemoryStream(data))
+            {
+                using (BinaryWriter binWriter = new BinaryWriter(mem))
+                {
+                    binWriter.Write((UInt64)group.groupId);
+                    binWriter.Write((UInt32)group.groupTypeId);
+                    binWriter.Write((Int32)group.localizedNamed);
+
+                    binWriter.Write((UInt16)0x121C);
+
+                    binWriter.Seek(0x20, SeekOrigin.Begin);
+
+                    binWriter.Write(Encoding.ASCII.GetBytes(group.groupName), 0, Encoding.ASCII.GetByteCount(group.groupName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(group.groupName));                    
+                }
+            }
+
+            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+        }
+    }
+}
