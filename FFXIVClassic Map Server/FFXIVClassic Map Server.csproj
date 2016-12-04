@@ -213,13 +213,6 @@
     <Compile Include="packets\send\groups\GroupMembersX32Packet.cs" />
     <Compile Include="packets\send\groups\GroupMembersX64Packet.cs" />
     <Compile Include="packets\send\groups\SynchGroupWorkValuesPacket.cs" />
-    <Compile Include="packets\send\list\ListEntry.cs" />
-    <Compile Include="packets\send\list\ListUtils.cs" />
-    <Compile Include="packets\send\list\SetListPropertyPacket.cs" />
-    <Compile Include="packets\send\list\ListBeginPacket.cs" />
-    <Compile Include="packets\send\list\ListEndPacket.cs" />
-    <Compile Include="packets\send\list\ListEntriesEndPacket.cs" />
-    <Compile Include="packets\send\list\ListStartPacket.cs" />
     <Compile Include="packets\send\player\InfoRequestResponsePacket.cs" />
     <Compile Include="packets\send\player\SendAchievementRatePacket.cs" />
     <Compile Include="packets\send\player\SetCurrentJobPacket.cs" />
