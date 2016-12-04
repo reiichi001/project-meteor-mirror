@@ -1,8 +1,8 @@
-﻿using FFXIVClassic_Lobby_Server.common;
-using FFXIVClassic_Lobby_Server.packets;
+﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.group;
+using FFXIVClassic_Map_Server.packets.send.groups;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -78,27 +78,27 @@ namespace FFXIVClassic_Map_Server.actors.group
         {
             ulong time = Utils.MilisUnixTimeStampUTC();
 
-            toPlayer.queuePacket(GroupHeaderPacket.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, this));
-            toPlayer.queuePacket(GroupMembersBeginPacket.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, this));
+            toPlayer.QueuePacket(GroupHeaderPacket.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, this));
+            toPlayer.QueuePacket(GroupMembersBeginPacket.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, this));
 
             int currentIndex = 0;
 
             while (true)
             {
                 if (members.Count - currentIndex >= 64)
-                    toPlayer.queuePacket(GroupMembersX64Packet.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, members, ref currentIndex));
+                    toPlayer.QueuePacket(GroupMembersX64Packet.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, members, ref currentIndex));
                 else if (members.Count - currentIndex >= 32)
-                    toPlayer.queuePacket(GroupMembersX32Packet.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, members, ref currentIndex));
+                    toPlayer.QueuePacket(GroupMembersX32Packet.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, members, ref currentIndex));
                 else if (members.Count - currentIndex >= 16)
-                    toPlayer.queuePacket(GroupMembersX16Packet.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, members, ref currentIndex));
+                    toPlayer.QueuePacket(GroupMembersX16Packet.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, members, ref currentIndex));
                 else if (members.Count - currentIndex > 0)
-                    toPlayer.queuePacket(GroupMembersX08Packet.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, members, ref currentIndex));               
+                    toPlayer.QueuePacket(GroupMembersX08Packet.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, members, ref currentIndex));               
                 else
                     break;
             }
 
 
-            toPlayer.queuePacket(GroupMembersEndPacket.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, this));    
+            toPlayer.QueuePacket(GroupMembersEndPacket.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, this));    
 
         }
 
@@ -106,27 +106,27 @@ namespace FFXIVClassic_Map_Server.actors.group
         {            
             if (groupTypeId == PlayerPartyGroup)
             {
-                SetGroupWorkValuesPacket groupWork = new SetGroupWorkValuesPacket(groupId);
+                SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupId);
                 groupWork.addProperty(this, "partyGroupWork._globalTemp.owner");
                 groupWork.setTarget("/_init");
             
                 SubPacket test = groupWork.buildPacket(player.actorId, player.actorId);
-                player.queuePacket(test);
+                player.QueuePacket(test);
             }
             else if (groupTypeId == GroupInvitationRelationGroup)
             {
-                SetGroupWorkValuesPacket groupWork = new SetGroupWorkValuesPacket(groupId);
+                SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupId);
                 groupWork.addProperty(this, "work._globalTemp.host");
                 groupWork.addProperty(this, "work._globalTemp.variableCommand");
                 groupWork.setTarget("/_init");
 
                 SubPacket test = groupWork.buildPacket(player.actorId, player.actorId);
-                test.debugPrintSubPacket();
-                player.queuePacket(test);
+                test.DebugPrintSubPacket();
+                player.QueuePacket(test);
             }
             else if (groupTypeId == RetainerGroup)
             {
-                SetGroupWorkValuesPacket groupWork = new SetGroupWorkValuesPacket(groupId);
+                SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupId);
                 groupWork.addProperty(this, "work._memberSave[0].cdIDOffset");
                 groupWork.addProperty(this, "work._memberSave[0].placeName");
                 groupWork.addProperty(this, "work._memberSave[0].conditions");
@@ -134,7 +134,7 @@ namespace FFXIVClassic_Map_Server.actors.group
                 groupWork.setTarget("/_init");
 
                 SubPacket test = groupWork.buildPacket(player.actorId, player.actorId);
-                player.queuePacket(test);
+                player.QueuePacket(test);
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿using FFXIVClassic_Lobby_Server.packets;
+﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.dataobjects;
 using System;

@@ -136,6 +136,7 @@
     <Compile Include="packets\receive\ChatMessagePacket.cs" />
     <Compile Include="packets\receive\events\EventUpdatePacket.cs" />
     <Compile Include="packets\receive\events\EventStartPacket.cs" />
+    <Compile Include="packets\receive\GroupCreatedPacket.cs" />
     <Compile Include="packets\receive\HandshakePacket.cs" />
     <Compile Include="packets\receive\LangaugeCodePacket.cs" />
     <Compile Include="packets\receive\ParameterDataRequestPacket.cs" />
@@ -211,6 +212,7 @@
     <Compile Include="packets\send\groups\GroupMembersX16Packet.cs" />
     <Compile Include="packets\send\groups\GroupMembersX32Packet.cs" />
     <Compile Include="packets\send\groups\GroupMembersX64Packet.cs" />
+    <Compile Include="packets\send\groups\SynchGroupWorkValuesPacket.cs" />
     <Compile Include="packets\send\list\ListEntry.cs" />
     <Compile Include="packets\send\list\ListUtils.cs" />
     <Compile Include="packets\send\list\SetListPropertyPacket.cs" />
