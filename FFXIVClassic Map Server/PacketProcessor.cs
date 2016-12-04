@@ -228,6 +228,11 @@ namespace FFXIVClassic_Map_Server
                         if (paramRequest.paramName.Equals("charaWork/exp"))
                             session.GetActor().SendCharaExpInfo();
                         break;
+                    //Group Created Confirm
+                    case 0x0133:
+                        GroupCreatedPacket groupCreated = new GroupCreatedPacket(subpacket.data);
+
+                        break;
                     /* RECRUITMENT */
                     //Start Recruiting
                     case 0x01C3:
