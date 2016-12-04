@@ -25,8 +25,8 @@ namespace FFXIVClassic_Lobby_Server
             bool startServer = true;
 
             //Load Config
-            if (!ConfigConstants.Load())
-                startServer = false;
+            ConfigConstants.Load();
+            ConfigConstants.ApplyLaunchArgs(args);
             
             //Test DB Connection
             Program.Log.Info("Testing DB connection to \"{0}\"... ", ConfigConstants.DATABASE_HOST);
