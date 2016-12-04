@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FFXIVClassic_Map_Server.actors.group
+namespace FFXIVClassic_Map_Server.actors.group.work
 {
-    class PartyWork
+    class ContentWork
     {
         public GroupGlobalTemp _globalTemp = new GroupGlobalTemp();
     }

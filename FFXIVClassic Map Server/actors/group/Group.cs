@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.actors.group.work;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.group;

@@ -485,8 +485,8 @@ namespace FFXIVClassic_Map_Server.Actors
             //GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
 
             #region Groups            
-            Group retainerGroup = new Group(0x800000000004e639, Group.RetainerGroup, null);
-            Group partyGroup = new Group(0x8000000000696df2, Group.PlayerPartyGroup, null);
+            RetainerGroup retainerGroup = new RetainerGroup(0x800000000004e639);
+            PartyGroup partyGroup = new PartyGroup(0x8000000000696df2);
             retainerGroup.add(this);            
             partyGroup.add(this);            
             retainerGroup.sendMemberPackets(this);
