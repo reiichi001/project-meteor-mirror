@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using MoonSharp.Interpreter;
 using FFXIVClassic_Map_Server.packets.receive.events;
 using FFXIVClassic_Map_Server.packets.send.actor.inventory;
+using FFXIVClassic_Map_Server.actors.group;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -484,22 +485,13 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePacket(GetSpawnPackets(actorId, spawnType));            
             //GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
 
-            #region grouptest
-            //Retainers
-            List<ListEntry> retainerListEntries = new List<ListEntry>();
-            retainerListEntries.Add(new ListEntry(actorId, 0xFFFFFFFF, 0x139E, false, true, customDisplayName));
-            retainerListEntries.Add(new ListEntry(0x23, 0x0, 0xFFFFFFFF, false, false, "TEST1"));
-            retainerListEntries.Add(new ListEntry(0x24, 0x0, 0xFFFFFFFF, false, false, "TEST2"));
-            retainerListEntries.Add(new ListEntry(0x25, 0x0, 0xFFFFFFFF, false, false, "TEST3"));
-            BasePacket retainerListPacket = BasePacket.CreatePacket(ListUtils.CreateRetainerList(actorId, 0xF4, 1, 0x800000000004e639, retainerListEntries), true, false);
-            playerSession.QueuePacket(retainerListPacket);
-
-            //Party
-            List<ListEntry> partyListEntries = new List<ListEntry>();
-            partyListEntries.Add(new ListEntry(actorId, 0xFFFFFFFF, 0xFFFFFFFF, false, true, customDisplayName));
-            partyListEntries.Add(new ListEntry(0x029B27D3, 0xFFFFFFFF, 0x195, false, true, "Valentine Bluefeather"));
-            BasePacket partyListPacket = BasePacket.CreatePacket(ListUtils.CreatePartyList(actorId, 0xF4, 1, 0x8000000000696df2, partyListEntries), true, false);
-            playerSession.QueuePacket(partyListPacket);
+            #region Groups            
+            Group retainerGroup = new Group(0x800000000004e639, Group.RetainerGroup, null);
+            Group partyGroup = new Group(0x8000000000696df2, Group.PlayerPartyGroup, null);
+            retainerGroup.add(this);            
+            partyGroup.add(this);            
+            retainerGroup.sendMemberPackets(this);
+            partyGroup.sendMemberPackets(this);           
             #endregion
 
             #region Inventory & Equipment
