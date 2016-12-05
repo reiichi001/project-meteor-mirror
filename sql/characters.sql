@@ -46,4 +46,4 @@ CREATE TABLE `characters` (
   `currentPartyGroupId` bigint(20) unsigned DEFAULT '0',
   `currentRetainerGroupId` bigint(20) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=162 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
