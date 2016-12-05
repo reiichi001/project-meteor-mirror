@@ -1,6 +1,8 @@
 ﻿using FFXIVClassic.Common;
 using System;
 using System.IO;
+using System.Linq;
+using System.Net;
 
 namespace FFXIVClassic_World_Server
 {
@@ -23,7 +25,7 @@ namespace FFXIVClassic_World_Server
             if (!File.Exists("./world_config.ini"))
             {
                 Program.Log.Error("FILE NOT FOUND!");
-                return false;
+                Program.Log.Error("Loading defaults...");
             }
 
             INIFile configIni = new INIFile("./world_config.ini");
@@ -39,6 +41,36 @@ namespace FFXIVClassic_World_Server
             ConfigConstants.DATABASE_PASSWORD =     configIni.GetValue("Database", "password", "");
 
             return true;
+        }
+
+        public static void ApplyLaunchArgs(string[] launchArgs)
+        {
+            var args = (from arg in launchArgs select arg.ToLower().Trim().TrimStart('-')).ToList();
+
+            for (var i = 0; i + 1 < args.Count; i += 2)
+            {
+                var arg = args[i];
+                var val = args[i + 1];
+                var legit = false;
+
+                if (arg == "ip")
+                {
+                    IPAddress ip;
+                    if (IPAddress.TryParse(val, out ip) && (legit = true))
+                        OPTIONS_BINDIP = val;
+                }
+                else if (arg == "port")
+                {
+                    UInt16 port;
+                    if (UInt16.TryParse(val, out port) && (legit = true))
+                        OPTIONS_PORT = val;
+                }
+
+                if (!legit)
+                {
+                    Program.Log.Error("Invalid parameter <{0}> for argument: <--{1}> or argument doesnt exist!", val, arg);
+                }
+            }
         }
     }
 }
