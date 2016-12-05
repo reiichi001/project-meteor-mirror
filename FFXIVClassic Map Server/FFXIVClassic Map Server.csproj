@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Net.Compilers.2.0.0-beta3\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.0.0-beta3\build\Microsoft.Net.Compilers.props')" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\packages\Microsoft.Net.Compilers.2.0.0-beta3\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.0.0-beta3\build\Microsoft.Net.Compilers.props') AND '$(OS)' == 'Windows_NT'" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') AND '$(OS)' == 'Windows_NT'" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -144,51 +144,51 @@
     <Compile Include="packets\receive\supportdesk\GMTicketIssuesRequestPacket.cs" />
     <Compile Include="packets\receive\_0x02ReceivePacket.cs" />
     <Compile Include="packets\receive\_0x07Packet.cs" />
-    <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
-    <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />
-    <Compile Include="packets\send\actor\ActorSpecialGraphicPacket.cs" />
-    <Compile Include="packets\send\actor\BattleAction1Packet.cs" />
-    <Compile Include="packets\send\actor\battle\BattleAction.cs" />
-    <Compile Include="packets\send\actor\battle\BattleActionX00Packet.cs" />
-    <Compile Include="packets\send\actor\battle\BattleActionX18Packet.cs" />
-    <Compile Include="packets\send\actor\battle\BattleActionX10Packet.cs" />
-    <Compile Include="packets\send\actor\DeleteAllActorsPacket.cs" />
-    <Compile Include="packets\send\actor\events\SetEventStatus.cs" />
-    <Compile Include="packets\send\actor\events\SetNoticeEventCondition.cs" />
-    <Compile Include="packets\send\actor\events\SetPushEventConditionWithTriggerBox.cs" />
-    <Compile Include="packets\send\actor\events\SetPushEventConditionWithFan.cs" />
-    <Compile Include="packets\send\actor\events\SetEmoteEventCondition.cs" />
-    <Compile Include="packets\send\actor\events\SetTalkEventCondition.cs" />
-    <Compile Include="packets\send\actor\events\SetPushEventConditionWithCircle.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryRemoveX01Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryRemoveX08Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryRemoveX16Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryRemoveX32Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryRemoveX64Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\EquipmentListX64Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\EquipmentListX32Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\EquipmentListX16Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryListX01Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryListX08Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryListX16Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryListX64Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryListX32Packet.cs" />
-    <Compile Include="packets\send\actor\_0x132Packet.cs" />
-    <Compile Include="packets\send\actor\SetActorIsZoningPacket.cs" />
-    <Compile Include="packets\send\actor\battle\BattleActionX01Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\EquipmentListX01Packet.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryBeginChangePacket.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryEndChangePacket.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryItemEndPacket.cs" />
-    <Compile Include="packets\send\actor\inventory\InventoryItemPacket.cs" />
-    <Compile Include="packets\send\actor\inventory\InventorySetBeginPacket.cs" />
-    <Compile Include="packets\send\actor\inventory\InventorySetEndPacket.cs" />
-    <Compile Include="packets\send\actor\inventory\EquipmentListX08Packet.cs" />
-    <Compile Include="packets\send\actor\RemoveActorPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorIconPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorIdleAnimationPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorStatusPacket.cs" />
-    <Compile Include="packets\send\actor\_0xFPacket.cs" />
+    <Compile Include="packets\send\Actor\ActorDoEmotePacket.cs" />
+    <Compile Include="packets\send\Actor\ActorInstantiatePacket.cs" />
+    <Compile Include="packets\send\Actor\ActorSpecialGraphicPacket.cs" />
+    <Compile Include="packets\send\Actor\BattleAction1Packet.cs" />
+    <Compile Include="packets\send\Actor\battle\BattleAction.cs" />
+    <Compile Include="packets\send\Actor\battle\BattleActionX00Packet.cs" />
+    <Compile Include="packets\send\Actor\battle\BattleActionX18Packet.cs" />
+    <Compile Include="packets\send\Actor\battle\BattleActionX10Packet.cs" />
+    <Compile Include="packets\send\Actor\DeleteAllActorsPacket.cs" />
+    <Compile Include="packets\send\Actor\events\SetEventStatus.cs" />
+    <Compile Include="packets\send\Actor\events\SetNoticeEventCondition.cs" />
+    <Compile Include="packets\send\Actor\events\SetPushEventConditionWithTriggerBox.cs" />
+    <Compile Include="packets\send\Actor\events\SetPushEventConditionWithFan.cs" />
+    <Compile Include="packets\send\Actor\events\SetEmoteEventCondition.cs" />
+    <Compile Include="packets\send\Actor\events\SetTalkEventCondition.cs" />
+    <Compile Include="packets\send\Actor\events\SetPushEventConditionWithCircle.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryRemoveX01Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryRemoveX08Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryRemoveX16Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryRemoveX32Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryRemoveX64Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\EquipmentListX64Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\EquipmentListX32Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\EquipmentListX16Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryListX01Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryListX08Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryListX16Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryListX64Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryListX32Packet.cs" />
+    <Compile Include="packets\send\Actor\_0x132Packet.cs" />
+    <Compile Include="packets\send\Actor\SetActorIsZoningPacket.cs" />
+    <Compile Include="packets\send\Actor\battle\BattleActionX01Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\EquipmentListX01Packet.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryBeginChangePacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryEndChangePacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryItemEndPacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventoryItemPacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventorySetBeginPacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\InventorySetEndPacket.cs" />
+    <Compile Include="packets\send\Actor\inventory\EquipmentListX08Packet.cs" />
+    <Compile Include="packets\send\Actor\RemoveActorPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorIconPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorIdleAnimationPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorStatusPacket.cs" />
+    <Compile Include="packets\send\Actor\_0xFPacket.cs" />
     <Compile Include="packets\send\events\EndEventPacket.cs" />
     <Compile Include="packets\send\events\KickEventPacket.cs" />
     <Compile Include="packets\send\events\RunEventFunctionPacket.cs" />
@@ -206,18 +206,18 @@
     <Compile Include="packets\send\player\SetCurrentMountGoobbuePacket.cs" />
     <Compile Include="packets\send\player\SetCurrentMountChocoboPacket.cs" />
     <Compile Include="packets\send\player\SetGrandCompanyPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorNamePacket.cs" />
-    <Compile Include="packets\send\actor\SetActorPropetyPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorSpeedPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorStatePacket.cs" />
-    <Compile Include="packets\send\actor\SetActorTargetAnimatedPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorTargetPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorStatusAllPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorNamePacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorPropetyPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorSpeedPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorStatePacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorTargetAnimatedPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorTargetPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorStatusAllPacket.cs" />
     <Compile Include="packets\send\login\0x2Packet.cs" />
-    <Compile Include="packets\send\actor\AddActorPacket.cs" />
-    <Compile Include="packets\send\actor\MoveActorToPositionPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorAppearancePacket.cs" />
-    <Compile Include="packets\send\actor\SetActorPositionPacket.cs" />
+    <Compile Include="packets\send\Actor\AddActorPacket.cs" />
+    <Compile Include="packets\send\Actor\MoveActorToPositionPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorAppearancePacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorPositionPacket.cs" />
     <Compile Include="packets\send\login\0x7ResponsePacket.cs" />
     <Compile Include="packets\send\LogoutPacket.cs" />
     <Compile Include="packets\send\player\SetCompletedAchievementsPacket.cs" />
@@ -295,7 +295,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(SolutionDir)data\map_config.ini" "$(SolutionDir)$(ProjectName)\$(OutDir)"</PostBuildEvent>
+    <PostBuildEvent>copy "$(SolutionDir)data\map_config.ini" "$(SolutionDir)$(ProjectName)$(OutDir)"</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
