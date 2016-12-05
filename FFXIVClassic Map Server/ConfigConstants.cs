@@ -34,16 +34,16 @@ namespace FFXIVClassic_Map_Server
 
             INIFile configIni = new INIFile("./map_config.ini");
 
-            ConfigConstants.OPTIONS_BINDIP = configIni.GetValue("General", "server_ip", "127.0.0.1");
-            ConfigConstants.OPTIONS_PORT = configIni.GetValue("General", "server_port", "1989");
-            ConfigConstants.OPTIONS_TIMESTAMP = configIni.GetValue("General", "showtimestamp", "true").ToLower().Equals("true");
+            ConfigConstants.OPTIONS_BINDIP =        configIni.GetValue("General", "server_ip", "127.0.0.1");
+            ConfigConstants.OPTIONS_PORT =          configIni.GetValue("General", "server_port", "1989");
+            ConfigConstants.OPTIONS_TIMESTAMP =     configIni.GetValue("General", "showtimestamp", "true").ToLower().Equals("true");
 
-            ConfigConstants.DATABASE_WORLDID = UInt32.Parse(configIni.GetValue("Database", "worldid", "0"));
-            ConfigConstants.DATABASE_HOST = configIni.GetValue("Database", "host", "");
-            ConfigConstants.DATABASE_PORT = configIni.GetValue("Database", "port", "");
-            ConfigConstants.DATABASE_NAME = configIni.GetValue("Database", "database", "");
-            ConfigConstants.DATABASE_USERNAME = configIni.GetValue("Database", "username", "");
-            ConfigConstants.DATABASE_PASSWORD = configIni.GetValue("Database", "password", "");
+            ConfigConstants.DATABASE_WORLDID =      UInt32.Parse(configIni.GetValue("Database", "worldid", "0"));
+            ConfigConstants.DATABASE_HOST =         configIni.GetValue("Database", "host", "");
+            ConfigConstants.DATABASE_PORT =         configIni.GetValue("Database", "port", "");
+            ConfigConstants.DATABASE_NAME =         configIni.GetValue("Database", "database", "");
+            ConfigConstants.DATABASE_USERNAME =     configIni.GetValue("Database", "username", "");
+            ConfigConstants.DATABASE_PASSWORD =     configIni.GetValue("Database", "password", "");
 
             return true;
         }
