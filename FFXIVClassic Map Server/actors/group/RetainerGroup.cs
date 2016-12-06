@@ -1,4 +1,6 @@
-﻿using FFXIVClassic_Map_Server.actors.group.work;
+﻿using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.actors.group.work;
+using FFXIVClassic_Map_Server.packets.send.groups;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,21 +11,34 @@ namespace FFXIVClassic_Map_Server.actors.group
 {
     class RetainerGroup : Group
     {
-        private RetainerWork retainerWork;
+        private RetainerWork work;
 
-        public RetainerGroup(ulong id) : base(id, Group.RetainerGroup, null)
+        public RetainerGroup(ulong id) : base(id, Group.RetainerGroup)
         {
-            retainerWork = new RetainerWork();            
+            work = new RetainerWork();            
         }
 
         public void setRetainerProperties(int index, byte cdIDOffset, ushort placeName, byte condition, byte level)
         {
             if (members.Count >= index)
                 return;
-            retainerWork._memberSave[index].cdIDOffset = cdIDOffset;
-            retainerWork._memberSave[index].placeName = placeName;
-            retainerWork._memberSave[index].conditions = condition;
-            retainerWork._memberSave[index].level = level;
+            work._memberSave[index].cdIDOffset = cdIDOffset;
+            work._memberSave[index].placeName = placeName;
+            work._memberSave[index].conditions = condition;
+            work._memberSave[index].level = level;
+        }
+
+        public override void sendWorkValues(Actors.Player player)
+        {
+            SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupId);
+            groupWork.addProperty(this, "work._memberSave[0].cdIDOffset");
+            groupWork.addProperty(this, "work._memberSave[0].placeName");
+            groupWork.addProperty(this, "work._memberSave[0].conditions");
+            groupWork.addProperty(this, "work._memberSave[0].level");
+            groupWork.setTarget("/_init");
+
+            SubPacket test = groupWork.buildPacket(player.actorId, player.actorId);
+            player.QueuePacket(test);
         }
     }
 }

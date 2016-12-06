@@ -28,20 +28,12 @@ namespace FFXIVClassic_Map_Server.actors.group
         public int localizedNamed = -1;
         public string groupName = "";
 
-        public PartyWork partyGroupWork; //For party group types
-        public Object work; //For the rest
-
         public List<GroupMember> members = new List<GroupMember>();
 
-        public Group(ulong id, uint typeId, object work)
+        public Group(ulong id, uint typeId)
         {
             groupId = id;
             groupTypeId = typeId;            
-
-            if (work is PartyWork)
-                partyGroupWork = (PartyWork)work;
-            else
-                this.work = work;
         }
 
         public Group(ulong id, uint typeId, int nameId, object work)
@@ -49,11 +41,6 @@ namespace FFXIVClassic_Map_Server.actors.group
             groupId = id;
             groupTypeId = typeId;
             localizedNamed = nameId;
-
-            if (work is PartyWork)
-                partyGroupWork = (PartyWork)work;
-            else
-                this.work = (PartyWork)work;
         }
 
         public Group(ulong id, uint typeId, string name, object work)
@@ -62,11 +49,6 @@ namespace FFXIVClassic_Map_Server.actors.group
             groupTypeId = typeId;
             groupName = name;
             localizedNamed = -1;
-
-            if (work is PartyWork)
-                partyGroupWork = (PartyWork)work;
-            else
-                this.work = work;
         }
 
         public void add(Actor actor)
@@ -103,40 +85,7 @@ namespace FFXIVClassic_Map_Server.actors.group
 
         }
 
-        public void sendWorkValues(Player player)
-        {            
-            if (groupTypeId == PlayerPartyGroup)
-            {
-                SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupId);
-                groupWork.addProperty(this, "partyGroupWork._globalTemp.owner");
-                groupWork.setTarget("/_init");
-            
-                SubPacket test = groupWork.buildPacket(player.actorId, player.actorId);
-                player.QueuePacket(test);
-            }
-            else if (groupTypeId == GroupInvitationRelationGroup)
-            {
-                SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupId);
-                groupWork.addProperty(this, "work._globalTemp.host");
-                groupWork.addProperty(this, "work._globalTemp.variableCommand");
-                groupWork.setTarget("/_init");
+        public virtual void sendWorkValues(Player player){}      
 
-                SubPacket test = groupWork.buildPacket(player.actorId, player.actorId);
-                test.DebugPrintSubPacket();
-                player.QueuePacket(test);
-            }
-            else if (groupTypeId == RetainerGroup)
-            {
-                SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupId);
-                groupWork.addProperty(this, "work._memberSave[0].cdIDOffset");
-                groupWork.addProperty(this, "work._memberSave[0].placeName");
-                groupWork.addProperty(this, "work._memberSave[0].conditions");
-                groupWork.addProperty(this, "work._memberSave[0].level");
-                groupWork.setTarget("/_init");
-
-                SubPacket test = groupWork.buildPacket(player.actorId, player.actorId);
-                player.QueuePacket(test);
-            }
-        }
     }
 }

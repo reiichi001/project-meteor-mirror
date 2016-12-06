@@ -11,7 +11,7 @@ namespace FFXIVClassic_Map_Server.actors.group
     {
         private LinkshellWork linkshellWork;
 
-        public LinkshellGroup(ulong id) : base(id, Group.CompanyGroup, null)
+        public LinkshellGroup(ulong id) : base(id, Group.CompanyGroup)
         {
             linkshellWork = new LinkshellWork();            
         }
