@@ -169,6 +169,10 @@ namespace FFXIVClassic_World_Server
         public void DoZoneServerChange(Session session, uint destinationZoneId, string destinationPrivateArea, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
         {
             ZoneServer zs = GetZoneServer(destinationZoneId);
+
+            if (zs == null)
+                return;
+
             if (zs.isConnected)
                 session.routing1.SendSessionEnd(session, destinationZoneId, destinationPrivateArea, spawnType, spawnX, spawnY, spawnZ, spawnRotation);
             else if (zs.Connect())

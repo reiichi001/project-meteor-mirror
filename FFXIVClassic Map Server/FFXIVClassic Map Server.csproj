@@ -201,6 +201,8 @@
     <Compile Include="packets\send\actor\SetActorIconPacket.cs" />
     <Compile Include="packets\send\actor\SetActorIdleAnimationPacket.cs" />
     <Compile Include="packets\send\actor\SetActorStatusPacket.cs" />
+    <Compile Include="packets\send\actor\_0xD9Packet.cs" />
+    <Compile Include="packets\send\actor\_0xD8Packet.cs" />
     <Compile Include="packets\send\actor\_0xFPacket.cs" />
     <Compile Include="packets\send\groups\CreateNamedGroup.cs" />
     <Compile Include="packets\send\groups\CreateNamedGroupMultiple.cs" />
@@ -208,6 +210,7 @@
     <Compile Include="packets\send\events\KickEventPacket.cs" />
     <Compile Include="packets\send\events\RunEventFunctionPacket.cs" />
     <Compile Include="packets\send\GameMessagePacket.cs" />
+    <Compile Include="packets\send\groups\DeleteGroupPacket.cs" />
     <Compile Include="packets\send\groups\GroupHeaderPacket.cs" />
     <Compile Include="packets\send\groups\GroupMember.cs" />
     <Compile Include="packets\send\groups\GroupMembersBeginPacket.cs" />

@@ -1258,6 +1258,43 @@ namespace FFXIVClassic_Map_Server
             return cheevosPacket.BuildPacket(player.actorId);
         }
 
+        public static bool CreateLinkshell(Player player, string lsName, ushort lsCrest)
+        {
+            bool success = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    INSERT INTO server_linkshells                                    
+                                    (name, master, crest)
+                                    VALUES
+                                    (@lsName, @master, @crest)
+                                    ;
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@lsName", lsName);
+                    cmd.Parameters.AddWithValue("@master", player.actorId);
+                    cmd.Parameters.AddWithValue("@crest", lsCrest);                    
+
+                    cmd.ExecuteNonQuery();
+                    success = true;
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return success;
+        }
 
     }
+
 }
