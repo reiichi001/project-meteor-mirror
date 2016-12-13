@@ -132,10 +132,11 @@
     <Compile Include="dataobjects\SearchEntry.cs" />
     <Compile Include="lua\LuaEngine.cs" />
     <Compile Include="lua\LuaEvent.cs" />
-    <Compile Include="lua\LuaParam.cs" />
     <Compile Include="lua\LuaNpc.cs" />
+    <Compile Include="lua\LuaParam.cs" />
     <Compile Include="lua\LuaPlayer.cs" />
     <Compile Include="lua\LuaScript.cs" />
+    <Compile Include="lua\LuaUtils.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\receive\ChatMessagePacket.cs" />
     <Compile Include="packets\receive\events\EventUpdatePacket.cs" />
@@ -186,6 +187,7 @@
     <Compile Include="packets\send\actor\inventory\InventoryListX16Packet.cs" />
     <Compile Include="packets\send\actor\inventory\InventoryListX64Packet.cs" />
     <Compile Include="packets\send\actor\inventory\InventoryListX32Packet.cs" />
+    <Compile Include="packets\send\actor\PlayAnimationOnActorPacket.cs" />
     <Compile Include="packets\send\actor\_0x132Packet.cs" />
     <Compile Include="packets\send\actor\SetActorIsZoningPacket.cs" />
     <Compile Include="packets\send\actor\battle\BattleActionX01Packet.cs" />
@@ -287,7 +289,6 @@
     <Compile Include="packets\WorldPackets\Send\SessionEndConfirmPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="lua\LuaUtils.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
