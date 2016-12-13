@@ -3,16 +3,12 @@ using System.IO;
 
 namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
 {
-    class GroupControlGetDeletePacket
+    class GetGroupPacket
     {
-        public const byte GROUP_CONTROL_GET = 0;
-        public const byte GROUP_CONTROL_DELETE = 1;
-        
-        public bool invalidPacket = false;
-        public uint controlCode;        
+        public bool invalidPacket = false;    
         public ulong groupId;
         
-        public GroupControlGetDeletePacket(byte[] data)
+        public GetGroupPacket(byte[] data)
         {
             using (MemoryStream mem = new MemoryStream(data))
             {
@@ -20,7 +16,6 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
                 {
                     try
                     {
-                        controlCode = binReader.ReadUInt32();
                         groupId = binReader.ReadUInt64();                        
                     }
                     catch (Exception)

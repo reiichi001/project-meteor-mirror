@@ -110,6 +110,7 @@ namespace FFXIVClassic_World_Server
                                 //Check destination, if != 0, update route and start new session
                                 if (endConfirmPacket.destinationZone != 0)
                                 {
+                                    session.currentZoneId = endConfirmPacket.destinationZone;
                                     session.routing1 = Server.GetServer().GetWorldManager().GetZoneServer(endConfirmPacket.destinationZone);
                                     session.routing1.SendSessionStart(session);
                                 }
@@ -122,7 +123,7 @@ namespace FFXIVClassic_World_Server
                             else
                                 Program.Log.Error("Session {0} had an error ending session.", endConfirmPacket.sessionId);
 
-                            break;
+                            break;                        
                         //Zone Change Request
                         case 0x1002:
                             WorldRequestZoneChangePacket zoneChangePacket = new WorldRequestZoneChangePacket(packet.data);

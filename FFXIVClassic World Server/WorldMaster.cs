@@ -173,6 +173,12 @@ namespace FFXIVClassic_World_Server
             if (zs == null)
                 return;
 
+            session.currentZoneId = destinationZoneId;
+
+            //Intrazone change, just update the id
+            if (zs.Equals(session.routing1))            
+                return;            
+
             if (zs.isConnected)
                 session.routing1.SendSessionEnd(session, destinationZoneId, destinationPrivateArea, spawnType, spawnX, spawnY, spawnZ, spawnRotation);
             else if (zs.Connect())
@@ -184,7 +190,7 @@ namespace FFXIVClassic_World_Server
         //Login Zone In
         public void DoLogin(Session session)
         {            
-            session.routing1 = GetZoneServer(Database.GetCurrentZoneForSession(session.sessionId));
+            session.routing1 = GetZoneServer(session.currentZoneId);
             session.routing1.SendSessionStart(session);            
         }
 

@@ -204,60 +204,25 @@ namespace FFXIVClassic_World_Server
                         }
 
                         break;
-                    //Group Control Create or Modify
+                    //Group get data request
                     case 0x1020:
-                        GroupControlCreateModifyPacket gCreateModifyPacket = new GroupControlCreateModifyPacket(subpacket.data);
-
-                        if (gCreateModifyPacket.controlCode == GroupControlCreateModifyPacket.GROUP_CONTROL_CREATE)
-                        {
-                            ulong groupId;
-                            switch (gCreateModifyPacket.groupType)
-                            {
-                                case GroupControlCreateModifyPacket.GROUP_PARTY:
-                                    //mPartyManager.CreateParty();
-                                    break;
-                                case GroupControlCreateModifyPacket.GROUP_RETAINER:
-                                    //mPartyManager.CreateParty();
-                                    break;
-                                case GroupControlCreateModifyPacket.GROUP_LINKSHELL:
-                                    //mPartyManager.CreateParty();
-                                    break;
-                                case GroupControlCreateModifyPacket.GROUP_RELATION:
-                                    //mPartyManager.CreateParty();
-                                    break;
-                            }
-                        }
-                        else if (gCreateModifyPacket.controlCode == GroupControlCreateModifyPacket.GROUP_CONTROL_MODIFY)
-                        {
-                            switch (gCreateModifyPacket.groupType)
-                            {
-                                case GroupControlCreateModifyPacket.GROUP_PARTY:
-                                    //mPartyManager.CreateParty();
-                                    break;
-                                case GroupControlCreateModifyPacket.GROUP_RETAINER:
-                                    //mPartyManager.CreateParty();
-                                    break;
-                                case GroupControlCreateModifyPacket.GROUP_LINKSHELL:
-                                    //mPartyManager.CreateParty();
-                                    break;
-                                case GroupControlCreateModifyPacket.GROUP_RELATION:
-                                    //mPartyManager.CreateParty();
-                                    break;
-                            }
-                        }
-
+                        GetGroupPacket getGroupPacket = new GetGroupPacket(subpacket.data);
+                        SendGroupData(session, getGroupPacket.groupId);                  
                         break;
-                    //Group Control Get or Delete
+                    //Group delete request
                     case 0x1021:
-                        GroupControlGetDeletePacket gGetDeletePacket = new GroupControlGetDeletePacket(subpacket.data);
-                        if (gGetDeletePacket.controlCode == GroupControlGetDeletePacket.GROUP_CONTROL_GET)
-                        {
-                            
-                        }
-                        else if (gGetDeletePacket.controlCode == GroupControlGetDeletePacket.GROUP_CONTROL_DELETE)
-                        {
-
-                        }
+                        DeleteGroupPacket deleteGroupPacket = new DeleteGroupPacket(subpacket.data);
+                        DeleteGroup(deleteGroupPacket.groupId);
+                        break;
+                    //Linkshell create request
+                    case 0x1023:
+                        CreateLinkshellPacket createLinkshellpacket = new CreateLinkshellPacket(subpacket.data);
+                        mLinkshellManager.CreateLinkshell(createLinkshellpacket.name, createLinkshellpacket.crestid, createLinkshellpacket.master);
+                        break;
+                    //Linkshell modify request
+                    case 0x1024:
+                        ModifyLinkshellPacket modifyLinkshellpacket = new ModifyLinkshellPacket(subpacket.data);
+                        mLinkshellManager.ModifyLinkshell();
                         break;
                     //Group Add/Remove Member
                     case 0x1022:
@@ -265,8 +230,7 @@ namespace FFXIVClassic_World_Server
                         break;
                 }
             }
-
-            if (mZoneSessionList.ContainsKey(sessionId))
+            else if (mZoneSessionList.ContainsKey(sessionId))
             {
                 ClientConnection conn = mZoneSessionList[sessionId].clientConnection;
                 conn.QueuePacket(subpacket, true, false);
@@ -410,7 +374,58 @@ namespace FFXIVClassic_World_Server
             }
         }
 
-        #endregion
+        #endregion        
+
+        private void SendGroupData(Session session, ulong groupId)
+        {
+            if (mCurrentWorldGroups.ContainsKey(groupId))
+            {
+                Group group = mCurrentWorldGroups[groupId];
+
+            }
+        }
+
+        private void SendGroupDataToAllMembers(ulong groupId)
+        {
+            if (mCurrentWorldGroups.ContainsKey(groupId))
+            {
+                Group group = mCurrentWorldGroups[groupId];
+                
+            }
+        }
+
+        public void GetGroup(Group group)
+        {
+            if (group is Party)
+            { 
+                
+            }
+            else if (group is RetainerGroup)
+            {
+
+            }
+            else if (group is Linkshell)
+            {
+
+            }
+            else if (group is Relation)
+            {
+
+            }
+        }
+
+        public void DeleteGroup(ulong id)
+        {
+            if (!mCurrentWorldGroups.ContainsKey(id))
+                return;
+            Group group = mCurrentWorldGroups[id];
+            if (group is Party)            
+                mPartyManager.DeleteParty(group.groupIndex);            
+            else if (group is Linkshell)            
+                mLinkshellManager.DeleteLinkshell(group.groupIndex);            
+            else if (group is Relation)           
+                mRelationGroupManager.DeleteRelationGroup(group.groupIndex);           
+        }
 
         public void IncrementGroupIndex()
         {

@@ -12,6 +12,10 @@ namespace FFXIVClassic_World_Server.DataObjects
         public enum Channel {ZONE, CHAT};
 
         public readonly uint sessionId;
+
+        public string characterName;
+        public uint currentZoneId;
+
         public readonly ClientConnection clientConnection;
         public readonly Channel type;
         public ZoneServer routing1, routing2;
@@ -22,7 +26,8 @@ namespace FFXIVClassic_World_Server.DataObjects
             this.clientConnection = connection;
             this.type = type;
             connection.owner = this;
+            Database.LoadZoneSessionInfo(this);
         }
-
+        
     }
 }

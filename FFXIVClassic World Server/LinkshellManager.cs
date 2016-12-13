@@ -50,7 +50,7 @@ namespace FFXIVClassic_World_Server
         }
 
         //Creates a new linkshell and adds it to the list
-        public bool DeleteLinkshell(uint groupInstanceId)
+        public bool DeleteLinkshell(ulong groupInstanceId)
         {
             if (mCurrentWorldGroupsReference.ContainsKey(groupInstanceId))
             {
