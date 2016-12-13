@@ -1,6 +1,8 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_World_Server.DataObjects;
+using FFXIVClassic_World_Server.DataObjects.Group;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Receive;
+using FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -13,22 +15,36 @@ namespace FFXIVClassic_World_Server
         public const int FFXIV_MAP_PORT = 54992;
         public const int BUFFER_SIZE = 0xFFFF; //Max basepacket size is 0xFFFF
         public const int BACKLOG = 100;
-        public const int HEALTH_THREAD_SLEEP_TIME = 5;
-        
         private static Server mSelf;
 
+        //Connection and Session Management
         private Socket mServerSocket;
 
         WorldManager mWorldManager;
         PacketProcessor mPacketProcessor;
 
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
+
         private Dictionary<uint, Session> mZoneSessionList = new Dictionary<uint, Session>();
         private Dictionary<uint, Session> mChatSessionList = new Dictionary<uint, Session>();
+
+        //World Scope Group Management
+        private Object mGroupLock = new object();
+        private ulong mRunningGroupIndex = 1;
+        private Dictionary<ulong, Group> mCurrentWorldGroups = new Dictionary<ulong, Group>();
+
+        private PartyManager mPartyManager;
+        private RetainerGroupManager mRetainerGroupManager;
+        private LinkshellManager mLinkshellManager;
+        private RelationGroupManager mRelationGroupManager;
 
         public Server()
         {
             mSelf = this;
+            mPartyManager = new PartyManager(this, mGroupLock, mCurrentWorldGroups);
+            mLinkshellManager = new LinkshellManager(this, mGroupLock, mCurrentWorldGroups);
+            mRetainerGroupManager = new RetainerGroupManager(this, mGroupLock, mCurrentWorldGroups);
+            mRelationGroupManager = new RelationGroupManager(this, mGroupLock, mCurrentWorldGroups);
         }
 
         public static Server GetServer()
@@ -135,7 +151,7 @@ namespace FFXIVClassic_World_Server
             
             return null;
         }
-
+        
         public void OnReceiveSubPacketFromZone(ZoneServer zoneServer, SubPacket subpacket)
         {            
             uint sessionId = subpacket.header.targetId;
@@ -187,6 +203,65 @@ namespace FFXIVClassic_World_Server
                             GetWorldManager().DoZoneServerChange(session, zoneChangePacket.destinationZoneId, "", zoneChangePacket.destinationSpawnType, zoneChangePacket.destinationX, zoneChangePacket.destinationY, zoneChangePacket.destinationZ, zoneChangePacket.destinationRot);
                         }
 
+                        break;
+                    //Group Control Create or Modify
+                    case 0x1020:
+                        GroupControlCreateModifyPacket gCreateModifyPacket = new GroupControlCreateModifyPacket(subpacket.data);
+
+                        if (gCreateModifyPacket.controlCode == GroupControlCreateModifyPacket.GROUP_CONTROL_CREATE)
+                        {
+                            ulong groupId;
+                            switch (gCreateModifyPacket.groupType)
+                            {
+                                case GroupControlCreateModifyPacket.GROUP_PARTY:
+                                    //mPartyManager.CreateParty();
+                                    break;
+                                case GroupControlCreateModifyPacket.GROUP_RETAINER:
+                                    //mPartyManager.CreateParty();
+                                    break;
+                                case GroupControlCreateModifyPacket.GROUP_LINKSHELL:
+                                    //mPartyManager.CreateParty();
+                                    break;
+                                case GroupControlCreateModifyPacket.GROUP_RELATION:
+                                    //mPartyManager.CreateParty();
+                                    break;
+                            }
+                        }
+                        else if (gCreateModifyPacket.controlCode == GroupControlCreateModifyPacket.GROUP_CONTROL_MODIFY)
+                        {
+                            switch (gCreateModifyPacket.groupType)
+                            {
+                                case GroupControlCreateModifyPacket.GROUP_PARTY:
+                                    //mPartyManager.CreateParty();
+                                    break;
+                                case GroupControlCreateModifyPacket.GROUP_RETAINER:
+                                    //mPartyManager.CreateParty();
+                                    break;
+                                case GroupControlCreateModifyPacket.GROUP_LINKSHELL:
+                                    //mPartyManager.CreateParty();
+                                    break;
+                                case GroupControlCreateModifyPacket.GROUP_RELATION:
+                                    //mPartyManager.CreateParty();
+                                    break;
+                            }
+                        }
+
+                        break;
+                    //Group Control Get or Delete
+                    case 0x1021:
+                        GroupControlGetDeletePacket gGetDeletePacket = new GroupControlGetDeletePacket(subpacket.data);
+                        if (gGetDeletePacket.controlCode == GroupControlGetDeletePacket.GROUP_CONTROL_GET)
+                        {
+                            
+                        }
+                        else if (gGetDeletePacket.controlCode == GroupControlGetDeletePacket.GROUP_CONTROL_DELETE)
+                        {
+
+                        }
+                        break;
+                    //Group Add/Remove Member
+                    case 0x1022:
+                        GroupMemberChangePacket gMemberChangePacket = new GroupMemberChangePacket(subpacket.data);                        
                         break;
                 }
             }
@@ -333,9 +408,19 @@ namespace FFXIVClassic_World_Server
                     }
                 }
             }
-        }     
+        }
 
         #endregion
+
+        public void IncrementGroupIndex()
+        {
+            mRunningGroupIndex++;
+        }
+
+        public ulong GetGroupIndex()
+        {
+            return mRunningGroupIndex;
+        }
 
     }
 }
