@@ -8,5 +8,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 {
     class RetainerGroupMember
     {
+        public uint retainerId;
+        public string name;
     }
 }

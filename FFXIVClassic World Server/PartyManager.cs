@@ -60,8 +60,8 @@ namespace FFXIVClassic_World_Server
                     party.members.Remove(charaId);
                     
                     //If current ldr, make a new ldr if not empty pt
-                    if (party.leader == charaId && party.members.Count != 0)
-                        party.leader = party.members[0];
+                    if (party.GetLeader() == charaId && party.members.Count != 0)
+                        party.SetLeader(party.members[0]);
                 }
                 return party.members.Count;
             }
@@ -75,7 +75,7 @@ namespace FFXIVClassic_World_Server
                 Party party = mPartyList[groupId];
                 if (party.members.Contains(charaId))
                 {
-                    party.leader = charaId;
+                    party.SetLeader(charaId);
                     return true;
                 }                
             }

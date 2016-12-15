@@ -17,14 +17,16 @@ namespace FFXIVClassic_World_Server
         public const int BACKLOG = 100;
         private static Server mSelf;
 
-        //Connection and Session Management
+        //Connections
         private Socket mServerSocket;
-
         WorldManager mWorldManager;
         PacketProcessor mPacketProcessor;
 
-        private List<ClientConnection> mConnectionList = new List<ClientConnection>();
+        //Preloaded Maps
+        private Dictionary<uint, string> mIdToNameMap = new Dictionary<uint, string>();
 
+        //Session Management
+        private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private Dictionary<uint, Session> mZoneSessionList = new Dictionary<uint, Session>();
         private Dictionary<uint, Session> mChatSessionList = new Dictionary<uint, Session>();
 
@@ -58,7 +60,7 @@ namespace FFXIVClassic_World_Server
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneServerList();
             mWorldManager.LoadZoneEntranceList();
-            mWorldManager.ConnectToZoneServers();            
+            mWorldManager.ConnectToZoneServers();
 
             IPEndPoint serverEndPoint = new System.Net.IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), int.Parse(ConfigConstants.OPTIONS_PORT));
 
@@ -91,24 +93,28 @@ namespace FFXIVClassic_World_Server
             Console.ForegroundColor = ConsoleColor.White;
             Program.Log.Info("World Server accepting connections @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
             Console.ForegroundColor = ConsoleColor.Gray;
-            
+
             return true;
-        }                
+        }
 
         public void AddSession(ClientConnection connection, Session.Channel type, uint id)
         {
             Session session = new Session(id, connection, type);
-
+            
             switch (type)
             {
                 case Session.Channel.ZONE:
+                    //New character since world server loaded
+                    if (!mIdToNameMap.ContainsKey(id))
+                        AddNameToMap(id, session.characterName);
+
                     if (!mZoneSessionList.ContainsKey(id))
                         mZoneSessionList.Add(id, session);
-                break;
+                    break;
                 case Session.Channel.CHAT:
                     if (!mChatSessionList.ContainsKey(id))
                         mChatSessionList.Add(id, session);
-                break;
+                    break;
             }
         }
 
@@ -116,7 +122,7 @@ namespace FFXIVClassic_World_Server
         {
             switch (type)
             {
-                case Session.Channel.ZONE:                    
+                case Session.Channel.ZONE:
                     if (mZoneSessionList.ContainsKey(id))
                     {
                         mZoneSessionList[id].clientConnection.Disconnect();
@@ -132,7 +138,7 @@ namespace FFXIVClassic_World_Server
                         mChatSessionList.Remove(id);
                     }
                     break;
-            }          
+            }
         }
 
         public Session GetSession(uint targetSession, Session.Channel type = Session.Channel.ZONE)
@@ -148,12 +154,12 @@ namespace FFXIVClassic_World_Server
                         return mChatSessionList[targetSession];
                     break;
             }
-            
+
             return null;
         }
-        
+
         public void OnReceiveSubPacketFromZone(ZoneServer zoneServer, SubPacket subpacket)
-        {            
+        {
             uint sessionId = subpacket.header.targetId;
 
             if (subpacket.gameMessage.opcode >= 0x1000)
@@ -207,7 +213,7 @@ namespace FFXIVClassic_World_Server
                     //Group get data request
                     case 0x1020:
                         GetGroupPacket getGroupPacket = new GetGroupPacket(subpacket.data);
-                        SendGroupData(session, getGroupPacket.groupId);                  
+                        SendGroupData(session, getGroupPacket.groupId);
                         break;
                     //Group delete request
                     case 0x1021:
@@ -226,7 +232,7 @@ namespace FFXIVClassic_World_Server
                         break;
                     //Group Add/Remove Member
                     case 0x1022:
-                        GroupMemberChangePacket gMemberChangePacket = new GroupMemberChangePacket(subpacket.data);                        
+                        GroupMemberChangePacket gMemberChangePacket = new GroupMemberChangePacket(subpacket.data);
                         break;
                 }
             }
@@ -236,7 +242,7 @@ namespace FFXIVClassic_World_Server
                 conn.QueuePacket(subpacket, true, false);
                 conn.FlushQueuedSendPackets();
             }
-            
+
         }
 
         public WorldManager GetWorldManager()
@@ -307,7 +313,7 @@ namespace FFXIVClassic_World_Server
                 {
                     mConnectionList.Remove(conn);
                 }
-                
+
                 return;
             }
 
@@ -333,7 +339,7 @@ namespace FFXIVClassic_World_Server
                         {
                             mPacketProcessor.ProcessPacket(conn, basePacket);
                         }
-                            
+
                     }
 
                     //Not all bytes consumed, transfer leftover to beginning
@@ -354,7 +360,7 @@ namespace FFXIVClassic_World_Server
                 }
                 else
                 {
-                    
+
                     lock (mConnectionList)
                     {
                         mConnectionList.Remove(conn);
@@ -365,7 +371,7 @@ namespace FFXIVClassic_World_Server
             {
                 if (conn.socket != null)
                 {
-                   
+
                     lock (mConnectionList)
                     {
                         mConnectionList.Remove(conn);
@@ -376,12 +382,29 @@ namespace FFXIVClassic_World_Server
 
         #endregion        
 
+        public void LoadCharaNames()
+        {
+            Database.GetAllCharaNames(mIdToNameMap);
+        }
+
+        public void AddNameToMap(uint charaId, string name)
+        {
+            mIdToNameMap.Add(charaId, name);
+        }
+        
+        public string GetNameForId(uint charaId)
+        {
+            if (mIdToNameMap.ContainsKey(charaId))           
+                return mIdToNameMap[charaId];
+            return null;  
+        }
+
         private void SendGroupData(Session session, ulong groupId)
         {
             if (mCurrentWorldGroups.ContainsKey(groupId))
             {
                 Group group = mCurrentWorldGroups[groupId];
-
+                
             }
         }
 

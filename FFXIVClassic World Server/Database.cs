@@ -50,6 +50,35 @@ namespace FFXIVClassic_World_Server
             return readIn;
         }
 
+        public static void GetAllCharaNames(Dictionary<uint, string> mIdToNameMap)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand("SELECT id, name FROM characters", conn);
+                    using (MySqlDataReader Reader = cmd.ExecuteReader())
+                    {
+                        while (Reader.Read())
+                        {
+                            uint id = Reader.GetUInt32("id");
+                            string name = Reader.GetString("name");
+                            mIdToNameMap.Add(id, name);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }           
+        }
+
         public static uint GetCurrentZoneForSession(uint charId)
         {
             uint currentZone = 0;

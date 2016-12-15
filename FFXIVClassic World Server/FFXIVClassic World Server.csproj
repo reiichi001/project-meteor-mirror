@@ -64,6 +64,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actor\Group\Group.cs" />
+    <Compile Include="Actor\Group\GroupInvitationRelationGroup.cs" />
+    <Compile Include="Actor\Group\GroupMember.cs" />
+    <Compile Include="Actor\Group\LinkshellGroup.cs" />
+    <Compile Include="Actor\Group\PartyGroup.cs" />
+    <Compile Include="Actor\Group\RetainerGroup.cs" />
+    <Compile Include="Actor\Group\Work\ContentWork.cs" />
+    <Compile Include="Actor\Group\Work\GroupGlobalSave.cs" />
+    <Compile Include="Actor\Group\Work\GroupGlobalTemp.cs" />
+    <Compile Include="Actor\Group\Work\GroupMemberSave.cs" />
+    <Compile Include="Actor\Group\Work\LinkshellWork.cs" />
+    <Compile Include="Actor\Group\Work\PartyWork.cs" />
+    <Compile Include="Actor\Group\Work\RelationWork.cs" />
+    <Compile Include="Actor\Group\Work\RetainerWork.cs" />
     <Compile Include="ConfigConstants.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="DataObjects\ClientConnection.cs" />
@@ -79,6 +93,18 @@
     <Compile Include="LinkshellManager.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="Packets\Receive\HelloPacket.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\CreateNamedGroup.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\CreateNamedGroupMultiple.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\DeleteGroupPacket.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\GroupHeaderPacket.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\GroupMember.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\GroupMembersBeginPacket.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\GroupMembersEndPacket.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\GroupMembersX08Packet.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\GroupMembersX16Packet.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\GroupMembersX32Packet.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\GroupMembersX64Packet.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\SynchGroupWorkValuesPacket.cs" />
     <Compile Include="Packets\Send\_0x2Packet.cs" />
     <Compile Include="Packets\Send\_0x7Packet.cs" />
     <Compile Include="Packets\Send\_0x8PingPacket.cs" />
