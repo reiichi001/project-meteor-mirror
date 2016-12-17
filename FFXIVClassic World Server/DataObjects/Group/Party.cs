@@ -1,4 +1,5 @@
-﻿using FFXIVClassic_World_Server.Actor.Group.Work;
+﻿using FFXIVClassic.Common;
+using FFXIVClassic_World_Server.Actor.Group.Work;
 using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
 using System;
 using System.Collections.Generic;
@@ -27,18 +28,16 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
         {
             return (uint)(partyGroupWork._globalTemp.owner & 0xFFFFFF);
         }
-
-        /*
-        public override void sendWorkValues(Session session)
+        
+        public override void SendInitWorkValues(Session session)
         {
-            SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupId);
+            SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupIndex);
             groupWork.addProperty(this, "partyGroupWork._globalTemp.owner");
             groupWork.setTarget("/_init");
 
             SubPacket test = groupWork.buildPacket(session.sessionId, session.sessionId);
             session.clientConnection.QueuePacket(test, true, false);
-        }
-        */
+        }        
 
         public override int GetMemberCount()
         {

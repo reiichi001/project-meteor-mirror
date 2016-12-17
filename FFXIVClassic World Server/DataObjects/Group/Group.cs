@@ -75,5 +75,10 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             session.clientConnection.QueuePacket(GroupMembersEndPacket.buildPacket(session.sessionId, session.currentZoneId, time, this), true, false);
 
         }
+
+        public virtual void SendInitWorkValues(Session session)
+        {
+
+        }
     }
 }

@@ -6,19 +6,22 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_World_Server.DataObjects.Group
 {
-    class LinkshellMember
+    class LinkshellMember : IComparable<LinkshellMember>
     {
         public readonly uint charaId;
         public readonly ulong lsId;
-        public readonly ushort slot;
-        public readonly ushort rank;
+        public readonly byte rank;
         
-        public LinkshellMember(uint charaId, ulong lsId, ushort slot, ushort rank)
+        public LinkshellMember(uint charaId, ulong lsId, byte rank)
         {
             this.charaId = charaId;
             this.lsId = lsId;
-            this.slot = slot;
             this.rank = rank;
+        }
+
+        public int CompareTo(LinkshellMember other)
+        {
+            return Server.GetServer().GetNameForId(charaId).CompareTo(Server.GetServer().GetNameForId(other.charaId));
         }
     }
 }

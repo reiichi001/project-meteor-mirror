@@ -1,6 +1,7 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_World_Server.DataObjects;
 using FFXIVClassic_World_Server.DataObjects.Group;
+using FFXIVClassic_World_Server.Packets.Receive.Subpackets;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Receive;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group;
 using System;
@@ -161,12 +162,11 @@ namespace FFXIVClassic_World_Server
         public void OnReceiveSubPacketFromZone(ZoneServer zoneServer, SubPacket subpacket)
         {
             uint sessionId = subpacket.header.targetId;
+            Session session = GetSession(sessionId);
 
             if (subpacket.gameMessage.opcode >= 0x1000)
             {
-                subpacket.DebugPrintSubPacket();
-                uint targetSession = subpacket.header.targetId;
-                Session session = GetSession(targetSession);
+                subpacket.DebugPrintSubPacket();                
 
                 switch (subpacket.gameMessage.opcode)
                 {
@@ -234,6 +234,21 @@ namespace FFXIVClassic_World_Server
                     case 0x1022:
                         GroupMemberChangePacket gMemberChangePacket = new GroupMemberChangePacket(subpacket.data);
                         break;
+                }
+            }
+            //Special case for groups. If it's a world group, send values, else send to zone server
+            else if (subpacket.gameMessage.opcode == 0x133)
+            {
+                GroupCreatedPacket groupCreatedPacket = new GroupCreatedPacket(subpacket.data);
+                if (mCurrentWorldGroups.ContainsKey(groupCreatedPacket.groupId))
+                {
+                    mCurrentWorldGroups[groupCreatedPacket.groupId].SendInitWorkValues(session);
+                }
+                else //Not a world group, send to zone server
+                {
+                    ClientConnection conn = mZoneSessionList[sessionId].clientConnection;
+                    conn.QueuePacket(subpacket, true, false);
+                    conn.FlushQueuedSendPackets();
                 }
             }
             else if (mZoneSessionList.ContainsKey(sessionId))

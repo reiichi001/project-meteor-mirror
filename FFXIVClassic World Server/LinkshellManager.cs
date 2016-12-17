@@ -86,8 +86,7 @@ namespace FFXIVClassic_World_Server
 
                 if (result)
                 {
-                    LinkshellMember newMember = new LinkshellMember(charaId, ls.dbId, 0, 0);
-                    ls.members.Add(charaId, newMember);
+                    ls.AddMember(charaId);
                     return true;
                 }
                 else
@@ -112,8 +111,7 @@ namespace FFXIVClassic_World_Server
                     return false;
 
                 //Remove from group instance
-                if (ls.members.ContainsKey(charaId))
-                    ls.members.Remove(charaId);
+                ls.RemoveMember(charaId);
 
                 return true;
             }
@@ -129,10 +127,10 @@ namespace FFXIVClassic_World_Server
                 lock (mGroupLockReference)
                 {
                     Linkshell ls = Database.GetLinkshell(mServer.GetGroupIndex(), id);
+                    ls.LoadMembers();
 
                     if (ls != null)
-                    {
-                        ls.members = Database.GetLSMembers(id);
+                    {                        
                         mLinkshellList.Add(id, ls);
                         mCurrentWorldGroupsReference.Add(mServer.GetGroupIndex(), ls);
                         mServer.IncrementGroupIndex();

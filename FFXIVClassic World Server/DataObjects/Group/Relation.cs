@@ -1,4 +1,5 @@
-﻿using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
+﻿using FFXIVClassic.Common;
+using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,6 +36,18 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             groupMembers.Add(new GroupMember(charaHost, -1, 0, false, Server.GetServer().GetSession(charaHost) != null, Server.GetServer().GetNameForId(charaHost)));
             groupMembers.Add(new GroupMember(charaOther, -1, 0, false, Server.GetServer().GetSession(charaOther) != null, Server.GetServer().GetNameForId(charaOther)));
             return groupMembers;
+        }
+
+        public override void SendInitWorkValues(Session session)
+        {
+            SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupIndex);
+            groupWork.addProperty(this, "work._globalTemp.host");
+            groupWork.addProperty(this, "work._globalTemp.variableCommand");
+            groupWork.setTarget("/_init");
+
+            SubPacket test = groupWork.buildPacket(session.sessionId, session.sessionId);
+            test.DebugPrintSubPacket();
+            session.clientConnection.QueuePacket(test, true, false);
         }
 
     }

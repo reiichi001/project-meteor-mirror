@@ -159,27 +159,26 @@ namespace FFXIVClassic_World_Server
             return null;
         }
 
-        public static Dictionary<ulong, LinkshellMember> GetLSMembers(ulong lsId)
+        public static List<LinkshellMember> GetLSMembers(Linkshell ls)
         {
-            Dictionary<ulong, LinkshellMember> memberList = new Dictionary<ulong, LinkshellMember>();
+            List<LinkshellMember> memberList = new List<LinkshellMember>();            
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand("SELECT characterId, linkshellId, slot, rank FROM characters_linkshells WHERE linkshellId = @lsId", conn);
-                    cmd.Parameters.AddWithValue("@lsId", lsId);
+                    MySqlCommand cmd = new MySqlCommand("SELECT characterId, linkshellId, rank FROM characters_linkshells WHERE linkshellId = @lsId", conn);
+                    cmd.Parameters.AddWithValue("@lsId", ls.dbId);
                     using (MySqlDataReader Reader = cmd.ExecuteReader())
                     {
                         while (Reader.Read())
                         {
                             uint characterId = Reader.GetUInt32("characterId");
                             ulong linkshellId = Reader.GetUInt64("linkshellId");
-                            ushort slot = Reader.GetUInt16("slot");
-                            ushort rank = Reader.GetUInt16("rank");
+                            byte rank = Reader.GetByte("rank");
 
-                            LinkshellMember member = new LinkshellMember(characterId, linkshellId, slot, rank);
-                            memberList.Add(characterId, member);
+                            LinkshellMember member = new LinkshellMember(characterId, linkshellId, rank);
+                            memberList.Add(member);
                         }
                     }
                 }
@@ -192,6 +191,7 @@ namespace FFXIVClassic_World_Server
                     conn.Dispose();
                 }
             }
+            memberList.Sort();
             return memberList;
         }
 
@@ -203,7 +203,7 @@ namespace FFXIVClassic_World_Server
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand("SELECT characterId, linkshellId, slot, rank FROM characters_linkshells WHERE characterid = @charaId", conn);
+                    MySqlCommand cmd = new MySqlCommand("SELECT characterId, linkshellId, rank FROM characters_linkshells WHERE characterid = @charaId", conn);
                     cmd.Parameters.AddWithValue("@lsId", charaId);
                     using (MySqlDataReader Reader = cmd.ExecuteReader())
                     {
@@ -211,10 +211,9 @@ namespace FFXIVClassic_World_Server
                         {
                             uint characterId = Reader.GetUInt32("characterId");
                             ulong linkshellId = Reader.GetUInt64("linkshellId");
-                            ushort slot = Reader.GetUInt16("slot");
-                            ushort rank = Reader.GetUInt16("rank");
+                            byte rank = Reader.GetByte("rank");
 
-                            LinkshellMember member = new LinkshellMember(characterId, linkshellId, slot, rank);
+                            LinkshellMember member = new LinkshellMember(characterId, linkshellId, rank);
                             memberList.Add(member);
                         }
                     }
