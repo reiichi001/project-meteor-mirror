@@ -9,14 +9,14 @@ namespace FFXIVClassic_World_Server
 {
     class RetainerGroupManager
     {
-        private Server mServer;
+        private WorldManager mWorldManager;
         private Object mGroupLockReference;
         private Dictionary<ulong, Group> mCurrentWorldGroupsReference;
         private Dictionary<uint, RetainerGroup> mRetainerGroupList = new Dictionary<uint, RetainerGroup>();
 
-        public RetainerGroupManager(Server server, Object groupLock, Dictionary<ulong, Group> worldGroupList)
+        public RetainerGroupManager(WorldManager worldManager, Object groupLock, Dictionary<ulong, Group> worldGroupList)
         {
-            mServer = server;
+            mWorldManager = worldManager;
             mGroupLockReference = groupLock;
             mCurrentWorldGroupsReference = worldGroupList;
         }
@@ -33,7 +33,7 @@ namespace FFXIVClassic_World_Server
         {
             lock(mGroupLockReference)
             {
-                ulong groupId = mServer.GetGroupIndex();
+                ulong groupId = mWorldManager.GetGroupIndex();
                 RetainerGroup retainerGroup = new RetainerGroup(groupId, charaId);
 
                 Dictionary<uint, RetainerGroupMember> members = Database.GetRetainers(charaId);
@@ -44,7 +44,7 @@ namespace FFXIVClassic_World_Server
                 mRetainerGroupList.Add(charaId, retainerGroup);
                 mCurrentWorldGroupsReference.Add(groupId, retainerGroup);
 
-                mServer.IncrementGroupIndex();
+                mWorldManager.IncrementGroupIndex();
 
                 return retainerGroup;
             }

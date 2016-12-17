@@ -64,12 +64,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Actor\Group\Group.cs" />
-    <Compile Include="Actor\Group\GroupInvitationRelationGroup.cs" />
-    <Compile Include="Actor\Group\GroupMember.cs" />
-    <Compile Include="Actor\Group\LinkshellGroup.cs" />
-    <Compile Include="Actor\Group\PartyGroup.cs" />
-    <Compile Include="Actor\Group\RetainerGroup.cs" />
     <Compile Include="Actor\Group\Work\ContentWork.cs" />
     <Compile Include="Actor\Group\Work\GroupGlobalSave.cs" />
     <Compile Include="Actor\Group\Work\GroupGlobalTemp.cs" />
@@ -93,6 +87,7 @@
     <Compile Include="LinkshellManager.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="Packets\Receive\HelloPacket.cs" />
+    <Compile Include="Packets\Receive\Subpackets\GroupCreatedPacket.cs" />
     <Compile Include="Packets\Send\Subpackets\Groups\CreateNamedGroup.cs" />
     <Compile Include="Packets\Send\Subpackets\Groups\CreateNamedGroupMultiple.cs" />
     <Compile Include="Packets\Send\Subpackets\Groups\DeleteGroupPacket.cs" />

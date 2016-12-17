@@ -9,14 +9,14 @@ namespace FFXIVClassic_World_Server
 {
     class LinkshellManager
     {
-        private Server mServer;
+        private WorldManager mWorldManager;
         private Object mGroupLockReference;
         private Dictionary<ulong, Group> mCurrentWorldGroupsReference;
         private Dictionary<ulong, Linkshell> mLinkshellList = new Dictionary<ulong, Linkshell>();
 
-        public LinkshellManager(Server server, Object groupLock, Dictionary<ulong, Group> worldGroupList)
+        public LinkshellManager(WorldManager worldManager, Object groupLock, Dictionary<ulong, Group> worldGroupList)
         {
-            mServer = server;
+            mWorldManager = worldManager;
             mGroupLockReference = groupLock;
             mCurrentWorldGroupsReference = worldGroupList;
         }
@@ -29,14 +29,14 @@ namespace FFXIVClassic_World_Server
                 ulong resultId = Database.CreateLinkshell(name, crest, master);
                 if (resultId >= 0)
                 {
-                    Linkshell newLs = new Linkshell(resultId, mServer.GetGroupIndex(), name, crest, master, 0xa);
+                    Linkshell newLs = new Linkshell(resultId, mWorldManager.GetGroupIndex(), name, crest, master, 0xa);
 
                     //Add founder to the LS
                     if (AddMemberToLinkshell(master, newLs.groupIndex))
                     {
-                        mLinkshellList.Add(mServer.GetGroupIndex(), newLs);
-                        mCurrentWorldGroupsReference.Add(mServer.GetGroupIndex(), newLs);
-                        mServer.IncrementGroupIndex();
+                        mLinkshellList.Add(mWorldManager.GetGroupIndex(), newLs);
+                        mCurrentWorldGroupsReference.Add(mWorldManager.GetGroupIndex(), newLs);
+                        mWorldManager.IncrementGroupIndex();
                     }
                 }
                 return resultId;
@@ -126,14 +126,14 @@ namespace FFXIVClassic_World_Server
             {
                 lock (mGroupLockReference)
                 {
-                    Linkshell ls = Database.GetLinkshell(mServer.GetGroupIndex(), id);
+                    Linkshell ls = Database.GetLinkshell(mWorldManager.GetGroupIndex(), id);
                     ls.LoadMembers();
 
                     if (ls != null)
                     {                        
                         mLinkshellList.Add(id, ls);
-                        mCurrentWorldGroupsReference.Add(mServer.GetGroupIndex(), ls);
-                        mServer.IncrementGroupIndex();
+                        mCurrentWorldGroupsReference.Add(mWorldManager.GetGroupIndex(), ls);
+                        mWorldManager.IncrementGroupIndex();
                         return ls;
                     }
                 }

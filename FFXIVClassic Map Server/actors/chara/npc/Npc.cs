@@ -80,6 +80,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return AddActorPacket.BuildPacket(actorId, playerActorId, 8);
         }
 
+        int val = 0x0b00;
         // actorClassId, [], [], numBattleCommon, [battleCommon], numEventCommon, [eventCommon], args for either initForBattle/initForEvent
         public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
@@ -87,6 +88,13 @@ namespace FFXIVClassic_Map_Server.Actors
 
             Player player = Server.GetWorldManager().GetPCInWorld(playerActorId);
             lParams = DoActorInit(player);
+
+            if (uniqueIdentifier.Equals("1"))
+            {
+                lParams[5].value = val;
+                val++;
+                player.SendMessage(0x20, "", String.Format("ID is now: 0x{0:X}", val));                
+            }
 
             if (lParams != null && lParams.Count >= 3 && lParams[2].typeID == 0 && (int)lParams[2].value == 0)
                 isStatic = true;
@@ -114,15 +122,66 @@ namespace FFXIVClassic_Map_Server.Actors
             //ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams).DebugPrintSubPacket();
             return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
         }
-
+        
         public override BasePacket GetSpawnPackets(uint playerActorId, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket(playerActorId));
             subpackets.AddRange(GetEventConditionPackets(playerActorId));
             subpackets.Add(CreateSpeedPacket(playerActorId));            
-            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x0));            
-            subpackets.Add(CreateAppearancePacket(playerActorId));
+            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x0));
+            
+            if (uniqueIdentifier.Equals("door2"))
+            {
+                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, 0xB09, 0x1af));
+            }
+            else if (uniqueIdentifier.Equals("uldah_mapshipport_1"))
+            {
+                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId,  0xdc5, 0x1af));
+                subpackets[subpackets.Count - 1].DebugPrintSubPacket();
+                subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId,  "end0"));
+                subpackets[subpackets.Count - 1].DebugPrintSubPacket();
+            }
+            else if (uniqueIdentifier.Equals("uldah_mapshipport_2"))
+            {
+                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId,  0x2, 0x1eb));
+                subpackets[subpackets.Count - 1].DebugPrintSubPacket();
+                subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId,  "end0"));
+                subpackets[subpackets.Count - 1].DebugPrintSubPacket();
+            }
+            else if (uniqueIdentifier.Equals("gridania_shipport"))
+            {
+                subpackets.Add(_0xD8Packet.BuildPacket(actorId,playerActorId,  0xcde, 0x141));
+                subpackets.Add(_0xD9Packet.BuildPacket(actorId,playerActorId,  "end0"));
+            }
+            else if (uniqueIdentifier.Equals("gridania_shipport2"))
+            {
+                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId,  0x02, 0x187));
+                subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId,  "end0"));
+            }
+            else if (uniqueIdentifier.Equals("limsa_shipport"))
+            {
+                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, 0x1c8, 0xc4));
+                subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId, "spin"));
+            }
+            else if (actorClassId == 5900013)
+            {
+                uint id = 2;
+                uint id2 = 5144;
+                string val = "fdot";
+                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, id, id2));
+                subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId, val));
+            }
+            else if (actorClassId == 5900014)
+            {
+                uint id = 2;
+                uint id2 = 5145;
+                string val = "fdot";
+                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, id, id2));
+                subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId, val));
+            }
+            else
+                subpackets.Add(CreateAppearancePacket(playerActorId));
             subpackets.Add(CreateNamePacket(playerActorId));
             subpackets.Add(CreateStatePacket(playerActorId));
             subpackets.Add(CreateIdleAnimationPacket(playerActorId));

@@ -29,6 +29,11 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             return (uint)(partyGroupWork._globalTemp.owner & 0xFFFFFF);
         }
         
+        public bool IsInParty(uint charaId)
+        {
+            return members.Contains(charaId);
+        }
+
         public override void SendInitWorkValues(Session session)
         {
             SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupIndex);

@@ -6,14 +6,14 @@ namespace FFXIVClassic_World_Server
 {
     class RelationGroupManager
     {
-        private Server mServer;
+        private WorldManager mWorldManager;
         private Object mGroupLockReference;
         private Dictionary<ulong, Group> mCurrentWorldGroupsReference;
         private Dictionary<ulong, Relation> mRelationList = new Dictionary<ulong, Relation>();
 
-        public RelationGroupManager(Server server, Object groupLock, Dictionary<ulong, Group> worldGroupList)
+        public RelationGroupManager(WorldManager worldManager, Object groupLock, Dictionary<ulong, Group> worldGroupList)
         {
-            mServer = server;
+            mWorldManager = worldManager;
             mGroupLockReference = groupLock;
             mCurrentWorldGroupsReference = worldGroupList;
         }
@@ -22,11 +22,11 @@ namespace FFXIVClassic_World_Server
         {
             lock (mGroupLockReference)
             {
-                ulong groupIndex = mServer.GetGroupIndex();
+                ulong groupIndex = mWorldManager.GetGroupIndex();
                 Relation relation = new Relation(groupIndex, hostCharaId, otherCharaId, command);
                 mRelationList.Add(groupIndex, relation);
                 mCurrentWorldGroupsReference.Add(groupIndex, relation);
-                mServer.IncrementGroupIndex();
+                mWorldManager.IncrementGroupIndex();
             }
         }
 

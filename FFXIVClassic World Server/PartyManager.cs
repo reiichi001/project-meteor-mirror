@@ -6,27 +6,30 @@ namespace FFXIVClassic_World_Server
 {
     class PartyManager
     {
-        private Server mServer;
+        private WorldManager mWorldManager;
         private Object mGroupLockReference;
         private Dictionary<ulong, Group> mCurrentWorldGroupsReference;
         private Dictionary<ulong, Party> mPartyList = new Dictionary<ulong, Party>();
+        private Dictionary<uint, Party> mPlayerPartyLookup = new Dictionary<uint, Party>();
 
-        public PartyManager(Server server, Object groupLock, Dictionary<ulong, Group> worldGroupList)
+        public PartyManager(WorldManager worldManager, Object groupLock, Dictionary<ulong, Group> worldGroupList)
         {
-            mServer = server;
+            mWorldManager = worldManager;
             mGroupLockReference = groupLock;
             mCurrentWorldGroupsReference = worldGroupList;
         }
 
-        public void CreateParty(uint leaderCharaId)
+        public Party CreateParty(uint leaderCharaId)
         {
             lock (mGroupLockReference)
             {
-                ulong groupId = mServer.GetGroupIndex();
+                ulong groupId = mWorldManager.GetGroupIndex();
                 Party party = new Party(groupId, leaderCharaId);
                 mPartyList.Add(groupId, party);
+                mPlayerPartyLookup.Add(leaderCharaId, party);
                 mCurrentWorldGroupsReference.Add(groupId, party);
-                mServer.IncrementGroupIndex();
+                mWorldManager.IncrementGroupIndex();
+                return party;
             }
         }
 
@@ -44,7 +47,11 @@ namespace FFXIVClassic_World_Server
             {
                 Party party = mPartyList[groupId];
                 if (!party.members.Contains(charaId))
+                {
                     party.members.Add(charaId);
+                    mPlayerPartyLookup.Remove(charaId);
+                    mPlayerPartyLookup.Add(charaId, party);
+                }
                 return true;
             }
             return false;
@@ -58,6 +65,7 @@ namespace FFXIVClassic_World_Server
                 if (party.members.Contains(charaId))
                 {                    
                     party.members.Remove(charaId);
+                    mPlayerPartyLookup.Remove(charaId);
                     
                     //If current ldr, make a new ldr if not empty pt
                     if (party.GetLeader() == charaId && party.members.Count != 0)
@@ -80,6 +88,14 @@ namespace FFXIVClassic_World_Server
                 }                
             }
             return false;
+        }
+
+        public Party GetParty(uint charaId)
+        {
+            if (mPlayerPartyLookup.ContainsKey(charaId))
+                return mPlayerPartyLookup[charaId];
+            else
+                return CreateParty(charaId);
         }
     }
 }

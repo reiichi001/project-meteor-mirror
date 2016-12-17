@@ -1,5 +1,7 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_World_Server.DataObjects;
+using FFXIVClassic_World_Server.DataObjects.Group;
+using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Send;
 using MySql.Data.MySqlClient;
 using System;
@@ -18,9 +20,23 @@ namespace FFXIVClassic_World_Server
         public Dictionary<string, ZoneServer> mZoneServerList;
         private Dictionary<uint, ZoneEntrance> zoneEntranceList;
 
+        //World Scope Group Management
+        private Object mGroupLock = new object();
+        private ulong mRunningGroupIndex = 1;
+        private Dictionary<ulong, Group> mCurrentWorldGroups = new Dictionary<ulong, Group>();
+
+        private PartyManager mPartyManager;
+        private RetainerGroupManager mRetainerGroupManager;
+        private LinkshellManager mLinkshellManager;
+        private RelationGroupManager mRelationGroupManager;
+
         public WorldManager(Server server)
         {
             mServer = server;
+            mPartyManager = new PartyManager(this, mGroupLock, mCurrentWorldGroups);
+            mLinkshellManager = new LinkshellManager(this, mGroupLock, mCurrentWorldGroups);
+            mRetainerGroupManager = new RetainerGroupManager(this, mGroupLock, mCurrentWorldGroups);
+            mRelationGroupManager = new RelationGroupManager(this, mGroupLock, mCurrentWorldGroups);
         }
 
         public void LoadZoneServerList()
@@ -189,9 +205,9 @@ namespace FFXIVClassic_World_Server
 
         //Login Zone In
         public void DoLogin(Session session)
-        {            
+        {                                    
             session.routing1 = GetZoneServer(session.currentZoneId);
-            session.routing1.SendSessionStart(session);            
+            session.routing1.SendSessionStart(session);        
         }
 
         public class ZoneEntrance
@@ -214,8 +230,74 @@ namespace FFXIVClassic_World_Server
                 this.spawnZ  = z;
                 this.spawnRotation = rot;
             }
-        }       
+        }
 
+        public void SendGroupData(Session session, ulong groupId)
+        {
+            if (mCurrentWorldGroups.ContainsKey(groupId))
+            {
+                Group group = mCurrentWorldGroups[groupId];
+                group.SendGroupPackets(session);
+            }
+        }
+
+        public void SendGroupDataToAllMembers(ulong groupId)
+        {
+            if (mCurrentWorldGroups.ContainsKey(groupId))
+            {
+                Group group = mCurrentWorldGroups[groupId];
+                foreach (GroupMember member in group.BuildMemberList())
+                    group.SendGroupPackets(mServer.GetSession(member.actorId));
+            }
+        }
+        
+        public void DeleteGroup(ulong id)
+        {
+            if (!mCurrentWorldGroups.ContainsKey(id))
+                return;
+            Group group = mCurrentWorldGroups[id];
+            if (group is Party)
+                mPartyManager.DeleteParty(group.groupIndex);
+            else if (group is Linkshell)
+                mLinkshellManager.DeleteLinkshell(group.groupIndex);
+            else if (group is Relation)
+                mRelationGroupManager.DeleteRelationGroup(group.groupIndex);
+        }
+
+        public void IncrementGroupIndex()
+        {
+            mRunningGroupIndex++;
+        }
+
+        public ulong GetGroupIndex()
+        {
+            return mRunningGroupIndex;
+        }
+
+        public bool SendGroupInit(Session session, ulong groupId)
+        {
+            if (mCurrentWorldGroups.ContainsKey(groupId))
+            {
+                mCurrentWorldGroups[groupId].SendInitWorkValues(session);
+                return true;
+            }
+            return false;
+        }
+
+        public PartyManager GetPartyManager()
+        {
+            return mPartyManager;
+        }
+
+        public RetainerGroupManager GetRetainerManager()
+        {
+            return mRetainerGroupManager;
+        }
+
+        public LinkshellManager GetLinkshellManager()
+        {
+            return mLinkshellManager;
+        }
     }
 
 }

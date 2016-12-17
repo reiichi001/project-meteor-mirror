@@ -2,6 +2,7 @@
 using FFXIVClassic_World_Server.DataObjects;
 using FFXIVClassic_World_Server.DataObjects.Group;
 using FFXIVClassic_World_Server.Packets.Receive.Subpackets;
+using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Receive;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group;
 using System;
@@ -29,25 +30,11 @@ namespace FFXIVClassic_World_Server
         //Session Management
         private List<ClientConnection> mConnectionList = new List<ClientConnection>();
         private Dictionary<uint, Session> mZoneSessionList = new Dictionary<uint, Session>();
-        private Dictionary<uint, Session> mChatSessionList = new Dictionary<uint, Session>();
-
-        //World Scope Group Management
-        private Object mGroupLock = new object();
-        private ulong mRunningGroupIndex = 1;
-        private Dictionary<ulong, Group> mCurrentWorldGroups = new Dictionary<ulong, Group>();
-
-        private PartyManager mPartyManager;
-        private RetainerGroupManager mRetainerGroupManager;
-        private LinkshellManager mLinkshellManager;
-        private RelationGroupManager mRelationGroupManager;
+        private Dictionary<uint, Session> mChatSessionList = new Dictionary<uint, Session>();        
 
         public Server()
         {
-            mSelf = this;
-            mPartyManager = new PartyManager(this, mGroupLock, mCurrentWorldGroups);
-            mLinkshellManager = new LinkshellManager(this, mGroupLock, mCurrentWorldGroups);
-            mRetainerGroupManager = new RetainerGroupManager(this, mGroupLock, mCurrentWorldGroups);
-            mRelationGroupManager = new RelationGroupManager(this, mGroupLock, mCurrentWorldGroups);
+            mSelf = this;            
         }
 
         public static Server GetServer()
@@ -58,6 +45,9 @@ namespace FFXIVClassic_World_Server
         public bool StartServer()
         {
             mPacketProcessor = new PacketProcessor(this);
+            
+            LoadCharaNames();
+
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneServerList();
             mWorldManager.LoadZoneEntranceList();
@@ -213,22 +203,22 @@ namespace FFXIVClassic_World_Server
                     //Group get data request
                     case 0x1020:
                         GetGroupPacket getGroupPacket = new GetGroupPacket(subpacket.data);
-                        SendGroupData(session, getGroupPacket.groupId);
+                        mWorldManager.SendGroupData(session, getGroupPacket.groupId);
                         break;
                     //Group delete request
                     case 0x1021:
-                        DeleteGroupPacket deleteGroupPacket = new DeleteGroupPacket(subpacket.data);
-                        DeleteGroup(deleteGroupPacket.groupId);
+                        FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group.DeleteGroupPacket deleteGroupPacket = new FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group.DeleteGroupPacket(subpacket.data);
+                        mWorldManager.DeleteGroup(deleteGroupPacket.groupId);
                         break;
                     //Linkshell create request
                     case 0x1023:
                         CreateLinkshellPacket createLinkshellpacket = new CreateLinkshellPacket(subpacket.data);
-                        mLinkshellManager.CreateLinkshell(createLinkshellpacket.name, createLinkshellpacket.crestid, createLinkshellpacket.master);
+                        mWorldManager.GetLinkshellManager().CreateLinkshell(createLinkshellpacket.name, createLinkshellpacket.crestid, createLinkshellpacket.master);
                         break;
                     //Linkshell modify request
                     case 0x1024:
                         ModifyLinkshellPacket modifyLinkshellpacket = new ModifyLinkshellPacket(subpacket.data);
-                        mLinkshellManager.ModifyLinkshell();
+                        mWorldManager.GetLinkshellManager().ModifyLinkshell();
                         break;
                     //Group Add/Remove Member
                     case 0x1022:
@@ -240,11 +230,7 @@ namespace FFXIVClassic_World_Server
             else if (subpacket.gameMessage.opcode == 0x133)
             {
                 GroupCreatedPacket groupCreatedPacket = new GroupCreatedPacket(subpacket.data);
-                if (mCurrentWorldGroups.ContainsKey(groupCreatedPacket.groupId))
-                {
-                    mCurrentWorldGroups[groupCreatedPacket.groupId].SendInitWorkValues(session);
-                }
-                else //Not a world group, send to zone server
+                if (!mWorldManager.SendGroupInit(session, groupCreatedPacket.groupId))
                 {
                     ClientConnection conn = mZoneSessionList[sessionId].clientConnection;
                     conn.QueuePacket(subpacket, true, false);
@@ -412,68 +398,7 @@ namespace FFXIVClassic_World_Server
             if (mIdToNameMap.ContainsKey(charaId))           
                 return mIdToNameMap[charaId];
             return null;  
-        }
-
-        private void SendGroupData(Session session, ulong groupId)
-        {
-            if (mCurrentWorldGroups.ContainsKey(groupId))
-            {
-                Group group = mCurrentWorldGroups[groupId];
-                
-            }
-        }
-
-        private void SendGroupDataToAllMembers(ulong groupId)
-        {
-            if (mCurrentWorldGroups.ContainsKey(groupId))
-            {
-                Group group = mCurrentWorldGroups[groupId];
-                
-            }
-        }
-
-        public void GetGroup(Group group)
-        {
-            if (group is Party)
-            { 
-                
-            }
-            else if (group is RetainerGroup)
-            {
-
-            }
-            else if (group is Linkshell)
-            {
-
-            }
-            else if (group is Relation)
-            {
-
-            }
-        }
-
-        public void DeleteGroup(ulong id)
-        {
-            if (!mCurrentWorldGroups.ContainsKey(id))
-                return;
-            Group group = mCurrentWorldGroups[id];
-            if (group is Party)            
-                mPartyManager.DeleteParty(group.groupIndex);            
-            else if (group is Linkshell)            
-                mLinkshellManager.DeleteLinkshell(group.groupIndex);            
-            else if (group is Relation)           
-                mRelationGroupManager.DeleteRelationGroup(group.groupIndex);           
-        }
-
-        public void IncrementGroupIndex()
-        {
-            mRunningGroupIndex++;
-        }
-
-        public ulong GetGroupIndex()
-        {
-            return mRunningGroupIndex;
-        }
+        }        
 
     }
 }
