@@ -279,9 +279,7 @@ namespace FFXIVClassic_World_Server
                     INSERT INTO server_linkshells 
                     (name, crestIcon, master, rank)
                     VALUES
-                    (@name, @crestIcon, @master, @rank)
-                    ON DUPLICATE KEY UPDATE
-                    questData = @questData, questFlags = @questFlags
+                    (@name, @crestIcon, @master, @rank)             
                     ";
 
                     cmd = new MySqlCommand(query, conn);
