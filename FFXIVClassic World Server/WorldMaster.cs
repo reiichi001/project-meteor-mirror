@@ -215,6 +215,8 @@ namespace FFXIVClassic_World_Server
             List<Linkshell> linkshells = mLinkshellManager.GetPlayerLinkshellMembership(session.sessionId);
             foreach (Linkshell ls in linkshells)
                 ls.SendGroupPackets(session);
+
+            mRelationGroupManager.CreateRelationGroup(157, session.sessionId, 0x2711).SendGroupPackets(session);
         }
 
         private void SendMotD(Session session)

@@ -18,7 +18,7 @@ namespace FFXIVClassic_World_Server
             mCurrentWorldGroupsReference = worldGroupList;
         }
 
-        public void CreateRelationGroup(uint hostCharaId, uint otherCharaId, uint command)
+        public Relation CreateRelationGroup(uint hostCharaId, uint otherCharaId, uint command)
         {
             lock (mGroupLockReference)
             {
@@ -27,6 +27,7 @@ namespace FFXIVClassic_World_Server
                 mRelationList.Add(groupIndex, relation);
                 mCurrentWorldGroupsReference.Add(groupIndex, relation);
                 mWorldManager.IncrementGroupIndex();
+                return relation;
             }
         }
 
