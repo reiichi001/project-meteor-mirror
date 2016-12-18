@@ -14,7 +14,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
         public ulong dbId;
         public string name;
 
-        public LinkshellWork linkshellWork = new LinkshellWork();
+        public LinkshellWork work = new LinkshellWork();
 
         private List<LinkshellMember> members = new List<LinkshellMember>();
 
@@ -22,31 +22,31 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
         {
             this.dbId = dbId;
             this.name = name;
-            linkshellWork._globalSave.crestIcon[0] = crestId;
-            linkshellWork._globalSave.master = master;
-            linkshellWork._globalSave.rank = rank;
+            work._globalSave.crestIcon[0] = crestId;
+            work._globalSave.master = master;
+            work._globalSave.rank = rank;
         }
 
         public void setMaster(uint actorId)
         {
-            linkshellWork._globalSave.master = (ulong)((0xB36F92 << 8) | actorId);
+            work._globalSave.master = (ulong)((0xB36F92 << 8) | actorId);
         }
 
         public void setCrest(ushort crestId)
         {
-            linkshellWork._globalSave.crestIcon[0] = crestId;
+            work._globalSave.crestIcon[0] = crestId;
         }
 
         public void setRank(byte rank = 1)
         {
-            linkshellWork._globalSave.rank = rank;
+            work._globalSave.rank = rank;
         }
 
         public void setMemberRank(int index, byte rank)
         {
             if (members.Count >= index)
                 return;
-            linkshellWork._memberSave[index].rank = rank;
+            work._memberSave[index].rank = rank;
         }
 
         public void AddMember(uint charaId)
@@ -87,7 +87,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
         {
             List<GroupMember> groupMembers = new List<GroupMember>();
             foreach (LinkshellMember member in members)            
-                groupMembers.Add(new GroupMember(member.charaId, -1, 0, false, Server.GetServer().GetSession(member.charaId) != null, Server.GetServer().GetNameForId(member.charaId)));
+                groupMembers.Add(new GroupMember(member.charaId, -1, 0, false, true, Server.GetServer().GetNameForId(member.charaId)));
             return groupMembers;
         }
 
@@ -95,14 +95,14 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
         {
 
             SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupIndex);
-            groupWork.addProperty(this, "linkshellWork._globalSave.master");
-            groupWork.addProperty(this, "linkshellWork._globalSave.crestIcon[0]");
-            groupWork.addProperty(this, "linkshellWork._globalSave.rank");
+            groupWork.addProperty(this, "work._globalSave.master");
+            groupWork.addProperty(this, "work._globalSave.crestIcon[0]");
+            groupWork.addProperty(this, "work._globalSave.rank");
 
             for (int i = 0; i < members.Count; i++)
             {
-                linkshellWork._memberSave[i].rank = members[i].rank;
-                groupWork.addProperty(this, String.Format("linkshellWork._memberSave[{0}].rank", i));
+                work._memberSave[i].rank = members[i].rank;
+                groupWork.addProperty(this, String.Format("work._memberSave[{0}].rank", i));
             }
 
             groupWork.setTarget("/_init");            

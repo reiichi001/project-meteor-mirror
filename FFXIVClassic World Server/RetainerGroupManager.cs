@@ -36,10 +36,8 @@ namespace FFXIVClassic_World_Server
                 ulong groupId = mWorldManager.GetGroupIndex();
                 RetainerGroup retainerGroup = new RetainerGroup(groupId, charaId);
 
-                Dictionary<uint, RetainerGroupMember> members = Database.GetRetainers(charaId);
-                if (members == null)
-                    return null;
-
+                List<RetainerGroupMember> members = Database.GetRetainers(charaId);
+                
                 retainerGroup.members = members;                
                 mRetainerGroupList.Add(charaId, retainerGroup);
                 mCurrentWorldGroupsReference.Add(groupId, retainerGroup);

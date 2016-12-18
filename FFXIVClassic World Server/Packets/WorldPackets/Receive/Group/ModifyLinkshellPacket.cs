@@ -8,6 +8,7 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
     {
         public bool invalidPacket = false;
 
+        public string currentName;
         public ushort argCode;
         public string name;
         public ushort crestid;
@@ -21,6 +22,7 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
                 {
                     try
                     {
+                        currentName = Encoding.ASCII.GetString(binReader.ReadBytes(0x20)).Trim(new[] { '\0' });
                         argCode = binReader.ReadUInt16();
 
                         switch (argCode)

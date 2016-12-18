@@ -100,6 +100,7 @@
     <Compile Include="Packets\Send\Subpackets\Groups\GroupMembersX32Packet.cs" />
     <Compile Include="Packets\Send\Subpackets\Groups\GroupMembersX64Packet.cs" />
     <Compile Include="Packets\Send\Subpackets\Groups\SynchGroupWorkValuesPacket.cs" />
+    <Compile Include="Packets\Send\Subpackets\SendMessagePacket.cs" />
     <Compile Include="Packets\Send\_0x2Packet.cs" />
     <Compile Include="Packets\Send\_0x7Packet.cs" />
     <Compile Include="Packets\Send\_0x8PingPacket.cs" />

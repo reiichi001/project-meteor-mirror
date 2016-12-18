@@ -1,6 +1,7 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_World_Server.DataObjects;
 using FFXIVClassic_World_Server.Packets.Receive;
+using FFXIVClassic_World_Server.Packets.Receive.Subpackets;
 using FFXIVClassic_World_Server.Packets.Send;
 using FFXIVClassic_World_Server.Packets.Send.Login;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Receive;
@@ -51,7 +52,9 @@ namespace FFXIVClassic_World_Server
                     if (packet.header.connectionType == BasePacket.TYPE_ZONE)
                     {
                         mServer.AddSession(client, Session.Channel.ZONE, hello.sessionId);
-                        mServer.GetWorldManager().DoLogin(mServer.GetSession(hello.sessionId));
+                        Session session = mServer.GetSession(hello.sessionId);
+                        session.routing1 = mServer.GetWorldManager().GetZoneServer(session.currentZoneId);
+                        session.routing1.SendSessionStart(session);       
                     }
                     else if (packet.header.connectionType == BasePacket.TYPE_CHAT)
                         mServer.AddSession(client, Session.Channel.CHAT, hello.sessionId);
@@ -75,9 +78,11 @@ namespace FFXIVClassic_World_Server
                 }
                 //Game Message
                 else if (subpacket.header.type == 0x03)
-                {
+                {                
                     //Send to the correct zone server
                     uint targetSession = subpacket.header.targetId;
+
+                    InterceptProcess(mServer.GetSession(targetSession), subpacket);
 
                     if (mServer.GetSession(targetSession).routing1 != null)
                         mServer.GetSession(targetSession).routing1.SendPacket(subpacket);
@@ -142,5 +147,20 @@ namespace FFXIVClassic_World_Server
             }
         }    
 
+        public void InterceptProcess(Session session, SubPacket subpacket)
+        {
+            switch (subpacket.gameMessage.opcode)
+            {
+                case 0x6:
+                    mServer.GetWorldManager().DoLogin(session);
+                    break;
+                    //Special case for groups. If it's a world group, send values, else send to zone server
+                case 0x133:            
+                    GroupCreatedPacket groupCreatedPacket = new GroupCreatedPacket(subpacket.data);
+                    if (!mServer.GetWorldManager().SendGroupInit(session, groupCreatedPacket.groupId))                                    
+                        session.clientConnection.QueuePacket(subpacket, true, false);
+                    break;
+            }
+        }
     }
 }

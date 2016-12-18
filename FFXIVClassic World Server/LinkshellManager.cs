@@ -43,9 +43,29 @@ namespace FFXIVClassic_World_Server
             }
         }
 
-        //Modifies the LS
-        public bool ModifyLinkshell()
+        //Modifies the LS master
+        public bool ChangeLinkshellMaster(string name, uint newMaster)
         {
+            foreach (Linkshell ls in mLinkshellList.Values)
+            {
+                if (ls.name.Equals(name))
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        //Modifies the LS crest
+        public bool ChangeLinkshellCrest(string name, ushort newCrestId)
+        {
+            foreach (Linkshell ls in mLinkshellList.Values)
+            {
+                if (ls.name.Equals(name))
+                {
+                    return Database.ChangeLinkshellCrest(ls.dbId, newCrestId);                    
+                }
+            }
             return false;
         }
 

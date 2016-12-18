@@ -218,23 +218,14 @@ namespace FFXIVClassic_World_Server
                     //Linkshell modify request
                     case 0x1024:
                         ModifyLinkshellPacket modifyLinkshellpacket = new ModifyLinkshellPacket(subpacket.data);
-                        mWorldManager.GetLinkshellManager().ModifyLinkshell();
+
+                        if (modifyLinkshellpacket.argCode == 0)
+                            mWorldManager.GetLinkshellManager().ChangeLinkshellCrest(modifyLinkshellpacket.currentName, modifyLinkshellpacket.crestid);
                         break;
                     //Group Add/Remove Member
                     case 0x1022:
                         GroupMemberChangePacket gMemberChangePacket = new GroupMemberChangePacket(subpacket.data);
                         break;
-                }
-            }
-            //Special case for groups. If it's a world group, send values, else send to zone server
-            else if (subpacket.gameMessage.opcode == 0x133)
-            {
-                GroupCreatedPacket groupCreatedPacket = new GroupCreatedPacket(subpacket.data);
-                if (!mWorldManager.SendGroupInit(session, groupCreatedPacket.groupId))
-                {
-                    ClientConnection conn = mZoneSessionList[sessionId].clientConnection;
-                    conn.QueuePacket(subpacket, true, false);
-                    conn.FlushQueuedSendPackets();
                 }
             }
             else if (mZoneSessionList.ContainsKey(sessionId))

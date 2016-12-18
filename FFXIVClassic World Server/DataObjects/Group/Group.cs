@@ -8,7 +8,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
     class Group
     {
         public const uint PlayerPartyGroup = 10001;
-        public const uint CompanyGroup = 20001;
+        public const uint CompanyGroup = 20002;
 
         public const uint GroupInvitationRelationGroup = 50001;
         public const uint TradeRelationGroup = 50002;

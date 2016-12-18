@@ -13,7 +13,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
     {
         public RetainerWork work = new RetainerWork();
         public uint owner;
-        public Dictionary<uint, RetainerGroupMember> members = new Dictionary<uint, RetainerGroupMember>();
+        public List<RetainerGroupMember> members = new List<RetainerGroupMember>();
 
         public RetainerGroup(ulong groupId, uint owner) : base(groupId)
         {
@@ -33,10 +33,20 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
         public override void SendInitWorkValues(Session session)
         {
             SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupIndex);
-            groupWork.addProperty(this, "work._memberSave[0].cdIDOffset");
-            groupWork.addProperty(this, "work._memberSave[0].placeName");
-            groupWork.addProperty(this, "work._memberSave[0].conditions");
-            groupWork.addProperty(this, "work._memberSave[0].level");
+
+            for (int i = 0; i < members.Count; i++)
+            {
+                work._memberSave[i].cdIDOffset = members[i].cdIDOffset;
+                work._memberSave[i].placeName = members[i].placeName;
+                work._memberSave[i].conditions = members[i].conditions;
+                work._memberSave[i].level = members[i].level;
+
+                groupWork.addProperty(this, String.Format("work._memberSave[{0}].cdIDOffset", i));
+                groupWork.addProperty(this, String.Format("work._memberSave[{0}].placeName", i));
+                groupWork.addProperty(this, String.Format("work._memberSave[{0}].conditions", i));
+                groupWork.addProperty(this, String.Format("work._memberSave[{0}].level", i));
+            }
+            
             groupWork.setTarget("/_init");
 
             SubPacket test = groupWork.buildPacket(session.sessionId, session.sessionId);
@@ -45,7 +55,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
         
         public override int GetMemberCount()
         {
-            return members.Count;
+            return members.Count + 1;
         }
 
         public override uint GetTypeId()
@@ -55,9 +65,15 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
         public override List<GroupMember> BuildMemberList()
         {
-            List<GroupMember> groupMembers = new List<GroupMember>();
-            foreach (RetainerGroupMember member in members.Values)
-                groupMembers.Add(new GroupMember(member.retainerId, -1, 0, false, true, member.name));
+            List<GroupMember> groupMembers = new List<GroupMember>();                   
+
+            //Add retainers
+            foreach (RetainerGroupMember member in members)
+                groupMembers.Add(new GroupMember(member.id, -1, 0, false, true, member.name));
+
+            //Add player
+            groupMembers.Add(new GroupMember(owner, -1, 0, false, true, Server.GetServer().GetNameForId(owner)));
+
             return groupMembers;
         }
     }

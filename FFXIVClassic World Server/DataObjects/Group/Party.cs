@@ -17,6 +17,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
         public Party(ulong groupId, uint leaderCharaId) : base(groupId)
         {
             partyGroupWork._globalTemp.owner = (ulong)((0xB36F92 << 8) | leaderCharaId);
+            members.Add(leaderCharaId);
         }
 
         public void SetLeader(uint actorId)

@@ -90,13 +90,7 @@ namespace FFXIVClassic_Map_Server
                     case 0x0002:
 
                         subpacket.DebugPrintSubPacket();
-                        session = mServer.AddSession(subpacket.header.targetId);
                         client.QueuePacket(_0x2Packet.BuildPacket(session.id), true, false);
-
-                        LuaEngine.OnBeginLogin(session.GetActor());
-                        Server.GetWorldManager().DoZoneIn(session.GetActor(), true, 0x1);
-                        LuaEngine.OnLogin(session.GetActor());
-
                         client.FlushQueuedSendPackets();
 
                         break;
@@ -115,9 +109,13 @@ namespace FFXIVClassic_Map_Server
                         session.GetActor().BroadcastPacket(SendMessagePacket.BuildPacket(session.id, session.id, chatMessage.logType, session.GetActor().customDisplayName, chatMessage.message), false);
 
                         break;
-                    //Langauge Code
+                    //Langauge Code (Client safe to send packets to now)
                     case 0x0006:
                         LangaugeCodePacket langCode = new LangaugeCodePacket(subpacket.data);
+                        session = mServer.AddSession(subpacket.header.targetId);
+                        LuaEngine.OnBeginLogin(session.GetActor());
+                        Server.GetWorldManager().DoZoneIn(session.GetActor(), true, 0x1);
+                        LuaEngine.OnLogin(session.GetActor());
                         session.languageCode = langCode.languageCode;
                         break;
                     //Unknown - Happens a lot at login, then once every time player zones

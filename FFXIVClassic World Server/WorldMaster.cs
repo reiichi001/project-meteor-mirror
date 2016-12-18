@@ -1,6 +1,7 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_World_Server.DataObjects;
 using FFXIVClassic_World_Server.DataObjects.Group;
+using FFXIVClassic_World_Server.Packets.Send.Subpackets;
 using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Send;
 using MySql.Data.MySqlClient;
@@ -205,9 +206,23 @@ namespace FFXIVClassic_World_Server
 
         //Login Zone In
         public void DoLogin(Session session)
-        {                                    
-            session.routing1 = GetZoneServer(session.currentZoneId);
-            session.routing1.SendSessionStart(session);        
+        {
+            SendMotD(session);
+
+            //Send party, retainer, ls groups
+            mPartyManager.GetParty(session.sessionId).SendGroupPackets(session);
+            mRetainerGroupManager.GetRetainerGroup(session.sessionId).SendGroupPackets(session);
+            List<Linkshell> linkshells = mLinkshellManager.GetPlayerLinkshellMembership(session.sessionId);
+            foreach (Linkshell ls in linkshells)
+                ls.SendGroupPackets(session);
+        }
+
+        private void SendMotD(Session session)
+        {
+            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "-------- Login Message --------"), true, false);
+            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Welcome to <Server Name>!"), true, false);
+            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Welcome to Eorzea!"), true, false);
+            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Here is a test Message of the Day from the World Server!"), true, false);
         }
 
         public class ZoneEntrance
@@ -271,7 +286,7 @@ namespace FFXIVClassic_World_Server
 
         public ulong GetGroupIndex()
         {
-            return mRunningGroupIndex;
+            return mRunningGroupIndex | 0x8000000000000000;
         }
 
         public bool SendGroupInit(Session session, ulong groupId)

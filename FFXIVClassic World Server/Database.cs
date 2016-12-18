@@ -118,11 +118,44 @@ namespace FFXIVClassic_World_Server
             {
                 return 0;
             }
-        }        
+        }
 
-        public static Dictionary<uint, RetainerGroupMember> GetRetainers(uint charaId)
+        public static List<RetainerGroupMember> GetRetainers(uint charaId)
         {
-            throw new NotImplementedException();
+            List<RetainerGroupMember> members = new List<RetainerGroupMember>();
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand("SELECT id, name, classActorId, cdIDOffset, placeName, conditions, level FROM server_retainers INNER JOIN characters_retainers ON retainerId = server_retainers.id WHERE characterId = @charaId", conn);
+                    cmd.Parameters.AddWithValue("@charaId", charaId);
+                    using (MySqlDataReader Reader = cmd.ExecuteReader())
+                    {
+                        while (Reader.Read())
+                        {
+                            uint id = Reader.GetUInt32("id") | 0xE0000000;
+                            string name = Reader.GetString("name");
+                            uint classActorId = Reader.GetUInt32("classActorId");
+                            byte cdIDOffset = Reader.GetByte("cdIDOffset");
+                            ushort placeName = Reader.GetUInt16("placeName");
+                            byte conditions = Reader.GetByte("conditions");
+                            byte level = Reader.GetByte("level");
+
+                            members.Add(new RetainerGroupMember(id, name, classActorId, cdIDOffset, placeName, conditions, level));
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return members;
         }
 
         public static Linkshell GetLinkshell(ulong groupIndex, ulong id)
@@ -203,8 +236,8 @@ namespace FFXIVClassic_World_Server
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand("SELECT characterId, linkshellId, rank FROM characters_linkshells WHERE characterid = @charaId", conn);
-                    cmd.Parameters.AddWithValue("@lsId", charaId);
+                    MySqlCommand cmd = new MySqlCommand("SELECT characterId, linkshellId, rank FROM characters_linkshells WHERE characterId = @charaId", conn);
+                    cmd.Parameters.AddWithValue("@charaId", charaId);
                     using (MySqlDataReader Reader = cmd.ExecuteReader())
                     {
                         while (Reader.Read())
@@ -232,7 +265,45 @@ namespace FFXIVClassic_World_Server
 
         public static ulong CreateLinkshell(string name, ushort crest, uint master)
         {
-            throw new NotImplementedException();
+            string query;
+            MySqlCommand cmd;
+            ulong lastId = 0;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO server_linkshells 
+                    (name, crestIcon, master, rank)
+                    VALUES
+                    (@name, @crestIcon, @master, @rank)
+                    ON DUPLICATE KEY UPDATE
+                    questData = @questData, questFlags = @questFlags
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@name", name);
+                    cmd.Parameters.AddWithValue("@crestIcon", crest);
+                    cmd.Parameters.AddWithValue("@master", master);
+                    cmd.Parameters.AddWithValue("@rank", 0xa);
+
+                    if (cmd.ExecuteNonQuery() == 1)
+                        lastId = (ulong)cmd.LastInsertedId;
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            return lastId;
         }
 
         public static bool DeleteLinkshell(ulong lsId)
@@ -240,7 +311,7 @@ namespace FFXIVClassic_World_Server
             throw new NotImplementedException();
         }
 
-        public static bool LinkshellAddPlayer(ulong dbId, uint charaId)
+        public static bool LinkshellAddPlayer(ulong lsId, uint charaId)
         {
             throw new NotImplementedException();
         }
@@ -249,6 +320,31 @@ namespace FFXIVClassic_World_Server
         {
             throw new NotImplementedException();
         }
-        
+
+        public static bool ChangeLinkshellCrest(ulong lsId, ushort newCrestId)
+        {
+            bool success = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand("UPDATE server_linkshells SET crestIcon = @crestIcon WHERE id = @lsId", conn);
+                    cmd.Parameters.AddWithValue("@lsId", lsId);
+                    cmd.Parameters.AddWithValue("@crestIcon", newCrestId);
+                    cmd.ExecuteNonQuery();
+                    success = true;
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return success;
+        }
     }
 }
