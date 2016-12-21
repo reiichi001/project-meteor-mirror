@@ -78,7 +78,12 @@ namespace FFXIVClassic_Map_Server
 
                         client.QueuePacket(SessionEndConfirmPacket.BuildPacket(session, endSessionPacket.destinationZoneId), true, false);
                         client.FlushQueuedSendPackets();
-                        break;                             
+                        break;
+                    //World Server - Party Synch
+                    case 0x1020:
+                        PartySyncPacket partySyncPacket = new PartySyncPacket(subpacket.data);
+                        Server.GetWorldManager().PartyMemberListRecieved(partySyncPacket);
+                        break;
                     //Ping
                     case 0x0001:
                         //subpacket.DebugPrintSubPacket();

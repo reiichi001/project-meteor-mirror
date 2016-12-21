@@ -474,5 +474,14 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 return;          
         }
+
+        //A party member list packet came, set the party
+       /* public void SetParty(MonsterPartyGroup group)
+        {
+            if (group is MonsterPartyGroup)
+                currentParty = group;
+        }
+        */
+
     }
 }

@@ -16,6 +16,7 @@ using MoonSharp.Interpreter;
 using FFXIVClassic_Map_Server.packets.receive.events;
 using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.actors.group;
+using FFXIVClassic_Map_Server.packets.send.group;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -646,6 +647,9 @@ namespace FFXIVClassic_Map_Server.Actors
             this.destinationZone = 0;
             this.destinationSpawnType = 0;
 
+            //Clean up parties
+            RemoveFromCurrentPartyAndCleanup();
+
             //Save Player
             Database.SavePlayerPlayTime(this);
             Database.SavePlayerPosition(this);
@@ -657,6 +661,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
             //Remove actor from zone and main server list
             zone.RemoveActorFromZone(this);
+
+            //Clean up parties
+            RemoveFromCurrentPartyAndCleanup();
 
             //Set destination
             this.destinationZone = destinationZone;
@@ -1256,7 +1263,6 @@ namespace FFXIVClassic_Map_Server.Actors
         
         public void SendInstanceUpdate()
         {
-
             Server.GetWorldManager().SeamlessCheck(this);
 
             //Update Instance
@@ -1266,7 +1272,37 @@ namespace FFXIVClassic_Map_Server.Actors
             if (zone2 != null)
                 aroundMe.AddRange(zone2.GetActorsAroundActor(this, 50));
             playerSession.UpdateInstance(aroundMe);
+        }
 
+        //A party member list packet came, set the party
+        public void SetParty(PartyGroup group)
+        {
+            if (group is PartyGroup)
+            {
+                RemoveFromCurrentPartyAndCleanup();
+                currentParty = group;
+            }
+        }
+
+        //Removes the player from the party and cleans it up if needed
+        public void RemoveFromCurrentPartyAndCleanup()
+        {
+            if (currentParty == null)
+                return;
+
+            for (int i = 0; i < currentParty.members.Count; i++)
+            {
+                if (currentParty.members[i].actorId == actorId)
+                {
+                    currentParty.members.RemoveAt(i);
+                    break;
+                }
+            }
+
+            //currentParty.members.Remove(this);
+            if (currentParty.members.Count == 0)
+                Server.GetWorldManager().NoMembersInParty((PartyGroup)currentParty);
+            currentParty = null;
         }
 
     }
