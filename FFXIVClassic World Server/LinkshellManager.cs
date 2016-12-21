@@ -13,6 +13,7 @@ namespace FFXIVClassic_World_Server
         private Object mGroupLockReference;
         private Dictionary<ulong, Group> mCurrentWorldGroupsReference;
         private Dictionary<ulong, Linkshell> mLinkshellList = new Dictionary<ulong, Linkshell>();
+        private Dictionary<string, ulong> mNameToIdLookup = new Dictionary<string, ulong>();
 
         public LinkshellManager(WorldManager worldManager, Object groupLock, Dictionary<ulong, Group> worldGroupList)
         {
@@ -35,6 +36,7 @@ namespace FFXIVClassic_World_Server
                     if (AddMemberToLinkshell(master, newLs.groupIndex))
                     {
                         mLinkshellList.Add(mWorldManager.GetGroupIndex(), newLs);
+                        mNameToIdLookup.Add(newLs.name, newLs.groupIndex);
                         mCurrentWorldGroupsReference.Add(mWorldManager.GetGroupIndex(), newLs);
                         mWorldManager.IncrementGroupIndex();
                     }
@@ -46,36 +48,52 @@ namespace FFXIVClassic_World_Server
         //Modifies the LS master
         public bool ChangeLinkshellMaster(string name, uint newMaster)
         {
-            foreach (Linkshell ls in mLinkshellList.Values)
+            ulong groupInstanceId;
+            if (mNameToIdLookup.ContainsKey(name))
+                groupInstanceId = mNameToIdLookup[name];
+            else
+                return false;
+
+            if (mCurrentWorldGroupsReference.ContainsKey(groupInstanceId))
             {
-                if (ls.name.Equals(name))
-                {
-                    return false;
-                }
+                Linkshell ls = (Linkshell)mCurrentWorldGroupsReference[groupInstanceId];
+                return false;
             }
+
             return false;
         }
 
         //Modifies the LS crest
         public bool ChangeLinkshellCrest(string name, ushort newCrestId)
         {
-            foreach (Linkshell ls in mLinkshellList.Values)
+            ulong groupInstanceId;
+            if (mNameToIdLookup.ContainsKey(name))
+                groupInstanceId = mNameToIdLookup[name];
+            else
+                return false;
+
+            if (mCurrentWorldGroupsReference.ContainsKey(groupInstanceId))
             {
-                if (ls.name.Equals(name))
-                {
-                    return Database.ChangeLinkshellCrest(ls.dbId, newCrestId);                    
-                }
+                Linkshell ls = (Linkshell)mCurrentWorldGroupsReference[groupInstanceId];
+                return Database.ChangeLinkshellCrest(ls.dbId, newCrestId);                                    
             }
+
             return false;
         }
 
-        //Creates a new linkshell and adds it to the list
-        public bool DeleteLinkshell(ulong groupInstanceId)
+        //Deletes a LS
+        public bool DeleteLinkshell(string name)
         {
-            if (mCurrentWorldGroupsReference.ContainsKey(groupInstanceId))
+            lock (mGroupLockReference)
             {
-                lock (mGroupLockReference)
-                {
+                ulong groupInstanceId;
+                if (mNameToIdLookup.ContainsKey(name))
+                    groupInstanceId = mNameToIdLookup[name];
+                else
+                    return false;
+                
+                if (mCurrentWorldGroupsReference.ContainsKey(groupInstanceId))
+                {                
                     Linkshell ls = (Linkshell)mCurrentWorldGroupsReference[groupInstanceId];
                     bool result = Database.DeleteLinkshell(ls.dbId);
 
@@ -83,6 +101,7 @@ namespace FFXIVClassic_World_Server
                     {
                         mCurrentWorldGroupsReference.Remove(groupInstanceId);
                         mLinkshellList.Remove(groupInstanceId);
+                        mNameToIdLookup.Remove(name);
                         return true;
                     }
                 }
@@ -138,21 +157,31 @@ namespace FFXIVClassic_World_Server
         }
 
         //Get a single linkshell group either already instantiated or make one from the db
-        public Linkshell GetLinkshell(ulong id)
+        public Linkshell GetLinkshell(string name)
         {
-            if (mLinkshellList.ContainsKey(id))
-                return mLinkshellList[id];
+            if (mNameToIdLookup.ContainsKey(name))
+                return mCurrentWorldGroupsReference[mNameToIdLookup[name]];
+            else
+                return null;
+        }
+
+        //Get a single linkshell group either already instantiated or make one from the db
+        public Linkshell GetLinkshell(ulong lsId)
+        {
+            if (mLinkshellList.ContainsKey(lsId))
+                return mLinkshellList[lsId];
             else
             {
                 lock (mGroupLockReference)
                 {
-                    Linkshell ls = Database.GetLinkshell(mWorldManager.GetGroupIndex(), id);
+                    Linkshell ls = Database.GetLinkshell(mWorldManager.GetGroupIndex(), lsId);
                     ls.LoadMembers();
 
                     if (ls != null)
                     {                        
-                        mLinkshellList.Add(id, ls);
-                        mCurrentWorldGroupsReference.Add(mWorldManager.GetGroupIndex(), ls);
+                        mLinkshellList.Add(ls.groupIndex, ls);
+                        mNameToIdLookup.Add(ls.name, ls.groupIndex);
+                        mCurrentWorldGroupsReference.Add(ls.groupIndex, ls);
                         mWorldManager.IncrementGroupIndex();
                         return ls;
                     }
@@ -170,5 +199,6 @@ namespace FFXIVClassic_World_Server
                 linkshells.Add(GetLinkshell(membership.lsId));
             return linkshells;
         }
+        
     }
 }

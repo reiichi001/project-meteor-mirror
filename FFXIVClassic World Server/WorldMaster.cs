@@ -210,13 +210,21 @@ namespace FFXIVClassic_World_Server
             SendMotD(session);
 
             //Send party, retainer, ls groups
-            mPartyManager.GetParty(session.sessionId).SendGroupPackets(session);
+            Party pt = mPartyManager.GetParty(session.sessionId);
+            mPartyManager.AddToParty(pt.groupIndex, 156);
+            mPartyManager.AddToParty(pt.groupIndex, 157);
+            mPartyManager.AddToParty(pt.groupIndex, 158);
+            mPartyManager.AddToParty(pt.groupIndex, 159);
+            mPartyManager.AddToParty(pt.groupIndex, 160);
+            mPartyManager.AddToParty(pt.groupIndex, 161);
+            mPartyManager.AddToParty(pt.groupIndex, 162);
+            pt.SendGroupPackets(session);
             mRetainerGroupManager.GetRetainerGroup(session.sessionId).SendGroupPackets(session);
             List<Linkshell> linkshells = mLinkshellManager.GetPlayerLinkshellMembership(session.sessionId);
             foreach (Linkshell ls in linkshells)
                 ls.SendGroupPackets(session);
 
-            mRelationGroupManager.CreateRelationGroup(157, session.sessionId, 0x2711).SendGroupPackets(session);
+            mRelationGroupManager.CreateRelationGroup(157, session.sessionId, 40001).SendGroupPackets(session);
         }
 
         private void SendMotD(Session session)
@@ -266,20 +274,7 @@ namespace FFXIVClassic_World_Server
                 foreach (GroupMember member in group.BuildMemberList())
                     group.SendGroupPackets(mServer.GetSession(member.actorId));
             }
-        }
-        
-        public void DeleteGroup(ulong id)
-        {
-            if (!mCurrentWorldGroups.ContainsKey(id))
-                return;
-            Group group = mCurrentWorldGroups[id];
-            if (group is Party)
-                mPartyManager.DeleteParty(group.groupIndex);
-            else if (group is Linkshell)
-                mLinkshellManager.DeleteLinkshell(group.groupIndex);
-            else if (group is Relation)
-                mRelationGroupManager.DeleteRelationGroup(group.groupIndex);
-        }
+        }        
 
         public void IncrementGroupIndex()
         {

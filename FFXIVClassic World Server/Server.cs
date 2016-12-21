@@ -199,32 +199,36 @@ namespace FFXIVClassic_World_Server
                             GetWorldManager().DoZoneServerChange(session, zoneChangePacket.destinationZoneId, "", zoneChangePacket.destinationSpawnType, zoneChangePacket.destinationX, zoneChangePacket.destinationY, zoneChangePacket.destinationZ, zoneChangePacket.destinationRot);
                         }
 
-                        break;
-                    //Group get data request
-                    case 0x1020:
-                        GetGroupPacket getGroupPacket = new GetGroupPacket(subpacket.data);
-                        mWorldManager.SendGroupData(session, getGroupPacket.groupId);
-                        break;
-                    //Group delete request
-                    case 0x1021:
-                        FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group.DeleteGroupPacket deleteGroupPacket = new FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group.DeleteGroupPacket(subpacket.data);
-                        mWorldManager.DeleteGroup(deleteGroupPacket.groupId);
-                        break;
+                        break;                    
                     //Linkshell create request
-                    case 0x1023:
-                        CreateLinkshellPacket createLinkshellpacket = new CreateLinkshellPacket(subpacket.data);
-                        mWorldManager.GetLinkshellManager().CreateLinkshell(createLinkshellpacket.name, createLinkshellpacket.crestid, createLinkshellpacket.master);
+                    case 0x1025:
+                        CreateLinkshellPacket createLinkshellPacket = new CreateLinkshellPacket(subpacket.data);
+                        mWorldManager.GetLinkshellManager().CreateLinkshell(createLinkshellPacket.name, createLinkshellPacket.crestid, createLinkshellPacket.master);
                         break;
                     //Linkshell modify request
-                    case 0x1024:
-                        ModifyLinkshellPacket modifyLinkshellpacket = new ModifyLinkshellPacket(subpacket.data);
-
-                        if (modifyLinkshellpacket.argCode == 0)
-                            mWorldManager.GetLinkshellManager().ChangeLinkshellCrest(modifyLinkshellpacket.currentName, modifyLinkshellpacket.crestid);
+                    case 0x1026:
+                        ModifyLinkshellPacket modifyLinkshellPacket = new ModifyLinkshellPacket(subpacket.data);
+                        switch (modifyLinkshellPacket.argCode)
+                        {
+                            case 0:                                
+                                break;
+                            case 1:
+                                mWorldManager.GetLinkshellManager().ChangeLinkshellCrest(modifyLinkshellPacket.currentName, modifyLinkshellPacket.crestid);
+                                break;
+                            case 2:
+                                mWorldManager.GetLinkshellManager().ChangeLinkshellMaster(modifyLinkshellPacket.currentName, modifyLinkshellPacket.master);
+                                break;
+                        }                        
                         break;
-                    //Group Add/Remove Member
-                    case 0x1022:
-                        GroupMemberChangePacket gMemberChangePacket = new GroupMemberChangePacket(subpacket.data);
+                    //Linkshell delete request
+                    case 0x1027:
+                        DeleteLinkshellPacket deleteLinkshellPacket = new DeleteLinkshellPacket(subpacket.data);
+                        mWorldManager.GetLinkshellManager().DeleteLinkshell(deleteLinkshellPacket.name);
+                        break;
+                    //Linkshell set active
+                    case 0x1028:
+                        SetActiveLinkshellPacket setActiveLinkshellPacket = new SetActiveLinkshellPacket(subpacket.data);
+                        Linkshell ls = mWorldManager.GetLinkshellManager().GetLinkshell();
                         break;
                 }
             }

@@ -104,11 +104,12 @@
     <Compile Include="Packets\Send\_0x2Packet.cs" />
     <Compile Include="Packets\Send\_0x7Packet.cs" />
     <Compile Include="Packets\Send\_0x8PingPacket.cs" />
+    <Compile Include="Packets\WorldPackets\Receive\Group\SetActiveLinkshellPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\ModifyLinkshellPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\CreateRelationPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\CreateLinkshellPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\GetGroupPacket.cs" />
-    <Compile Include="Packets\WorldPackets\Receive\Group\DeleteGroupPacket.cs" />
+    <Compile Include="Packets\WorldPackets\Receive\Group\DeleteLinkshellPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\GroupMemberChangePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\SessionBeginConfirmPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\WorldRequestZoneChangePacket.cs" />

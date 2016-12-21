@@ -1,14 +1,17 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
 {
-    class DeleteGroupPacket
+    class SetActiveLinkshellPacket
     {
-        public bool invalidPacket = false;    
-        public ulong groupId;
+        public bool invalidPacket = false;
+
+        public string name;
         
-        public DeleteGroupPacket(byte[] data)
+        public SetActiveLinkshellPacket(byte[] data)
         {
             using (MemoryStream mem = new MemoryStream(data))
             {
@@ -16,7 +19,7 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
                 {
                     try
                     {
-                        groupId = binReader.ReadUInt64();                        
+                        name = Encoding.ASCII.GetString(binReader.ReadBytes(0x20)).Trim(new[] { '\0' });
                     }
                     catch (Exception)
                     {

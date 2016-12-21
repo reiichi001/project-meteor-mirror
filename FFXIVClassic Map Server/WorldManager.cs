@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -651,6 +652,39 @@ namespace FFXIVClassic_Map_Server
             //zone.clear();
             //LoadNPCs(zone.actorId);
 
+        }
+        
+        public void RequestWorldLinkshellCreate(Player player, string name, ushort crest)
+        {
+            SubPacket packet = CreateLinkshellPacket.BuildPacket(player.playerSession, name, crest, player.actorId);
+            Server.GetWorldConnection().QueuePacket(packet, true, false);
+        }
+
+        public void RequestWorldLinkshellCrestModify(Player player, string name, ushort crest)
+        {
+            SubPacket packet = ModifyLinkshellPacket.BuildPacket(player.playerSession, 1, name, null, crest, 0);
+            Server.GetWorldConnection().QueuePacket(packet, true, false);
+        }
+
+        public void RequestWorldLinkshellDelete(Player player, string name)
+        {
+            SubPacket packet = DeleteLinkshellPacket.BuildPacket(player.playerSession, name);
+            Server.GetWorldConnection().QueuePacket(packet, true, false);
+        }
+
+        public bool RequestWorldLinkshellRankChange(Player player, string lsname, string memberName, byte newRank)
+        {
+            return false;
+        }
+
+        public bool RequestWorldLinkshellAddMember(Player player, string lsname, string memberName)
+        {
+            return false;
+        }
+
+        public bool RequestWorldLinkshellRemoveMember(Player player, bool wasKicked, string lsname, string memberName)
+        {
+            return false;
         }
 
         private void RequestWorldServerZoneChange(Player player, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)

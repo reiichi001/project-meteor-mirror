@@ -16,18 +16,18 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
         public Party(ulong groupId, uint leaderCharaId) : base(groupId)
         {
-            partyGroupWork._globalTemp.owner = (ulong)((0xB36F92 << 8) | leaderCharaId);
+            partyGroupWork._globalTemp.owner = (ulong)(((ulong)leaderCharaId << 32) | 0xB36F92);
             members.Add(leaderCharaId);
         }
 
         public void SetLeader(uint actorId)
         {
-            partyGroupWork._globalTemp.owner = (ulong)((0xB36F92 << 8) | actorId);
+            partyGroupWork._globalTemp.owner = (ulong)((actorId << 32) | 0xB36F92);
         }
 
         public uint GetLeader()
         {
-            return (uint)(partyGroupWork._globalTemp.owner & 0xFFFFFF);
+            return (uint)((partyGroupWork._globalTemp.owner >> 32) & 0xFFFFFFFF);
         }
         
         public bool IsInParty(uint charaId)
@@ -43,6 +43,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
             SubPacket test = groupWork.buildPacket(session.sessionId, session.sessionId);
             session.clientConnection.QueuePacket(test, true, false);
+            test.DebugPrintSubPacket();
         }        
 
         public override int GetMemberCount()
@@ -59,7 +60,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
         {
             List<GroupMember> groupMembers = new List<GroupMember>();
             foreach (uint charaId in members)
-                groupMembers.Add(new GroupMember(charaId, -1, 0, false, Server.GetServer().GetSession(charaId) != null, Server.GetServer().GetNameForId(charaId)));
+                groupMembers.Add(new GroupMember(charaId, -1, 0, false, true, Server.GetServer().GetNameForId(charaId)));
             return groupMembers;
         }
 

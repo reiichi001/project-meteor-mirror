@@ -158,7 +158,7 @@ namespace FFXIVClassic_World_Server
             return members;
         }
 
-        public static Linkshell GetLinkshell(ulong groupIndex, ulong id)
+        public static Linkshell GetLinkshell(ulong groupIndex, ulong lsId)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -166,7 +166,7 @@ namespace FFXIVClassic_World_Server
                 {
                     conn.Open();
                     MySqlCommand cmd = new MySqlCommand("SELECT name, crestIcon, master FROM server_linkshells WHERE id = @lsId", conn);
-                    cmd.Parameters.AddWithValue("@lsId", id);
+                    cmd.Parameters.AddWithValue("@lsId", lsId);
                     using (MySqlDataReader Reader = cmd.ExecuteReader())
                     {
                         while (Reader.Read())
@@ -175,7 +175,7 @@ namespace FFXIVClassic_World_Server
                             ushort crest = Reader.GetUInt16("crestIcon");
                             uint master = Reader.GetUInt32("master");
 
-                            Linkshell linkshell = new Linkshell(id, groupIndex, name, crest, master, 0xa);
+                            Linkshell linkshell = new Linkshell(lsId, groupIndex, name, crest, master, 0xa);
                             return linkshell;
                         }
                     }
