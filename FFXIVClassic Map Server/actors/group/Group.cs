@@ -1,91 +1,85 @@
 ﻿using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.actors.group.work;
-using FFXIVClassic_Map_Server.Actors;
-using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send.group;
-using FFXIVClassic_Map_Server.packets.send.groups;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.actors.group
 {
     class Group
     {
         public const uint PlayerPartyGroup = 10001;
-        public const uint CompanyGroup = 20001;
+        public const uint CompanyGroup = 20002;
 
         public const uint GroupInvitationRelationGroup = 50001;
         public const uint TradeRelationGroup = 50002;
         public const uint BazaarBuyItemRelationGroup = 50009;
-        
+
         public const uint RetainerGroup = 80001;
 
-        public ulong groupId;
-        public uint groupTypeId;
-        public int localizedNamed = -1;
-        public string groupName = "";
-
-        public List<GroupMember> members = new List<GroupMember>();
-
-        public Group(ulong id, uint typeId)
+        public readonly ulong groupIndex;
+        
+        public Group(ulong groupIndex)
         {
-            groupId = id;
-            groupTypeId = typeId;            
+            this.groupIndex = groupIndex;
         }
 
-        public Group(ulong id, uint typeId, int nameId, object work)
+        public virtual int GetMemberCount()
         {
-            groupId = id;
-            groupTypeId = typeId;
-            localizedNamed = nameId;
+            return 0;
         }
 
-        public Group(ulong id, uint typeId, string name, object work)
+        public virtual uint GetTypeId()
         {
-            groupId = id;
-            groupTypeId = typeId;
-            groupName = name;
-            localizedNamed = -1;
+            return 0;            
         }
 
-        public void add(Actor actor)
+        public virtual string GetGroupName()
         {
-            GroupMember member = new GroupMember(actor.actorId, (int)actor.displayNameId, 0, false, true, actor.customDisplayName);
-            members.Add(member);
+            return "";
         }
 
-        public void sendMemberPackets(Player toPlayer)
+        public virtual int GetGroupLocalizedName()
+        {
+            return -1;
+        }
+
+        public virtual List<GroupMember> BuildMemberList()
+        {
+            return new List<GroupMember>();
+        }
+
+        public void SendGroupPackets(Session session)
         {
             ulong time = Utils.MilisUnixTimeStampUTC();
+            List<GroupMember> members = BuildMemberList();
 
-            toPlayer.QueuePacket(GroupHeaderPacket.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, this));
-            toPlayer.QueuePacket(GroupMembersBeginPacket.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, this));
+            Server.GetWorldConnection().QueuePacket(GroupHeaderPacket.buildPacket(session.id, session.GetActor().zoneId, time, this), true, false);
+            Server.GetWorldConnection().QueuePacket(GroupMembersBeginPacket.buildPacket(session.id, session.GetActor().zoneId, time, this), true, false);
 
             int currentIndex = 0;
 
             while (true)
             {
-                if (members.Count - currentIndex >= 64)
-                    toPlayer.QueuePacket(GroupMembersX64Packet.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, members, ref currentIndex));
-                else if (members.Count - currentIndex >= 32)
-                    toPlayer.QueuePacket(GroupMembersX32Packet.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, members, ref currentIndex));
-                else if (members.Count - currentIndex >= 16)
-                    toPlayer.QueuePacket(GroupMembersX16Packet.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, members, ref currentIndex));
-                else if (members.Count - currentIndex > 0)
-                    toPlayer.QueuePacket(GroupMembersX08Packet.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, members, ref currentIndex));               
+                if (GetMemberCount() - currentIndex >= 64)
+                     Server.GetWorldConnection().QueuePacket(GroupMembersX64Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex), true, false);
+                else if (GetMemberCount() - currentIndex >= 32)
+                     Server.GetWorldConnection().QueuePacket(GroupMembersX32Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex), true, false);
+                else if (GetMemberCount() - currentIndex >= 16)
+                     Server.GetWorldConnection().QueuePacket(GroupMembersX16Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex), true, false);
+                else if (GetMemberCount() - currentIndex > 0)
+                     Server.GetWorldConnection().QueuePacket(GroupMembersX08Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex), true, false);
                 else
                     break;
             }
-
-
-            toPlayer.QueuePacket(GroupMembersEndPacket.buildPacket(toPlayer.actorId, toPlayer.zoneId, time, this));    
+            
+             Server.GetWorldConnection().QueuePacket(GroupMembersEndPacket.buildPacket(session.id, session.GetActor().zoneId, time, this), true, false);
 
         }
 
-        public virtual void sendWorkValues(Player player){}      
+        public virtual void SendInitWorkValues(Session session)
+        {
 
+        }
     }
 }

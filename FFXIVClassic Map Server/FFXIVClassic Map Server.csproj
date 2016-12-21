@@ -123,7 +123,6 @@
     <Compile Include="actors\chara\CharaWork.cs" />
     <Compile Include="actors\chara\ParameterSave.cs" />
     <Compile Include="actors\chara\player\PlayerWork.cs" />
-    <Compile Include="dataobjects\DBWorld.cs" />
     <Compile Include="dataobjects\InventoryItem.cs" />
     <Compile Include="dataobjects\Session.cs" />
     <Compile Include="dataobjects\Item.cs" />
@@ -283,6 +282,7 @@
     <Compile Include="packets\receive\PingPacket.cs" />
     <Compile Include="packets\receive\UpdatePlayerPositionPacket.cs" />
     <Compile Include="packets\WorldPackets\Receive\ErrorPacket.cs" />
+    <Compile Include="packets\WorldPackets\Receive\PartySyncPacket.cs" />
     <Compile Include="packets\WorldPackets\Receive\SessionEndPacket.cs" />
     <Compile Include="packets\WorldPackets\Receive\SessionBeginPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\CreateLinkshellPacket.cs" />

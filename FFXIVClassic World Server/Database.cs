@@ -8,6 +8,41 @@ namespace FFXIVClassic_World_Server
 {
     class Database
     {
+        public static DBWorld GetServer(uint serverId)
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                DBWorld world = null;
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand("SELECT name, address, port FROM servers WHERE id = @serverId", conn);
+                    cmd.Parameters.AddWithValue("@serverId", serverId);
+                    using (MySqlDataReader Reader = cmd.ExecuteReader())
+                    {
+                        while (Reader.Read())
+                        {
+                            world = new DBWorld();
+                            world.id = serverId;
+                            world.name = Reader.GetString("name");
+                            world.address = Reader.GetString("address");
+                            world.port = Reader.GetUInt16("port");                           
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+
+                return world;
+            }
+        }   
+
         public static bool LoadZoneSessionInfo(Session session)
         {
             string characterName;

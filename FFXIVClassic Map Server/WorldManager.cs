@@ -16,13 +16,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-<<<<<<< HEAD
-using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
-=======
 using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.packets.send.group;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Receive;
->>>>>>> 2bdc238bc2ab3e4f397e0a61d8ab9cc2b2d7d590
+using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -34,7 +31,7 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<uint, List<SeamlessBoundry>> seamlessBoundryList;
         private Dictionary<uint, ZoneEntrance> zoneEntranceList;
         private Dictionary<uint, ActorClass> actorClasses = new Dictionary<uint,ActorClass>();
-        private Dictionary<ulong, PartyGroup> currentPlayerParties = new Dictionary<ulong, PartyGroup>(); //GroupId, Party object
+        private Dictionary<ulong, Party> currentPlayerParties = new Dictionary<ulong, Party>(); //GroupId, Party object
 
         private Server mServer;
 
@@ -703,42 +700,34 @@ namespace FFXIVClassic_Map_Server
         //World server sent a party member list synch packet to the zone server. Add and update players that may be a part of it.
         public void PartyMemberListRecieved(PartySyncPacket syncPacket)
         {
-            PartyGroup group;
-            List<GroupMember> members = new List<GroupMember>();
-
-            //Build member list for players on this server
-            foreach (uint actorId in syncPacket.memberActorIds)
-            {
-                Player p = GetPCInWorld(actorId);
-
-                if (p == null)
-                    continue;
-
-                GroupMember member = new GroupMember(actorId, -1, 0, false, true, p.customDisplayName);
-                members.Add(member);
-            }
+            Party group;         
 
             //If no members on this server, get out or clean
-            if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId) && members.Count == 0)
+            if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId) && syncPacket.memberActorIds.Length == 0)
                 return;
-            else if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId) && members.Count == 0)
+            else if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId) && syncPacket.memberActorIds.Length == 0)
                 NoMembersInParty(currentPlayerParties[syncPacket.partyGroupId]);
 
             //Get or create group
             if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId))
             {
-                group = new PartyGroup(syncPacket.partyGroupId, syncPacket.owner);
+                group = new Party(syncPacket.partyGroupId, syncPacket.owner);
                 currentPlayerParties.Add(syncPacket.partyGroupId, group);
             }
             else
                 group = currentPlayerParties[syncPacket.partyGroupId];
 
-            currentPlayerParties[syncPacket.partyGroupId].members = members;
+            currentPlayerParties[syncPacket.partyGroupId].members = syncPacket.memberActorIds.ToList();
 
             //Add group to everyone
-            foreach (GroupMember member in members)
+            foreach (uint member in currentPlayerParties[syncPacket.partyGroupId].members)
             {
-                Player player = GetPCInWorld(member.actorId);
+                Session session = Server.GetServer().GetSession(member);
+
+                if (session == null)
+                    continue;
+
+                Player player = session.GetActor();
                 if (player == null)
                     continue;
                 player.SetParty(group);
@@ -746,10 +735,10 @@ namespace FFXIVClassic_Map_Server
         }
 
         //Player was removed from the party either due to leaving it or leaving the server. Remove if empty.
-        public void NoMembersInParty(PartyGroup party)
+        public void NoMembersInParty(Party party)
         {
-            if (currentPlayerParties.ContainsKey(party.groupId))
-                currentPlayerParties.Remove(party.groupId);
+            if (currentPlayerParties.ContainsKey(party.groupIndex))
+                currentPlayerParties.Remove(party.groupIndex);
         }
 
         public Player GetPCInWorld(string name)

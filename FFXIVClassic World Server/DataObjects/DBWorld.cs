@@ -1,9 +1,9 @@
-﻿namespace FFXIVClassic_Map_Server.dataobjects
+﻿namespace FFXIVClassic_World_Server.DataObjects
 {
     class DBWorld
     {
-        public ushort id;
-        public string Address;
+        public uint id;
+        public string address;
         public ushort port;
         public ushort listPosition;
         public ushort population;

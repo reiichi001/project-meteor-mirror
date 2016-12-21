@@ -1274,10 +1274,42 @@ namespace FFXIVClassic_Map_Server.Actors
             playerSession.UpdateInstance(aroundMe);
         }
 
-        //A party member list packet came, set the party
-        public void SetParty(PartyGroup group)
+        public bool IsInParty()
         {
-            if (group is PartyGroup)
+            return currentParty != null;
+        }
+
+        public bool IsPartyLeader()
+        {
+            if (IsInParty())
+            {
+                Party party = (Party)currentParty;
+                return party.GetLeader() == actorId;
+            }
+            else
+                return false;
+        }
+
+        public void PartyOustPlayer()
+        {            
+        }
+
+        public void PartyLeave()
+        {
+        }
+
+        public void PartyDisband()
+        {
+        }
+
+        public void PartyPromote()
+        {
+        }
+
+        //A party member list packet came, set the party
+        public void SetParty(Party group)
+        {
+            if (group is Party)
             {
                 RemoveFromCurrentPartyAndCleanup();
                 currentParty = group;
@@ -1290,18 +1322,20 @@ namespace FFXIVClassic_Map_Server.Actors
             if (currentParty == null)
                 return;
 
-            for (int i = 0; i < currentParty.members.Count; i++)
+            Party partyGroup = (Party) currentParty;
+
+            for (int i = 0; i < partyGroup.members.Count; i++)
             {
-                if (currentParty.members[i].actorId == actorId)
+                if (partyGroup.members[i] == actorId)
                 {
-                    currentParty.members.RemoveAt(i);
+                    partyGroup.members.RemoveAt(i);
                     break;
                 }
             }
 
             //currentParty.members.Remove(this);
-            if (currentParty.members.Count == 0)
-                Server.GetWorldManager().NoMembersInParty((PartyGroup)currentParty);
+            if (partyGroup.members.Count == 0)
+                Server.GetWorldManager().NoMembersInParty((Party)currentParty);
             currentParty = null;
         }
 

@@ -75,6 +75,7 @@
     <Compile Include="ConfigConstants.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="DataObjects\ClientConnection.cs" />
+    <Compile Include="DataObjects\DBWorld.cs" />
     <Compile Include="DataObjects\Group\Group.cs" />
     <Compile Include="DataObjects\Group\Linkshell.cs" />
     <Compile Include="DataObjects\Group\LinkshellMember.cs" />
@@ -115,6 +116,7 @@
     <Compile Include="Packets\WorldPackets\Receive\WorldRequestZoneChangePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\SessionEndConfirmPacket.cs" />
     <Compile Include="Packets\WorldPackets\Send\ErrorPacket.cs" />
+    <Compile Include="Packets\WorldPackets\Send\Group\PartySyncPacket.cs" />
     <Compile Include="Packets\WorldPackets\Send\Group\GroupWorkValuesPacket.cs" />
     <Compile Include="Packets\WorldPackets\Send\Group\GroupMemberListPacket.cs" />
     <Compile Include="Packets\WorldPackets\Send\Group\GroupMemberListEndPacket.cs" />

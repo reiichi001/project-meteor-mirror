@@ -51,14 +51,7 @@ namespace FFXIVClassic_Map_Server
                     startServer = false; 
                 }
             }
-
-            //Check World ID
-            DBWorld thisWorld = Database.GetServer(ConfigConstants.DATABASE_WORLDID);
-            if (thisWorld != null)
-                Program.Log.Info("Successfully pulled world info from DB. Server name is {0}.", thisWorld.name);
-            else
-                Program.Log.Info("World info could not be retrieved from the DB. Welcome and MOTD will not be displayed.");
-
+            
             //Start server if A-OK
             if (startServer)
             {

@@ -1,4 +1,5 @@
-﻿using MySql.Data.MySqlClient;
+﻿using FFXIVClassic_World_Server.DataObjects;
+using MySql.Data.MySqlClient;
 using NLog;
 using NLog.Fluent;
 using System;
@@ -55,6 +56,19 @@ namespace FFXIVClassic_World_Server
                     Log.Error(e.ToString());
                     startServer = false;
                 }
+            }
+
+            //Check World ID
+            DBWorld thisWorld = Database.GetServer(ConfigConstants.DATABASE_WORLDID);
+            if (thisWorld != null)
+            {
+                Program.Log.Info("Successfully pulled world info from DB. Server name is {0}.", thisWorld.name);
+                ConfigConstants.PREF_SERVERNAME = thisWorld.name;
+            }
+            else
+            {
+                Program.Log.Info("World info could not be retrieved from the DB. Welcome and MOTD will not be displayed.");
+                ConfigConstants.PREF_SERVERNAME = "Unknown";
             }
           
             //Start server if A-OK

@@ -10,11 +10,14 @@ namespace FFXIVClassic_World_Server
         public static String OPTIONS_PORT;
         public static bool   OPTIONS_TIMESTAMP = false;
 
+        public static uint   DATABASE_WORLDID;
         public static String DATABASE_HOST;
         public static String DATABASE_PORT;
         public static String DATABASE_NAME;
         public static String DATABASE_USERNAME;
         public static String DATABASE_PASSWORD;
+
+        public static String PREF_SERVERNAME;
 
         public static bool Load()
         {
@@ -32,6 +35,7 @@ namespace FFXIVClassic_World_Server
             ConfigConstants.OPTIONS_PORT =          configIni.GetValue("General", "server_port", "54992");
             ConfigConstants.OPTIONS_TIMESTAMP =     configIni.GetValue("General", "showtimestamp", "true").ToLower().Equals("true");
 
+            ConfigConstants.DATABASE_WORLDID =      UInt32.Parse(configIni.GetValue("Database", "worldid", "0"));
             ConfigConstants.DATABASE_HOST =         configIni.GetValue("Database", "host", "");
             ConfigConstants.DATABASE_PORT =         configIni.GetValue("Database", "port", "");
             ConfigConstants.DATABASE_NAME =         configIni.GetValue("Database", "database", "");

@@ -160,7 +160,7 @@ namespace FFXIVClassic_World_Server
         public Linkshell GetLinkshell(string name)
         {
             if (mNameToIdLookup.ContainsKey(name))
-                return mCurrentWorldGroupsReference[mNameToIdLookup[name]];
+                return (Linkshell)mCurrentWorldGroupsReference[mNameToIdLookup[name]];
             else
                 return null;
         }

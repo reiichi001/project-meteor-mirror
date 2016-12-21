@@ -228,7 +228,7 @@ namespace FFXIVClassic_World_Server
                     //Linkshell set active
                     case 0x1028:
                         SetActiveLinkshellPacket setActiveLinkshellPacket = new SetActiveLinkshellPacket(subpacket.data);
-                        Linkshell ls = mWorldManager.GetLinkshellManager().GetLinkshell();
+                        //Linkshell ls = mWorldManager.GetLinkshellManager().GetLinkshell();
                         break;
                 }
             }

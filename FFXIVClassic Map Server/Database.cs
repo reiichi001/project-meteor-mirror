@@ -45,30 +45,7 @@ namespace FFXIVClassic_Map_Server
                 }                
             }
             return id;
-        }
-     
-        public static DBWorld GetServer(uint serverId)
-        {
-            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                DBWorld world = null;
-                try
-                {
-                    conn.Open();
-                    world = conn.Query<DBWorld>("SELECT * FROM servers WHERE id=@ServerId", new {ServerId = serverId}).SingleOrDefault();                  
-                }
-                catch (MySqlException e)
-                {
-                    Program.Log.Error(e.ToString());
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-
-                return world;
-            }
-        }    
+        }             
 
         public static List<Npc> GetNpcList()
         {

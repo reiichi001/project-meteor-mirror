@@ -4,6 +4,7 @@ using FFXIVClassic_World_Server.DataObjects.Group;
 using FFXIVClassic_World_Server.Packets.Send.Subpackets;
 using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Send;
+using FFXIVClassic_World_Server.Packets.WorldPackets.Send.Group;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -219,6 +220,7 @@ namespace FFXIVClassic_World_Server
             mPartyManager.AddToParty(pt.groupIndex, 161);
             mPartyManager.AddToParty(pt.groupIndex, 162);
             pt.SendGroupPackets(session);
+            SendPartySync(pt);
             mRetainerGroupManager.GetRetainerGroup(session.sessionId).SendGroupPackets(session);
             List<Linkshell> linkshells = mLinkshellManager.GetPlayerLinkshellMembership(session.sessionId);
             foreach (Linkshell ls in linkshells)
@@ -230,9 +232,21 @@ namespace FFXIVClassic_World_Server
         private void SendMotD(Session session)
         {
             session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "-------- Login Message --------"), true, false);
-            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Welcome to <Server Name>!"), true, false);
+            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Welcome to {0}!", ConfigConstants.PREF_SERVERNAME)), true, false);
             session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Welcome to Eorzea!"), true, false);
             session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Here is a test Message of the Day from the World Server!"), true, false);
+        }
+
+        public void SendPartySync(Party party)
+        {            
+            foreach (uint member in party.members)
+            {
+                Session session = Server.GetServer().GetSession(member);                
+                if (session == null)
+                    continue;
+                SubPacket syncPacket = PartySyncPacket.BuildPacket(session, party);
+                session.routing1.SendPacket(syncPacket);
+            }
         }
 
         public class ZoneEntrance
