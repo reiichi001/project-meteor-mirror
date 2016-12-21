@@ -1,5 +1,6 @@
 ﻿
 using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.packets.send.actor;
 
@@ -50,7 +51,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public Work work = new Work();
         public CharaWork charaWork = new CharaWork();
-        
+
+        public Group currentParty = null;
+
         public Character(uint actorID) : base(actorID)
         {            
             //Init timer array to "notimer"
