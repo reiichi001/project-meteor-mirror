@@ -1,19 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 
 namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
 {
-    class GroupMemberChangePacket
+    class PartyModifyPacket
     {
-        public const int GROUP_MEMBER_ADD = 0;
-        public const int GROUP_MEMBER_REMOVE = 0;
-
         public bool invalidPacket = false;
-        public uint controlCode;
-        public ulong groupId;
-        public uint memberId;
 
-        public GroupMemberChangePacket(byte[] data)
+        public const ushort MODIFY_LEADER = 0;
+        public const ushort MODIFY_KICKPLAYER = 1;
+
+        public ushort command;
+        public string name;
+
+        public PartyModifyPacket(byte[] data)
         {
             using (MemoryStream mem = new MemoryStream(data))
             {
@@ -21,9 +23,8 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
                 {
                     try
                     {
-                        controlCode = binReader.ReadUInt32();
-                        groupId = binReader.ReadUInt64();
-                        memberId = binReader.ReadUInt32();
+                        command = binReader.ReadUInt16();
+                        name = Encoding.ASCII.GetString(binReader.ReadBytes(0x20)).Trim(new[] { '\0' });
                     }
                     catch (Exception)
                     {

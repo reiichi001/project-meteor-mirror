@@ -20,14 +20,14 @@ namespace FFXIVClassic_Map_Server.actors.group
             members.Add(leaderCharaId);
         }
 
-        public void SetLeader(uint actorId)
+        public void SetLeader(uint leaderCharaId)
         {
-            partyGroupWork._globalTemp.owner = (ulong)((actorId << 32) | 0xB36F92);
+            partyGroupWork._globalTemp.owner = (ulong)(((ulong)leaderCharaId << 32) | 0xB36F92);
         }
 
         public uint GetLeader()
         {
-            return (uint)((partyGroupWork._globalTemp.owner >> 32) & 0xFFFFFFFF);
+            return (uint)((ulong)(partyGroupWork._globalTemp.owner >> 32) & 0xFFFFFFFF);
         }
         
         public bool IsInParty(uint charaId)

@@ -248,7 +248,7 @@ namespace FFXIVClassic_Map_Server
                         break;
                     //Party Window Opened, Request State
                     case 0x01C5:
-                        client.QueuePacket(BasePacket.CreatePacket(RecruiterStatePacket.BuildPacket(session.id, true, true, 1), true, false));
+                        client.QueuePacket(BasePacket.CreatePacket(RecruiterStatePacket.BuildPacket(session.id, false, false, 0), true, false));
                         break;
                     //Search Recruiting
                     case 0x01C7:

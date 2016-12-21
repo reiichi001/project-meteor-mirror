@@ -25,11 +25,10 @@ namespace FFXIVClassic_Map_Server.packets.WorldPackets.Receive
                     try
                     {
                         partyGroupId = binReader.ReadUInt64();
-                        uint owner = binReader.ReadUInt32();
+                        owner = binReader.ReadUInt32();
                         uint numMembers = binReader.ReadUInt32();
                         memberActorIds = new uint[numMembers];
-
-                        PartyGroup group = new PartyGroup(partyGroupId, owner);
+                        
                         for (int i = 0; i < numMembers; i++)                        
                             memberActorIds[i] = binReader.ReadUInt32();                        
                     }

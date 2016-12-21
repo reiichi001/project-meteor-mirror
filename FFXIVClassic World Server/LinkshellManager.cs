@@ -11,9 +11,10 @@ namespace FFXIVClassic_World_Server
     {
         private WorldManager mWorldManager;
         private Object mGroupLockReference;
-        private Dictionary<ulong, Group> mCurrentWorldGroupsReference;
-        private Dictionary<ulong, Linkshell> mLinkshellList = new Dictionary<ulong, Linkshell>();
-        private Dictionary<string, ulong> mNameToIdLookup = new Dictionary<string, ulong>();
+        private Dictionary<ulong, Group> mCurrentWorldGroupsReference; //GroupId, LS
+        private Dictionary<ulong, Linkshell> mLinkshellList = new Dictionary<ulong, Linkshell>(); //GroupId, LS
+        private Dictionary<ulong, Linkshell> mLSIdToIdLookup = new Dictionary<ulong, Linkshell>(); //Name, GroupId
+        private Dictionary<string, ulong> mNameToIdLookup = new Dictionary<string, ulong>(); //Name, GroupId
 
         public LinkshellManager(WorldManager worldManager, Object groupLock, Dictionary<ulong, Group> worldGroupList)
         {
@@ -162,14 +163,31 @@ namespace FFXIVClassic_World_Server
             if (mNameToIdLookup.ContainsKey(name))
                 return (Linkshell)mCurrentWorldGroupsReference[mNameToIdLookup[name]];
             else
-                return null;
+            {
+                lock (mGroupLockReference)
+                {
+                    Linkshell ls = Database.GetLinkshell(mWorldManager.GetGroupIndex(), name);
+                    ls.LoadMembers();
+
+                    if (ls != null)
+                    {
+                        mLinkshellList.Add(ls.groupIndex, ls);
+                        mNameToIdLookup.Add(ls.name, ls.groupIndex);
+                        mCurrentWorldGroupsReference.Add(ls.groupIndex, ls);
+                        mWorldManager.IncrementGroupIndex();
+                        return ls;
+                    }
+                    else
+                        return null;
+                }
+            }
         }
 
         //Get a single linkshell group either already instantiated or make one from the db
         public Linkshell GetLinkshell(ulong lsId)
         {
-            if (mLinkshellList.ContainsKey(lsId))
-                return mLinkshellList[lsId];
+            if (mLSIdToIdLookup.ContainsKey(lsId))
+                return mLSIdToIdLookup[lsId];
             else
             {
                 lock (mGroupLockReference)
@@ -181,6 +199,7 @@ namespace FFXIVClassic_World_Server
                     {                        
                         mLinkshellList.Add(ls.groupIndex, ls);
                         mNameToIdLookup.Add(ls.name, ls.groupIndex);
+                        mLSIdToIdLookup.Add(ls.dbId, ls);
                         mCurrentWorldGroupsReference.Add(ls.groupIndex, ls);
                         mWorldManager.IncrementGroupIndex();
                         return ls;

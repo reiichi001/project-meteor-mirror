@@ -48,6 +48,17 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             return new List<GroupMember>();
         }
 
+        public void SendGroupPacketsAll(List<uint> sessionIds)
+        {
+            for (int i = 0; i < sessionIds.Count; i++)
+            {
+                Session session = Server.GetServer().GetSession(sessionIds[i]);
+
+                if (session != null)
+                    SendGroupPackets(session);
+            }
+        }
+
         public void SendGroupPackets(Session session)
         {
             ulong time = Utils.MilisUnixTimeStampUTC();

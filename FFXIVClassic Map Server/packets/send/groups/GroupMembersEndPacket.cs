@@ -27,7 +27,7 @@ namespace FFXIVClassic_Map_Server.packets.send.group
                     binWriter.Write((UInt64)locationCode);
                     binWriter.Write((UInt64)sequenceId);
                     //Write List Info
-                    binWriter.Write((UInt64)group.groupId);
+                    binWriter.Write((UInt64)group.groupIndex);
                 }
             }
 

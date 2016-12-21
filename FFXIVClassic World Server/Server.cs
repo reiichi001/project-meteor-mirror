@@ -199,7 +199,25 @@ namespace FFXIVClassic_World_Server
                             GetWorldManager().DoZoneServerChange(session, zoneChangePacket.destinationZoneId, "", zoneChangePacket.destinationSpawnType, zoneChangePacket.destinationX, zoneChangePacket.destinationY, zoneChangePacket.destinationZ, zoneChangePacket.destinationRot);
                         }
 
-                        break;                    
+                        break;
+                    //Change leader or kick
+                    case 0x1020:
+                        PartyModifyPacket partyModifyPacket = new PartyModifyPacket(subpacket.data);
+
+                        Party pt = mWorldManager.GetPartyManager().GetParty(subpacket.header.targetId);
+
+                        if (pt.GetMemberCount() <= 1)
+                            return;
+                    
+                        if (partyModifyPacket.command == PartyModifyPacket.MODIFY_LEADER)                        
+                            pt.SetLeaderPlayerRequest(GetSession(subpacket.header.sourceId), partyModifyPacket.name);                        
+                        else if (partyModifyPacket.command == PartyModifyPacket.MODIFY_KICKPLAYER)
+                            pt.KickPlayerRequest(GetSession(subpacket.header.sourceId), partyModifyPacket.name); 
+
+                        break;
+                    //Party Resign or Disband
+                    case 0x1021:
+                        break;
                     //Linkshell create request
                     case 0x1025:
                         CreateLinkshellPacket createLinkshellPacket = new CreateLinkshellPacket(subpacket.data);

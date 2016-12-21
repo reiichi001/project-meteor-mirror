@@ -16,7 +16,7 @@ namespace FFXIVClassic_Map_Server.packets.send.groups
 
         public static SubPacket buildPacket(uint playerActorID, Group group)
         {
-            return buildPacket(playerActorID, group.groupId);
+            return buildPacket(playerActorID, group.groupIndex);
         }
 
         public static SubPacket buildPacket(uint playerActorID, ulong groupId)

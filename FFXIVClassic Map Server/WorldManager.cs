@@ -33,6 +33,8 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<uint, ActorClass> actorClasses = new Dictionary<uint,ActorClass>();
         private Dictionary<ulong, Party> currentPlayerParties = new Dictionary<ulong, Party>(); //GroupId, Party object
 
+        private Object groupLock = new Object();
+
         private Server mServer;
 
         public WorldManager(Server server)
@@ -700,37 +702,41 @@ namespace FFXIVClassic_Map_Server
         //World server sent a party member list synch packet to the zone server. Add and update players that may be a part of it.
         public void PartyMemberListRecieved(PartySyncPacket syncPacket)
         {
-            Party group;         
-
-            //If no members on this server, get out or clean
-            if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId) && syncPacket.memberActorIds.Length == 0)
-                return;
-            else if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId) && syncPacket.memberActorIds.Length == 0)
-                NoMembersInParty(currentPlayerParties[syncPacket.partyGroupId]);
-
-            //Get or create group
-            if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId))
+            lock (currentPlayerParties)
             {
-                group = new Party(syncPacket.partyGroupId, syncPacket.owner);
-                currentPlayerParties.Add(syncPacket.partyGroupId, group);
-            }
-            else
-                group = currentPlayerParties[syncPacket.partyGroupId];
+                Party group;
 
-            currentPlayerParties[syncPacket.partyGroupId].members = syncPacket.memberActorIds.ToList();
+                //If no members on this server, get out or clean
+                if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId) && syncPacket.memberActorIds.Length == 0)
+                    return;
+                else if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId) && syncPacket.memberActorIds.Length == 0)
+                    NoMembersInParty(currentPlayerParties[syncPacket.partyGroupId]);
 
-            //Add group to everyone
-            foreach (uint member in currentPlayerParties[syncPacket.partyGroupId].members)
-            {
-                Session session = Server.GetServer().GetSession(member);
+                //Get or create group
+                if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId))
+                {
+                    group = new Party(syncPacket.partyGroupId, syncPacket.owner);
+                    currentPlayerParties.Add(syncPacket.partyGroupId, group);
+                }
+                else
+                    group = currentPlayerParties[syncPacket.partyGroupId];
 
-                if (session == null)
-                    continue;
+                group.members = syncPacket.memberActorIds.ToList();
 
-                Player player = session.GetActor();
-                if (player == null)
-                    continue;
-                player.SetParty(group);
+                //Add group to everyone
+                for (int i = 0; i < group.members.Count; i++ )
+                {
+                    uint member = group.members[i];
+                    Session session = Server.GetServer().GetSession(member);
+
+                    if (session == null)
+                        continue;
+
+                    Player player = session.GetActor();
+                    if (player == null)
+                        continue;
+                    player.SetParty(group);
+                }
             }
         }
 

@@ -193,6 +193,41 @@ namespace FFXIVClassic_World_Server
             return members;
         }
 
+        public static Linkshell GetLinkshell(ulong groupIndex, string lsName)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand("SELECT id, name, crestIcon, master FROM server_linkshells WHERE name = @lsName", conn);
+                    cmd.Parameters.AddWithValue("@lsName", lsName);
+                    using (MySqlDataReader Reader = cmd.ExecuteReader())
+                    {
+                        while (Reader.Read())
+                        {
+                            ulong lsId = Reader.GetUInt64("id");
+                            string name = Reader.GetString("name");
+                            ushort crest = Reader.GetUInt16("crestIcon");
+                            uint master = Reader.GetUInt32("master");
+
+                            Linkshell linkshell = new Linkshell(lsId, groupIndex, name, crest, master, 0xa);
+                            return linkshell;
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return null;
+        }
+
         public static Linkshell GetLinkshell(ulong groupIndex, ulong lsId)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))

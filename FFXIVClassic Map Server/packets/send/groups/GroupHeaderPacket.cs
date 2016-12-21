@@ -33,17 +33,17 @@ namespace FFXIVClassic_Map_Server.packets.send.group
 
                     //Write list id
                     binWriter.Write((UInt64)3);
-                    binWriter.Write((UInt64)group.groupId);
+                    binWriter.Write((UInt64)group.groupIndex);
                     binWriter.Write((UInt64)0);
-                    binWriter.Write((UInt64)group.groupId);
+                    binWriter.Write((UInt64)group.groupIndex);
 
                     //This seems to change depending on what the list is for
-                    binWriter.Write((UInt32)group.groupTypeId);
+                    binWriter.Write((UInt32)group.GetTypeId());
                     binWriter.Seek(0x40, SeekOrigin.Begin);
 
                     //This is for Linkshell
-                    binWriter.Write((UInt32)group.localizedNamed);
-                    binWriter.Write(Encoding.ASCII.GetBytes(group.groupName), 0, Encoding.ASCII.GetByteCount(group.groupName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(group.groupName));
+                    binWriter.Write((UInt32)group.GetGroupLocalizedName());
+                    binWriter.Write(Encoding.ASCII.GetBytes(group.GetGroupName()), 0, Encoding.ASCII.GetByteCount(group.GetGroupName()) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(group.GetGroupName()));
 
                     binWriter.Seek(0x64, SeekOrigin.Begin);
 
@@ -52,7 +52,7 @@ namespace FFXIVClassic_Map_Server.packets.send.group
                     binWriter.Write((UInt32)0x6D);
                     binWriter.Write((UInt32)0x6D);
 
-                    binWriter.Write((UInt32)group.members.Count);
+                    binWriter.Write((UInt32)group.GetMemberCount());
                 }
             }
 

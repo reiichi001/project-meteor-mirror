@@ -212,13 +212,13 @@ namespace FFXIVClassic_World_Server
 
             //Send party, retainer, ls groups
             Party pt = mPartyManager.GetParty(session.sessionId);
-            mPartyManager.AddToParty(pt.groupIndex, 156);
-            mPartyManager.AddToParty(pt.groupIndex, 157);
-            mPartyManager.AddToParty(pt.groupIndex, 158);
-            mPartyManager.AddToParty(pt.groupIndex, 159);
-            mPartyManager.AddToParty(pt.groupIndex, 160);
-            mPartyManager.AddToParty(pt.groupIndex, 161);
-            mPartyManager.AddToParty(pt.groupIndex, 162);
+
+            
+            if (session.sessionId == 0x6c)
+            {
+                mPartyManager.AddToParty(pt.groupIndex, 156);
+            }
+             
             pt.SendGroupPackets(session);
             SendPartySync(pt);
             mRetainerGroupManager.GetRetainerGroup(session.sessionId).SendGroupPackets(session);
@@ -238,12 +238,18 @@ namespace FFXIVClassic_World_Server
         }
 
         public void SendPartySync(Party party)
-        {            
+        {
+            List<ZoneServer> alreadySent = new List<ZoneServer>();
             foreach (uint member in party.members)
             {
                 Session session = Server.GetServer().GetSession(member);                
                 if (session == null)
                     continue;
+
+                if (alreadySent.Contains(session.routing1))
+                    continue;
+
+                alreadySent.Add(session.routing1);
                 SubPacket syncPacket = PartySyncPacket.BuildPacket(session, party);
                 session.routing1.SendPacket(syncPacket);
             }

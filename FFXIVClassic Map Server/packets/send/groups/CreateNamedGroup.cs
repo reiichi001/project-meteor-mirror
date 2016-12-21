@@ -23,15 +23,15 @@ namespace FFXIVClassic_Map_Server.packets.send.group
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    binWriter.Write((UInt64)group.groupId);
-                    binWriter.Write((UInt32)group.groupTypeId);
-                    binWriter.Write((Int32)group.localizedNamed);
+                    binWriter.Write((UInt64)group.groupIndex);
+                    binWriter.Write((UInt32)group.GetTypeId());
+                    binWriter.Write((Int32)group.GetGroupLocalizedName());
 
                     binWriter.Write((UInt16)0x121C);
 
                     binWriter.Seek(0x20, SeekOrigin.Begin);
 
-                    binWriter.Write(Encoding.ASCII.GetBytes(group.groupName), 0, Encoding.ASCII.GetByteCount(group.groupName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(group.groupName));                    
+                    binWriter.Write(Encoding.ASCII.GetBytes(group.GetGroupName()), 0, Encoding.ASCII.GetByteCount(group.GetGroupName()) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(group.GetGroupName()));                    
                 }
             }
 

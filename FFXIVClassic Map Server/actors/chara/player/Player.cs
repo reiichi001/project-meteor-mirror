@@ -17,6 +17,7 @@ using FFXIVClassic_Map_Server.packets.receive.events;
 using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.packets.send.group;
+using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -1290,8 +1291,10 @@ namespace FFXIVClassic_Map_Server.Actors
                 return false;
         }
 
-        public void PartyOustPlayer()
-        {            
+        public void PartyOustPlayer(string name)
+        {
+            SubPacket oustPacket = PartyModifyPacket.BuildPacket(playerSession, 1, name);
+            QueuePacket(oustPacket);
         }
 
         public void PartyLeave()
@@ -1302,8 +1305,10 @@ namespace FFXIVClassic_Map_Server.Actors
         {
         }
 
-        public void PartyPromote()
+        public void PartyPromote(string name)
         {
+            SubPacket promotePacket = PartyModifyPacket.BuildPacket(playerSession, 0, name);
+            QueuePacket(promotePacket);
         }
 
         //A party member list packet came, set the party

@@ -81,10 +81,9 @@
     <Compile Include="actors\chara\player\Equipment.cs" />
     <Compile Include="actors\chara\player\Inventory.cs" />
     <Compile Include="actors\chara\Work.cs" />
-    <Compile Include="actors\group\GroupInvitationRelationGroup.cs" />
-    <Compile Include="actors\group\LinkshellGroup.cs" />
-    <Compile Include="actors\group\PartyGroup.cs" />
-    <Compile Include="actors\group\RetainerGroup.cs" />
+    <Compile Include="actors\group\Group.cs" />
+    <Compile Include="actors\group\Party.cs" />
+    <Compile Include="actors\group\Relation.cs" />
     <Compile Include="actors\group\work\ContentWork.cs" />
     <Compile Include="actors\debug\Debug.cs" />
     <Compile Include="actors\director\Director.cs" />
@@ -94,7 +93,6 @@
     <Compile Include="actors\director\quest\QuestDirectorMan0u001.cs" />
     <Compile Include="actors\director\WeatherDirector.cs" />
     <Compile Include="actors\EventList.cs" />
-    <Compile Include="actors\group\Group.cs" />
     <Compile Include="actors\group\work\GroupGlobalSave.cs" />
     <Compile Include="actors\group\work\GroupGlobalTemp.cs" />
     <Compile Include="actors\group\work\GroupMemberSave.cs" />
@@ -288,6 +286,7 @@
     <Compile Include="packets\WorldPackets\Send\Group\CreateLinkshellPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\DeleteLinkshellPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\ModifyLinkshellPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\PartyModifyPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\SessionBeginConfirmPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\SessionEndConfirmPacket.cs" />
     <Compile Include="Program.cs" />
