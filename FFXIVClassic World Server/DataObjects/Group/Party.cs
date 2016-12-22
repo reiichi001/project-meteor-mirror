@@ -22,22 +22,27 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
         public void SetLeaderPlayerRequest(Session requestSession, string name)
         {
+            SetLeaderPlayerRequest(requestSession, GetIdForName(name));
+        }
+
+        public void SetLeaderPlayerRequest(Session requestSession, uint actorId)
+        {
             if (GetLeader() != requestSession.sessionId)
             {
                 requestSession.SendGameMessage(30428, 0x20, Server.GetServer().GetNameForId(requestSession.sessionId));
                 return;
             }
 
-            uint newLeader = GetIdForName(name);
+            uint newLeader = actorId;
 
-            if (newLeader == 0)
+            if (!members.Contains(actorId))
             {
-                requestSession.SendGameMessage(30575, 0x20);
+                requestSession.SendGameMessage(30567, 0x20);
                 return;
             }
             else if (newLeader == GetLeader())
             {
-                requestSession.SendGameMessage(30563, 0x20, name);
+                requestSession.SendGameMessage(30559, 0x20, (Object)Server.GetServer().GetNameForId(actorId));
                 return;
             }
 
@@ -49,13 +54,18 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
                 Session session = Server.GetServer().GetSession(members[i]);
                 if (session == null)
                     continue;
-                session.SendGameMessage(30429, 0x20, Server.GetServer().GetNameForId(members[i]));
+                session.SendGameMessage(30429, 0x20, (Object)Server.GetServer().GetNameForId(actorId));
             }
 
-            Server.GetServer().GetWorldManager().SendPartySync(this);
+            Server.GetServer().GetWorldManager().SendPartySync(this);     
         }
 
         public void KickPlayerRequest(Session requestSession, string name)
+        {
+            KickPlayerRequest(requestSession, GetIdForName(name));
+        }
+
+        public void KickPlayerRequest(Session requestSession, uint actorId)
         {
             if (GetLeader() != requestSession.sessionId)
             {
@@ -63,9 +73,9 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
                 return;
             }
 
-            uint kickedMemberId = GetIdForName(name);
+            uint kickedMemberId = actorId;
 
-            if (kickedMemberId == 0)
+            if (!members.Contains(actorId))
             {
                 requestSession.SendGameMessage(30575, 0x20);
                 return;
@@ -80,7 +90,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
                 if (members[i] == kickedMemberId)
                     session.SendGameMessage(30410, 0x20);
                 else
-                    session.SendGameMessage(30428, 0x20, (Object)name);
+                    session.SendGameMessage(30428, 0x20, (Object)Server.GetServer().GetNameForId(actorId));
             }
 
             //All good, remove
@@ -106,7 +116,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
         public void SetLeader(uint actorId)
         {
-            partyGroupWork._globalTemp.owner = (ulong)((actorId << 32) | 0xB36F92);
+            partyGroupWork._globalTemp.owner = (ulong)(((ulong)actorId << 32) | 0xB36F92);
         }
 
         public uint GetLeader()
@@ -152,11 +162,15 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             return Group.PlayerPartyGroup;
         }
 
-        public override List<GroupMember> BuildMemberList()
+        public override List<GroupMember> BuildMemberList(uint id)
         {
             List<GroupMember> groupMembers = new List<GroupMember>();
+            groupMembers.Add(new GroupMember(id, -1, 0, false, true, Server.GetServer().GetNameForId(id)));
             foreach (uint charaId in members)
-                groupMembers.Add(new GroupMember(charaId, -1, 0, false, true, Server.GetServer().GetNameForId(charaId)));
+            {
+                if (charaId != id)
+                    groupMembers.Add(new GroupMember(charaId, -1, 0, false, true, Server.GetServer().GetNameForId(charaId)));
+            }
             return groupMembers;
         }
 

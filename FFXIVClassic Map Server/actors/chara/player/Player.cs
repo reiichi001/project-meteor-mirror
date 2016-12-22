@@ -1291,6 +1291,12 @@ namespace FFXIVClassic_Map_Server.Actors
                 return false;
         }
 
+        public void PartyOustPlayer(uint actorId)
+        {
+            SubPacket oustPacket = PartyModifyPacket.BuildPacket(playerSession, 1, actorId);
+            QueuePacket(oustPacket);
+        }
+
         public void PartyOustPlayer(string name)
         {
             SubPacket oustPacket = PartyModifyPacket.BuildPacket(playerSession, 1, name);
@@ -1303,6 +1309,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void PartyDisband()
         {
+        }
+
+        public void PartyPromote(uint actorId)
+        {
+            SubPacket promotePacket = PartyModifyPacket.BuildPacket(playerSession, 0, actorId);
+            QueuePacket(promotePacket);
         }
 
         public void PartyPromote(string name)

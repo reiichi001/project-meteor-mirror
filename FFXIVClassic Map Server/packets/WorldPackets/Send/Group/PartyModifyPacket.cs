@@ -25,6 +25,21 @@ namespace FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group
                 }
             }
             return new SubPacket(true, OPCODE, session.id, session.id, data);
+        }
+
+        public static SubPacket BuildPacket(Session session, ushort command, uint actorId)
+        {
+            byte[] data = new byte[PACKET_SIZE - 0x20];
+            using (MemoryStream mem = new MemoryStream(data))
+            {
+                using (BinaryWriter binWriter = new BinaryWriter(mem))
+                {
+                    binWriter.Write((UInt16)(command + 2));
+                    binWriter.Write((UInt32)actorId);
+                }
+            }
+            return new SubPacket(true, OPCODE, session.id, session.id, data);
         }      
+
     }
 }

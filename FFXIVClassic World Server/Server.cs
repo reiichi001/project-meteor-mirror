@@ -208,11 +208,15 @@ namespace FFXIVClassic_World_Server
 
                         if (pt.GetMemberCount() <= 1)
                             return;
-                    
-                        if (partyModifyPacket.command == PartyModifyPacket.MODIFY_LEADER)                        
-                            pt.SetLeaderPlayerRequest(GetSession(subpacket.header.sourceId), partyModifyPacket.name);                        
+
+                        if (partyModifyPacket.command == PartyModifyPacket.MODIFY_LEADER)
+                            pt.SetLeaderPlayerRequest(GetSession(subpacket.header.sourceId), partyModifyPacket.name);
                         else if (partyModifyPacket.command == PartyModifyPacket.MODIFY_KICKPLAYER)
                             pt.KickPlayerRequest(GetSession(subpacket.header.sourceId), partyModifyPacket.name); 
+                        else if (partyModifyPacket.command == PartyModifyPacket.MODIFY_LEADER + 2)
+                            pt.SetLeaderPlayerRequest(GetSession(subpacket.header.sourceId), partyModifyPacket.actorId);
+                        else if (partyModifyPacket.command == PartyModifyPacket.MODIFY_KICKPLAYER + 2)
+                            pt.KickPlayerRequest(GetSession(subpacket.header.sourceId), partyModifyPacket.actorId); 
 
                         break;
                     //Party Resign or Disband

@@ -83,7 +83,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             return Group.CompanyGroup;
         }        
 
-        public override List<GroupMember> BuildMemberList()
+        public override List<GroupMember> BuildMemberList(uint id)
         {
             List<GroupMember> groupMembers = new List<GroupMember>();
             foreach (LinkshellMember member in members)            

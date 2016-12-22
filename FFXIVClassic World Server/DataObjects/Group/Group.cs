@@ -43,7 +43,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             return -1;
         }
 
-        public virtual List<GroupMember> BuildMemberList()
+        public virtual List<GroupMember> BuildMemberList(uint id)
         {
             return new List<GroupMember>();
         }
@@ -62,7 +62,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
         public void SendGroupPackets(Session session)
         {
             ulong time = Utils.MilisUnixTimeStampUTC();
-            List<GroupMember> members = BuildMemberList();
+            List<GroupMember> members = BuildMemberList(session.sessionId);
 
             session.clientConnection.QueuePacket(GroupHeaderPacket.buildPacket(session.sessionId, session.currentZoneId, time, this), true, false);
             session.clientConnection.QueuePacket(GroupMembersBeginPacket.buildPacket(session.sessionId, session.currentZoneId, time, this), true, false);

@@ -14,6 +14,7 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
 
         public ushort command;
         public string name;
+        public uint actorId;
 
         public PartyModifyPacket(byte[] data)
         {
@@ -24,7 +25,11 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
                     try
                     {
                         command = binReader.ReadUInt16();
-                        name = Encoding.ASCII.GetString(binReader.ReadBytes(0x20)).Trim(new[] { '\0' });
+
+                        if (command >= 2)
+                            actorId = binReader.ReadUInt32();
+                        else
+                            name = Encoding.ASCII.GetString(binReader.ReadBytes(0x20)).Trim(new[] { '\0' });
                     }
                     catch (Exception)
                     {

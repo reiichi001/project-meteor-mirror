@@ -721,6 +721,7 @@ namespace FFXIVClassic_Map_Server
                 else
                     group = currentPlayerParties[syncPacket.partyGroupId];
 
+                group.SetLeader(syncPacket.owner);
                 group.members = syncPacket.memberActorIds.ToList();
 
                 //Add group to everyone

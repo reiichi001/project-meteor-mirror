@@ -214,9 +214,10 @@ namespace FFXIVClassic_World_Server
             Party pt = mPartyManager.GetParty(session.sessionId);
 
             
-            if (session.sessionId == 0x6c)
+            if (session.sessionId == 156)
             {
-                mPartyManager.AddToParty(pt.groupIndex, 156);
+                mPartyManager.AddToParty(pt.groupIndex, 0x6c);
+                mPartyManager.AddToParty(pt.groupIndex, 157);
             }
              
             pt.SendGroupPackets(session);
@@ -226,7 +227,7 @@ namespace FFXIVClassic_World_Server
             foreach (Linkshell ls in linkshells)
                 ls.SendGroupPackets(session);
 
-            mRelationGroupManager.CreateRelationGroup(157, session.sessionId, 40001).SendGroupPackets(session);
+            mRelationGroupManager.CreateRelationGroup(157, session.sessionId, 10001).SendGroupPackets(session);
         }
 
         private void SendMotD(Session session)
@@ -291,7 +292,7 @@ namespace FFXIVClassic_World_Server
             if (mCurrentWorldGroups.ContainsKey(groupId))
             {
                 Group group = mCurrentWorldGroups[groupId];
-                foreach (GroupMember member in group.BuildMemberList())
+                foreach (GroupMember member in group.BuildMemberList(0))
                     group.SendGroupPackets(mServer.GetSession(member.actorId));
             }
         }        
