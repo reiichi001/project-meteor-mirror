@@ -221,6 +221,14 @@ namespace FFXIVClassic_World_Server
                         break;
                     //Party Resign or Disband
                     case 0x1021:
+                        PartyLeavePacket partyLeavePacket = new PartyLeavePacket(subpacket.data);
+                        Party leavePt = mWorldManager.GetPartyManager().GetParty(subpacket.header.sourceId);
+
+                        if (!partyLeavePacket.isDisband)
+                            leavePt.LeavePlayerRequest(GetSession(subpacket.header.sourceId));
+                        else
+                            leavePt.DisbandPlayerRequest(GetSession(subpacket.header.sourceId));
+
                         break;
                     //Linkshell create request
                     case 0x1025:

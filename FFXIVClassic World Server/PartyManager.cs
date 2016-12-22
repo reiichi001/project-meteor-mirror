@@ -38,7 +38,14 @@ namespace FFXIVClassic_World_Server
             if (mCurrentWorldGroupsReference.ContainsKey(groupId))
                 mCurrentWorldGroupsReference.Remove(groupId);
             if (mPartyList.ContainsKey(groupId))
+            {
+                foreach (uint id in mPartyList[groupId].members)
+                {
+                    if (mPlayerPartyLookup.ContainsKey(id))
+                        mPlayerPartyLookup.Remove(id);
+                }
                 mPartyList.Remove(groupId);
+            }
         }
 
         public bool AddToParty(ulong groupId, uint charaId)

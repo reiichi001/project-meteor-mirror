@@ -1305,10 +1305,14 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void PartyLeave()
         {
+            SubPacket leavePacket = PartyLeavePacket.BuildPacket(playerSession, false);
+            QueuePacket(leavePacket);
         }
 
         public void PartyDisband()
         {
+            SubPacket disbandPacket = PartyLeavePacket.BuildPacket(playerSession, true);
+            QueuePacket(disbandPacket);
         }
 
         public void PartyPromote(uint actorId)

@@ -286,6 +286,7 @@
     <Compile Include="packets\WorldPackets\Send\Group\CreateLinkshellPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\DeleteLinkshellPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\ModifyLinkshellPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\PartyLeavePacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\PartyModifyPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\SessionBeginConfirmPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\SessionEndConfirmPacket.cs" />

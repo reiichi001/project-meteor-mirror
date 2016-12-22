@@ -94,11 +94,90 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             }
 
             //All good, remove
-            members.Remove(kickedMemberId);
+            Server.GetServer().GetWorldManager().GetPartyManager().RemoveFromParty(groupIndex, kickedMemberId);
             SendGroupPacketsAll(members);
-            Server.GetServer().GetWorldManager().SendPartySync(this);            
+            Server.GetServer().GetWorldManager().SendPartySync(this);
+
+            //Set the kicked guy to a new party
+            Session kickedSession = Server.GetServer().GetSession(kickedMemberId);
+            if (kickedSession != null)
+            {
+                Party kickedPlayersNewParty = Server.GetServer().GetWorldManager().GetPartyManager().CreateParty(kickedMemberId);
+                kickedPlayersNewParty.SendGroupPackets(kickedSession);
+                Server.GetServer().GetWorldManager().SendPartySync(kickedPlayersNewParty);
+                kickedPlayersNewParty.SendInitWorkValues(kickedSession);
+            }
         }
-       
+
+        public void LeavePlayerRequest(Session requestSession)
+        {
+            uint leaver = requestSession.sessionId;
+
+            //Check if party contains this person
+            if (!members.Contains(leaver))
+            {
+                
+                return;
+            }
+
+            //Send you are leaving messages
+            for (int i = 0; i < members.Count; i++)
+            {
+                Session session = Server.GetServer().GetSession(members[i]);
+                if (session == null)
+                    continue;
+
+                session.SendGameMessage(30431, 0x20, (Object)Server.GetServer().GetNameForId(leaver));
+            }
+
+            //All good, remove
+            Server.GetServer().GetWorldManager().GetPartyManager().RemoveFromParty(groupIndex, leaver);
+            SendGroupPacketsAll(members);
+            Server.GetServer().GetWorldManager().SendPartySync(this);
+
+            //Set the left guy to a new party            
+            if (requestSession != null)
+            {
+                Party kickedPlayersNewParty = Server.GetServer().GetWorldManager().GetPartyManager().CreateParty(leaver);
+                kickedPlayersNewParty.SendGroupPackets(requestSession);
+                Server.GetServer().GetWorldManager().SendPartySync(kickedPlayersNewParty);
+                kickedPlayersNewParty.SendInitWorkValues(requestSession);
+            }
+
+        }
+
+        public void DisbandPlayerRequest(Session requestSession)
+        {
+            uint disbander = requestSession.sessionId;
+
+            //Check if leader
+            if (GetLeader() != disbander)
+            {
+                requestSession.SendGameMessage(30428, 0x20, Server.GetServer().GetNameForId(requestSession.sessionId));
+                return;
+            }
+
+            Server.GetServer().GetWorldManager().GetPartyManager().DeleteParty(groupIndex);
+
+            //Send game messages and set new parties
+            for (int i = 0; i < members.Count; i++)
+            {
+                Session session = Server.GetServer().GetSession(members[i]);
+                if (session == null)
+                    continue;
+
+                session.SendGameMessage(30401, 0x20);
+
+                //Set char to new party    
+                Party newParty = Server.GetServer().GetWorldManager().GetPartyManager().CreateParty(members[i]);
+                newParty.SendGroupPackets(session);
+                Server.GetServer().GetWorldManager().SendPartySync(newParty);
+                newParty.SendInitWorkValues(session);                
+            }
+
+            Server.GetServer().GetWorldManager().SendPartySync(this);
+        }
+
         public void SendLeaderWorkToAllMembers()
         {
             for (int i = 0; i < members.Count; i++)
@@ -173,7 +252,6 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             }
             return groupMembers;
         }
-
         
     }
 }
