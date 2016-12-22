@@ -8,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group
 {
     class ModifyLinkshellPacket
     {
-        public const ushort OPCODE = 0x1000;
+        public const ushort OPCODE = 0x1026;
         public const uint PACKET_SIZE = 0x60;
 
         public static SubPacket BuildPacket(Session session, ushort changeArg, string name, string newName, ushort crest, uint master)

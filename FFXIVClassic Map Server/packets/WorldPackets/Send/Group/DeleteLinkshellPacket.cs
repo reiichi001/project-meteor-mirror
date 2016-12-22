@@ -8,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group
 {
     class DeleteLinkshellPacket
     {
-        public const ushort OPCODE = 0x1000;
+        public const ushort OPCODE = 0x1027;
         public const uint PACKET_SIZE = 0x40;
 
         public static SubPacket BuildPacket(Session session, string name)
