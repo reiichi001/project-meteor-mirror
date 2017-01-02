@@ -230,6 +230,21 @@ namespace FFXIVClassic_World_Server
                             leavePt.DisbandPlayerRequest(GetSession(subpacket.header.sourceId));
 
                         break;
+                    //Party Invite Request
+                    case 0x1022:
+                        PartyInvitePacket partyInvitePacket = new PartyInvitePacket(subpacket.data);
+                        if (partyInvitePacket.command == 0)                        
+                            mWorldManager.ProcessPartyInvite(GetSession(subpacket.header.sourceId), partyInvitePacket.actorId);                        
+                        else if (partyInvitePacket.command == 1)
+                        {
+                            
+                        }
+                        break;
+                    //Party Invite Result
+                    case 0x1023:
+                        PartyInviteResultPacket partyInviteResultPacket = new PartyInviteResultPacket(subpacket.data);
+                        
+                        break;
                     //Linkshell create request
                     case 0x1025:
                         CreateLinkshellPacket createLinkshellPacket = new CreateLinkshellPacket(subpacket.data);

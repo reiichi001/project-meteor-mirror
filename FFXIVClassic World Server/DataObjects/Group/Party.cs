@@ -200,7 +200,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
         public uint GetLeader()
         {
-            return (uint)((partyGroupWork._globalTemp.owner >> 32) & 0xFFFFFFFF);
+            return (uint)(((ulong)partyGroupWork._globalTemp.owner >> 32) & 0xFFFFFFFF);
         }
         
         public uint GetIdForName(string name)

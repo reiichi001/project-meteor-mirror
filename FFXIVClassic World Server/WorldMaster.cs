@@ -212,13 +212,6 @@ namespace FFXIVClassic_World_Server
 
             //Send party, retainer, ls groups
             Party pt = mPartyManager.GetParty(session.sessionId);
-
-            
-            if (session.sessionId == 156)
-            {
-                mPartyManager.AddToParty(pt.groupIndex, 0x6c);
-                mPartyManager.AddToParty(pt.groupIndex, 157);
-            }
              
             pt.SendGroupPackets(session);
             SendPartySync(pt);   
@@ -228,7 +221,8 @@ namespace FFXIVClassic_World_Server
             foreach (Linkshell ls in linkshells)
                 ls.SendGroupPackets(session);
 
-            mRelationGroupManager.CreateRelationGroup(157, session.sessionId, 10001).SendGroupPackets(session);
+            mRelationGroupManager.CreatePartyRelationGroup(157, session.sessionId).SendGroupPackets(session);
+            
         }
 
         private void SendMotD(Session session)
@@ -296,7 +290,12 @@ namespace FFXIVClassic_World_Server
                 foreach (GroupMember member in group.BuildMemberList(0))
                     group.SendGroupPackets(mServer.GetSession(member.actorId));
             }
-        }        
+        }
+
+        public void ProcessPartyInvite(Session request, uint invitee)
+        {
+            throw new NotImplementedException();
+        }
 
         public void IncrementGroupIndex()
         {
@@ -332,6 +331,7 @@ namespace FFXIVClassic_World_Server
         {
             return mLinkshellManager;
         }
+
     }
 
 }

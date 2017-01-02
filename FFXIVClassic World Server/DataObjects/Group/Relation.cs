@@ -21,6 +21,16 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             work._globalTemp.variableCommand = command;
         }
 
+        public uint GetHost()
+        {
+            return (uint)(((ulong)work._globalTemp.host >> 32) & 0xFFFFFFFF);
+        }
+
+        public uint GetOther()
+        {
+            return charaOther;
+        }
+
         public override int GetMemberCount()
         {
             return 2;

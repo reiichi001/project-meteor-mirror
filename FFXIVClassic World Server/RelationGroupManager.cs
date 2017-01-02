@@ -9,7 +9,8 @@ namespace FFXIVClassic_World_Server
         private WorldManager mWorldManager;
         private Object mGroupLockReference;
         private Dictionary<ulong, Group> mCurrentWorldGroupsReference;
-        private Dictionary<ulong, Relation> mRelationList = new Dictionary<ulong, Relation>();
+        private Dictionary<ulong, Relation> mPartyRelationList = new Dictionary<ulong, Relation>();
+        private Dictionary<ulong, Relation> mLinkshellRelationList = new Dictionary<ulong, Relation>();
 
         public RelationGroupManager(WorldManager worldManager, Object groupLock, Dictionary<ulong, Group> worldGroupList)
         {
@@ -18,23 +19,64 @@ namespace FFXIVClassic_World_Server
             mCurrentWorldGroupsReference = worldGroupList;
         }
 
-        public Relation CreateRelationGroup(uint hostCharaId, uint otherCharaId, uint command)
+        public Relation CreatePartyRelationGroup(uint hostCharaId, uint otherCharaId)
         {
             lock (mGroupLockReference)
             {
                 ulong groupIndex = mWorldManager.GetGroupIndex();
-                Relation relation = new Relation(groupIndex, hostCharaId, otherCharaId, command);
-                mRelationList.Add(groupIndex, relation);
+                Relation relation = new Relation(groupIndex, hostCharaId, otherCharaId, 10001);
+                mPartyRelationList.Add(groupIndex, relation);
                 mCurrentWorldGroupsReference.Add(groupIndex, relation);
                 mWorldManager.IncrementGroupIndex();
                 return relation;
             }
         }
 
+        public Relation CreateLinkshellRelationGroup(uint hostCharaId, uint otherCharaId)
+        {
+            lock (mGroupLockReference)
+            {
+                ulong groupIndex = mWorldManager.GetGroupIndex();
+                Relation relation = new Relation(groupIndex, hostCharaId, otherCharaId, 10002);
+                mLinkshellRelationList.Add(groupIndex, relation);
+                mCurrentWorldGroupsReference.Add(groupIndex, relation);
+                mWorldManager.IncrementGroupIndex();
+                return relation;
+            }
+        }
+
+        public Relation GetPartyRelationGroup(uint charaId)
+        {
+            lock (mGroupLockReference)
+            {
+                foreach (Relation relation in mPartyRelationList.Values)
+                {                    
+                    if (relation.GetHost() == charaId || relation.GetOther() == charaId)
+                        return relation;
+                }
+                return null;
+            }
+        }
+
+        public Relation GetLinkshellRelationGroup(uint charaId)
+        {
+            lock (mGroupLockReference)
+            {
+                foreach (Relation relation in mLinkshellRelationList.Values)
+                {
+                    if (relation.GetHost() == charaId || relation.GetOther() == charaId)
+                        return relation;
+                }
+                return null;
+            }
+        }
+
         public void DeleteRelationGroup(ulong groupId)
         {
-            if (mRelationList.ContainsKey(groupId))
-                mRelationList.Remove(groupId);
+            if (mPartyRelationList.ContainsKey(groupId))
+                mPartyRelationList.Remove(groupId);
+            if (mLinkshellRelationList.ContainsKey(groupId))
+                mLinkshellRelationList.Remove(groupId);
             if (mCurrentWorldGroupsReference.ContainsKey(groupId))
                 mCurrentWorldGroupsReference.Remove(groupId);
         }
