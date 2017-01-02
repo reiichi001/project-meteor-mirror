@@ -219,10 +219,7 @@ namespace FFXIVClassic_World_Server
             mRetainerGroupManager.GetRetainerGroup(session.sessionId).SendGroupPackets(session);
             List<Linkshell> linkshells = mLinkshellManager.GetPlayerLinkshellMembership(session.sessionId);
             foreach (Linkshell ls in linkshells)
-                ls.SendGroupPackets(session);
-
-            mRelationGroupManager.CreatePartyRelationGroup(157, session.sessionId).SendGroupPackets(session);
-            
+                ls.SendGroupPackets(session);                       
         }
 
         private void SendMotD(Session session)
@@ -292,9 +289,50 @@ namespace FFXIVClassic_World_Server
             }
         }
 
-        public void ProcessPartyInvite(Session request, uint invitee)
+        public void ProcessPartyInvite(Session requestSession, uint invitee)
         {
-            throw new NotImplementedException();
+            if (mServer.GetSession(invitee) == null)
+            {
+                requestSession.SendGameMessage(30544, 0x20);
+            }
+            else
+            {
+                Session inviteeSession = mServer.GetSession(invitee);
+                Relation inviteRelation = mRelationGroupManager.CreatePartyRelationGroup(requestSession.sessionId, invitee);
+                inviteRelation.SendGroupPacketsAll(requestSession.sessionId, invitee);          
+                inviteeSession.SendGameMessage(30430, 0x20, (object)mServer.GetNameForId(requestSession.sessionId)); //X Invited you
+                requestSession.SendGameMessage(30433, 0x20, (object)mServer.GetNameForId(inviteeSession.sessionId)); //You invite X
+            }
+        }
+
+        public void ProcessPartyInviteResult(Session inviteeSession, uint resultCode)
+        {
+            Relation relation = mRelationGroupManager.GetPartyRelationGroup(inviteeSession.sessionId);
+            Session inviterSession = mServer.GetSession(relation.GetHost());            
+
+            //Accept
+            if (resultCode == 1)
+            {
+                Party oldParty = mPartyManager.GetParty(inviteeSession.sessionId);
+                if (oldParty.members.Count == 1)
+                {
+                    mPartyManager.DeleteParty(oldParty.groupIndex);
+                    Party newParty = mPartyManager.GetParty(inviterSession.sessionId);
+                    mPartyManager.AddToParty(newParty.groupIndex, inviteeSession.sessionId);
+                    newParty.SendGroupPacketsAll(newParty.members);
+                    SendPartySync(newParty);
+                    newParty.OnPlayerJoin(inviteeSession);                    
+                }
+            }
+            else //Refuse 
+            {
+                inviterSession.SendGameMessage(30573, 0x20, (object)mServer.GetNameForId(inviteeSession.sessionId)); //X rejects your invite
+            }
+
+            //Delete the relation
+            mRelationGroupManager.DeleteRelationGroup(relation.groupIndex);
+            relation.SendDeletePackets(inviterSession.sessionId, inviteeSession.sessionId);
+
         }
 
         public void IncrementGroupIndex()

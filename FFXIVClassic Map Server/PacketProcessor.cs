@@ -111,7 +111,8 @@ namespace FFXIVClassic_Map_Server
                                 return; ;
                         }
 
-                        session.GetActor().BroadcastPacket(SendMessagePacket.BuildPacket(session.id, session.id, chatMessage.logType, session.GetActor().customDisplayName, chatMessage.message), false);
+                        if (chatMessage.logType == SendMessagePacket.MESSAGE_TYPE_SAY || chatMessage.logType == SendMessagePacket.MESSAGE_TYPE_SHOUT)
+                            session.GetActor().BroadcastPacket(SendMessagePacket.BuildPacket(session.id, session.id, chatMessage.logType, session.GetActor().customDisplayName, chatMessage.message), false);
 
                         break;
                     //Langauge Code (Client safe to send packets to now)

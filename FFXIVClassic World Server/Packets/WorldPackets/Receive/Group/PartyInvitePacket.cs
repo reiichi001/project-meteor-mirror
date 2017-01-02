@@ -23,7 +23,7 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
                     {
                         command = binReader.ReadUInt16();
 
-                        if (command == 0)
+                        if (command == 1)
                             actorId = binReader.ReadUInt32();
                         else
                             name = Encoding.ASCII.GetString(binReader.ReadBytes(0x20)).Trim(new[] { '\0' });

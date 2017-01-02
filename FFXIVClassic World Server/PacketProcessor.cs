@@ -1,9 +1,11 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_World_Server.DataObjects;
+using FFXIVClassic_World_Server.DataObjects.Group;
 using FFXIVClassic_World_Server.Packets.Receive;
 using FFXIVClassic_World_Server.Packets.Receive.Subpackets;
 using FFXIVClassic_World_Server.Packets.Send;
 using FFXIVClassic_World_Server.Packets.Send.Login;
+using FFXIVClassic_World_Server.Packets.Send.Subpackets;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Receive;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Send;
 using System;
@@ -151,6 +153,19 @@ namespace FFXIVClassic_World_Server
         {
             switch (subpacket.gameMessage.opcode)
             {
+                case 0x00C9:
+                    subpacket.DebugPrintSubPacket();
+                    PartyChatMessagePacket partyChatMessagePacket = new PartyChatMessagePacket(subpacket.data);                 
+                    Party playerParty = mServer.GetWorldManager().GetPartyManager().GetParty(session.sessionId);
+                    for (int i = 0; i < playerParty.members.Count; i++)
+                    {
+                        Session thatSession = mServer.GetSession(playerParty.members[i]);
+                        if (thatSession != null && !session.Equals(thatSession))
+                        {
+                            thatSession.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, thatSession.sessionId, SendMessagePacket.MESSAGE_TYPE_PARTY, mServer.GetNameForId(session.sessionId), partyChatMessagePacket.message), true, false);
+                        }
+                    }                    
+                    break;
                 case 0x6:
                     mServer.GetWorldManager().DoLogin(session);
                     break;

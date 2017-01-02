@@ -48,6 +48,17 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             return new List<GroupMember>();
         }
 
+        public void SendGroupPacketsAll(params uint[] sessionIds)
+        {
+            for (int i = 0; i < sessionIds.Length; i++)
+            {
+                Session session = Server.GetServer().GetSession(sessionIds[i]);
+
+                if (session != null)
+                    SendGroupPackets(session);
+            }
+        }
+
         public void SendGroupPacketsAll(List<uint> sessionIds)
         {
             for (int i = 0; i < sessionIds.Count; i++)
@@ -56,6 +67,28 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
                 if (session != null)
                     SendGroupPackets(session);
+            }
+        }
+
+        public void SendDeletePackets(params uint[] sessionIds)
+        {
+            for (int i = 0; i < sessionIds.Length; i++)
+            {
+                Session session = Server.GetServer().GetSession(sessionIds[i]);
+
+                if (session != null)
+                    SendDeletePacket(session);
+            }
+        }
+
+        public void SendDeletePackets(List<uint> sessionIds)
+        {
+            for (int i = 0; i < sessionIds.Count; i++)
+            {
+                Session session = Server.GetServer().GetSession(sessionIds[i]);
+
+                if (session != null)
+                    SendDeletePacket(session);
             }
         }
 
@@ -85,6 +118,11 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             
             session.clientConnection.QueuePacket(GroupMembersEndPacket.buildPacket(session.sessionId, session.currentZoneId, time, this), true, false);
 
+        }
+
+        public void SendDeletePacket(Session session)
+        {            
+            session.clientConnection.QueuePacket(DeleteGroupPacket.buildPacket(session.sessionId, this), true, false);
         }
 
         public virtual void SendInitWorkValues(Session session)

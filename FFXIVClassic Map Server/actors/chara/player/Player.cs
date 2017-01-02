@@ -608,14 +608,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void BroadcastPacket(SubPacket packet, bool sendToSelf)
         {
-            if (sendToSelf)            
-                QueuePacket(packet);
-            
             foreach (Actor a in playerSession.actorInstanceList)
             {
                 if (a is Player)
                 {
                     Player p = (Player)a;
+
+                    if (p.Equals(this) && !sendToSelf)
+                        continue;
+
                     SubPacket clonedPacket = new SubPacket(packet, a.actorId);
                     p.QueuePacket(clonedPacket);
                 }

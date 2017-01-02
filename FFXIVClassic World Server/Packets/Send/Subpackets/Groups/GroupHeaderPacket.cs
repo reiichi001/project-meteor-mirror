@@ -46,6 +46,7 @@ namespace FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups
 
                     binWriter.Seek(0x64, SeekOrigin.Begin);
 
+                    //Does this change chat????
                     binWriter.Write((UInt32)0x6D);
                     binWriter.Write((UInt32)0x6D);
                     binWriter.Write((UInt32)0x6D);

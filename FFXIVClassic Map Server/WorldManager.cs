@@ -748,6 +748,23 @@ namespace FFXIVClassic_Map_Server
                 currentPlayerParties.Remove(party.groupIndex);
         }
 
+        public void CreateInvitePartyGroup(Player player, string name)
+        {
+            SubPacket invitePacket = PartyInvitePacket.BuildPacket(player.playerSession, name);
+            player.QueuePacket(invitePacket);
+        }
+        public void CreateInvitePartyGroup(Player player, uint actorId)
+        {
+            SubPacket invitePacket = PartyInvitePacket.BuildPacket(player.playerSession, actorId);
+            player.QueuePacket(invitePacket);
+        }
+
+        public void GroupInviteResult(Player player, uint groupType, uint result)
+        {
+            SubPacket groupInviteResultPacket = GroupInviteResultPacket.BuildPacket(player.playerSession, groupType, result);
+            player.QueuePacket(groupInviteResultPacket);
+        }
+
         public Player GetPCInWorld(string name)
         {            
             foreach (Zone zone in zoneList.Values)

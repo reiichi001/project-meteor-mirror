@@ -233,16 +233,23 @@ namespace FFXIVClassic_World_Server
                     //Party Invite Request
                     case 0x1022:
                         PartyInvitePacket partyInvitePacket = new PartyInvitePacket(subpacket.data);
-                        if (partyInvitePacket.command == 0)                        
+                        if (partyInvitePacket.command == 1)                        
                             mWorldManager.ProcessPartyInvite(GetSession(subpacket.header.sourceId), partyInvitePacket.actorId);                        
-                        else if (partyInvitePacket.command == 1)
+                        else if (partyInvitePacket.command == 0)
                         {
                             
                         }
                         break;
-                    //Party Invite Result
+                    //Group Invite Result
                     case 0x1023:
-                        PartyInviteResultPacket partyInviteResultPacket = new PartyInviteResultPacket(subpacket.data);
+                        GroupInviteResultPacket groupInviteResultPacket = new GroupInviteResultPacket(subpacket.data);
+
+                        switch (groupInviteResultPacket.groupType)
+                        {
+                            case 0x2711:
+                                mWorldManager.ProcessPartyInviteResult(GetSession(subpacket.header.sourceId), groupInviteResultPacket.result);
+                                break;
+                        }
                         
                         break;
                     //Linkshell create request

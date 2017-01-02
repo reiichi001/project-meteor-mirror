@@ -5,13 +5,14 @@ using System.Text;
 
 namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
 {
-    class PartyInviteResultPacket
+    class GroupInviteResultPacket
     {
         public bool invalidPacket = false;
 
+        public uint groupType;
         public uint result;
 
-        public PartyInviteResultPacket(byte[] data)
+        public GroupInviteResultPacket(byte[] data)
         {
             using (MemoryStream mem = new MemoryStream(data))
             {
@@ -19,6 +20,7 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
                 {
                     try
                     {
+                        groupType = binReader.ReadUInt32();
                         result = binReader.ReadUInt32();
                     }
                     catch (Exception)

@@ -252,6 +252,18 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             }
             return groupMembers;
         }
-        
+
+        public void OnPlayerJoin(Session inviteeSession)
+        {
+            for (int i = 0; i < members.Count; i++)
+            {
+                Session session = Server.GetServer().GetSession(members[i]);
+                if (session == null)
+                    continue;
+
+                session.SendGameMessage(30427, 0x20, (Object)Server.GetServer().GetNameForId(inviteeSession.sessionId));
+            }
+        }
+
     }
 }

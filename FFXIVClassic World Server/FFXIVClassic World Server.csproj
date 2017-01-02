@@ -90,6 +90,8 @@
     <Compile Include="LinkshellManager.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="Packets\Receive\HelloPacket.cs" />
+    <Compile Include="Packets\Receive\Subpackets\PartyChatMessagePacket.cs" />
+    <Compile Include="Packets\Receive\Subpackets\ChatMessagePacket.cs" />
     <Compile Include="Packets\Receive\Subpackets\GroupCreatedPacket.cs" />
     <Compile Include="Packets\Send\Subpackets\GameMessagePacket.cs" />
     <Compile Include="Packets\Send\Subpackets\Groups\CreateNamedGroup.cs" />
@@ -108,7 +110,7 @@
     <Compile Include="Packets\Send\_0x2Packet.cs" />
     <Compile Include="Packets\Send\_0x7Packet.cs" />
     <Compile Include="Packets\Send\_0x8PingPacket.cs" />
-    <Compile Include="Packets\WorldPackets\Receive\Group\PartyInviteResultPacket.cs" />
+    <Compile Include="Packets\WorldPackets\Receive\Group\GroupInviteResultPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\PartyLeavePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\PartyInvitePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\PartyModifyPacket.cs" />
