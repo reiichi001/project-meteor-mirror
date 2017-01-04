@@ -23,7 +23,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public float positionX, positionY, positionZ, rotation;
         public float oldPositionX, oldPositionY, oldPositionZ, oldRotation;
         public ushort moveState, oldMoveState;
-        public float[] moveSpeeds = new float[5];
+        public float[] moveSpeeds = new float[4];
 
         public uint zoneId, zoneId2;
         public Area zone = null;
@@ -53,7 +53,7 @@ namespace FFXIVClassic_Map_Server.Actors
             this.moveSpeeds[0] = SetActorSpeedPacket.DEFAULT_STOP;
             this.moveSpeeds[1] = SetActorSpeedPacket.DEFAULT_WALK;
             this.moveSpeeds[2] = SetActorSpeedPacket.DEFAULT_RUN;
-            this.moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_RUN;
+            this.moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_ACTIVE;
         }
 
         public SubPacket CreateAddActorPacket(uint playerActorId, byte val)
@@ -289,17 +289,17 @@ namespace FFXIVClassic_Map_Server.Actors
         public void ChangeSpeed(int type, float value)
         {
             moveSpeeds[type] = value;
-            SubPacket ChangeSpeedPacket = SetActorSpeedPacket.BuildPacket(actorId, actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2]);
+            SubPacket ChangeSpeedPacket = SetActorSpeedPacket.BuildPacket(actorId, actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2], moveSpeeds[3]);
             zone.BroadcastPacketAroundActor(this, ChangeSpeedPacket);
         }
 
-        public void ChangeSpeed(float speedStop, float speedWalk, float speedRun)
+        public void ChangeSpeed(float speedStop, float speedWalk, float speedRun, float speedActive)
         {
             moveSpeeds[0] = speedStop;
             moveSpeeds[1] = speedWalk;
             moveSpeeds[2] = speedRun;
-            moveSpeeds[3] = speedRun;
-            SubPacket ChangeSpeedPacket = SetActorSpeedPacket.BuildPacket(actorId, actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2]);
+            moveSpeeds[3] = speedActive;
+            SubPacket ChangeSpeedPacket = SetActorSpeedPacket.BuildPacket(actorId, actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2], moveSpeeds[3]);
             zone.BroadcastPacketAroundActor(this, ChangeSpeedPacket);
         }
 

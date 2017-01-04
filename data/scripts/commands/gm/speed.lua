@@ -9,5 +9,5 @@ function onTrigger(player, argc, stop, walk, run)
     walk = tonumber(walk) or 2;
     run = tonumber(run) or 5;
     
-    player:ChangeSpeed(stop, walk, run);
+    player:ChangeSpeed(stop, walk, run, run);
 end;
