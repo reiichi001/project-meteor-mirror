@@ -9,8 +9,9 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
     {
         public bool invalidPacket = false;
                 
-        public bool isDisband;
+        public bool isKicked;
         public string lsName;
+        public string kickedName;
 
         public LinkshellLeavePacket(byte[] data)
         {
@@ -20,7 +21,8 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
                 {
                     try
                     {
-                        isDisband = binReader.ReadUInt16() == 1;
+                        isKicked = binReader.ReadUInt16() == 1;
+                        kickedName = Encoding.ASCII.GetString(binReader.ReadBytes(0x20)).Trim(new[] { '\0' });
                         lsName = Encoding.ASCII.GetString(binReader.ReadBytes(0x20)).Trim(new[] { '\0' });
                     }
                     catch (Exception)

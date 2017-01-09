@@ -176,6 +176,19 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             }
         }
 
+        public LinkshellMember GetMember(string name)
+        {
+            lock (members)
+            {
+                for (int i = 0; i < members.Count; i++)
+                {
+                    if (Server.GetServer().GetNameForId((members[i].charaId)).Equals(name))
+                        return members[i];
+                }
+                return null;
+            }
+        }
+
         public bool HasMember(uint id)
         {
             lock (members)
@@ -203,14 +216,56 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             {
                 return;
             }
-
+            
             //Send you are leaving message
-            requestSession.SendGameMessage(25162, 0x20, (Object)1, (Object)Server.GetServer().GetNameForId(leaver));
+            requestSession.SendGameMessage(25162, 0x20, (Object)1, name);
 
             //All good, remove
             Server.GetServer().GetWorldManager().GetLinkshellManager().RemoveMemberFromLinkshell(requestSession.sessionId, name);
             SendGroupPacketsAll(GetMemberIds());
             ResendWorkValues();
+
+            //Delete group for kicked guy
+            SendDeletePacket(requestSession);
+        }
+
+        public void KickRequest(Session requestSession, string kickedName)
+        {
+            LinkshellMember kicked = GetMember(kickedName);
+            Session kickedSession = Server.GetServer().GetSession(kicked.charaId);
+
+            //Check if ls contains this person
+            if (!HasMember(kicked.charaId))
+            {
+                requestSession.SendGameMessage(25281, 0x20, (Object)1, (Object)kickedName, (Object)name);
+                return;
+            }
+            
+            //Send you are exiled message
+            lock (members)
+            {
+                for (int i = 0; i < members.Count; i++)
+                {
+                    Session session = Server.GetServer().GetSession(members[i].charaId);
+
+                    if (session == null)
+                        continue;
+                    
+                    if (session.sessionId == kicked.charaId)
+                        session.SendGameMessage(25184, 0x20, (Object)1, (Object)name);                    
+                    else
+                        session.SendGameMessage(25280, 0x20, (Object)1, (Object)kickedName, (Object)name);           
+                }
+            }            
+
+            //All good, remove
+            Server.GetServer().GetWorldManager().GetLinkshellManager().RemoveMemberFromLinkshell(kicked.charaId, name);
+            SendGroupPacketsAll(GetMemberIds());
+            ResendWorkValues();
+
+            //Delete group for kicked guy
+            SendDeletePacket(kickedSession);
+            
         }
 
         public void RankChangeRequest(Session requestSession, string name, byte rank)
@@ -221,9 +276,12 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
                 {
                     if (Server.GetServer().GetNameForId(members[i].charaId).Equals(name))
                     {
-                        members[i].rank = rank;
-                        ResendWorkValues();
-                        requestSession.SendGameMessage(25277, 0x20, (object)(100000 + rank), (object)name);
+                        if (Database.LinkshellChangeRank(members[i].charaId, rank))
+                        {
+                            members[i].rank = rank;
+                            ResendWorkValues();
+                            requestSession.SendGameMessage(25277, 0x20, (object)(100000 + rank), (object)name);
+                        }
                         return;
                     }
                 }                

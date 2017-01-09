@@ -420,7 +420,34 @@ namespace FFXIVClassic_World_Server
 
         public static bool LinkshellRemovePlayer(ulong lsId, uint charaId)
         {
-            throw new NotImplementedException();
+            bool success = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    DELETE FROM characters_linkshells                                   
+                                    WHERE characterId = @charaId AND linkshellId = @lsId;
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", charaId);
+                    cmd.Parameters.AddWithValue("@lsId", lsId);
+                    cmd.ExecuteNonQuery();
+                    success = true;
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return success;
         }
 
         public static bool ChangeLinkshellCrest(ulong lsId, ushort newCrestId)
@@ -434,6 +461,32 @@ namespace FFXIVClassic_World_Server
                     MySqlCommand cmd = new MySqlCommand("UPDATE server_linkshells SET crestIcon = @crestIcon WHERE id = @lsId", conn);
                     cmd.Parameters.AddWithValue("@lsId", lsId);
                     cmd.Parameters.AddWithValue("@crestIcon", newCrestId);
+                    cmd.ExecuteNonQuery();
+                    success = true;
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return success;
+        }
+
+        public static bool LinkshellChangeRank(uint charaId, byte rank)
+        {
+            bool success = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand("UPDATE characters_linkshells SET rank = @rank WHERE characterId = @charaId", conn);
+                    cmd.Parameters.AddWithValue("@charaId", charaId);
+                    cmd.Parameters.AddWithValue("@rank", rank);
                     cmd.ExecuteNonQuery();
                     success = true;
                 }

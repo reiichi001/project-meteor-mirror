@@ -315,12 +315,12 @@ namespace FFXIVClassic_World_Server
                         LinkshellInviteCancelPacket linkshellInviteCancelPacket = new LinkshellInviteCancelPacket(subpacket.data);
                         mWorldManager.ProcessLinkshellInviteCancel(GetSession(subpacket.header.sourceId));
                         break;
-                    //Linkshell resign/disband
+                    //Linkshell resign/kicked
                     case 0x1031:
                         LinkshellLeavePacket linkshellLeavePacket = new LinkshellLeavePacket(subpacket.data);
                         Linkshell lsLeave = mWorldManager.GetLinkshellManager().GetLinkshell(linkshellLeavePacket.lsName);
-                        if (linkshellLeavePacket.isDisband)
-                            lsLeave.DisbandRequest(GetSession(subpacket.header.sourceId));
+                        if (linkshellLeavePacket.isKicked)
+                            lsLeave.KickRequest(GetSession(subpacket.header.sourceId), linkshellLeavePacket.kickedName);
                         else
                             lsLeave.LeaveRequest(GetSession(subpacket.header.sourceId));
                         break;

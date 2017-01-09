@@ -698,7 +698,13 @@ namespace FFXIVClassic_Map_Server
 
         public void RequestWorldLinkshellLeave(Player player, string lsname)
         {
-            SubPacket packet = LinkshellLeavePacket.BuildPacket(player.playerSession, lsname, false);
+            SubPacket packet = LinkshellLeavePacket.BuildPacket(player.playerSession, lsname, null, false);
+            Server.GetWorldConnection().QueuePacket(packet, true, false);
+        }
+
+        public void RequestWorldLinkshellKick(Player player, string lsname, string kickedName)
+        {
+            SubPacket packet = LinkshellLeavePacket.BuildPacket(player.playerSession, lsname, kickedName, true);
             Server.GetWorldConnection().QueuePacket(packet, true, false);
         }
 

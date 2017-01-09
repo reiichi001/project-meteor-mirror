@@ -122,7 +122,8 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
         public void SendDeletePacket(Session session)
         {            
-            session.clientConnection.QueuePacket(DeleteGroupPacket.buildPacket(session.sessionId, this), true, false);
+            if (session != null)
+                session.clientConnection.QueuePacket(DeleteGroupPacket.buildPacket(session.sessionId, this), true, false);
         }
 
         public virtual void SendInitWorkValues(Session session)
