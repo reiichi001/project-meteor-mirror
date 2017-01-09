@@ -680,7 +680,8 @@ namespace FFXIVClassic_Map_Server
 
         public void RequestWorldLinkshellRankChange(Player player, string lsname, string memberName, byte newRank)
         {
-            
+            SubPacket packet = LinkshellRankChangePacket.BuildPacket(player.playerSession, memberName, lsname, newRank);
+            Server.GetWorldConnection().QueuePacket(packet, true, false);
         }
 
         public void RequestWorldLinkshellInviteMember(Player player, string lsname, uint invitedActorId)
@@ -695,9 +696,10 @@ namespace FFXIVClassic_Map_Server
             Server.GetWorldConnection().QueuePacket(packet, true, false);
         }
 
-        public bool RequestWorldLinkshellRemoveMember(Player player, bool wasKicked, string lsname, string memberName)
+        public void RequestWorldLinkshellLeave(Player player, string lsname)
         {
-            return false;
+            SubPacket packet = LinkshellLeavePacket.BuildPacket(player.playerSession, lsname, false);
+            Server.GetWorldConnection().QueuePacket(packet, true, false);
         }
 
         private void RequestWorldServerZoneChange(Player player, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)

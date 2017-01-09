@@ -51,7 +51,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
         public void AddMember(uint charaId)
         {
-            members.Add(new LinkshellMember(charaId, dbId, 0x0));
+            members.Add(new LinkshellMember(charaId, dbId, 0x4));
             members.Sort();
         }
 
@@ -125,6 +125,37 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             session.clientConnection.QueuePacket(test, true, false);
         }
 
+        public void ResendWorkValues()
+        {
+
+            SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupIndex);
+            groupWork.addProperty(this, "work._globalSave.master");
+            groupWork.addProperty(this, "work._globalSave.crestIcon[0]");
+            groupWork.addProperty(this, "work._globalSave.rank");
+
+            for (int i = 0; i < members.Count; i++)
+            {
+                work._memberSave[i].rank = members[i].rank;
+                groupWork.addProperty(this, String.Format("work._memberSave[{0}].rank", i));
+            }
+
+            groupWork.setTarget("memberRank");
+
+            lock (members)
+            {
+                for (int i = 0; i < members.Count; i++)
+                {
+                    Session session = Server.GetServer().GetSession(members[i].charaId);
+                    if (session != null)
+                    {
+                        SubPacket test = groupWork.buildPacket(session.sessionId, session.sessionId);
+                        session.clientConnection.QueuePacket(test, true, false);
+                    }
+                }
+            }
+            
+        }
+
         public void LoadMembers()
         {
             members = Database.GetLSMembers(this);
@@ -156,6 +187,49 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
                 }
                 return false;
             }
+        }
+
+        public void DisbandRequest(Session session)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void LeaveRequest(Session requestSession)
+        {
+            uint leaver = requestSession.sessionId;
+
+            //Check if ls contains this person
+            if (!HasMember(leaver))
+            {
+                return;
+            }
+
+            //Send you are leaving message
+            requestSession.SendGameMessage(25162, 0x20, (Object)1, (Object)Server.GetServer().GetNameForId(leaver));
+
+            //All good, remove
+            Server.GetServer().GetWorldManager().GetLinkshellManager().RemoveMemberFromLinkshell(requestSession.sessionId, name);
+            SendGroupPacketsAll(GetMemberIds());
+            ResendWorkValues();
+        }
+
+        public void RankChangeRequest(Session requestSession, string name, byte rank)
+        {
+            lock (members)
+            {
+                for (int i = 0; i < members.Count; i++)
+                {
+                    if (Server.GetServer().GetNameForId(members[i].charaId).Equals(name))
+                    {
+                        members[i].rank = rank;
+                        ResendWorkValues();
+                        requestSession.SendGameMessage(25277, 0x20, (object)(100000 + rank), (object)name);
+                        return;
+                    }
+                }                
+            }
+
+
         }
 
     }

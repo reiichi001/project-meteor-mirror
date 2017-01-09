@@ -149,6 +149,20 @@ namespace FFXIVClassic_World_Server
             return null;
         }
 
+        public Session GetSession(string targetSessionName)
+        {
+            lock (mZoneSessionList)
+            {
+                foreach (Session s in mZoneSessionList.Values)
+                {
+                    if (s.characterName != null && s.characterName.Equals(targetSessionName))
+                        return s;
+                }
+            }
+
+            return null;
+        }
+
         public void OnReceiveSubPacketFromZone(ZoneServer zoneServer, SubPacket subpacket)
         {
             uint sessionId = subpacket.header.targetId;
@@ -235,9 +249,15 @@ namespace FFXIVClassic_World_Server
                         PartyInvitePacket partyInvitePacket = new PartyInvitePacket(subpacket.data);
                         if (partyInvitePacket.command == 1)                        
                             mWorldManager.ProcessPartyInvite(GetSession(subpacket.header.sourceId), partyInvitePacket.actorId);                        
-                        else if (partyInvitePacket.command == 0)
+                        else if (partyInvitePacket.command == 0)                        
                         {
-                            
+                            Session inviteeByNamesSession = GetSession(partyInvitePacket.name);
+                            if (inviteeByNamesSession != null)
+                                mWorldManager.ProcessPartyInvite(GetSession(subpacket.header.sourceId), inviteeByNamesSession.sessionId);
+                            else
+                            {
+                                //Show not found msg
+                            }
                         }
                         break;
                     //Group Invite Result
@@ -294,6 +314,21 @@ namespace FFXIVClassic_World_Server
                     case 0x1030:
                         LinkshellInviteCancelPacket linkshellInviteCancelPacket = new LinkshellInviteCancelPacket(subpacket.data);
                         mWorldManager.ProcessLinkshellInviteCancel(GetSession(subpacket.header.sourceId));
+                        break;
+                    //Linkshell resign/disband
+                    case 0x1031:
+                        LinkshellLeavePacket linkshellLeavePacket = new LinkshellLeavePacket(subpacket.data);
+                        Linkshell lsLeave = mWorldManager.GetLinkshellManager().GetLinkshell(linkshellLeavePacket.lsName);
+                        if (linkshellLeavePacket.isDisband)
+                            lsLeave.DisbandRequest(GetSession(subpacket.header.sourceId));
+                        else
+                            lsLeave.LeaveRequest(GetSession(subpacket.header.sourceId));
+                        break;
+                    //Linkshell rank change
+                    case 0x1032:
+                        LinkshellRankChangePacket linkshellRankChangePacket = new LinkshellRankChangePacket(subpacket.data);
+                        Linkshell lsRankChange = mWorldManager.GetLinkshellManager().GetLinkshell(linkshellRankChangePacket.lsName);                        
+                        lsRankChange.RankChangeRequest(GetSession(subpacket.header.sourceId), linkshellRankChangePacket.name, linkshellRankChangePacket.rank);                       
                         break;
                 }
             }
@@ -459,6 +494,7 @@ namespace FFXIVClassic_World_Server
                 return mIdToNameMap[charaId];
             return null;  
         }        
+
 
     }
 }

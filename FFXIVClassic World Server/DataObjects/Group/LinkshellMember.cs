@@ -10,7 +10,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
     {
         public readonly uint charaId;
         public readonly ulong lsId;
-        public readonly byte rank;
+        public byte rank;
         
         public LinkshellMember(uint charaId, ulong lsId, byte rank)
         {
