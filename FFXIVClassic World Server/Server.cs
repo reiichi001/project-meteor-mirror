@@ -249,6 +249,9 @@ namespace FFXIVClassic_World_Server
                             case 0x2711:
                                 mWorldManager.ProcessPartyInviteResult(GetSession(subpacket.header.sourceId), groupInviteResultPacket.result);
                                 break;
+                            case 0x2712:
+                                mWorldManager.ProcessLinkshellInviteResult(GetSession(subpacket.header.sourceId), groupInviteResultPacket.result);
+                                break;
                         }
                         
                         break;
@@ -281,6 +284,16 @@ namespace FFXIVClassic_World_Server
                     case 0x1028:
                         SetActiveLinkshellPacket setActiveLinkshellPacket = new SetActiveLinkshellPacket(subpacket.data);
                         //Linkshell ls = mWorldManager.GetLinkshellManager().GetLinkshell();
+                        break;
+                    //Linkshell invite member
+                    case 0x1029:
+                        LinkshellInvitePacket linkshellInvitePacket = new LinkshellInvitePacket(subpacket.data);
+                        mWorldManager.ProcessLinkshellInvite(GetSession(subpacket.header.sourceId), linkshellInvitePacket.lsName, linkshellInvitePacket.actorId);
+                        break;
+                    //Linkshell cancel invite
+                    case 0x1030:
+                        LinkshellInviteCancelPacket linkshellInviteCancelPacket = new LinkshellInviteCancelPacket(subpacket.data);
+                        mWorldManager.ProcessLinkshellInviteCancel(GetSession(subpacket.header.sourceId));
                         break;
                 }
             }

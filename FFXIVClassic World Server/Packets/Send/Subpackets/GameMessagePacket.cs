@@ -329,6 +329,8 @@ namespace FFXIVClassic_World_Server.Packets.Send.Subpackets
                 {
                     case 0:
                     case 1:
+                        total += 5;
+                        break;
                     case 2:
                         total += 1 + 0x20;
                         break;

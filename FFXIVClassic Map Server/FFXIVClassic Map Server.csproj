@@ -285,8 +285,10 @@
     <Compile Include="packets\WorldPackets\Receive\SessionBeginPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\CreateLinkshellPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\DeleteLinkshellPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\LinkshellInviteCancelPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\ModifyLinkshellPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\GroupInviteResultPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\LinkshellInvitePacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\PartyInvitePacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\PartyLeavePacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\PartyModifyPacket.cs" />

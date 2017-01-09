@@ -363,6 +363,7 @@ namespace FFXIVClassic_Map_Server.lua
             ((FileSystemScriptLoader)script.Options.ScriptLoader).ModulePaths = FileSystemScriptLoader.UnpackStringPaths("./scripts/?;./scripts/?.lua");
             script.Globals["GetWorldManager"] = (Func<WorldManager>)Server.GetWorldManager;
             script.Globals["GetStaticActor"] = (Func<string, Actor>)Server.GetStaticActors;
+            script.Globals["GetStaticActorById"] = (Func<uint, Actor>)Server.GetStaticActors;
             script.Globals["GetWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
             script.Globals["GetItemGamedata"] = (Func<uint, Item>)Server.GetItemGamedata;
 

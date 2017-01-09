@@ -678,14 +678,21 @@ namespace FFXIVClassic_Map_Server
             Server.GetWorldConnection().QueuePacket(packet, true, false);
         }
 
-        public bool RequestWorldLinkshellRankChange(Player player, string lsname, string memberName, byte newRank)
+        public void RequestWorldLinkshellRankChange(Player player, string lsname, string memberName, byte newRank)
         {
-            return false;
+            
         }
 
-        public bool RequestWorldLinkshellAddMember(Player player, string lsname, string memberName)
+        public void RequestWorldLinkshellInviteMember(Player player, string lsname, uint invitedActorId)
         {
-            return false;
+            SubPacket packet = LinkshellInvitePacket.BuildPacket(player.playerSession, invitedActorId, lsname);
+            Server.GetWorldConnection().QueuePacket(packet, true, false);
+        }
+
+        public void RequestWorldLinkshellCancelInvite(Player player)
+        {
+            SubPacket packet = LinkshellInviteCancelPacket.BuildPacket(player.playerSession);
+            Server.GetWorldConnection().QueuePacket(packet, true, false);
         }
 
         public bool RequestWorldLinkshellRemoveMember(Player player, bool wasKicked, string lsname, string memberName)

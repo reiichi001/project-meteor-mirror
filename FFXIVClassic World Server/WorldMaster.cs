@@ -298,7 +298,7 @@ namespace FFXIVClassic_World_Server
             else
             {
                 Session inviteeSession = mServer.GetSession(invitee);
-                Relation inviteRelation = mRelationGroupManager.CreatePartyRelationGroup(requestSession.sessionId, invitee);
+                Relation inviteRelation = mRelationGroupManager.CreatePartyRelationGroup(mPartyManager.GetParty(requestSession.sessionId).groupIndex, requestSession.sessionId, invitee);
                 inviteRelation.SendGroupPacketsAll(requestSession.sessionId, invitee);          
                 inviteeSession.SendGameMessage(30430, 0x20, (object)mServer.GetNameForId(requestSession.sessionId)); //X Invited you
                 requestSession.SendGameMessage(30433, 0x20, (object)mServer.GetNameForId(inviteeSession.sessionId)); //You invite X
@@ -333,6 +333,79 @@ namespace FFXIVClassic_World_Server
             mRelationGroupManager.DeleteRelationGroup(relation.groupIndex);
             relation.SendDeletePackets(inviterSession.sessionId, inviteeSession.sessionId);
 
+        }
+
+        public void ProcessLinkshellInvite(Session inviterSession, string lsName, uint invitee)
+        {
+            
+            if (mServer.GetSession(invitee) == null)
+            {
+                inviterSession.SendGameMessage(30544, 0x20);
+            }
+            else if (mRelationGroupManager.GetLinkshellRelationGroup(inviterSession.sessionId) != null)
+            {
+                Session inviteeSession = mServer.GetSession(invitee);
+                inviterSession.SendGameMessage(25196, 0x20, (object)inviteeSession); //Unable to invite X another pending
+            }
+            else if (mLinkshellManager.GetLinkshell(lsName).HasMember(invitee))
+            {
+                Session inviteeSession = mServer.GetSession(invitee);
+                inviterSession.SendGameMessage(25155, 0x20, (object)inviteeSession, 1); //X already belongs to 
+            }
+            else
+            {                
+                Session inviteeSession = mServer.GetSession(invitee);
+                Relation inviteRelation = mRelationGroupManager.CreateLinkshellRelationGroup(mLinkshellManager.GetLinkshell(lsName).groupIndex, inviterSession.sessionId, invitee);
+                inviteRelation.SendGroupPacketsAll(inviterSession.sessionId, invitee);
+                inviteeSession.SendGameMessage(25150, 0x20, (object)1, (object)lsName, (object)inviterSession); //X Offers you
+                inviterSession.SendGameMessage(25151, 0x20, (object)1, null, (object)inviteeSession); //You offer X
+            }
+             
+        }
+
+        public void ProcessLinkshellInviteResult(Session inviteeSession, uint resultCode)
+        {
+            Relation relation = mRelationGroupManager.GetLinkshellRelationGroup(inviteeSession.sessionId);
+            Session inviterSession = mServer.GetSession(relation.GetHost());
+
+            //Accept
+            if (resultCode == 1)
+            {
+                Linkshell newLS;
+                if (mCurrentWorldGroups.ContainsKey(relation.groupIndex))
+                    newLS = (Linkshell) mCurrentWorldGroups[relation.GetTopicGroupIndex()];
+                else
+                {
+                    //Error???
+                    return;
+                }
+
+                mLinkshellManager.AddMemberToLinkshell(inviteeSession.sessionId, newLS.name);
+                newLS.SendGroupPacketsAll(newLS.GetMemberIds());
+                newLS.OnPlayerJoin(inviteeSession);                
+            }
+            else //Refuse 
+            {
+                inviteeSession.SendGameMessage(25189, 0x20); //You decline the linkpearl offer.
+                inviterSession.SendGameMessage(25190, 0x20); //Your linkpearl offer is declined.
+            }
+
+            //Delete the relation
+            mRelationGroupManager.DeleteRelationGroup(relation.groupIndex);
+            relation.SendDeletePackets(inviterSession.sessionId, inviteeSession.sessionId);
+        }
+
+        public void ProcessLinkshellInviteCancel(Session inviterSession)
+        {
+            Relation relation = mRelationGroupManager.GetLinkshellRelationGroup(inviterSession.sessionId);
+            Session inviteeSession = mServer.GetSession(relation.GetOther());
+
+            inviterSession.SendGameMessage(25191, 0x20); //You cancel the linkpearl offer.
+            inviteeSession.SendGameMessage(25192, 0x20); //The linkpearl offer has been canceled.
+            
+            //Delete the relation
+            mRelationGroupManager.DeleteRelationGroup(relation.groupIndex);
+            relation.SendDeletePackets(inviterSession.sessionId, inviteeSession.sessionId);
         }
 
         public void IncrementGroupIndex()

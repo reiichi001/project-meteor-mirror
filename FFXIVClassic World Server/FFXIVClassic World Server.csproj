@@ -111,6 +111,8 @@
     <Compile Include="Packets\Send\_0x7Packet.cs" />
     <Compile Include="Packets\Send\_0x8PingPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\GroupInviteResultPacket.cs" />
+    <Compile Include="Packets\WorldPackets\Receive\Group\LinkshellInviteCancelPacket.cs" />
+    <Compile Include="Packets\WorldPackets\Receive\Group\LinkshellInvitePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\PartyLeavePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\PartyInvitePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\PartyModifyPacket.cs" />

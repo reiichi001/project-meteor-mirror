@@ -329,6 +329,11 @@ namespace FFXIVClassic_Map_Server.packets.send
                 {
                     case 0:
                     case 1:
+                        total += 5;
+                        break;
+                    case 2:
+                        total += 20;
+                        break;
                     case 6:
                         total += 5;
                         break;

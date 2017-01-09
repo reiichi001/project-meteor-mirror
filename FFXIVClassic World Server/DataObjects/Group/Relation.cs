@@ -12,13 +12,15 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
     class Relation : Group
     {
         public RelationWork work = new RelationWork();
-        public uint charaOther;
+        private uint charaOther;
+        private ulong topicGroup;
 
-        public Relation(ulong groupIndex, uint host, uint other, uint command) : base (groupIndex)
+        public Relation(ulong groupIndex, uint host, uint other, uint command, ulong topicGroup) : base (groupIndex)
         {
             this.charaOther = other;
             work._globalTemp.host = ((ulong)host << 32) | (0xc17909);
             work._globalTemp.variableCommand = command;
+            this.topicGroup = topicGroup;
         }
 
         public uint GetHost()
@@ -39,6 +41,11 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
         public override uint GetTypeId()
         {
             return Group.GroupInvitationRelationGroup;
+        }
+
+        public ulong GetTopicGroupIndex()
+        {
+            return topicGroup;
         }
 
         public override List<GroupMember> BuildMemberList(uint id)

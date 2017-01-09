@@ -77,7 +77,12 @@ namespace FFXIVClassic_World_Server.DataObjects
                 }
                 catch (Exception e)
                 { Program.Log.Error("Weird case, socket was d/ced: {0}", e); }
-            }    
+            }
+            else
+            {
+                if (Connect())
+                    SendPacket(subpacket);                
+            }
         }
 
         private void ReceiveCallback(IAsyncResult result)

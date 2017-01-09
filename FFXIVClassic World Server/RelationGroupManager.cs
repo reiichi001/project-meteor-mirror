@@ -19,12 +19,12 @@ namespace FFXIVClassic_World_Server
             mCurrentWorldGroupsReference = worldGroupList;
         }
 
-        public Relation CreatePartyRelationGroup(uint hostCharaId, uint otherCharaId)
+        public Relation CreatePartyRelationGroup(ulong topicGroupId, uint hostCharaId, uint otherCharaId)
         {
             lock (mGroupLockReference)
             {
                 ulong groupIndex = mWorldManager.GetGroupIndex();
-                Relation relation = new Relation(groupIndex, hostCharaId, otherCharaId, 10001);
+                Relation relation = new Relation(groupIndex, hostCharaId, otherCharaId, 10001, topicGroupId);
                 mPartyRelationList.Add(groupIndex, relation);
                 mCurrentWorldGroupsReference.Add(groupIndex, relation);
                 mWorldManager.IncrementGroupIndex();
@@ -32,12 +32,12 @@ namespace FFXIVClassic_World_Server
             }
         }
 
-        public Relation CreateLinkshellRelationGroup(uint hostCharaId, uint otherCharaId)
+        public Relation CreateLinkshellRelationGroup(ulong topicGroupId, uint hostCharaId, uint otherCharaId)
         {
             lock (mGroupLockReference)
             {
                 ulong groupIndex = mWorldManager.GetGroupIndex();
-                Relation relation = new Relation(groupIndex, hostCharaId, otherCharaId, 10002);
+                Relation relation = new Relation(groupIndex, hostCharaId, otherCharaId, 10002, topicGroupId);
                 mLinkshellRelationList.Add(groupIndex, relation);
                 mCurrentWorldGroupsReference.Add(groupIndex, relation);
                 mWorldManager.IncrementGroupIndex();

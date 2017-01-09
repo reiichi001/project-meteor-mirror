@@ -51,7 +51,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
         public void AddMember(uint charaId)
         {
-            members.Add(new LinkshellMember(charaId, dbId, 0xa));
+            members.Add(new LinkshellMember(charaId, dbId, 0x0));
             members.Sort();
         }
 
@@ -85,10 +85,24 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
         public override List<GroupMember> BuildMemberList(uint id)
         {
-            List<GroupMember> groupMembers = new List<GroupMember>();
-            foreach (LinkshellMember member in members)            
-                groupMembers.Add(new GroupMember(member.charaId, -1, 0, false, true, Server.GetServer().GetNameForId(member.charaId)));
-            return groupMembers;
+            lock (members)
+            {
+                List<GroupMember> groupMembers = new List<GroupMember>();
+                foreach (LinkshellMember member in members)
+                    groupMembers.Add(new GroupMember(member.charaId, -1, 0, false, true, Server.GetServer().GetNameForId(member.charaId)));
+                return groupMembers;
+            }
+        }
+
+        public uint[] GetMemberIds()
+        {
+            lock (members)
+            {
+                uint[] memberIds = new uint[members.Count];
+                for (int i = 0; i < memberIds.Length; i++)
+                    memberIds[i] = members[i].charaId;
+                return memberIds;
+            }
         }
 
         public override void SendInitWorkValues(Session session)
@@ -115,5 +129,34 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
         {
             members = Database.GetLSMembers(this);
         }
+
+        public void OnPlayerJoin(Session inviteeSession)
+        {
+            for (int i = 0; i < members.Count; i++)
+            {
+                Session session = Server.GetServer().GetSession(members[i].charaId);
+                if (session == null)
+                    continue;
+
+                if (inviteeSession.Equals(session))
+                    session.SendGameMessage(25157, 0x20, (object) 0, (object)inviteeSession, name);
+                else
+                    session.SendGameMessage(25284, 0x20, (object) 0, (object)Server.GetServer().GetNameForId(inviteeSession.sessionId), name);
+            }
+        }
+
+        public bool HasMember(uint id)
+        {
+            lock (members)
+            {
+                for (int i = 0; i < members.Count; i++)
+                {
+                    if (members[i].charaId == id)
+                        return true;
+                }
+                return false;
+            }
+        }
+
     }
 }

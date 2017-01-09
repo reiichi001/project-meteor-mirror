@@ -23,10 +23,10 @@ namespace FFXIVClassic_Map_Server.packets.send.events
                 {
                     binWriter.Write((UInt32)playerActorId);
                     binWriter.Write((UInt32)targetActorId);
-                    binWriter.Write((Byte)0x5);
-                    binWriter.Write((Byte)0x87);
-                    binWriter.Write((Byte)0xDC);
-                    binWriter.Write((Byte)0x75);
+
+                    int test = 0;
+                    
+                    binWriter.Write((UInt32)test);
                     binWriter.Write((UInt32)0x30400000);
                     binWriter.Write(Encoding.ASCII.GetBytes(conditionName), 0, Encoding.ASCII.GetByteCount(conditionName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(conditionName));
 

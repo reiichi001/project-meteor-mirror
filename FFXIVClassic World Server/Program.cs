@@ -19,22 +19,24 @@ namespace FFXIVClassic_World_Server
         {
             // set up logging
             Log = LogManager.GetCurrentClassLogger();
-#if DEBUG
-            TextWriterTraceListener myWriter = new TextWriterTraceListener(System.Console.Out);
-            Debug.Listeners.Add(myWriter);
 
-            if (System.Diagnostics.Debugger.IsAttached)
-            {
-                System.Threading.Thread.Sleep(15000);
-            }
-
-#endif
             bool startServer = true;
 
             Log.Info("==================================");
             Log.Info("FFXIV Classic World Server");
             Log.Info("Version: 0.0.1");            
             Log.Info("==================================");
+
+#if DEBUG
+            TextWriterTraceListener myWriter = new TextWriterTraceListener(System.Console.Out);
+            Debug.Listeners.Add(myWriter);
+
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
+                System.Threading.Thread.Sleep(5000);
+            }
+
+#endif
 
             //Load Config
             if (!ConfigConstants.Load())

@@ -294,7 +294,11 @@ namespace FFXIVClassic_World_Server.DataObjects
             else if (o == null)
             {
                 luaParams.Add(new LuaParam(0x5, null));
-            }            
+            }
+            else if (o is Session)
+            {
+                luaParams.Add(new LuaParam(0x6, (uint)((Session)o).sessionId));
+            }    
             else if (o is Type7Param)
             {
                 luaParams.Add(new LuaParam(0x7, (Type7Param)o)); 

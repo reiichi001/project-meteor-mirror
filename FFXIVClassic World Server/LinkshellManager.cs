@@ -34,10 +34,11 @@ namespace FFXIVClassic_World_Server
                     Linkshell newLs = new Linkshell(resultId, mWorldManager.GetGroupIndex(), name, crest, master, 0xa);
 
                     //Add founder to the LS
-                    if (AddMemberToLinkshell(master, newLs.groupIndex))
+                    if (AddMemberToLinkshell(master, newLs.name))
                     {
                         mLinkshellList.Add(mWorldManager.GetGroupIndex(), newLs);
                         mNameToIdLookup.Add(newLs.name, newLs.groupIndex);
+                        mLSIdToIdLookup.Add(newLs.dbId, newLs);
                         mCurrentWorldGroupsReference.Add(mWorldManager.GetGroupIndex(), newLs);
                         mWorldManager.IncrementGroupIndex();
                     }
@@ -112,10 +113,10 @@ namespace FFXIVClassic_World_Server
         }
 
         //Adds a player to the linkshell
-        public bool AddMemberToLinkshell(uint charaId, ulong groupId)
+        public bool AddMemberToLinkshell(uint charaId, string LSName)
         {
             //Get the LS
-            Linkshell ls = GetLinkshell(groupId);
+            Linkshell ls = GetLinkshell(LSName);
             if (ls == null)
                 return false;
 
@@ -135,10 +136,10 @@ namespace FFXIVClassic_World_Server
         }
 
         //Removes a player from the linkshell
-        public bool RemoveMemberFromLinkshell(uint charaId, ulong groupId)
+        public bool RemoveMemberFromLinkshell(uint charaId, string LSName)
         {
             //Get the LS
-            Linkshell ls = GetLinkshell(groupId);
+            Linkshell ls = GetLinkshell(LSName);
             if (ls == null)
                 return false;
 
@@ -157,7 +158,7 @@ namespace FFXIVClassic_World_Server
             }
         }
 
-        //Get a single linkshell group either already instantiated or make one from the db
+        //Get a single linkshell group either already instantiated or make one from the db by Name
         public Linkshell GetLinkshell(string name)
         {
             if (mNameToIdLookup.ContainsKey(name))
@@ -173,6 +174,7 @@ namespace FFXIVClassic_World_Server
                     {
                         mLinkshellList.Add(ls.groupIndex, ls);
                         mNameToIdLookup.Add(ls.name, ls.groupIndex);
+                        mLSIdToIdLookup.Add(ls.dbId, ls);
                         mCurrentWorldGroupsReference.Add(ls.groupIndex, ls);
                         mWorldManager.IncrementGroupIndex();
                         return ls;
@@ -183,11 +185,11 @@ namespace FFXIVClassic_World_Server
             }
         }
 
-        //Get a single linkshell group either already instantiated or make one from the db
+        //Get a single linkshell group either already instantiated or make one from the db by ID
         public Linkshell GetLinkshell(ulong lsId)
         {
             if (mLSIdToIdLookup.ContainsKey(lsId))
-                return mLSIdToIdLookup[lsId];
+                return (Linkshell)mCurrentWorldGroupsReference[mLSIdToIdLookup[lsId].groupIndex];
             else
             {
                 lock (mGroupLockReference)
@@ -196,7 +198,7 @@ namespace FFXIVClassic_World_Server
                     ls.LoadMembers();
 
                     if (ls != null)
-                    {                        
+                    {
                         mLinkshellList.Add(ls.groupIndex, ls);
                         mNameToIdLookup.Add(ls.name, ls.groupIndex);
                         mLSIdToIdLookup.Add(ls.dbId, ls);
@@ -204,9 +206,10 @@ namespace FFXIVClassic_World_Server
                         mWorldManager.IncrementGroupIndex();
                         return ls;
                     }
+                    else
+                        return null;
                 }
             }
-            return null;
         }
 
         //Get the linkshells player is part of

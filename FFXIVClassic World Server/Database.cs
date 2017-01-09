@@ -381,7 +381,41 @@ namespace FFXIVClassic_World_Server
 
         public static bool LinkshellAddPlayer(ulong lsId, uint charaId)
         {
-            throw new NotImplementedException();
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO characters_linkshells 
+                    (characterId, linkshellId)
+                    VALUES
+                    (@charaId, @lsId)             
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", charaId);
+                    cmd.Parameters.AddWithValue("@lsId", lsId);
+                    cmd.ExecuteNonQuery();
+
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                    conn.Dispose();
+                    return false;
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            return true;
         }
 
         public static bool LinkshellRemovePlayer(ulong lsId, uint charaId)
