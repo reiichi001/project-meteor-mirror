@@ -39,8 +39,8 @@ namespace FFXIVClassic_World_Server
 #endif
 
             //Load Config
-            if (!ConfigConstants.Load())
-                startServer = false;
+            ConfigConstants.Load();
+            ConfigConstants.ApplyLaunchArgs(args);
 
             //Test DB Connection
             Log.Info("Testing DB connection... ");

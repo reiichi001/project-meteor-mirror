@@ -31,8 +31,8 @@ namespace FFXIVClassic_Map_Server
             Program.Log.Info("---------FFXIV 1.0 Map Server---------");
 
             //Load Config
-            if (!ConfigConstants.Load())
-                startServer = false;
+            ConfigConstants.Load();
+            ConfigConstants.ApplyLaunchArgs(args);
 
             //Test DB Connection
             Program.Log.Info("Testing DB connection... ");

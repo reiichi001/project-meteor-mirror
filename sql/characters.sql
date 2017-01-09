@@ -11,6 +11,7 @@ SET FOREIGN_KEY_CHECKS=0;
 -- ----------------------------
 -- Table structure for characters
 -- ----------------------------
+DROP TABLE IF EXISTS `characters`;
 CREATE TABLE `characters` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `userId` int(11) unsigned NOT NULL,
@@ -30,11 +31,11 @@ CREATE TABLE `characters` (
   `currentZoneId` smallint(5) unsigned DEFAULT '0',
   `destinationZoneId` smallint(5) unsigned DEFAULT '0',
   `destinationSpawnType` tinyint(3) unsigned DEFAULT '0',
-  `guardian` tinyint(3) unsigned NOT NULL,
-  `birthDay` tinyint(3) unsigned NOT NULL,
-  `birthMonth` tinyint(3) unsigned NOT NULL,
-  `initialTown` tinyint(3) unsigned NOT NULL,
-  `tribe` tinyint(3) unsigned NOT NULL,
+  `guardian` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `birthDay` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `birthMonth` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `initialTown` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `tribe` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `gcCurrent` tinyint(3) unsigned DEFAULT '0',
   `gcLimsaRank` tinyint(3) unsigned DEFAULT '127',
   `gcGridaniaRank` tinyint(3) unsigned DEFAULT '127',
@@ -45,4 +46,4 @@ CREATE TABLE `characters` (
   `currentPartyGroupId` bigint(20) unsigned DEFAULT '0',
   `currentRetainerGroupId` bigint(20) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=162 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
