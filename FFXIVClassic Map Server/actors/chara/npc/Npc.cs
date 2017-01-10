@@ -69,8 +69,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 npcWork.hateType = 1;
             }
 
-            npcWork.pushCommand = 0x271D;
-            npcWork.pushCommandPriority = 1;
+            npcWork.pushCommand = actorClass.pushCommand;
+            npcWork.pushCommandSub = actorClass.pushCommandSub;
+            npcWork.pushCommandPriority = actorClass.pushCommandPriority;
 
             GenerateActorName((int)actorNumber);            
         }

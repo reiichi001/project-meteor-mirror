@@ -271,8 +271,13 @@ namespace FFXIVClassic_Map_Server
                                     classPath,                                    
                                     displayNameId,
                                     propertyFlags,
-                                    eventConditions
+                                    eventConditions,
+                                    pushCommand,
+                                    pushCommandSub,
+                                    pushCommandPriority
                                     FROM gamedata_actor_class
+                                    LEFT JOIN gamedata_actor_pushcommand
+                                    ON gamedata_actor_class.id = gamedata_actor_pushcommand.id
                                     WHERE classPath <> ''
                                     ";
 
@@ -294,7 +299,18 @@ namespace FFXIVClassic_Map_Server
                             else
                                 eventConditions = "{}";
 
-                            ActorClass actorClass = new ActorClass(id, classPath, nameId, propertyFlags, eventConditions);
+                            ushort pushCommand = 0;
+                            ushort pushCommandSub = 0;
+                            byte pushCommandPriority = 0;
+
+                            if (!reader.IsDBNull(reader.GetOrdinal("pushCommand")))
+                            {
+                                pushCommand = reader.GetUInt16("pushCommand");
+                                pushCommandSub = reader.GetUInt16("pushCommandSub");
+                                pushCommandPriority = reader.GetByte("pushCommandPriority");
+                            }
+
+                            ActorClass actorClass = new ActorClass(id, classPath, nameId, propertyFlags, eventConditions, pushCommand, pushCommandSub, pushCommandPriority);
                             actorClasses.Add(id, actorClass);
                             count++;
                         }

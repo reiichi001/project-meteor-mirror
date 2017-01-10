@@ -14,13 +14,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.npc
         public readonly uint propertyFlags;
         public readonly string eventConditions;
 
-        public ActorClass(uint id, string classPath, uint nameId, uint propertyFlags, string eventConditions)
+        public readonly ushort pushCommand;
+        public readonly ushort pushCommandSub;
+        public readonly byte pushCommandPriority;
+
+        public ActorClass(uint id, string classPath, uint nameId, uint propertyFlags, string eventConditions, ushort pushCommand, ushort pushCommandSub, byte pushCommandPriority)
         {
             this.actorClassId = id;
             this.classPath = classPath;
             this.displayNameId = nameId;
             this.propertyFlags = propertyFlags;
             this.eventConditions = eventConditions;
+
+            this.pushCommand = pushCommand;
+            this.pushCommandSub = pushCommandSub;
+            this.pushCommandPriority = pushCommandPriority;
         }
     }
 }
