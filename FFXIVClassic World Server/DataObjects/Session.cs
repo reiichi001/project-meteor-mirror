@@ -1,4 +1,7 @@
-﻿using FFXIVClassic_World_Server.Packets.Send.Subpackets;
+﻿using FFXIVClassic.Common;
+using FFXIVClassic_World_Server.DataObjects.Group;
+using FFXIVClassic_World_Server.Packets.Send.Subpackets;
+using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +19,7 @@ namespace FFXIVClassic_World_Server.DataObjects
 
         public string characterName;
         public uint currentZoneId;
-        public uint activeLinkshellIndex = 0;
+        public string activeLinkshellName = "";
 
         public readonly ClientConnection clientConnection;
         public readonly Channel type;
@@ -28,7 +31,7 @@ namespace FFXIVClassic_World_Server.DataObjects
             this.clientConnection = connection;
             this.type = type;
             connection.owner = this;
-            Database.LoadZoneSessionInfo(this);        
+            Database.LoadZoneSessionInfo(this);
         }
 
         public void SendGameMessage(uint actorId, ushort textId, byte log, params object[] msgParams)
@@ -65,5 +68,15 @@ namespace FFXIVClassic_World_Server.DataObjects
                 clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, sessionId, 0x5FF80001, textId, displayId, log, LuaUtils.CreateLuaParamList(msgParams)), true, false);
         }
 
+
+        public bool SetActiveLS(string name)
+        {
+            if (Database.SetActiveLS(this, name))
+            {
+                activeLinkshellName = name;
+                return true;
+            }
+            return false;
+        }
     }
 }

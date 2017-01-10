@@ -708,6 +708,12 @@ namespace FFXIVClassic_Map_Server
             Server.GetWorldConnection().QueuePacket(packet, true, false);
         }
 
+        public void RequestWorldLinkshellChangeActive(Player player, string lsname)
+        {
+            SubPacket packet = LinkshellChangePacket.BuildPacket(player.playerSession, lsname);
+            Server.GetWorldConnection().QueuePacket(packet, true, false);
+        }
+
         private void RequestWorldServerZoneChange(Player player, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
         {
             ZoneConnection zc = Server.GetWorldConnection();

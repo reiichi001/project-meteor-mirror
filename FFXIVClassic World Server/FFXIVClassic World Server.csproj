@@ -112,6 +112,7 @@
     <Compile Include="Packets\Send\Subpackets\Groups\CreateNamedGroup.cs" />
     <Compile Include="Packets\Send\Subpackets\Groups\CreateNamedGroupMultiple.cs" />
     <Compile Include="Packets\Send\Subpackets\Groups\DeleteGroupPacket.cs" />
+    <Compile Include="Packets\Send\Subpackets\Groups\SetActiveLinkshellPacket.cs" />
     <Compile Include="Packets\Send\Subpackets\Groups\GroupHeaderPacket.cs" />
     <Compile Include="Packets\Send\Subpackets\Groups\GroupMember.cs" />
     <Compile Include="Packets\Send\Subpackets\Groups\GroupMembersBeginPacket.cs" />
@@ -128,12 +129,12 @@
     <Compile Include="Packets\WorldPackets\Receive\Group\GroupInviteResultPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\LinkshellInviteCancelPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\LinkshellInvitePacket.cs" />
+    <Compile Include="Packets\WorldPackets\Receive\Group\LinkshellChangePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\LinkshellRankChangePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\LinkshellLeavePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\PartyLeavePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\PartyInvitePacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\PartyModifyPacket.cs" />
-    <Compile Include="Packets\WorldPackets\Receive\Group\SetActiveLinkshellPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\ModifyLinkshellPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\CreateRelationPacket.cs" />
     <Compile Include="Packets\WorldPackets\Receive\Group\CreateLinkshellPacket.cs" />

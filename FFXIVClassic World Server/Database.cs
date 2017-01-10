@@ -45,7 +45,7 @@ namespace FFXIVClassic_World_Server
 
         public static bool LoadZoneSessionInfo(Session session)
         {
-            string characterName;
+            string characterName, currentLinkshell;
             uint currentZone = 0;
             uint destinationZone = 0;
             bool readIn = false;
@@ -55,7 +55,7 @@ namespace FFXIVClassic_World_Server
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand("SELECT name, currentZoneId, destinationZoneId FROM characters WHERE id = @charaId", conn);
+                    MySqlCommand cmd = new MySqlCommand("SELECT name, currentZoneId, destinationZoneId, currentActiveLinkshell FROM characters WHERE id = @charaId", conn);
                     cmd.Parameters.AddWithValue("@charaId", session.sessionId);
                     using (MySqlDataReader Reader = cmd.ExecuteReader())
                     {
@@ -64,9 +64,11 @@ namespace FFXIVClassic_World_Server
                             characterName = Reader.GetString("name");
                             currentZone = Reader.GetUInt32("currentZoneId");
                             destinationZone = Reader.GetUInt32("destinationZoneId");
+                            currentLinkshell = Reader.GetString("currentActiveLinkshell");
 
                             session.characterName = characterName;
                             session.currentZoneId = currentZone;
+                            session.activeLinkshellName = currentLinkshell;                            
 
                             readIn = true;
                         }
@@ -487,6 +489,32 @@ namespace FFXIVClassic_World_Server
                     MySqlCommand cmd = new MySqlCommand("UPDATE characters_linkshells SET rank = @rank WHERE characterId = @charaId", conn);
                     cmd.Parameters.AddWithValue("@charaId", charaId);
                     cmd.Parameters.AddWithValue("@rank", rank);
+                    cmd.ExecuteNonQuery();
+                    success = true;
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return success;
+        }
+
+        public static bool SetActiveLS(Session session, string name)
+        {
+            bool success = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand("UPDATE characters SET currentActiveLinkshell = @lsName WHERE id = @charaId", conn);
+                    cmd.Parameters.AddWithValue("@charaId", session.sessionId);
+                    cmd.Parameters.AddWithValue("@lsName", name);
                     cmd.ExecuteNonQuery();
                     success = true;
                 }

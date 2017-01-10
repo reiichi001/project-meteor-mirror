@@ -5,13 +5,13 @@ using System.Text;
 
 namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
 {
-    class SetActiveLinkshellPacket
+    class LinkshellChangePacket
     {
         public bool invalidPacket = false;
+                
+        public string lsName;
 
-        public string name;
-        
-        public SetActiveLinkshellPacket(byte[] data)
+        public LinkshellChangePacket(byte[] data)
         {
             using (MemoryStream mem = new MemoryStream(data))
             {
@@ -19,7 +19,7 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group
                 {
                     try
                     {
-                        name = Encoding.ASCII.GetString(binReader.ReadBytes(0x20)).Trim(new[] { '\0' });
+                        lsName = Encoding.ASCII.GetString(binReader.ReadBytes(0x20)).Trim(new[] { '\0' });
                     }
                     catch (Exception)
                     {

@@ -219,7 +219,25 @@ namespace FFXIVClassic_World_Server
             mRetainerGroupManager.GetRetainerGroup(session.sessionId).SendGroupPackets(session);
             List<Linkshell> linkshells = mLinkshellManager.GetPlayerLinkshellMembership(session.sessionId);
             foreach (Linkshell ls in linkshells)
-                ls.SendGroupPackets(session);                       
+                ls.SendGroupPackets(session);
+
+            //Reset to blank if in unknown state
+            ulong activeGroupIndex = 0;
+            if (!session.activeLinkshellName.Equals(""))
+            {
+                Linkshell activeLs = mLinkshellManager.GetLinkshell(session.activeLinkshellName);
+                if (activeLs != null && activeLs.HasMember(session.sessionId))
+                {
+                    activeGroupIndex = activeLs.groupIndex;
+                }
+                else
+                {
+                    session.activeLinkshellName = "";
+                    Database.SetActiveLS(session, "");
+                }
+            }
+            SubPacket activeLsPacket = SetActiveLinkshellPacket.BuildPacket(session.sessionId, activeGroupIndex);
+            session.clientConnection.QueuePacket(activeLsPacket, true, false);
         }
 
         private void SendMotD(Session session)
@@ -406,6 +424,34 @@ namespace FFXIVClassic_World_Server
             //Delete the relation
             mRelationGroupManager.DeleteRelationGroup(relation.groupIndex);
             relation.SendDeletePackets(inviterSession.sessionId, inviteeSession.sessionId);
+        }
+
+        public void ProcessLinkshellSetActive(Session requestSession, string lsName)
+        {
+            //Deactivate all
+            if (lsName.Equals(""))
+            {
+                requestSession.SetActiveLS(lsName);
+                SubPacket activeLsPacket = SetActiveLinkshellPacket.BuildPacket(requestSession.sessionId, 0);
+                requestSession.clientConnection.QueuePacket(activeLsPacket, true, false);
+                requestSession.SendGameMessage(25132, 0x20, (object)1);
+            }
+            else
+            {
+                Linkshell ls = mLinkshellManager.GetLinkshell(lsName);
+
+                if (ls == null || !ls.HasMember(requestSession.sessionId))
+                {
+                    requestSession.SendGameMessage(25167, 0x20, (object)1, (object)lsName);
+                }                
+                else
+                {
+                    requestSession.SetActiveLS(lsName);
+                    SubPacket activeLsPacket = SetActiveLinkshellPacket.BuildPacket(requestSession.sessionId, ls.groupIndex);
+                    requestSession.clientConnection.QueuePacket(activeLsPacket, true, false);
+                    requestSession.SendGameMessage(25131, 0x20, (object)1, (object)lsName);                    
+                }
+            }
         }
 
         public void IncrementGroupIndex()

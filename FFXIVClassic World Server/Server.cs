@@ -302,8 +302,8 @@ namespace FFXIVClassic_World_Server
                         break;
                     //Linkshell set active
                     case 0x1028:
-                        SetActiveLinkshellPacket setActiveLinkshellPacket = new SetActiveLinkshellPacket(subpacket.data);
-                        //Linkshell ls = mWorldManager.GetLinkshellManager().GetLinkshell();
+                        LinkshellChangePacket linkshellChangePacket = new LinkshellChangePacket(subpacket.data);
+                        mWorldManager.ProcessLinkshellSetActive(GetSession(subpacket.header.sourceId), linkshellChangePacket.lsName);
                         break;
                     //Linkshell invite member
                     case 0x1029:
