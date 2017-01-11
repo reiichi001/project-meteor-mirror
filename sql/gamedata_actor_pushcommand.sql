@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 1/10/2017 11:46:45 PM
+Date: 1/10/2017 11:58:58 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -162,3 +162,4 @@ INSERT INTO `gamedata_actor_pushcommand` VALUES ('1280124', '10010', '0', '8');
 INSERT INTO `gamedata_actor_pushcommand` VALUES ('1280125', '10010', '0', '8');
 INSERT INTO `gamedata_actor_pushcommand` VALUES ('1280126', '10002', '0', '8');
 INSERT INTO `gamedata_actor_pushcommand` VALUES ('1280127', '10002', '0', '8');
+INSERT INTO `gamedata_actor_pushcommand` VALUES ('1200027', '10008', '0', '8');
