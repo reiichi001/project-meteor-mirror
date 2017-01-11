@@ -238,8 +238,14 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             propPacketUtil.AddProperty("npcWork.hateType");
-            propPacketUtil.AddProperty("npcWork.pushCommand");
-            propPacketUtil.AddProperty("npcWork.pushCommandPriority");
+
+            if (npcWork.pushCommand != 0)
+            {
+                propPacketUtil.AddProperty("npcWork.pushCommand");
+                if (npcWork.pushCommandSub != 0)
+                    propPacketUtil.AddProperty("npcWork.pushCommandSub");
+                propPacketUtil.AddProperty("npcWork.pushCommandPriority");
+            }
 
             return BasePacket.CreatePacket(propPacketUtil.Done(), true, false);
         }

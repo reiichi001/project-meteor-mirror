@@ -267,7 +267,7 @@ namespace FFXIVClassic_Map_Server
 
                     string query = @"
                                     SELECT 
-                                    id,
+                                    gamedata_actor_class.id,
                                     classPath,                                    
                                     displayNameId,
                                     propertyFlags,
