@@ -203,6 +203,21 @@ namespace FFXIVClassic_Map_Server.lua
             }
         }
 
+        public static void OnPlayerUpdate(Player player, double delta)
+        {
+            if (File.Exists(FILEPATH_PLAYER))
+            {
+                LuaScript script = LoadScript(FILEPATH_PLAYER);
+
+                if (script == null)
+                    return;
+
+                //Run Script
+                if (!script.Globals.Get("onUpdate").IsNil())
+                    script.Call(script.Globals["onUpdate"], player);
+            }
+        }
+
         #region RunGMCommand
         public static void RunGMCommand(Player player, String cmd, string[] param, bool help = false)
         {

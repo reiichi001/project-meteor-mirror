@@ -20,6 +20,8 @@ using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.packets.send.group;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Receive;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
+using System.Threading;
+using System.Diagnostics;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -36,6 +38,9 @@ namespace FFXIVClassic_Map_Server
         private Object groupLock = new Object();
 
         private Server mServer;
+
+        private const int MILIS_LOOPTIME = 10;
+        private Timer mZoneTimer;
 
         public WorldManager(Server server)
         {
@@ -800,6 +805,21 @@ namespace FFXIVClassic_Map_Server
         {
             SubPacket groupInviteResultPacket = GroupInviteResultPacket.BuildPacket(player.playerSession, groupType, result);
             player.QueuePacket(groupInviteResultPacket);
+        }
+                
+        public void StartZoneThread()
+        {
+            mZoneTimer = new Timer(ZoneThreadLoop, null, 0, MILIS_LOOPTIME);
+            Program.Log.Info("Zone Loop has started");
+        }
+        
+        public void ZoneThreadLoop(Object state)
+        {          
+            lock (zoneList)
+            {
+                foreach (Area area in zoneList.Values)
+                    area.Update(MILIS_LOOPTIME);
+            }            
         }
 
         public Player GetPCInWorld(string name)

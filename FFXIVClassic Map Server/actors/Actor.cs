@@ -303,6 +303,10 @@ namespace FFXIVClassic_Map_Server.Actors
             zone.BroadcastPacketAroundActor(this, ChangeSpeedPacket);
         }
 
+        public void Update(double deltaTime)
+        {            
+        }
+
         public void GenerateActorName(int actorNumber)
         {
             //Format Class Name

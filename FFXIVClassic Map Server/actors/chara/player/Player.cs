@@ -1361,5 +1361,10 @@ namespace FFXIVClassic_Map_Server.Actors
             currentParty = null;
         }
 
+        public void Update(double delta)
+        {
+            LuaEngine.OnPlayerUpdate(this, delta);
+        }
+
     }
 }

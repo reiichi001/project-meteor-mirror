@@ -373,5 +373,14 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
             }
         }
+
+        public void Update(double deltaTime)
+        {
+            lock (mActorList)
+            {
+                foreach (Actor a in mActorList.Values)
+                    a.Update(deltaTime);
+            }
+        }
     }
 }

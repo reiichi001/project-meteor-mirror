@@ -482,6 +482,30 @@ namespace FFXIVClassic_Map_Server.Actors
                 return;          
         }
 
+        public void Update(double deltaTime)
+        {
+            LuaScript parent = null, child = null;
+
+            if (File.Exists("./scripts/base/" + classPath + ".lua"))
+                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
+            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
+                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
+
+            if (parent == null && child == null)
+            {
+                //LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
+                return;
+            }
+
+            //Run Script
+            if (child != null && child.Globals["onThink"] != null)
+                child.Call(child.Globals["onThink"], this, deltaTime);
+            else if (parent != null && parent.Globals["onThink"] != null)
+                parent.Call(parent.Globals["onThink"], this, deltaTime);
+            else
+                return;
+        }
+
         //A party member list packet came, set the party
        /* public void SetParty(MonsterPartyGroup group)
         {
