@@ -7,6 +7,8 @@ using FFXIVClassic.Common;
 using System;
 using System.Collections.Generic;
 using FFXIVClassic_Map_Server.actors.area;
+using System.Reflection;
+using System.ComponentModel;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -353,6 +355,87 @@ namespace FFXIVClassic_Map_Server.Actors
 
             actorName = String.Format("{0}_{1}_{2}@{3:X3}{4:X2}", className, zoneName, classNumber, zoneId, privLevel);
         }
+
+        public bool SetWorkValue(Player player, string name, string uiFunc, object value)
+        {
+            string[] split = name.Split('.');
+            int arrayIndex = 0;
+
+            if (!(split[0].Equals("work") || split[0].Equals("charaWork") || split[0].Equals("playerWork") || split[0].Equals("npcWork")))
+                return false;
+
+            Object parentObj = null;
+            Object curObj = this;
+            for (int i = 0; i < split.Length; i++)
+            {
+                //For arrays
+                if (split[i].Contains("["))
+                {
+                    if (split[i].LastIndexOf(']') - split[i].IndexOf('[') <= 0)
+                        return false;
+
+                    arrayIndex = Convert.ToInt32(split[i].Substring(split[i].IndexOf('[') + 1, split[i].LastIndexOf(']') - split[i].LastIndexOf('[') - 1));
+                    split[i] = split[i].Substring(0, split[i].IndexOf('['));
+                }
+
+                FieldInfo field = curObj.GetType().GetField(split[i]);
+                if (field == null)
+                    return false;
+
+                if (i == split.Length - 1)
+                    parentObj = curObj;
+                curObj = field.GetValue(curObj);
+                if (curObj == null)
+                    return false;
+            }
+
+            if (curObj == null)
+                return false;
+            else
+            {
+                //Array, we actually care whats inside
+                if (curObj.GetType().IsArray)
+                {
+                    if (((Array)curObj).Length <= arrayIndex)
+                        return false;
+
+                    if (value.GetType() == ((Array)curObj).GetType().GetElementType() || TypeDescriptor.GetConverter(value.GetType()).CanConvertTo(((Array)curObj).GetType().GetElementType()))
+                    {
+                        if (value.GetType() == ((Array)curObj).GetType().GetElementType())
+                            ((Array)curObj).SetValue(value, arrayIndex);
+                        else
+                            ((Array)curObj).SetValue(TypeDescriptor.GetConverter(value.GetType()).ConvertTo(value, curObj.GetType().GetElementType()), arrayIndex);
+
+                        SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(uiFunc);
+                        changeProperty.AddProperty(this, name);
+                        changeProperty.AddTarget();
+                        SubPacket subpacket = changeProperty.BuildPacket(player.actorId, player.actorId);
+                        player.playerSession.QueuePacket(subpacket, true, false);
+                        subpacket.DebugPrintSubPacket();
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (value.GetType() == curObj.GetType() || TypeDescriptor.GetConverter(value.GetType()).CanConvertTo(curObj.GetType()))
+                    {
+                        if (value.GetType() == curObj.GetType())
+                            parentObj.GetType().GetField(split[split.Length - 1]).SetValue(parentObj, value);
+                        else
+                            parentObj.GetType().GetField(split[split.Length-1]).SetValue(parentObj, TypeDescriptor.GetConverter(value.GetType()).ConvertTo(value, curObj.GetType()));
+
+                        SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(uiFunc);
+                        changeProperty.AddProperty(this, name);
+                        changeProperty.AddTarget();
+                        SubPacket subpacket = changeProperty.BuildPacket(player.actorId, player.actorId);
+                        player.playerSession.QueuePacket(subpacket, true, false);
+                        subpacket.DebugPrintSubPacket();
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }       
 
         public List<float> GetPos()
         {

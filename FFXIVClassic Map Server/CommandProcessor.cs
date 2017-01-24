@@ -16,31 +16,8 @@ namespace FFXIVClassic_Map_Server
     {
         private static Dictionary<uint, Item> gamedataItems = Server.GetGamedataItems();
 
-        // For the moment, this is the only predefined item
-        // TODO: make a list/enum in the future so that items can be given by name, instead of by id
         const UInt32 ITEM_GIL = 1000001;
       
-        public void ChangeProperty(uint id, uint value, string target)
-        {
-            SetActorPropetyPacket ChangeProperty = new SetActorPropetyPacket(target);
-
-            ChangeProperty.SetTarget(target);
-            ChangeProperty.AddInt(id, value);
-            ChangeProperty.AddTarget();
-
-            Dictionary<uint, Session> sessionList = Server.GetServer().GetSessionList();
-
-            foreach (KeyValuePair<uint, Session> entry in sessionList)
-            {
-                SubPacket ChangePropertyPacket = ChangeProperty.BuildPacket((entry.Value.id), (entry.Value.id));
-
-                BasePacket packet = BasePacket.CreatePacket(ChangePropertyPacket, true, false);
-                packet.DebugPrintPacket();
-
-                entry.Value.QueuePacket(packet);
-            }
-        }
-
         /// <summary>
         /// We only use the default options for SendMessagePacket.
         /// May as well make it less unwieldly to view
@@ -68,7 +45,7 @@ namespace FFXIVClassic_Map_Server
                              )
                      .SelectMany(str => str).ToArray();
 
-            split = split.Select(temp => temp.ToLower()).ToArray(); // Ignore case on commands
+            split = split.ToArray(); // Ignore case on commands
 
             var cmd = split[0];
 
@@ -128,7 +105,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     if (split.Length == 4)
                     {
-                        ChangeProperty(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
+                       // ChangeProperty(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
                     }
                     return true;
                 }
@@ -139,7 +116,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     if (split.Length == 4)
                     {
-                        ChangeProperty(Convert.ToUInt32(split[1], 16), Convert.ToUInt32(split[2], 16), split[3]);
+                        //ChangeProperty(Convert.ToUInt32(split[1], 16), Convert.ToUInt32(split[2], 16), split[3]);
                     }
                     return true;
                 }

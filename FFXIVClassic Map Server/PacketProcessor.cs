@@ -102,9 +102,8 @@ namespace FFXIVClassic_Map_Server
                     //Chat Received
                     case 0x0003:
                         ChatMessagePacket chatMessage = new ChatMessagePacket(subpacket.data);
-                        Program.Log.Info("Got type-{5} message: {0} @ {1}, {2}, {3}, Rot: {4}", chatMessage.message, chatMessage.posX, chatMessage.posY, chatMessage.posZ, chatMessage.posRot, chatMessage.logType);
-                        subpacket.DebugPrintSubPacket();
-
+                        //Program.Log.Info("Got type-{5} message: {0} @ {1}, {2}, {3}, Rot: {4}", chatMessage.message, chatMessage.posX, chatMessage.posY, chatMessage.posZ, chatMessage.posRot, chatMessage.logType);
+                   
                         if (chatMessage.message.StartsWith("!"))
                         {
                             if (Server.GetCommandProcessor().DoCommand(chatMessage.message, session))
@@ -227,7 +226,7 @@ namespace FFXIVClassic_Map_Server
                             
                         break;
                     case 0x012F:
-                        //subpacket.DebugPrintSubPacket();
+                        subpacket.DebugPrintSubPacket();
                         ParameterDataRequestPacket paramRequest = new ParameterDataRequestPacket(subpacket.data);
                         if (paramRequest.paramName.Equals("charaWork/exp"))
                             session.GetActor().SendCharaExpInfo();

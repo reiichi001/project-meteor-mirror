@@ -8,6 +8,6 @@
 
         public bool betacheck = false;        
 
-        public bool[] event_achieve_aetheryte = new bool[512];
+        public bool[] event_achieve_aetheryte = new bool[128];
     }
 }
