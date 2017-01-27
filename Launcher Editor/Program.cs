@@ -17,16 +17,82 @@ namespace Launcher_Editor
 
     class Program
     {
+        const string ORIGINAL_PATCH_PORT_STRING = "54996";
+        const string ORIGINAL_PATCH_URL_STRING = "ver01.ffxiv.com";
+        const string ORIGINAL_PATCH_LOGIN_STRING = "http://account.square-enix.com/account/content/ffxivlogin";
+
         static void Main(string[] args)
         {
-            //Console.WriteLine(FFXIVLoginStringDecodeBinary("C:\\Program Files (x86)\\SquareEnix\\FINAL FANTASY XIV\\ffxivlogin.exe"));
+            byte[] exeDataBoot;
+            byte[] exeDataLogin;
 
-            byte[] exeDataBoot = File.ReadAllBytes("C:\\Program Files (x86)\\SquareEnix\\FINAL FANTASY XIV\\ffxivboot - Copy.exe");
-            byte[] exeDataLogin = File.ReadAllBytes("C:\\Program Files (x86)\\SquareEnix\\FINAL FANTASY XIV\\ffxivlogin - Copy.exe");
-
-            string patchPortString = "54996";
-            string patchUrlString = "ver01.ffxiv.com";
+            string patchPortString;
+            string patchUrlString;
+            string loginUrlString;
+ 
             string lobbyUrlString = "lobby01.ffxiv.com";
+
+            Console.WriteLine("---------------------");
+            Console.WriteLine("FFXIV 1.0 EXE Patcher");
+            Console.WriteLine("By Ioncannon");
+            Console.WriteLine("Version 1.0");
+            Console.WriteLine("---------------------");
+
+            Console.WriteLine("Please enter the full path to your FINAL FANTASY XIV folder. It should have ffxivgame.exe inside it.");
+            string path = Console.ReadLine();
+
+            if (!File.Exists(path + "\\ffxivboot.exe"))
+            {
+                Console.WriteLine("Missing ffxivboot.exe, aborting");
+                Console.ReadKey();
+                return;
+            }
+            if (!File.Exists(path + "\\ffxivgame.exe"))
+            {
+                Console.WriteLine("Missing ffxivgame.exe, aborting");
+                Console.ReadKey();
+                return;
+            }
+            if (!File.Exists(path + "\\ffxivlogin.exe"))
+            {
+                Console.WriteLine("Missing ffxivlogin.exe, aborting");
+                Console.ReadKey();
+                return;
+            }
+
+            Console.WriteLine("EXEs found!");
+
+            Console.WriteLine("Please enter the url to the patch webpage (do not include \"http://\", max 32 characters).");
+            patchUrlString = Console.ReadLine();
+            Console.WriteLine("Please enter the port to the patch webpage (usually 80).");
+            patchPortString = Console.ReadLine();
+
+            try
+            {
+                int.Parse(patchPortString);
+            }
+            catch (FormatException e)
+            {
+                Console.WriteLine("Not a number, aborting");
+                Console.ReadKey();
+                return;
+            }
+            catch (OverflowException e)
+            {
+                Console.WriteLine("Not a number, aborting");
+                Console.ReadKey();
+                return;
+            }
+
+            Console.WriteLine("Please enter the url to the login webpage (max 56 characters, please include \"http://\").");
+            loginUrlString = Console.ReadLine();
+
+            if (loginUrlString.Length > 0x56)
+            {
+                Console.WriteLine("URL too long, aborting");
+                Console.ReadKey();
+                return;
+            }
 
             long patchPortStringOffset = 0;
             long patchUrlStringOffset = 0;
@@ -36,24 +102,48 @@ namespace Launcher_Editor
             long loginUrlOffset = 0;
             long freeSpaceInLoginOffset = 0;
 
+            Console.WriteLine("Patching started!");
+            exeDataBoot = File.ReadAllBytes(path + "\\ffxivboot.exe");
+            exeDataLogin = File.ReadAllBytes(path + "\\ffxivlogin.exe");
+
             Console.WriteLine("---Editing FFXIVBOOT.EXE---");
 
-            patchPortStringOffset = PrintSearch(exeDataBoot, patchPortString);
-            patchUrlStringOffset = PrintSearch(exeDataBoot, patchUrlString);            
+            patchPortStringOffset = PrintSearch(exeDataBoot, ORIGINAL_PATCH_PORT_STRING);
+            patchUrlStringOffset = PrintSearch(exeDataBoot, ORIGINAL_PATCH_URL_STRING);            
             freeSpaceOffset = PrintFreeSpaceSearch(exeDataBoot);
+
+            if (patchPortStringOffset == -1 || patchUrlStringOffset == -1 || freeSpaceOffset == -1)
+            {
+                Console.WriteLine("There was an error finding the address locations...");
+                Console.ReadKey();
+                return;
+            }
+
             Console.WriteLine("Writing \"{0}\" and updating offset to 0x{1:X}.", "80", freeSpaceOffset);
             WriteNewString(exeDataBoot, patchPortStringOffset, "80", freeSpaceOffset);
             Console.WriteLine("Writing \"{0}\" and updating offset to 0x{1:X}.", "127.0.0.1", freeSpaceOffset + 0x20);
             WriteNewString(exeDataBoot, patchUrlStringOffset, "127.0.0.1", freeSpaceOffset + 0x20);
 
             Console.WriteLine("---Editing FFXIVLOGIN.EXE---");
-            loginUrlOffset = PrintEncodedSearch(exeDataLogin, 0x739, "http://account.square-enix.com/account/content/ffxivlogin");
+            loginUrlOffset = PrintEncodedSearch(exeDataLogin, 0x739, ORIGINAL_PATCH_LOGIN_STRING);
             freeSpaceInLoginOffset = PrintFreeSpaceSearch(exeDataLogin);
-            Console.WriteLine("Writing encoded \"{0}\" and updating offset to 0x{1:X}.", "http://127.0.0.1/", freeSpaceInLoginOffset);
-            WriteNewStringEncoded(exeDataLogin, loginUrlOffset, 0x739, "http://127.0.0.1/", freeSpaceInLoginOffset);
 
-            File.WriteAllBytes("C:\\Users\\Filip\\Desktop\\ffxivboot_test.exe", exeDataBoot);
-            File.WriteAllBytes("C:\\Users\\Filip\\Desktop\\ffxivlogin_test.exe", exeDataLogin);
+            if (loginUrlOffset == -1 || freeSpaceInLoginOffset == -1)
+            {
+                Console.WriteLine("There was an error finding the address locations...");
+                Console.ReadKey();
+                return;
+            }
+
+            Console.WriteLine("Writing encoded \"{0}\" and updating offset to 0x{1:X}.", loginUrlString, freeSpaceInLoginOffset);
+            WriteNewStringEncoded(exeDataLogin, loginUrlOffset, 0x739, loginUrlString, freeSpaceInLoginOffset);
+
+            File.WriteAllBytes("C:\\Users\\Filip\\Desktop\\ffxivboot.exe", exeDataBoot);
+            File.WriteAllBytes("C:\\Users\\Filip\\Desktop\\ffxivlogin.exe", exeDataLogin);
+
+            Console.WriteLine("Done! New .EXEs created in the same folder as this application. Make sure to backup your originals!");
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey();
 
         }
 
