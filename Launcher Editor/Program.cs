@@ -119,10 +119,10 @@ namespace Launcher_Editor
                 return;
             }
 
-            Console.WriteLine("Writing \"{0}\" and updating offset to 0x{1:X}.", "80", freeSpaceOffset);
-            WriteNewString(exeDataBoot, patchPortStringOffset, "80", freeSpaceOffset);
-            Console.WriteLine("Writing \"{0}\" and updating offset to 0x{1:X}.", "127.0.0.1", freeSpaceOffset + 0x20);
-            WriteNewString(exeDataBoot, patchUrlStringOffset, "127.0.0.1", freeSpaceOffset + 0x20);
+            Console.WriteLine("Writing \"{0}\" and updating offset to 0x{1:X}.", patchPortString, freeSpaceOffset);
+            WriteNewString(exeDataBoot, patchPortStringOffset, patchPortString, freeSpaceOffset);
+            Console.WriteLine("Writing \"{0}\" and updating offset to 0x{1:X}.", patchUrlString, freeSpaceOffset + 0x20);
+            WriteNewString(exeDataBoot, patchUrlStringOffset, patchUrlString, freeSpaceOffset + 0x20);
 
             Console.WriteLine("---Editing FFXIVLOGIN.EXE---");
             loginUrlOffset = PrintEncodedSearch(exeDataLogin, 0x739, ORIGINAL_PATCH_LOGIN_STRING);
