@@ -14,6 +14,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.packets.send;
+using FFXIVClassic_Map_Server.actors.group;
+using FFXIVClassic_Map_Server.actors.director;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -32,11 +34,22 @@ namespace FFXIVClassic_Map_Server.Actors
         protected int numXBlocks, numYBlocks;
         protected int halfWidth, halfHeight;
 
+        private Dictionary<uint, Director> currentDirectors = new Dictionary<uint, Director>();
+        private Object directorLock = new Object();
+        private uint directorIdCount = 0;
+
+        protected Director mWeatherDirector;
+
         protected List<SpawnLocation> mSpawnLocations = new List<SpawnLocation>();
         protected Dictionary<uint, Actor> mActorList = new Dictionary<uint, Actor>();
         protected List<Actor>[,] mActorBlock;
 
         LuaScript areaScript;
+
+        //Content Groups
+        public Dictionary<ulong, Group> mContentGroups = new Dictionary<ulong, Group>();
+        private Object groupLock = new Object();
+        public ulong groupIndexId = 0;
 
         public Area(uint id, string zoneName, ushort regionId, string className, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
             : base(id)
@@ -353,6 +366,11 @@ namespace FFXIVClassic_Map_Server.Actors
             AddActorToZone(npc);                          
         }
 
+        public Director GetWeatherDirector()
+        {
+            return mWeatherDirector;
+        }
+
         public void ChangeWeather(ushort weather, ushort transitionTime, Player player, bool zoneWide = false)
         {
             weatherNormal = weather;
@@ -372,6 +390,65 @@ namespace FFXIVClassic_Map_Server.Actors
                     }
                 }
             }
+        }
+
+        public void CreateContentGroup(uint[] initialMembers)
+        {
+            lock (groupLock)
+            {
+                ContentGroup contentGroup = new ContentGroup(groupIndexId, initialMembers == null ? new uint[0] : initialMembers);
+                mContentGroups.Add(groupIndexId, contentGroup);
+                groupIndexId++;
+                if (initialMembers != null && initialMembers.Length != 0)                
+                    contentGroup.SendAll();                
+            }
+        }
+
+        public void DeleteContentGroup(ulong groupId)
+        {
+            lock (groupLock)
+            {
+                if (mContentGroups.ContainsKey(groupId) && mContentGroups[groupId] is ContentGroup)
+                {
+                    ContentGroup group = (ContentGroup) mContentGroups[groupId];
+                    group.SendDeletePackets();
+                    mContentGroups.Remove(groupId);
+                }
+            }
+        }
+
+        public Director CreateDirector(string path)
+        {
+            lock (directorLock)
+            {
+                Director director = new Director(directorIdCount, this, path);
+
+                if (!director.IsCreated())
+                    return null;
+
+                currentDirectors.Add(directorIdCount, director);
+                directorIdCount++;
+                return director;
+            }
+        }
+
+        public void DeleteDirector(uint id)
+        {
+            lock (directorLock)
+            {
+                if (currentDirectors.ContainsKey(id))
+                {
+                    currentDirectors[id].RemoveChildren();
+                    currentDirectors.Remove(id);
+                }
+            }
+        }
+
+        public Director GetDirectorById(uint id)
+        {
+            if (currentDirectors.ContainsKey(id))
+                return currentDirectors[id];
+            return null;
         }
 
         public void Update(double deltaTime)

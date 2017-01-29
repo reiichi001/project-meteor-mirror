@@ -22,6 +22,7 @@ using FFXIVClassic_Map_Server.packets.WorldPackets.Receive;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
 using System.Threading;
 using System.Diagnostics;
+using FFXIVClassic_Map_Server.actors.director;
 
 namespace FFXIVClassic_Map_Server
 {

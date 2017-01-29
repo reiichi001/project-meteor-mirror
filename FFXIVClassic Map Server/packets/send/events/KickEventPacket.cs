@@ -24,7 +24,7 @@ namespace FFXIVClassic_Map_Server.packets.send.events
                     binWriter.Write((UInt32)playerActorId);
                     binWriter.Write((UInt32)targetActorId);
 
-                    int test = 0x75DC8705; //This will crash if set to 0 on pushCommand but not for mining which has to be 0????
+                    int test = 0x75dc8705; //This will crash if set to 0 on pushCommand but not for mining which has to be 0????
                     
                     binWriter.Write((UInt32)test);
                     binWriter.Write((UInt32)0x30400000);

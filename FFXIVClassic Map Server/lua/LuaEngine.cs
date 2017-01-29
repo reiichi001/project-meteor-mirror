@@ -20,7 +20,7 @@ namespace FFXIVClassic_Map_Server.lua
     class LuaEngine
     {
         const string FILEPATH_PLAYER = "./scripts/player.lua";
-        const string FILEPATH_ZONE = "./scripts/zones/{0}/zone.lua";
+        const string FILEPATH_ZONE = "./scripts/unique/{0}/zone.lua";
         const string FILEPATH_COMMANDS = "./scripts/commands/{0}.lua";
         const string FILEPATH_DIRECTORS = "./scripts/directors/{0}.lua";
         const string FILEPATH_NPCS = "./scripts/zones/{0}/npcs/{1}.lua";
@@ -158,7 +158,7 @@ namespace FFXIVClassic_Map_Server.lua
 
         public static void OnZoneIn(Player player)
         {
-            string luaPath = String.Format(FILEPATH_ZONE, player.GetZone().actorId);
+            string luaPath = String.Format(FILEPATH_ZONE, player.GetZone().zoneName);
 
             if (File.Exists(luaPath))
             {
@@ -169,7 +169,7 @@ namespace FFXIVClassic_Map_Server.lua
 
                 //Run Script
                 if (!script.Globals.Get("onZoneIn").IsNil())
-                    script.Call(script.Globals["onZoneIn"], player);
+                    script.Call(script.Globals["onZoneIn"], player.GetZone(), player);
             }
         }
 

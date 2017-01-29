@@ -123,7 +123,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public Quest[] questScenario = new Quest[16];
         public Quest[] questGuildleve = new Quest[8];
 
-        public Director currentDirector;
+        private List<Director> ownedDirectors = new List<Director>();
+        private Director loginInitDirector = null;
 
         public PlayerWork playerWork = new PlayerWork();
 
@@ -253,8 +254,8 @@ namespace FFXIVClassic_Map_Server.Actors
             List<LuaParam> lParams;
             if (IsMyPlayer(playerActorId))
             {
-                if (currentDirector != null)
-                    lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, true, currentDirector, true, 0, false, timers, true);
+                if (loginInitDirector != null)
+                    lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, true, loginInitDirector, true, 0, false, timers, true);
                 else
                     lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, false, true, 0, false, timers, true);
             }
@@ -500,26 +501,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
             playerSession.QueuePacket(GetInitPackets(actorId));
 
-
             BasePacket areaMasterSpawn = zone.GetSpawnPackets(actorId);
             BasePacket debugSpawn = world.GetDebugActor().GetSpawnPackets(actorId);
             BasePacket worldMasterSpawn = world.GetActor().GetSpawnPackets(actorId);
-            BasePacket weatherDirectorSpawn = new WeatherDirector(this, 8003).GetSpawnPackets(actorId);
-            BasePacket directorSpawn = null;
             
-            if (currentDirector != null)
-                directorSpawn = currentDirector.GetSpawnPackets(actorId);
-
             playerSession.QueuePacket(areaMasterSpawn);
-            playerSession.QueuePacket(debugSpawn);
-            if (directorSpawn != null)
-            {
-                //directorSpawn.DebugPrintPacket();
-               // currentDirector.GetInitPackets(actorId).DebugPrintPacket();
-                QueuePacket(directorSpawn);
-                QueuePacket(currentDirector.GetInitPackets(actorId));
-                //QueuePacket(currentDirector.GetSetEventStatusPackets(actorId));
-            }
+            playerSession.QueuePacket(debugSpawn);            
             playerSession.QueuePacket(worldMasterSpawn);
 
             if (zone.isInn)
@@ -534,18 +521,20 @@ namespace FFXIVClassic_Map_Server.Actors
                 QueuePacket(packet);
             }
 
-            playerSession.QueuePacket(weatherDirectorSpawn);
+            if (zone.GetWeatherDirector() != null)
+            {
+                BasePacket weatherDirectorSpawn = zone.GetWeatherDirector().GetSpawnPackets(actorId);
+                playerSession.QueuePacket(weatherDirectorSpawn);
+            }
 
-/*
-            #region hardcode
-            BasePacket reply10 = new BasePacket("./packets/login/login10.bin"); //Item Storage, Inn Door Created
-            BasePacket reply11 = new BasePacket("./packets/login/login11.bin"); //NPC Create ??? Final init
-            reply10.ReplaceActorID(actorId);
-            reply11.ReplaceActorID(actorId);
-            //playerSession.QueuePacket(reply10);
-           // playerSession.QueuePacket(reply11);
-            #endregion
-*/
+            foreach (Director director in ownedDirectors)
+            {
+                director.GetSpawnPackets(actorId).DebugPrintPacket();
+                QueuePacket(director.GetSpawnPackets(actorId));
+                QueuePacket(director.GetInitPackets(actorId));
+                //QueuePacket(director.GetSetEventStatusPackets(actorId));
+            }            
+
         }
 
         private void SendRemoveInventoryPackets(List<ushort> slots)
@@ -712,6 +701,11 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             return playTime;
+        }
+
+        public void SavePlayTime()
+        {
+            Database.SavePlayerPlayTime(this);
         }
 
         public void ChangeMusic(ushort musicId)
@@ -1096,40 +1090,56 @@ namespace FFXIVClassic_Map_Server.Actors
             return -1;
         }
 
-        public void SetDirector(string directorType, bool sendPackets)
+        public void SetLoginDirector(Director director)
         {
-            if (directorType.Equals("openingDirector"))
-            {
-                currentDirector = new OpeningDirector(this, 0x46080012);
-            }
-            else if (directorType.Equals("QuestDirectorMan0l001"))
-            {
-                currentDirector = new QuestDirectorMan0l001(this, 0x46080012);
-            }
-            else if (directorType.Equals("QuestDirectorMan0g001"))  
-            {
-                currentDirector = new QuestDirectorMan0g001(this, 0x46080012);
-            }
-            else if (directorType.Equals("QuestDirectorMan0u001"))
-            {
-                currentDirector = new QuestDirectorMan0u001(this, 0x46080012);
-            }
-
-            if (sendPackets)
-            {
-                QueuePacket(RemoveActorPacket.BuildPacket(actorId, 0x46080012));
-                QueuePacket(currentDirector.GetSpawnPackets(actorId));
-                QueuePacket(currentDirector.GetInitPackets(actorId));
-                //QueuePacket(currentDirector.GetSetEventStatusPackets(actorId));
-                //currentDirector.GetSpawnPackets(actorId).DebugPrintPacket();
-                //currentDirector.GetInitPackets(actorId).DebugPrintPacket();
-            }
-
+            if (ownedDirectors.Contains(director))
+                loginInitDirector = director;
         }
 
-        public Director GetDirector()
+        public void AddDirector(Director director)
+        {            
+            if (!ownedDirectors.Contains(director))
+            {
+                ownedDirectors.Add(director);
+                director.AddChild(this);
+
+                //director.GetSpawnPackets(actorId).DebugPrintPacket();
+
+                //QueuePacket(director.GetSpawnPackets(actorId));
+                //QueuePacket(director.GetInitPackets(actorId));
+                //QueuePacket(director.GetSetEventStatusPackets(actorId));
+            }
+        }
+
+        public void RemoveDirector(Director director)
         {
-            return currentDirector;
+            if (!ownedDirectors.Contains(director))
+            {
+                ownedDirectors.Remove(director);
+                director.RemoveChild(this);
+            }
+        }
+
+        public Director GetDirector(string directorName)
+        {
+            foreach (Director d in ownedDirectors)
+            {
+                if (d.className.Equals(directorName))                
+                    return d;                
+            }
+
+            return null;
+        }
+
+        public Director GetDirector(uint id)
+        {
+            foreach (Director d in ownedDirectors)
+            {
+                if (d.actorId == id)
+                    return d;
+            }
+
+            return null;
         }
 
         public void ExaminePlayer(Actor examinee)
@@ -1167,6 +1177,27 @@ namespace FFXIVClassic_Map_Server.Actors
             if (owner is Npc)
             {
                 currentEventRunning = ((Npc)owner).GetEventStartCoroutine(this);
+
+                if (currentEventRunning != null)
+                {
+                    try
+                    {
+                        currentEventRunning.Resume(objects.ToArray());
+                    }
+                    catch (ScriptRuntimeException e)
+                    {
+                        Program.Log.Error("[LUA] {0}", e.DecoratedMessage);
+                        EndEvent();
+                    }
+                }
+                else
+                {
+                    EndEvent();
+                }
+            }
+            else if (owner is Director)
+            {
+                currentEventRunning = ((Director)owner).GetEventStartCoroutine(this);
 
                 if (currentEventRunning != null)
                 {

@@ -20,6 +20,7 @@ using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Send;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Receive;
+using FFXIVClassic_Map_Server.actors.director;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -184,8 +185,9 @@ namespace FFXIVClassic_Map_Server
                             if (ownerActor == null)
                             {
                                 //Is it a Director?
-                                if (session.GetActor().currentDirector != null && session.GetActor().currentEventOwner == session.GetActor().currentDirector.actorId)
-                                    ownerActor = session.GetActor().currentDirector;
+                                Director director = session.GetActor().GetDirector(eventStart.scriptOwnerActorID);
+                                if (director != null)
+                                    ownerActor = director;
                                 else
                                 {
                                     Program.Log.Debug("\n===Event START===\nCould not find actor 0x{0:X} for event started by caller: 0x{1:X}\nEvent Starter: {2}\nParams: {3}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.triggerName, LuaUtils.DumpParams(eventStart.luaParams));
