@@ -330,7 +330,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(SolutionDir)data\map_config.ini" "$(SolutionDir)$(ProjectName)\$(OutDir)" /d
-xcopy "$(SolutionDir)data\scripts" "$(SolutionDir)$(ProjectName)\$(OutDir)scripts" /e /d /y /s</PostBuildEvent>
+xcopy "$(SolutionDir)data\scripts" "$(SolutionDir)$(ProjectName)\$(OutDir)scripts\" /e /d /y /s</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>
