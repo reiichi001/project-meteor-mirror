@@ -24,14 +24,17 @@ function onEventStarted(player, npc, triggerName)
 	if (choice == 1) then
 		callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEvent000_2", nil, nil, nil, nil);
 		player:EndEvent();
-		player:SetDirector("QuestDirectorMan0l001", true);
 		
 		worldMaster = GetWorldMaster();
 		player:SendGameMessage(player, worldMaster, 34108, 0x20);	
 		player:SendGameMessage(player, worldMaster, 50011, 0x20);	
 
-		GetWorldManager():DoPlayerMoveInZone(player, 9);
-		player:KickEvent(player:GetDirector(), "noticeEvent", true);
+		director = player:GetZone():CreateDirector("Quest/QuestDirectorMan0l001");
+		player:KickEvent(director, "noticeEvent", true);
+		player:AddDirector(director);
+		player:SetLoginDirector(director);
+		
+		GetWorldManager():DoZoneChange(player, 9);
 	else
 		player:EndEvent();
 	end	

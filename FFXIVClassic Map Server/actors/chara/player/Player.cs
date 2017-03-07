@@ -249,6 +249,17 @@ namespace FFXIVClassic_Map_Server.Actors
             return packets;
         }
 
+        /*        
+         * PLAYER ARGS:
+         * Unknown - Bool 
+         * Unknown - Bool
+         * Is Init Director - Bool
+         * Unknown - Bool
+         * Unknown - Number
+         * Unknown - Bool
+         * Timer Array - 20 Number
+        */
+
         public override SubPacket CreateScriptBindPacket(uint playerActorId)
         {
             List<LuaParam> lParams;
@@ -257,10 +268,13 @@ namespace FFXIVClassic_Map_Server.Actors
                 if (loginInitDirector != null)
                     lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, true, loginInitDirector, true, 0, false, timers, true);
                 else
-                    lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, false, true, 0, false, timers, true);
+                    lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", true, false, false, true, 0, false, timers, true);
             }
             else
                 lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
+
+            ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams).DebugPrintSubPacket();
+
             return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
         }
 
@@ -527,13 +541,14 @@ namespace FFXIVClassic_Map_Server.Actors
                 playerSession.QueuePacket(weatherDirectorSpawn);
             }
 
+            
             foreach (Director director in ownedDirectors)
             {
                 director.GetSpawnPackets(actorId).DebugPrintPacket();
                 QueuePacket(director.GetSpawnPackets(actorId));
                 QueuePacket(director.GetInitPackets(actorId));
                 //QueuePacket(director.GetSetEventStatusPackets(actorId));
-            }            
+            }        
 
         }
 
@@ -1033,6 +1048,43 @@ namespace FFXIVClassic_Map_Server.Actors
             playerWork.questScenario[freeSlot] = id;
             questScenario[freeSlot] = new Quest(this, playerWork.questScenario[freeSlot], name, null, 0);
             Database.SaveQuest(this, questScenario[freeSlot]);
+            SendQuestClientUpdate(freeSlot);
+        }
+
+        public void RemoveQuest(uint id)
+        {
+            if (HasQuest(id))
+            {
+                for (int i = 0; i < questScenario.Length; i++)
+                {
+                    if (questScenario[i] != null && questScenario[i].actorId == id)
+                    {
+                        questScenario[i] = null;
+                        Database.SaveQuest(this, questScenario[i]);
+                        SendQuestClientUpdate(i);
+                        break;
+                    }
+                }
+            }
+        }
+
+        public void ReplaceQuest(uint oldId, uint newId)
+        {
+            if (HasQuest(oldId))
+            {
+                for (int i = 0; i < questScenario.Length; i++)
+                {
+                    if (questScenario[i] != null && questScenario[i].GetQuestId() == oldId)
+                    {
+                        Actor actor = Server.GetStaticActors((0xA0F00000 | newId));
+                        playerWork.questScenario[i] = (0xA0F00000 | newId);
+                        questScenario[i] = new Quest(this, playerWork.questScenario[i], actor.actorName, null, 0);
+                        Database.SaveQuest(this, questScenario[i]);
+                        SendQuestClientUpdate(i);
+                        break;
+                    }
+                }
+            }
         }
 
         public Quest GetQuest(uint id)
@@ -1090,6 +1142,13 @@ namespace FFXIVClassic_Map_Server.Actors
             return -1;
         }
 
+        private void SendQuestClientUpdate(int slot)
+        {
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("playerWork/journal", this, actorId);
+            propPacketUtil.AddProperty(String.Format("playerWork.questScenario[{0}]", slot));
+            QueuePackets(propPacketUtil.Done());
+        }
+
         public void SetLoginDirector(Director director)
         {
             if (ownedDirectors.Contains(director))
@@ -1102,11 +1161,6 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 ownedDirectors.Add(director);
                 director.AddChild(this);
-
-                //director.GetSpawnPackets(actorId).DebugPrintPacket();
-
-                //QueuePacket(director.GetSpawnPackets(actorId));
-                //QueuePacket(director.GetInitPackets(actorId));
                 //QueuePacket(director.GetSetEventStatusPackets(actorId));
             }
         }
@@ -1124,7 +1178,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             foreach (Director d in ownedDirectors)
             {
-                if (d.className.Equals(directorName))                
+                if (d.GetScriptPath().Equals(directorName))                
                     return d;                
             }
 

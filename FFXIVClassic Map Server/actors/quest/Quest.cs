@@ -41,6 +41,11 @@ namespace FFXIVClassic_Map_Server.Actors
             //Inform update
         }
 
+        public uint GetQuestId()
+        {
+            return actorId & 0xFFFFF;
+        }
+
         public object GetQuestData(string dataName)
         {
             if (questData.ContainsKey(dataName))
@@ -52,12 +57,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void ClearQuestData()
         {
             questData.Clear();
-        }
-
-        public uint GetQuestId()
-        {
-            return actorId;
-        }
+        }       
 
         public void ClearQuestFlags()
         {
@@ -98,9 +98,11 @@ namespace FFXIVClassic_Map_Server.Actors
             return currentPhase;
         }
 
-        public void NextPhase()
+        public void NextPhase(int phaseNumber)
         {
-            currentPhase++;
+            currentPhase = phaseNumber;
+            owner.SendGameMessage(Server.GetWorldManager().GetActor(), 25116, 0x20, (object)GetQuestId());
+            SaveData();
         }
 
         public uint GetQuestFlags()

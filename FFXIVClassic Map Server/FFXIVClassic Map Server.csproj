@@ -152,7 +152,7 @@
     <Compile Include="packets\receive\supportdesk\GMSupportTicketPacket.cs" />
     <Compile Include="packets\receive\supportdesk\GMTicketIssuesRequestPacket.cs" />
     <Compile Include="packets\receive\_0x02ReceivePacket.cs" />
-    <Compile Include="packets\receive\_0x07Packet.cs" />
+    <Compile Include="packets\receive\ZoneInCompletePacket.cs" />
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />
     <Compile Include="packets\send\actor\ActorSpecialGraphicPacket.cs" />

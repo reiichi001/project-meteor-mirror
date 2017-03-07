@@ -31,7 +31,7 @@ function onEventStarted(player, npc, triggerName)
 				npc:SetQuestGraphic(player, 0x2);
 				man0l0Quest:SaveData();
 				
-				player:GetDirector():OnTalked(npc);
+				player:GetDirector("OpeningDirector"):onTalkEvent(player, npc);
 			--Was he talked to for the mini tutorial?
 			else				
 				callClientFunction(player, "delegateEvent", player, man0l0Quest, "processTtrMini001", nil, nil, nil);
@@ -41,7 +41,7 @@ function onEventStarted(player, npc, triggerName)
 					man0l0Quest:SetQuestFlag(MAN0L0_FLAG_MINITUT_DONE1, true);
 					man0l0Quest:SaveData();
 					
-					player:GetDirector():OnTalked(npc);
+					player:GetDirector("OpeningDirector"):onTalkEvent(player, npc);
 				end
 			end					
 		end	

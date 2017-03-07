@@ -28,6 +28,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public float[] moveSpeeds = new float[4];
 
         public uint zoneId, zoneId2;
+        public string privateArea;
+        public uint privateAreaType;
         public Area zone = null;
         public Area zone2 = null;
         public bool isZoning = false;
@@ -351,7 +353,7 @@ namespace FFXIVClassic_Map_Server.Actors
             uint zoneId = zone.actorId;
             uint privLevel = 0;
             if (zone is PrivateArea)
-                privLevel = ((PrivateArea)zone).GetPrivateAreaLevel();
+                privLevel = ((PrivateArea)zone).GetPrivateAreaType();
 
             actorName = String.Format("{0}_{1}_{2}@{3:X3}{4:X2}", className, zoneName, classNumber, zoneId, privLevel);
         }

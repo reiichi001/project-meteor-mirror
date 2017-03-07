@@ -237,7 +237,9 @@ namespace FFXIVClassic_Map_Server
                     rotation = @rot,
                     destinationZoneId = @destZone,
                     destinationSpawnType = @destSpawn,
-                    currentZoneId = @zoneId
+                    currentZoneId = @zoneId,
+                    currentPrivateArea = @privateArea,
+                    currentPrivateAreaType = @privateAreaType
                     WHERE id = @charaId
                     ";
                    
@@ -248,6 +250,8 @@ namespace FFXIVClassic_Map_Server
                     cmd.Parameters.AddWithValue("@z", player.positionZ);
                     cmd.Parameters.AddWithValue("@rot", player.rotation);
                     cmd.Parameters.AddWithValue("@zoneId", player.zoneId);
+                    cmd.Parameters.AddWithValue("@privateArea", player.privateArea);
+                    cmd.Parameters.AddWithValue("@privateAreaType", player.privateAreaType);
                     cmd.Parameters.AddWithValue("@destZone", player.destinationZone);
                     cmd.Parameters.AddWithValue("@destSpawn", player.destinationSpawnType);
 
@@ -327,7 +331,7 @@ namespace FFXIVClassic_Map_Server
                     VALUES
                     (@charaId, @slot, @questId, @questData, @questFlags)
                     ON DUPLICATE KEY UPDATE
-                    questData = @questData, questFlags = @questFlags
+                    questId = @questId, questData = @questData, questFlags = @questFlags
                     ";
 
                     cmd = new MySqlCommand(query, conn);
@@ -385,7 +389,9 @@ namespace FFXIVClassic_Map_Server
                     achievementPoints,
                     playTime,
                     destinationZoneId,
-                    destinationSpawnType
+                    destinationSpawnType,
+                    currentPrivateArea,
+                    currentPrivateAreaType
                     FROM characters WHERE id = @charId";                    
 
                     cmd = new MySqlCommand(query, conn);
@@ -419,10 +425,17 @@ namespace FFXIVClassic_Map_Server
                             player.destinationZone = reader.GetUInt32("destinationZoneId");
                             player.destinationSpawnType = reader.GetByte("destinationSpawnType");
 
+                            if (!reader.IsDBNull(reader.GetOrdinal("currentPrivateArea")))
+                                player.privateArea = reader.GetString("currentPrivateArea");
+                            player.privateAreaType = reader.GetUInt32("currentPrivateAreaType");
+
                             if (player.destinationZone != 0)
                                 player.zoneId = player.destinationZone;
-
-                            player.zone = Server.GetWorldManager().GetZone(player.zoneId);
+                            
+                            if (player.privateArea != null && !player.privateArea.Equals(""))
+                                player.zone = Server.GetWorldManager().GetPrivateArea(player.zoneId, player.privateArea, player.privateAreaType);
+                            else
+                                player.zone = Server.GetWorldManager().GetZone(player.zoneId);
                         }
                     }
                   

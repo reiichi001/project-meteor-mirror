@@ -3,13 +3,13 @@ using System.IO;
 
 namespace FFXIVClassic_Map_Server.packets.receive
 {
-    class _0x07Packet
+    class ZoneInCompletePacket
     {
         public bool invalidPacket = false;
         public uint timestamp;
-        public uint unknown;
+        public int unknown;
 
-        public _0x07Packet(byte[] data)
+        public ZoneInCompletePacket(byte[] data)
         {
             using (MemoryStream mem = new MemoryStream(data))
             {
@@ -17,7 +17,7 @@ namespace FFXIVClassic_Map_Server.packets.receive
                 {
                     try{
                         timestamp = binReader.ReadUInt32();
-                        unknown = binReader.ReadUInt32();
+                        unknown = binReader.ReadInt32();
                     }
                     catch (Exception){
                         invalidPacket = true;

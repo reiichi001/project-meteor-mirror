@@ -126,8 +126,9 @@ namespace FFXIVClassic_Map_Server
                         break;
                     //Unknown - Happens a lot at login, then once every time player zones
                     case 0x0007:
-                        //subpacket.DebugPrintSubPacket();
-                        _0x07Packet unknown07 = new _0x07Packet(subpacket.data);
+                        subpacket.DebugPrintSubPacket();
+                        ZoneInCompletePacket zoneInCompletePacket = new ZoneInCompletePacket(subpacket.data);
+                        LuaEngine.OnZoneInDone(session.GetActor());
                         break;
                     //Update Position
                     case 0x00CA:
@@ -181,7 +182,7 @@ namespace FFXIVClassic_Map_Server
                         if (ownerActor == null)
                         {
                             //Is it a instance actor?
-                            ownerActor = Server.GetWorldManager().GetActorInWorld(session.GetActor().currentEventOwner);
+                            ownerActor = session.GetActor().zone.FindActorInZone(session.GetActor().currentEventOwner);
                             if (ownerActor == null)
                             {
                                 //Is it a Director?
@@ -202,6 +203,7 @@ namespace FFXIVClassic_Map_Server
                         break;
                     //Unknown, happens at npc spawn and cutscene play????
                     case 0x00CE:
+                        subpacket.DebugPrintSubPacket();
                         break;
                     //Event Result
                     case 0x012E:

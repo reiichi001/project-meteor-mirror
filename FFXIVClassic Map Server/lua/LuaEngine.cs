@@ -173,6 +173,23 @@ namespace FFXIVClassic_Map_Server.lua
             }
         }
 
+        public static void OnZoneInDone(Player player)
+        {
+            string luaPath = String.Format(FILEPATH_ZONE, player.GetZone().zoneName);
+
+            if (File.Exists(luaPath))
+            {
+                LuaScript script = LoadScript(luaPath);
+
+                if (script == null)
+                    return;
+
+                //Run Script
+                if (!script.Globals.Get("onZoneInDone").IsNil())
+                    script.Call(script.Globals["onZoneInDone"], player.GetZone(), player);
+            }
+        }
+
         public static void OnBeginLogin(Player player)
         {
             if (File.Exists(FILEPATH_PLAYER))
@@ -393,48 +410,6 @@ namespace FFXIVClassic_Map_Server.lua
             player.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", message);
             player.playerSession.QueuePacket(BasePacket.CreatePacket(SendError, true, false));
         }
-
-
-        internal static void DoDirectorOnTalked(Director director, Player player, Npc npc)
-        {
-            string luaPath = String.Format(FILEPATH_DIRECTORS, director.GetName());
-
-            if (File.Exists(luaPath))
-            {
-                LuaScript script = LoadScript(luaPath);
-
-                if (script == null)
-                    return;
-
-                //Run Script
-                if (!script.Globals.Get("onTalked").IsNil())
-                    script.Call(script.Globals["onTalked"], player, npc);
-            }
-            else
-            {
-                SendError(player, String.Format("ERROR: Could not find script for director {0}.", director.GetName()));
-            }
-        }
-
-        internal static void DoDirectorOnCommand(Director director, Player player, Command command)
-        {
-            string luaPath = String.Format(FILEPATH_DIRECTORS, director.GetName());
-
-            if (File.Exists(luaPath))
-            {
-                LuaScript script = LoadScript(luaPath);
-
-                if (script == null)
-                    return;
-
-                //Run Script
-                if (!script.Globals.Get("onCommand").IsNil())
-                    script.Call(script.Globals["onCommand"], player, command);
-            }
-            else
-            {
-                SendError(player, String.Format("ERROR: Could not find script for director {0}.", director.GetName()));
-            }
-        }
+        
     }
 }

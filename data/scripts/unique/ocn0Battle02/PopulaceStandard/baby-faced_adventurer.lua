@@ -22,7 +22,7 @@ function onEventStarted(player, npc, triggerName)
 			npc:SetQuestGraphic(player, 0x0);
 			man0l0Quest:SetQuestFlag(MAN0L0_FLAG_MINITUT_DONE3, true);
 			man0l0Quest:SaveData();		
-			player:GetDirector():OnTalked(npc);
+			player:GetDirector("OpeningDirector"):onTalkEvent(player, npc);
 		else
 			callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEvent000_8", nil, nil, nil);
 		end

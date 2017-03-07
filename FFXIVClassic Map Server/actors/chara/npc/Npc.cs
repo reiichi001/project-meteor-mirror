@@ -1,10 +1,10 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors;
+using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
-
 using FFXIVClassic_Map_Server.packets.receive.events;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.utils;
@@ -27,8 +27,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public NpcWork npcWork = new NpcWork();
 
-        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, uint zoneId, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, string customDisplayName)
-            : base((4 << 28 | zoneId << 19 | (uint)actorNumber))  
+        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, string customDisplayName)
+            : base((4 << 28 | spawnedArea.actorId << 19 | (uint)actorNumber))  
         {
             this.positionX = posX;
             this.positionY = posY;
@@ -41,8 +41,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             this.uniqueIdentifier = uniqueId;
 
-            this.zoneId = zoneId;
-            this.zone = Server.GetWorldManager().GetZone(zoneId);
+            this.zoneId = spawnedArea.actorId;
+            this.zone = spawnedArea;
 
             this.actorClassId = actorClass.actorClassId;
 
@@ -131,8 +131,12 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.AddRange(GetEventConditionPackets(playerActorId));
             subpackets.Add(CreateSpeedPacket(playerActorId));            
             subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x0));
-            
-            if (uniqueIdentifier.Equals("door2"))
+
+            if (uniqueIdentifier.Equals("door1"))
+            {
+                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, 0xB0D, 0x1af));
+            }
+            else if (uniqueIdentifier.Equals("door2"))
             {
                 subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, 0xB09, 0x1af));
             }
@@ -167,16 +171,16 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             else if (actorClassId == 5900013)
             {
-                uint id = 2;
-                uint id2 = 5144;
-                string val = "fdot";
+                uint id = 201;
+                uint id2 = 0x1415;
+                string val = "fdin";
                 subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, id, id2));
                 subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId, val));
             }
             else if (actorClassId == 5900014)
             {
-                uint id = 2;
-                uint id2 = 5145;
+                uint id = 201;
+                uint id2 = 0x1415;
                 string val = "fdot";
                 subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, id, id2));
                 subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId, val));
@@ -374,8 +378,17 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
+
+            if (zone is PrivateArea)
+            {
+                if (File.Exists(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", zone.zoneName, ((PrivateArea)zone).GetPrivateAreaName(), className, uniqueIdentifier)))
+                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", zone.zoneName, ((PrivateArea)zone).GetPrivateAreaName(), className, uniqueIdentifier));
+            }
+            else
+            {
+                if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
+                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
+            }
 
             if (parent == null && child == null)
             {
@@ -402,8 +415,16 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (File.Exists("./scripts/base/" + classPath + ".lua"))
                 parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
+            if (zone is PrivateArea)
+            {
+                if (File.Exists(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", zone.zoneName, ((PrivateArea)zone).GetPrivateAreaName(), className, uniqueIdentifier)))
+                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", zone.zoneName, ((PrivateArea)zone).GetPrivateAreaName(), className, uniqueIdentifier));
+            }
+            else
+            {
+                if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
+                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
+            }
 
             if (parent == null && child == null)
             {

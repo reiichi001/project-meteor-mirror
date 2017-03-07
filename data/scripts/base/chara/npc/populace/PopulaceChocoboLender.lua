@@ -21,11 +21,11 @@ end
 
 function onEventStarted(player, npc, triggerName)
 	
-	--callClientFunction(player, "eventTalkWelcome", player);
+	callClientFunction(player, "eventTalkWelcome", player);
 	callClientFunction(player, "eventAskMainMenu", player, 20, true, true, true, true, 4);
-	callClientFunction(player, "eventTalkMyChocobo", player);
-	callClientFunction(player, "eventSetChocoboName", false);
-	callClientFunction(player, "eventAfterChocoboName", player);
+	--callClientFunction(player, "eventTalkMyChocobo", player);
+	--callClientFunction(player, "eventSetChocoboName", false);
+	--callClientFunction(player, "eventAfterChocoboName", player);
 	
 	player:EndEvent();
 end

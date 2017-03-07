@@ -15,14 +15,14 @@ namespace FFXIVClassic_Map_Server.actors.area
     {
         private Zone parentZone;
         private string privateAreaName;
-        private uint privateAreaLevel;
+        private uint privateAreaType;
 
-        public PrivateArea(Zone parent, uint id, string className, string privateAreaName, uint privateAreaLevel, ushort bgmDay, ushort bgmNight, ushort bgmBattle)
+        public PrivateArea(Zone parent, uint id, string className, string privateAreaName, uint privateAreaType, ushort bgmDay, ushort bgmNight, ushort bgmBattle)
             : base(id, parent.zoneName, parent.regionId, className, bgmDay, bgmNight, bgmBattle, parent.isIsolated, parent.isInn, parent.canRideChocobo, parent.canStealth, true)
         {
             this.parentZone = parent;
             this.privateAreaName = privateAreaName;
-            this.privateAreaLevel = privateAreaLevel;
+            this.privateAreaType = privateAreaType;
         }
 
         public string GetPrivateAreaName()
@@ -30,9 +30,9 @@ namespace FFXIVClassic_Map_Server.actors.area
             return privateAreaName;
         }
 
-        public uint GetPrivateAreaLevel()
+        public uint GetPrivateAreaType()
         {
-            return privateAreaLevel;
+            return privateAreaType;
         }
 
         public Zone GetParentZone()
@@ -46,12 +46,11 @@ namespace FFXIVClassic_Map_Server.actors.area
 
             string path = className;
 
-            if (className.ToLower().Contains("content"))
-                path = "Content/" + className;
+            string realClassName = className.Substring(className.LastIndexOf("/") + 1);
 
-            lParams = LuaUtils.CreateLuaParamList("/Area/PrivateArea/" + path, false, true, zoneName, privateAreaName, 0x9E, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, false, false, false);
-            ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams).DebugPrintSubPacket();
-            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
+            lParams = LuaUtils.CreateLuaParamList("/Area/PrivateArea" + path, false, true, zoneName, privateAreaName, privateAreaType, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, false, false, false);
+            ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, realClassName, lParams).DebugPrintSubPacket();
+            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, realClassName, lParams);
         }
 
 

@@ -16,6 +16,7 @@ namespace FFXIVClassic_Map_Server.actors.area
     class Zone : Area
     {        
         Dictionary<string, Dictionary<uint, PrivateArea>> privateAreas = new Dictionary<string, Dictionary<uint, PrivateArea>>();
+        Dictionary<string, List<PrivateArea>> instancedPrivateAreas = new Dictionary<string, List<PrivateArea>>();
 
         public Zone(uint id, string zoneName, ushort regionId, string className, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
             : base(id, zoneName, regionId, className, bgmDay, bgmNight, bgmBattle, isIsolated, isInn, canRideChocobo, canStealth, isInstanceRaid)
@@ -26,11 +27,11 @@ namespace FFXIVClassic_Map_Server.actors.area
         public void AddPrivateArea(PrivateArea pa)
         {
             if (privateAreas.ContainsKey(pa.GetPrivateAreaName()))
-                privateAreas[pa.GetPrivateAreaName()][0] = pa;
+                privateAreas[pa.GetPrivateAreaName()][pa.GetPrivateAreaType()] = pa;
             else
             {
                 privateAreas[pa.GetPrivateAreaName()] = new Dictionary<uint, PrivateArea>();
-                privateAreas[pa.GetPrivateAreaName()][0] = pa;
+                privateAreas[pa.GetPrivateAreaName()][pa.GetPrivateAreaType()] = pa;
             }
         }
 

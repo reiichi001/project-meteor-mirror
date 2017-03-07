@@ -68,14 +68,42 @@ namespace FFXIVClassic_Map_Server.actors.director
             return BasePacket.CreatePacket(initProperties.BuildPacket(playerActorId, actorId), true, false);
         }
 
-        public void OnTalked(Player player, Npc npc)
+        public void OnTalkEvent(Player player, Npc npc)
         {
-            LuaEngine.DoDirectorOnTalked(this, player, npc);
+            if (File.Exists("./scripts/directors/" + directorScriptPath + ".lua"))
+            {
+                LuaScript script = LuaEngine.LoadScript("./scripts/directors/" + directorScriptPath + ".lua");
+
+                if (script == null)
+                    return;
+
+                //Run Script
+                if (!script.Globals.Get("onTalkEvent").IsNil())
+                    script.Call(script.Globals["onTalkEvent"], player, npc);
+            }
+            else
+            {
+                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for director {0}.", GetName()));
+            }
         }
 
-        public void OnCommand(Player player, Command command)
+        public void OnCommandEvent(Player player, Command command)
         {
-            LuaEngine.DoDirectorOnCommand(this, player, command);
+            if (File.Exists("./scripts/directors/" + directorScriptPath + ".lua"))
+            {
+                LuaScript script = LuaEngine.LoadScript("./scripts/directors/" + directorScriptPath + ".lua");
+
+                if (script == null)
+                    return;
+
+                //Run Script
+                if (!script.Globals.Get("onCommandEvent").IsNil())
+                    script.Call(script.Globals["onCommandEvent"], player, command);
+            }
+            else
+            {
+                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for director {0}.", GetName()));
+            }
         }
 
         public void AddChild(Actor actor)
@@ -186,9 +214,14 @@ namespace FFXIVClassic_Map_Server.actors.director
             uint zoneId = zone.actorId;
             uint privLevel = 0;
             if (zone is PrivateArea)
-                privLevel = ((PrivateArea)zone).GetPrivateAreaLevel();
+                privLevel = ((PrivateArea)zone).GetPrivateAreaType();
 
             actorName = String.Format("{0}_{1}_{2}@{3:X3}{4:X2}", className, zoneName, classNumber, zoneId, privLevel);
+        }
+
+        public string GetScriptPath()
+        {
+            return directorScriptPath;
         }
 
     }    

@@ -111,6 +111,7 @@ namespace FFXIVClassic_Map_Server
                                     id,
                                     parentZoneId,
                                     privateAreaName,
+                                    privateAreaType,
                                     className,
                                     dayMusic,
                                     nightMusic,
@@ -129,7 +130,7 @@ namespace FFXIVClassic_Map_Server
                             if (zoneList.ContainsKey(parentZoneId))
                             {
                                 Zone parent = zoneList[parentZoneId];
-                                PrivateArea privArea = new PrivateArea(parent, reader.GetUInt32("id"), reader.GetString("className"), reader.GetString("privateAreaName"), 1, reader.GetUInt16("dayMusic"), reader.GetUInt16("nightMusic"), reader.GetUInt16("battleMusic"));
+                                PrivateArea privArea = new PrivateArea(parent, reader.GetUInt32("id"), reader.GetString("className"), reader.GetString("privateAreaName"), reader.GetUInt32("privateAreaType"), reader.GetUInt16("dayMusic"), reader.GetUInt16("nightMusic"), reader.GetUInt16("battleMusic"));
                                 parent.AddPrivateArea(privArea);
                             }
                             else
@@ -184,7 +185,7 @@ namespace FFXIVClassic_Map_Server
                             if (!reader.IsDBNull(7))
                                 privArea = reader.GetString(7);
 
-                            ZoneEntrance entance = new ZoneEntrance(reader.GetUInt32(1), privArea, reader.GetByte(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6));
+                            ZoneEntrance entance = new ZoneEntrance(reader.GetUInt32(1), privArea, 1, reader.GetByte(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6));
                             zoneEntranceList[id] = entance;
                             count++;
                         }
@@ -548,19 +549,19 @@ namespace FFXIVClassic_Map_Server
             }
 
             ZoneEntrance ze = zoneEntranceList[zoneEntrance];
-            DoZoneChange(player, ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
+            DoZoneChange(player, ze.zoneId, ze.privateAreaName, ze.privateAreaType, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
         }
 
         //Moves actor to new zone, and sends packets to spawn at the given coords.
-        public void DoZoneChange(Player player, uint destinationZoneId, string destinationPrivateArea, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
+        public void DoZoneChange(Player player, uint destinationZoneId, string destinationPrivateArea, int destinationPrivateAreaType, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
         {       
             //Add player to new zone and update
             Area newArea;
 
             if (destinationPrivateArea == null)
                 newArea = GetZone(destinationZoneId);
-            else
-                newArea = GetZone(destinationZoneId).GetPrivateArea(destinationPrivateArea, 0);
+            else //Add check for -1 if it is a instance
+                newArea = GetZone(destinationZoneId).GetPrivateArea(destinationPrivateArea, (uint)destinationPrivateAreaType);
 
             //This server does not contain that zoneId
             if (newArea == null)
@@ -581,6 +582,9 @@ namespace FFXIVClassic_Map_Server
 
             //Update player actor's properties
             player.zoneId = newArea.actorId;
+
+            player.privateArea = newArea is PrivateArea ? ((PrivateArea)newArea).GetPrivateAreaName() : null;
+            player.privateAreaType = newArea is PrivateArea ? ((PrivateArea)newArea).GetPrivateAreaType() : 0;
             player.zone = newArea;
             player.positionX = spawnX;
             player.positionY = spawnY;
@@ -589,10 +593,14 @@ namespace FFXIVClassic_Map_Server
 
             //Send packets
             player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
-            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x0), true, false);
+            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10), true, false);
             player.SendZoneInPackets(this, spawnType);
             player.playerSession.ClearInstance();
             player.SendInstanceUpdate();
+
+            //Send "You have entered an instance" if it's a Private Area
+            if (newArea is PrivateArea)
+                player.SendGameMessage(GetActor(), 34108, 0x20);
 
             LuaEngine.OnZoneIn(player);
         }
@@ -630,7 +638,7 @@ namespace FFXIVClassic_Map_Server
                 player.rotation = spawnRotation;
 
                 //Send packets
-                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x0), true, false);
+                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10), true, false);
                 player.playerSession.QueuePacket(player.CreateSpawnTeleportPacket(player.actorId, spawnType), true, false);
                 player.SendInstanceUpdate();
 
@@ -845,6 +853,17 @@ namespace FFXIVClassic_Map_Server
             return null;
         }
 
+        public Actor GetActorInWorldByUniqueId(string uid)
+        {
+            foreach (Zone zone in zoneList.Values)
+            {
+                Actor a = zone.FindActorInZoneByUniqueID(uid);
+                if (a != null)
+                    return a;
+            }
+            return null;
+        }
+
         public Player GetPCInWorld(uint charId)
         {
             foreach (Zone zone in zoneList.Values)
@@ -863,6 +882,14 @@ namespace FFXIVClassic_Map_Server
             return zoneList[zoneId];
         }
 
+        public PrivateArea GetPrivateArea(uint zoneId, string privateArea, uint privateAreaType)
+        {
+            if (!zoneList.ContainsKey(zoneId))
+                return null;
+
+            return zoneList[zoneId].GetPrivateArea(privateArea, privateAreaType);
+        }
+
         public WorldMaster GetActor()
         {
             return worldMaster;
@@ -877,16 +904,18 @@ namespace FFXIVClassic_Map_Server
         {
             public uint zoneId;
             public string privateAreaName;
+            public int privateAreaType;
             public byte spawnType;
             public float spawnX;
             public float spawnY;
             public float spawnZ;
             public float spawnRotation;
 
-            public ZoneEntrance(uint zoneId, string privateAreaName, byte spawnType, float x, float y, float z, float rot)
+            public ZoneEntrance(uint zoneId, string privateAreaName, int privateAreaType, byte spawnType, float x, float y, float z, float rot)
             {
                 this.zoneId = zoneId;
                 this.privateAreaName = privateAreaName;
+                this.privateAreaType = privateAreaType;
                 this.spawnType = spawnType;
                 this.spawnX = x;
                 this.spawnY = y;

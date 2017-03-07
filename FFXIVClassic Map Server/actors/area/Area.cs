@@ -300,6 +300,19 @@ namespace FFXIVClassic_Map_Server.Actors
             return mActorList[id];
         }
 
+        public Actor FindActorInZoneByUniqueID(string uniqueId)
+        {
+            foreach (Actor a in mActorList.Values)
+            {
+                if (a is Npc)
+                {
+                    if (((Npc)a).GetUniqueId().ToLower().Equals(uniqueId))
+                        return a;
+                }
+            }
+            return null;
+        }
+
         public Player FindPCInZone(string name)
         {
             foreach (Actor a in mActorList.Values)
@@ -360,7 +373,16 @@ namespace FFXIVClassic_Map_Server.Actors
             if (actorClass == null)
                 return;
 
-            Npc npc = new Npc(mActorList.Count + 1, actorClass, location.uniqueId, actorId, location.x, location.y, location.z, location.rot, location.state, location.animId, null);
+            uint zoneId;
+
+            if (this is PrivateArea)
+                zoneId = ((PrivateArea)this).GetParentZone().actorId;
+            else
+                zoneId = actorId;
+
+            Npc npc = new Npc(mActorList.Count + 1, actorClass, location.uniqueId, this, location.x, location.y, location.z, location.rot, location.state, location.animId, null);
+
+
             npc.LoadEventConditions(actorClass.eventConditions);            
 
             AddActorToZone(npc);                          

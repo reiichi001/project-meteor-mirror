@@ -12,22 +12,29 @@ function onBeginLogin(player)
 			player:AddQuest(110005);
 		elseif (initialTown == 3 and player:HasQuest(110009) == false) then
 			player:AddQuest(110009);
-		end
+		end		
 		
 	end
 			
 	--For Opening. Set Director and reset position incase d/c
 	if	   (player:HasQuest(110001) == true) then
-		--player:SetDirector("openingDirector", false);
+		director = player:GetZone():CreateDirector("OpeningDirector");
+		player:AddDirector(director);
+		player:SetLoginDirector(director);		
+		player:KickEvent(director, "noticeEvent", "noticeEvent");
+		
 		player.positionX = 0.016;
 		player.positionY = 10.35;
-		--player.positionZ = -36.91;
-		player.positionZ = -20.91;
+		player.positionZ = -36.91;
 		player.rotation = 0.025;
 		player:GetQuest(110001):ClearQuestData();
 		player:GetQuest(110001):ClearQuestFlags();
 	elseif (player:HasQuest(110005) == true) then 
-		player:SetDirector("openingDirector", false);
+		director = player:GetZone():CreateDirector("OpeningDirector");
+		player:AddDirector(director);
+		player:SetLoginDirector(director);
+		player:KickEvent(director, "noticeEvent", "noticeEvent");
+		
 		player.positionX = 369.5434;
 		player.positionY = 4.21;
 		player.positionZ = -706.1074;
@@ -35,15 +42,18 @@ function onBeginLogin(player)
 		player:GetQuest(110005):ClearQuestData();
 		player:GetQuest(110005):ClearQuestFlags();
 	elseif (player:HasQuest(110009) == true) then
-		player:SetDirector("openingDirector", false);
+		director = player:GetZone():CreateDirector("OpeningDirector");
+		player:AddDirector(director);
+		player:SetLoginDirector(director);
+		player:KickEvent(director, "noticeEvent", "noticeEvent");
+		
 		player.positionX = 5.364327;
 		player.positionY = 196.0;
 		player.positionZ = 133.6561;
 		player.rotation = -2.849384;
 		player:GetQuest(110009):ClearQuestData();
 		player:GetQuest(110009):ClearQuestFlags();
-	end
-	
+	end	
 	
 end
 
@@ -54,7 +64,9 @@ function onLogin(player)
 		player:SendMessage(0x1D,"",">PlayTime == 0, new player!");
 		
 		initClassItems(player);
-		initRaceItems(player);		
+		initRaceItems(player);	
+
+		player:SavePlayTime();		
 	end	
 	
 end
