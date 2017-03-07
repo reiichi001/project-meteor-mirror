@@ -14,11 +14,11 @@ function onEventStarted(player, command, triggerName)
 		player:ChangeState(0); 
 	end
 		
-	--player:endEvent();
+	player:endEvent();
 	
 	--For Opening Tutorial
-	if (player:HasQuest("Man0l0") or player:HasQuest("Man0g0") or player:HasQuest("Man0u0")) then
-		player:GetDirector("Quest/QuestDirectorMan0l001"):OnCommandEvent(player, command);	
-	end	
+	--if (player:HasQuest("Man0l0") or player:HasQuest("Man0g0") or player:HasQuest("Man0u0")) then
+		--player:GetDirector("Quest/QuestDirectorMan0l001"):OnCommandEvent(player, command);	
+	--end	
 	
 end

@@ -18,12 +18,14 @@ function onSpawn(player, npc)
 end
 
 function onEventStarted(player, npc, triggerName)
-	man0l0Quest = GetStaticActor("Man0l0");
+	man0l0Quest = player:GetQuest("Man0l0");
 	choice = callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEventNewRectAsk", nil);	
 	
 	if (choice == 1) then
 		callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEvent000_2", nil, nil, nil, nil);
 		player:EndEvent();
+		
+		man0l0Quest:NextPhase(5);
 		
 		worldMaster = GetWorldMaster();
 		player:SendGameMessage(player, worldMaster, 34108, 0x20);	

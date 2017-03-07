@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 12/3/2016 5:39:19 PM
+Date: 3/7/2017 8:30:14 AM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -34,7 +34,7 @@ CREATE TABLE `server_zones` (
 -- Records 
 -- ----------------------------
 INSERT INTO `server_zones` VALUES ('0', '0', null, '--', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('128', '101', 'sea0Field01', 'Lower La Noscea', '127.0.0.1', '1989', 'ZoneMasterSeaS0', '60', '60', '21', '0', '0', '1', '0', '0');
+INSERT INTO `server_zones` VALUES ('128', '101', 'sea0Field01', 'Lower La Noscea', '127.0.0.1', '1990', 'ZoneMasterSeaS0', '60', '60', '21', '0', '0', '1', '0', '0');
 INSERT INTO `server_zones` VALUES ('129', '101', 'sea0Field02', 'Western La Noscea', '127.0.0.1', '1989', 'ZoneMasterSeaS0', '60', '60', '21', '0', '0', '1', '0', '0');
 INSERT INTO `server_zones` VALUES ('130', '101', 'sea0Field03', 'Eastern La Noscea', '127.0.0.1', '1989', 'ZoneMasterSeaS0', '60', '60', '21', '0', '0', '1', '0', '0');
 INSERT INTO `server_zones` VALUES ('131', '101', 'sea0Dungeon01', 'Mistbeard Cove', '127.0.0.1', '1989', 'ZoneMasterSeaS0', '0', '0', '0', '0', '0', '0', '0', '0');
@@ -96,7 +96,7 @@ INSERT INTO `server_zones` VALUES ('194', '111', 'ocn0Battle03', 'Rhotano Sea', 
 INSERT INTO `server_zones` VALUES ('195', '111', 'ocn0Battle04', 'Rhotano Sea', '127.0.0.1', '1989', 'ZoneMasterBattleOcnO0', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('196', '111', 'ocn0Battle05', 'Rhotano Sea', '127.0.0.1', '1989', 'ZoneMasterBattleOcnO0', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('198', '111', 'ocn0Battle06', 'Rhotano Sea', '127.0.0.1', '1989', 'ZoneMasterBattleOcnO0', '0', '0', '0', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('200', '111', null, 'Strait of Merlthor', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('200', '805', 'ocn0Cruise01', 'Strait of Merlthor', '127.0.0.1', '1989', 'ZoneMasterCruiseOcnO2', '65', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('201', '111', null, '-', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('204', '101', 'sea0Field02a', 'Western La Noscea', '127.0.0.1', '1989', '', '60', '60', '21', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('205', '101', 'sea0Field03a', 'Eastern La Noscea', '127.0.0.1', '1989', '', '60', '60', '21', '0', '0', '0', '0', '0');
@@ -112,7 +112,7 @@ INSERT INTO `server_zones` VALUES ('232', '202', 'sea0Office01', 'Maelstrom Comm
 INSERT INTO `server_zones` VALUES ('233', '205', 'wil0Office01', 'Hall of Flames', '127.0.0.1', '1989', 'ZoneMasterOfficeWilW0', '4', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('234', '204', 'fst0Office01', 'Adders\' Nest', '127.0.0.1', '1989', 'ZoneMasterOfficeFstF0', '2', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('235', '101', null, 'Shposhae', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('236', '101', null, 'Locke\'s Lie', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('236', '101', 'sea1Field01', 'Locke\'s Lie', '127.0.0.1', '1989', 'ZoneMasterSeaS1', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('237', '101', null, 'Turtleback Island', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('238', '103', 'fst0Field04', 'Thornmarch', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('239', '102', null, 'The Howling Eye', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
@@ -130,7 +130,7 @@ INSERT INTO `server_zones` VALUES ('253', '102', null, 'The Aurum Vale', '127.0.
 INSERT INTO `server_zones` VALUES ('254', '104', null, 'Cutter\'s Cry', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('255', '104', null, 'Cutter\'s Cry', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('256', '102', null, 'The Howling Eye', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('257', '109', null, 'Rivenroad', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('257', '109', 'roc1Field01', 'Rivenroad', '127.0.0.1', '1989', 'ZoneMasterRocR1', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('258', '103', null, 'North Shroud', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('259', '103', null, 'North Shroud', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('260', '101', null, 'Western La Noscea', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
@@ -140,7 +140,7 @@ INSERT INTO `server_zones` VALUES ('263', '104', null, 'Eastern Thanalan', '127.
 INSERT INTO `server_zones` VALUES ('264', '105', 'lak0Field01', 'Transmission Tower', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '1', '0', '0');
 INSERT INTO `server_zones` VALUES ('265', '104', null, 'The Bowl of Embers', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('266', '105', 'lak0Field01a', 'Mor Dhona', '127.0.0.1', '1989', 'ZoneMasterLakL0', '49', '49', '11', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('267', '109', null, 'Rivenroad', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('268', '109', null, 'Rivenroad', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('267', '109', 'roc1Field02', 'Rivenroad', '127.0.0.1', '1989', 'ZoneMasterRocR1', '0', '0', '0', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('268', '109', 'roc1Field03', 'Rivenroad', '127.0.0.1', '1989', 'ZoneMasterRocR1', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('269', '101', null, 'Locke\'s Lie', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('270', '101', null, 'Turtleback Island', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');

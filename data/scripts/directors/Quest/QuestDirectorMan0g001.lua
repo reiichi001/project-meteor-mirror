@@ -20,8 +20,10 @@ function onEventStarted(player, actor, triggerName)
 
 	quest = GetStaticActor("Man0g0");
 	callClientFunction(player, "delegateEvent", player, quest, "processTtrBtl001", nil, nil, nil);
-	callClientFunction(player, "delegateEvent", player, quest, "processTtrBtl002", nil, nil, nil);
-	
+	callClientFunction(player, "delegateEvent", player, quest, "processEvent010_1", nil, nil, nil);
+	callClientFunction(player, "delegateEvent", player, quest, "processEvent020_1", nil, nil, nil);	
+	GetWorldManager():DoZoneChange(player, 1);
+	player:EndEvent();
 	--sendDataPacket: Success
 	--sendDataPacket: CloseWidget
 	--IF DoW:

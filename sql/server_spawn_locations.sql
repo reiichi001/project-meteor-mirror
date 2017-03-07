@@ -4,12 +4,10 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 8/14/2016 9:43:16 AM
+Date: 3/7/2017 8:30:24 AM
 */
 
-SET FOREIGN_KEY_CHECKS = 0;
-SET autocommit = 0;
-
+SET FOREIGN_KEY_CHECKS=0;
 -- ----------------------------
 -- Table structure for server_spawn_locations
 -- ----------------------------
@@ -28,7 +26,7 @@ CREATE TABLE `server_spawn_locations` (
   `animationId` int(10) unsigned NOT NULL DEFAULT '0',
   `customDisplayName` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=729 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=846 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records 
@@ -148,7 +146,6 @@ INSERT INTO `server_spawn_locations` VALUES ('112', '1200194', 'task_board', '17
 INSERT INTO `server_spawn_locations` VALUES ('113', '1200210', '', '175', '', '0', '-169.94', '191.8', '25.9', '0.523', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('114', '1200288', '', '175', '', '0', '-189.13', '190', '15.59', '-1.04', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('115', '1280031', 'uldah_aetheryte', '175', '', '0', '-240.45', '185.93', '-9.56', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('116', '1280031', '', '175', '', '0', '-240.45', '185.93', '-9.56', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('117', '1290004', '', '175', '', '0', '-239.02', '190', '55.67', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('118', '1500116', 'gogorano', '175', '', '0', '-77.82', '192.1', '4.29', '0.23', '0', '1040', null);
 INSERT INTO `server_spawn_locations` VALUES ('119', '1500129', 'yayatoki', '175', '', '0', '-27.31', '196', '87.25', '1.91', '0', '1040', null);
@@ -497,7 +494,6 @@ INSERT INTO `server_spawn_locations` VALUES ('461', '1090386', '', '230', '', '0
 INSERT INTO `server_spawn_locations` VALUES ('462', '1090387', '', '230', '', '0', '-807.66', '8', '234.42', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('463', '1090007', '', '230', '', '0', '-490.38', '42.8', '417.81', '2.45', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('464', '1090400', '', '230', '', '0', '-838.1', '6', '231.94', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('465', '1280001', '', '230', '', '0', '-395.1', '42.5', '337.12', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('466', '1200119', 'dusty_tomes', '230', '', '0', '-789.24', '14', '195', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('467', '1200027', '', '230', '', '0', '-592', '18', '207', '1', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('468', '5900001', 'guild_mrd_mid', '230', '', '0', '-775', '10', '387', '0', '0', '0', null);
@@ -544,7 +540,7 @@ INSERT INTO `server_spawn_locations` VALUES ('508', '1001493', 'dapper_dan', '18
 INSERT INTO `server_spawn_locations` VALUES ('509', '1001494', 'loutish_lad', '184', '', '0', '-9.13', '196', '114.84', '2.33', '0', '1031', null);
 INSERT INTO `server_spawn_locations` VALUES ('510', '1001495', 'gil-digging_mistress', '184', '', '0', '-19.11', '196', '95.09', '2.13', '0', '1037', null);
 INSERT INTO `server_spawn_locations` VALUES ('511', '1001496', 'twittering_tomboy', '184', '', '0', '-32.37', '196', '80.75', '-0.74', '0', '1101', null);
-INSERT INTO `server_spawn_locations` VALUES ('512', '1290002', 'priv_areapast_exit', '184', '', '0', '-22.81', '196', '87.82', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('512', '1280127', '', '0', '', '0', '-400', '19', '338', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('513', '1090372', 'exit_trigger', '184', '', '0', '-13', '194.91', '76.75', '-2.72', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('514', '1000438', 'well-traveled_merchant', '193', '', '0', '-0.71', '10.35', '-40.51', '0.3', '0', '1035', null);
 INSERT INTO `server_spawn_locations` VALUES ('515', '1000439', 'tipsy_adventurer', '193', '', '0', '-1.87', '9.15', '-30.67', '2.44', '0', '1032', null);
@@ -565,9 +561,9 @@ INSERT INTO `server_spawn_locations` VALUES ('529', '1090025', 'exit_door', '193
 INSERT INTO `server_spawn_locations` VALUES ('530', '2205403', '', '193', '', '0', '-3.02', '17.35', '14.24', '-2.81', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('531', '2290001', '', '193', '', '0', '-8', '16.35', '6', '0.5', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('532', '2290002', '', '193', '', '0', '0', '16.35', '22', '3', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('533', '1000009', '', '166', '', '0', '353.37', '3.88', '-698.98', '-2.6', '0', '1007', null);
-INSERT INTO `server_spawn_locations` VALUES ('534', '1000010', '', '166', '', '0', '353.37', '3.75', '-703.09', '-2.6', '0', '1000', null);
-INSERT INTO `server_spawn_locations` VALUES ('535', '1090384', '', '166', '', '0', '356.09', '3.74', '-701.62', '-1.41', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('533', '1000009', 'yda', '166', '', '0', '353.37', '3.88', '-698.98', '-2.6', '0', '1007', null);
+INSERT INTO `server_spawn_locations` VALUES ('534', '1000010', 'papalymo', '166', '', '0', '353.37', '3.75', '-703.09', '-2.6', '0', '1000', null);
+INSERT INTO `server_spawn_locations` VALUES ('535', '1090384', 'openingstoper_gridania', '166', '', '0', '356.09', '3.74', '-701.62', '-1.41', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('536', '1080120', '', '244', '', '0', '159.84', '0.7', '167.17', '-0.2', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('537', '1200334', '', '244', '', '0', '159.98', '0.02', '151.9', '-0.44', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('538', '1200376', '', '244', '', '0', '164.91', '-0.1', '167.03', '0.05', '0', '0', null);
@@ -659,8 +655,8 @@ INSERT INTO `server_spawn_locations` VALUES ('624', '5900001', 'centaurs_eye', '
 INSERT INTO `server_spawn_locations` VALUES ('625', '5900001', 'guild_lnc', '206', '', '0', '172', '28', '-1576', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('626', '5900001', 'guild_arc', '206', '', '0', '227', '12', '-1264', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('627', '5900001', 'guild_cnj', '206', '', '0', '-325', '8', '-1669', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('628', '5900004', 'door1', '184', '', '0', '-14', '196', '112', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('629', '5900004', 'door2', '184', '', '0', '12', '196', '184', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('628', '5900001', 'door1', '184', '', '0', '-14', '196', '112', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('629', '5900001', 'door2', '184', '', '0', '12', '196', '184', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('630', '5900011', 'uldah_mapshipport_2', '209', '', '0', '-127', '271', '157', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('631', '1000466', 'frances', '206', '', '0', '11.85', '8.75', '-1266.45', '1.48', '0', '1041', null);
 INSERT INTO `server_spawn_locations` VALUES ('632', '1200288', 'miniaeth_adv', '155', '', '0', '98.77', '3.59', '-1213.67', '2.47', '0', '0', null);
@@ -726,7 +722,7 @@ INSERT INTO `server_spawn_locations` VALUES ('692', '1000067', 'dadalo', '206', 
 INSERT INTO `server_spawn_locations` VALUES ('693', '1000066', 'alixe', '206', '', '0', '103.75', '20.4', '-1468.51', '2.18', '0', '2021', null);
 INSERT INTO `server_spawn_locations` VALUES ('694', '1000068', 'kain', '206', '', '0', '100.33', '20.22', '-1482.5', '-0.5', '0', '2023', null);
 INSERT INTO `server_spawn_locations` VALUES ('695', '1001189', 'pukiki', '206', '', '0', '33.04', '17.29', '-1366.27', '0.83', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('696', '1001079', 'drystbrod', '206', '', '0', '106.66', '22', '-1483.73', '-0.74', '0', '1041', null);
+INSERT INTO `server_spawn_locations` VALUES ('696', '1001079', 'dyrstbrod', '206', '', '0', '106.66', '22', '-1483.73', '-0.74', '0', '1041', null);
 INSERT INTO `server_spawn_locations` VALUES ('697', '1500325', 'serpent_private_holmes', '206', '', '0', '201.78', '9.53', '-1245.48', '1.53', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('698', '1001188', 'maisenta', '206', '', '0', '221.77', '9.4', '-1230.49', '-2.29', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('699', '1000463', 'nonolato', '206', '', '0', '232.88', '12.46', '-1268.94', '-1.38', '0', '1015', null);
@@ -755,7 +751,121 @@ INSERT INTO `server_spawn_locations` VALUES ('721', '1000071', 'bertennant', '15
 INSERT INTO `server_spawn_locations` VALUES ('722', '1001433', 'ulta', '155', '', '0', '192.07', '-0.85', '-1159.97', '0.78', '0', '1015', null);
 INSERT INTO `server_spawn_locations` VALUES ('723', '1001432', 'mathye', '155', '', '0', '179.56', '2.75', '-1144.66', '-2.97', '0', '1041', null);
 INSERT INTO `server_spawn_locations` VALUES ('724', '1000951', 'lonsygg', '155', '', '0', '162.79', '-1.48', '-1153.32', '1.94', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('727', '1200021', 'testship', '230', '', '0', '-897', '0', '239', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('728', '1200052', '', '155', '', '0', '100', '7', '-1200', '0', '0', '0', null);
-
-COMMIT;
+INSERT INTO `server_spawn_locations` VALUES ('728', '1200052', 'test_mining_point', '141', '', '0', '-8.48', '45.36', '139.5', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('729', '5900013', 'ship_route_1', '200', '', '0', '0', '10', '-128', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('730', '5900014', 'ship_route_2', '200', '', '0', '0', '10', '128', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('731', '1280001', 'limsa_aetheryte', '230', '', '0', '-400', '43', '338', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('732', '1280002', 'camp_beardedrock_aetheryte', '128', '', '0', '32', '-31', '-31', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('733', '1280003', 'camp_skullvalley_aetheryte', '129', '', '0', '-992', '62', '-1121', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('734', '1280004', 'camp_baldknoll_aetheryte', '129', '', '0', '-1889', '54', '-1379', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('735', '1280005', 'camp_bloodshore_aetheryte', '130', '', '0', '1128', '46', '-926', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('736', '1280006', 'camp_ironlake_aetheryte', '135', '', '0', '-284', '79', '-2276', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('737', '1280007', 'cedarwood_aetherytegate', '128', '', '0', '588', '55', '-1', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('738', '1280008', 'widowcliffs_aetherytegate', '128', '', '0', '966', '50', '833', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('739', '1280009', 'morabybay_aetherytegate', '128', '', '0', '318', '25', '581', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('740', '1280010', 'woadwhisper_aetherytegate', '129', '', '0', '-636', '50', '-1287', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('741', '1280011', 'islesofumbra_aetherytegate', '129', '', '0', '-2018', '61', '-763', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('742', '1280012', 'tigerhelm_aetherytegate', '130', '', '0', '1628', '62', '-449', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('743', '1280013', 'southbloodshore_aetherytegate', '130', '', '0', '1522', '3', '-669', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('744', '1280014', 'agelysswise_aetherytegate', '130', '', '0', '1410', '55', '-1650', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('745', '1280015', 'zelmasrun_aetherytegate', '135', '', '0', '-125', '61', '-1440', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('746', '1280016', 'bronzelake_aetherytegate', '135', '', '0', '-320', '53', '-1826', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('747', '1280017', 'oakwood_aetherytegate', '135', '', '0', '-894', '42', '-2188', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('748', '1280018', 'mistbeardcove_aetherytegate', '0', '', '0', '-1694.5', '-19', '-1534', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('749', '1280020', 'cassiopeia_aetherytegate', '0', '', '0', '1344.5', '-53', '-869', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('750', '1280031', 'uldah_aetheryte', '175', '', '0', '240.45', '185.93', '-9.56', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('751', '1280032', 'camp_blackbrush_aetheryte', '170', '', '0', '33', '201', '-482', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('752', '1280033', 'camp_drybone_aetheryte', '171', '', '0', '1251', '265', '-545', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('753', '1280034', 'camp_horizon_aetheryte', '172', '', '0', '-1315', '57', '-147', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('754', '1280035', 'camp_bluefog_aetheryte', '173', '', '0', '-165', '281', '-1699', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('755', '1280036', 'camp_brokenwater_aetheryte', '174', '', '0', '1686', '297', '995', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('756', '1280037', 'cactusbasin_aetherytegate', '170', '', '0', '639', '185', '122', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('757', '1280038', 'foursisters_aetherytegate', '170', '', '0', '539', '218', '-14', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('758', '1280039', 'halatali_aetherytegate', '171', '', '0', '1599', '259', '-233', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('759', '1280040', 'burningwall_aetherytegate', '171', '', '0', '2010', '281', '-768', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('760', '1280041', 'sandgate_aetherytegate', '171', '', '0', '2015', '248', '64', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('761', '1280042', 'nophicaswells_aetherytegate', '172', '', '0', '-866', '89', '376', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('762', '1280043', 'footfalls_aetherytegate', '172', '', '0', '-1653', '25', '-469', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('763', '1280044', 'scorpionkeep_aetherytegate', '172', '', '0', '-1223', '70', '191', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('764', '1280045', 'hiddengorge_aetherytegate', '173', '', '0', '-635', '281', '-1797', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('765', '1280046', 'seaofspires_aetherytegate', '173', '', '0', '447', '260', '-2158', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('766', '1280047', 'cutterspass_aetherytegate', '173', '', '0', '-710', '281', '-2212', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('767', '1280048', 'redlabyrinth_aetherytegate', '174', '', '0', '1797', '249', '1856', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('768', '1280049', 'burntlizardcreek_aetherytegate', '174', '', '0', '1185', '280', '1407', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('769', '1280050', 'zanrak_aetherytegate', '174', '', '0', '2416', '249', '1535', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('770', '1280052', 'nanawamines_aetherytegate', '0', '', '0', '80.5', '169', '-1268.5', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('771', '1280054', 'copperbellmines_aetherytegate', '0', '', '0', '-621', '112', '-118', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('772', '1280057', '', '0', '', '0', '33', '201', '-482', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('773', '1280058', '', '0', '', '0', '-1315', '57', '-147', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('774', '1280059', '', '0', '', '0', '-165', '281', '-1699', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('775', '1280061', 'gridania_aetheryte', '206', '', '0', '-130.63', '16.08', '-1323.99', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('776', '1280062', 'camp_bentbranch_aetheryte', '150', '', '0', '287', '5', '-542', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('777', '1280063', 'camp_nineivies_aetheryte', '151', '', '0', '1698', '21', '-865', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('778', '1280064', 'camp_emeraldmoss_aetheryte', '152', '', '0', '-1054', '21', '-1761', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('779', '1280065', 'camp_crimsonbark_aetheryte', '153', '', '0', '-1568', '-11', '-552', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('780', '1280066', 'camp_tranquil_aetheryte', '154', '', '0', '734', '-10', '1127', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('781', '1280067', 'humblehearth_aetherytegate', '150', '', '0', '-93', '5', '-546', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('782', '1280068', 'sorrelhaven_aetherytegate', '150', '', '0', '-285', '-21', '-46', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('783', '1280069', 'fivehangs_aetherytegate', '150', '', '0', '636', '17', '-324', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('784', '1280070', 'verdantdrop_aetherytegate', '151', '', '0', '1529', '27', '-1147', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('785', '1280071', 'lynxpeltpatch_aetherytegate', '151', '', '0', '1296', '48', '-1534', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('786', '1280072', 'larkscall_aetherytegate', '151', '', '0', '2297', '33', '-703', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('787', '1280073', 'treespeak_aetherytegate', '152', '', '0', '-888', '40', '-2192', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('788', '1280074', 'aldersprings_aetherytegate', '152', '', '0', '-1567', '17', '-2593', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('789', '1280075', 'lasthold_aetherytegate', '152', '', '0', '-801', '32', '-2792', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('790', '1280076', 'lichenweed_aetherytegate', '153', '', '0', '-1908', '1', '-1042', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('791', '1280077', 'mumurrills_aetherytegate', '153', '', '0', '-2158', '-45', '-166', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('792', '1280078', 'turningleaf_aetherytegate', '153', '', '0', '-1333', '-13', '324', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('793', '1280079', 'silentarbor_aetherytegate', '154', '', '0', '991', '-11', '600', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('794', '1280080', 'longroot_aetherytegate', '154', '', '0', '1126', '1', '1440', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('795', '1280081', 'snakemolt_aetherytegate', '154', '', '0', '189', '1', '1337', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('796', '1280082', 'muntuycellars_aetherytegate', '0', '', '0', '-689', '-15', '-2065', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('797', '1280083', 'tamtaradeeprcroft_aetherytegate', '0', '', '0', '313', '-35', '-171', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('798', '1280088', '', '0', '', '0', '-1054', '21', '-1761', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('799', '1280089', '', '0', '', '0', '-1568', '-11', '-552', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('800', '1280092', 'camp_dragonhead_aetheryte', '143', '', '0', '216', '303', '-258', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('801', '1280093', 'camp_crookedfork_aetheryte', '144', '', '0', '1122', '271', '-1149', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('802', '1280094', 'camp_glory_aetheryte', '145', '', '0', '1498', '207', '767', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('803', '1280095', 'camp_everlakes_aetheryte', '147', '', '0', '-163', '223', '1151', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('804', '1280096', 'camp_riversmeet_aetheryte', '148', '', '0', '-1761', '270', '-198', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('805', '1280097', 'boulderdowns_aetherytegate', '143', '', '0', '-517', '210', '543', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('806', '1280098', 'prominencepoint_aetherytegate', '143', '', '0', '190', '368', '-662', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('807', '1280099', 'feathergorge_aetherytegate', '143', '', '0', '960', '288', '-22', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('808', '1280100', 'maidenglen_aetherytegate', '144', '', '0', '1737', '177', '-1250', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('809', '1280101', 'hushedboughs_aetherytegate', '144', '', '0', '1390', '223', '-736', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('810', '1280102', 'scarwingfall_aetherytegate', '144', '', '0', '1788', '166', '-829', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('811', '1280103', 'weepingvale_aetherytegate', '145', '', '0', '1383', '232', '422', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('812', '1280104', 'clearwater_aetherytegate', '145', '', '0', '2160', '143', '622', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('813', '1280105', 'teriggansstand_aetherytegate', '147', '', '0', '-1', '145', '1373', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('814', '1280106', 'shepherdpeak_aetherytegate', '147', '', '0', '-64', '186', '1924', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('815', '1280107', 'fellwood_aetherytegate', '147', '', '0', '-908', '192', '2162', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('816', '1280108', 'wyrmkingspearch_aetherytegate', '148', '', '0', '-1738', '286', '-844', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('817', '1280109', 'lance_aetherytegate', '148', '', '0', '-2366', '337', '-1058', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('818', '1280110', 'twinpools_aetherytegate', '148', '', '0', '-2821', '257', '-290', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('819', '1280117', '', '0', '', '0', '216', '303', '-258', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('820', '1280118', '', '0', '', '0', '1498', '207', '767', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('821', '1280119', '', '0', '', '0', '-163', '223', '1151', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('822', '1280121', 'camp_brittlebark_aetheryte', '190', '', '0', '484', '19', '672', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('823', '1280122', 'camp_revenantstoll_aetheryte', '190', '', '0', '-400', '19', '338', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('824', '1280123', 'fogfens_aetherytegate', '190', '', '0', '-458', '-40', '-318', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('825', '1280124', 'singingshards_aetherytegate', '190', '', '0', '580', '59', '206', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('826', '1280125', 'jaggedcrestcave_aetherytegate', '190', '', '0', '-365', '-13', '-37', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('827', '1280126', '', '0', '', '0', '484', '19', '672', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('828', '1280127', '', '0', '', '0', '-400', '19', '338', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('829', '2290004', 'opening_thancred', '184', '', '0', '-26.41', '192', '39.52', '1.2', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('830', '2290003', 'opening_niellefresne', '184', '', '0', '-11.86', '192', '35.06', '-0.8', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('831', '2203301', 'opening_goobbue', '184', '', '0', '-10.31', '193', '50.73', '-1.06', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('832', '1090373', 'opening_stoper_uldah', '184', '', '0', '27.42', '192', '126.94', '0.33', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('833', '1090385', 'opening_stoper_uldah_battle', '184', '', '0', '-24.34', '192', '34.22', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('834', '2201404', 'opening_wolf1', '167', '', '0', '0', '0', '0', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('835', '1000444', 'undignified_adventurer', '230', 'PrivateAreaMasterPast', '1', '-832.36', '6', '209.44', '-0.35', '0', '1041', null);
+INSERT INTO `server_spawn_locations` VALUES ('836', '1000438', 'well-traveled_merchant', '230', 'PrivateAreaMasterPast', '1', '-831.73', '6', '196.77', '0.86', '0', '1035', null);
+INSERT INTO `server_spawn_locations` VALUES ('837', '1000447', 'voluptuous_vixen', '230', 'PrivateAreaMasterPast', '1', '-863.34', '4', '236.13', '0.93', '0', '1016', null);
+INSERT INTO `server_spawn_locations` VALUES ('838', '1000450', 'lanky_traveler', '230', 'PrivateAreaMasterPast', '1', '-855.68', '3.1', '258.51', '-1.56', '0', '1015', null);
+INSERT INTO `server_spawn_locations` VALUES ('839', '1000151', 'hob', '230', 'PrivateAreaMasterPast', '1', '-834.77', '6', '241.55', '-2.79', '0', '1041', null);
+INSERT INTO `server_spawn_locations` VALUES ('840', '1000260', 'pearly-toothed_porter', '230', 'PrivateAreaMasterPast', '1', '-823.86', '6', '198.95', '0.13', '0', '1070', null);
+INSERT INTO `server_spawn_locations` VALUES ('841', '1000264', 'pasty-faced_adventurer', '230', 'PrivateAreaMasterPast', '1', '-829.72', '6', '260.6', '-1.07', '0', '1058', null);
+INSERT INTO `server_spawn_locations` VALUES ('842', '1000261', 'muscle-bound_deckhand', '230', 'PrivateAreaMasterPast', '1', '-823.75', '6', '200.27', '-2.7', '0', '1033', null);
+INSERT INTO `server_spawn_locations` VALUES ('843', '1500004', 'gert', '230', 'PrivateAreaMasterPast', '1', '-809.15', '8', '230.88', '0.4', '0', '1016', null);
+INSERT INTO `server_spawn_locations` VALUES ('844', '1500005', 'lorhzant', '230', 'PrivateAreaMasterPast', '1', '-809.19', '8', '244.86', '-2.78', '0', '1017', null);
+INSERT INTO `server_spawn_locations` VALUES ('845', '1000137', 'man0l1_baderon', '133', 'PrivateAreaMasterPast', '2', '-430.844', '40.2116', '186.773', '-1.30039', '0', '1060', null);

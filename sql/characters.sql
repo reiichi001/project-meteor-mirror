@@ -4,14 +4,13 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 12/3/2016 5:39:10 PM
+Date: 3/7/2017 8:31:56 AM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
 -- ----------------------------
 -- Table structure for characters
 -- ----------------------------
-DROP TABLE IF EXISTS `characters`;
 CREATE TABLE `characters` (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `userId` int(11) unsigned NOT NULL,
@@ -29,13 +28,15 @@ CREATE TABLE `characters` (
   `rotation` float NOT NULL DEFAULT '0',
   `actorState` smallint(5) unsigned DEFAULT '0',
   `currentZoneId` smallint(5) unsigned DEFAULT '0',
+  `currentPrivateArea` varchar(32) DEFAULT NULL,
+  `currentPrivateAreaType` int(10) unsigned DEFAULT '0',
   `destinationZoneId` smallint(5) unsigned DEFAULT '0',
   `destinationSpawnType` tinyint(3) unsigned DEFAULT '0',
-  `guardian` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `birthDay` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `birthMonth` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `initialTown` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `tribe` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `guardian` tinyint(3) unsigned NOT NULL,
+  `birthDay` tinyint(3) unsigned NOT NULL,
+  `birthMonth` tinyint(3) unsigned NOT NULL,
+  `initialTown` tinyint(3) unsigned NOT NULL,
+  `tribe` tinyint(3) unsigned NOT NULL,
   `gcCurrent` tinyint(3) unsigned DEFAULT '0',
   `gcLimsaRank` tinyint(3) unsigned DEFAULT '127',
   `gcGridaniaRank` tinyint(3) unsigned DEFAULT '127',
@@ -43,7 +44,6 @@ CREATE TABLE `characters` (
   `currentTitle` int(10) unsigned DEFAULT '0',
   `restBonus` int(10) DEFAULT '0',
   `achievementPoints` int(10) unsigned DEFAULT '0',
-  `currentPartyGroupId` bigint(20) unsigned DEFAULT '0',
-  `currentRetainerGroupId` bigint(20) unsigned DEFAULT NULL,
+  `currentActiveLinkshell` varchar(32) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=164 DEFAULT CHARSET=utf8;

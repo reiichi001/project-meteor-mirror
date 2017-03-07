@@ -38,7 +38,10 @@ function onTalkEvent(player, npc)
 		end
 	elseif (player:HasQuest(110005) == true) then	
 		man0g0Quest = player:GetQuest("man0g0");
-		if (man0g0Quest:GetQuestFlag(MAN0G0_FLAG_MINITUT_DONE1) == true) then			
+		if (man0g0Quest:GetQuestFlag(MAN0G0_FLAG_TUTORIAL1_DONE) and man0g0Quest:GetQuestFlag(MAN0G0_FLAG_MINITUT_DONE1) == false) then
+			papalymo = GetWorldManager():GetActorInWorldByUniqueId("papalymo");	
+			papalymo:SetQuestGraphic(player, 0x2);
+		elseif (man0g0Quest:GetQuestFlag(MAN0G0_FLAG_MINITUT_DONE1) == true) then			
 			yda = GetWorldManager():GetActorInWorldByUniqueId("yda");	
 			yda:SetQuestGraphic(player, 0x2);
 		end
