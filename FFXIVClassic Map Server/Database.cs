@@ -327,17 +327,18 @@ namespace FFXIVClassic_Map_Server
 
                     query = @"
                     INSERT INTO characters_quest_scenario 
-                    (characterId, slot, questId, questData, questFlags)
+                    (characterId, slot, questId, currentPhase, questData, questFlags)
                     VALUES
-                    (@charaId, @slot, @questId, @questData, @questFlags)
+                    (@charaId, @slot, @questId, @phase, @questData, @questFlags)
                     ON DUPLICATE KEY UPDATE
-                    questId = @questId, questData = @questData, questFlags = @questFlags
+                    questId = @questId, currentPhase = @phase, questData = @questData, questFlags = @questFlags
                     ";
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charaId", player.actorId);
                     cmd.Parameters.AddWithValue("@slot", slot);
                     cmd.Parameters.AddWithValue("@questId", 0xFFFFF & quest.actorId);
+                    cmd.Parameters.AddWithValue("@phase", quest.GetPhase());
                     cmd.Parameters.AddWithValue("@questData", quest.GetSerializedQuestData());
                     cmd.Parameters.AddWithValue("@questFlags", quest.GetQuestFlags());
 
