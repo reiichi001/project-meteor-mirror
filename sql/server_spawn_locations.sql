@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 3/7/2017 8:30:24 AM
+Date: 3/8/2017 9:12:33 AM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -26,7 +26,7 @@ CREATE TABLE `server_spawn_locations` (
   `animationId` int(10) unsigned NOT NULL DEFAULT '0',
   `customDisplayName` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=846 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=855 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records 
@@ -869,3 +869,12 @@ INSERT INTO `server_spawn_locations` VALUES ('842', '1000261', 'muscle-bound_dec
 INSERT INTO `server_spawn_locations` VALUES ('843', '1500004', 'gert', '230', 'PrivateAreaMasterPast', '1', '-809.15', '8', '230.88', '0.4', '0', '1016', null);
 INSERT INTO `server_spawn_locations` VALUES ('844', '1500005', 'lorhzant', '230', 'PrivateAreaMasterPast', '1', '-809.19', '8', '244.86', '-2.78', '0', '1017', null);
 INSERT INTO `server_spawn_locations` VALUES ('845', '1000137', 'man0l1_baderon', '133', 'PrivateAreaMasterPast', '2', '-430.844', '40.2116', '186.773', '-1.30039', '0', '1060', null);
+INSERT INTO `server_spawn_locations` VALUES ('846', '1290002', 'privatearea_exit', '230', 'PrivateAreaMasterPast', '1', '-838.1', '6', '231.94', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('847', '1000099', 'skittish_adventurer', '133', 'PrivateAreaMasterPast', '2', '-442.743', '39.5', '185.32', '-1.69155', '0', '1002', null);
+INSERT INTO `server_spawn_locations` VALUES ('848', '1000098', 'onyx-haired_adventurer', '133', 'PrivateAreaMasterPast', '2', '-446.004', '39.5', '184.858', '1.482', '0', '1002', null);
+INSERT INTO `server_spawn_locations` VALUES ('849', '1000076', 'duplicitous_trader', '133', 'PrivateAreaMasterPast', '2', '-442.31', '39.5', '193.317', '0.581998', '0', '1019', null);
+INSERT INTO `server_spawn_locations` VALUES ('850', '1000075', 'crapulous_adventurer', '133', 'PrivateAreaMasterPast', '2', '-450.865', '39.5', '194.59', '1.538', '0', '1019', null);
+INSERT INTO `server_spawn_locations` VALUES ('851', '1000100', 'relaxing_adventurer', '133', 'PrivateAreaMasterPast', '2', '-449.132', '39.5', '196.246', '3.108', '0', '1003', null);
+INSERT INTO `server_spawn_locations` VALUES ('852', '1000167', 'mytesyn', '133', 'PrivateAreaMasterPast', '2', '-435.2', '40', '207.07', '-1.9', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('853', '1000077', 'debonair_pirate', '133', 'PrivateAreaMasterPast', '2', '-452.427', '39.5', '202.873', '2.25598', '0', '1003', null);
+INSERT INTO `server_spawn_locations` VALUES ('854', '1000001', 'yshtola', '133', 'PrivateAreaMasterPast', '2', '-463.547', '40', '183.262', '1.3983', '0', '0', null);
