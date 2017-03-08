@@ -581,7 +581,7 @@ namespace FFXIVClassic_Map_Server
             newArea.AddActorToZone(player);
 
             //Update player actor's properties
-            player.zoneId = newArea.actorId;
+            player.zoneId = newArea is PrivateArea ? ((PrivateArea)newArea).GetParentZone().actorId : newArea.actorId;
 
             player.privateArea = newArea is PrivateArea ? ((PrivateArea)newArea).GetPrivateAreaName() : null;
             player.privateAreaType = newArea is PrivateArea ? ((PrivateArea)newArea).GetPrivateAreaType() : 0;
@@ -649,16 +649,20 @@ namespace FFXIVClassic_Map_Server
         public void DoZoneIn(Player player, bool isLogin, ushort spawnType)
         {
             //Add player to new zone and update
-            Zone zone = GetZone(player.zoneId);
+            Area playerArea;
+            if (player.privateArea != null)
+                playerArea = GetPrivateArea(player.zoneId, player.privateArea, player.privateAreaType);
+            else
+                playerArea = GetZone(player.zoneId);
 
             //This server does not contain that zoneId
-            if (zone == null)
+            if (playerArea == null)
                 return;
 
             //Set the current zone and add player
-            player.zone = zone;
-            
-            zone.AddActorToZone(player);
+            player.zone = playerArea;
+
+            playerArea.AddActorToZone(player);
             
             //Send packets            
             if (!isLogin)
@@ -832,14 +836,19 @@ namespace FFXIVClassic_Map_Server
         }
 
         public Player GetPCInWorld(string name)
-        {            
-            foreach (Zone zone in zoneList.Values)
-            { 
-                Player p = zone.FindPCInZone(name);
-                if (p != null)
-                    return p;
-            }
-            return null;
+        {
+            if (Server.GetServer().GetSession(name) != null)
+                return Server.GetServer().GetSession(name).GetActor();
+            else
+                return null;
+        }
+
+        public Player GetPCInWorld(uint charId)
+        {
+            if (Server.GetServer().GetSession(charId) != null)
+                return Server.GetServer().GetSession(charId).GetActor();
+            else
+                return null;
         }
 
         public Actor GetActorInWorld(uint charId)
@@ -860,17 +869,6 @@ namespace FFXIVClassic_Map_Server
                 Actor a = zone.FindActorInZoneByUniqueID(uid);
                 if (a != null)
                     return a;
-            }
-            return null;
-        }
-
-        public Player GetPCInWorld(uint charId)
-        {
-            foreach (Zone zone in zoneList.Values)
-            {
-                Player p = zone.FindPCInZone(charId);
-                if (p != null)
-                    return p;
             }
             return null;
         }

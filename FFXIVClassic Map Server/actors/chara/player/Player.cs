@@ -627,6 +627,13 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public void ChangeAnimation(uint animId)
+        {
+            Actor a = zone.FindActorInZone(currentTarget);
+            if (a is Npc)
+                ((Npc)a).animationId = animId;
+        }
+
         public void SetDCFlag(bool flag)
         {
             if (flag)

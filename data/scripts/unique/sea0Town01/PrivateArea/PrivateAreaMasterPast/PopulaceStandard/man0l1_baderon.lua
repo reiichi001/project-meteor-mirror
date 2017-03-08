@@ -4,7 +4,7 @@ function onSpawn(player, npc)
 	man0l1Quest = player:GetQuest("Man0l1");	
 	
 	if (man0l1Quest ~= nil) then		
-		npc:SetQuestGraphic(player, 0x2);
+		npc:SetQuestGraphic(player, 0x3);
 	end
 end
 
