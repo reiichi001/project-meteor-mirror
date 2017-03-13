@@ -88,7 +88,7 @@ namespace FFXIVClassic_Map_Server.Actors
             List<LuaParam> lParams;
 
             Player player = Server.GetWorldManager().GetPCInWorld(playerActorId);
-            lParams = DoActorInit(player);
+            lParams = LuaEngine.GetInstance().CallLuaFunctionForReturn(player, this, "init");
 
             if (uniqueIdentifier.Equals("1"))
             {
@@ -372,159 +372,14 @@ namespace FFXIVClassic_Map_Server.Actors
             this.eventConditions = conditions;
         }
 
-        public List<LuaParam> DoActorInit(Player player)
+        public void DoOnActorSpawn(Player player)
         {
-            LuaScript parent = null, child = null;
-
-            if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
-
-            if (zone is PrivateArea)
-            {
-                if (File.Exists(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", zone.zoneName, ((PrivateArea)zone).GetPrivateAreaName(), className, uniqueIdentifier)))
-                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", zone.zoneName, ((PrivateArea)zone).GetPrivateAreaName(), className, uniqueIdentifier));
-            }
-            else
-            {
-                if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
-            }
-
-            if (parent == null && child == null)
-            {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
-                return null;
-            }
-
-            DynValue result;
-                            
-            if (child != null && child.Globals["init"] != null)
-                result = child.Call(child.Globals["init"], this);
-            else if (parent != null && parent.Globals["init"] != null)
-                result = parent.Call(parent.Globals["init"], this);
-            else
-                return null;
-
-            List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
-            return lparams;          
-        }
-
-        public Coroutine GetEventStartCoroutine(Player player)
-        {
-            LuaScript parent = null, child = null;
-
-            if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
-            if (zone is PrivateArea)
-            {
-                if (File.Exists(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", zone.zoneName, ((PrivateArea)zone).GetPrivateAreaName(), className, uniqueIdentifier)))
-                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", zone.zoneName, ((PrivateArea)zone).GetPrivateAreaName(), className, uniqueIdentifier));
-            }
-            else
-            {
-                if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
-            }
-
-            if (parent == null && child == null)
-            {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
-                return null;
-            }
-
-            //Run Script
-            Coroutine coroutine;            
-
-            if (child != null && !child.Globals.Get("onEventStarted").IsNil())
-                coroutine = child.CreateCoroutine(child.Globals["onEventStarted"]).Coroutine;
-            else if (parent.Globals.Get("onEventStarted") != null && !parent.Globals.Get("onEventStarted").IsNil())
-                coroutine = parent.CreateCoroutine(parent.Globals["onEventStarted"]).Coroutine;
-            else
-                return null;
-
-            return coroutine;
-        }
-
-        public void DoEventUpdate(Player player, EventUpdatePacket eventUpdate)
-        {
-            LuaScript parent = null, child = null;
-
-            if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
-
-            if (parent == null && child == null)
-            {
-                //LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
-                return;
-            }
-
-            //Have to do this to combine LuaParams
-            List<Object> objects = new List<Object>();
-            objects.Add(player);
-            objects.Add(this);
-            objects.Add(eventUpdate.val2);
-            objects.AddRange(LuaUtils.CreateLuaParamObjectList(eventUpdate.luaParams));
-
-            //Run Script
-            DynValue result;
-
-            if (child != null && !child.Globals.Get("onEventUpdate").IsNil())
-                result = child.Call(child.Globals["onEventUpdate"], objects.ToArray());
-            else if (!parent.Globals.Get("onEventUpdate").IsNil())
-                result = parent.Call(parent.Globals["onEventUpdate"], objects.ToArray());
-            else
-                return;
-
-        }
-
-        internal void DoOnActorSpawn(Player player)
-        {
-           LuaScript parent = null, child = null;
-
-            if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
-
-            if (parent == null && child == null)
-            {
-                //LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
-                return;
-            }
-               
-            //Run Script
-            if (child != null && child.Globals["onSpawn"] != null)
-                child.Call(child.Globals["onSpawn"], player, this);
-            else if (parent != null && parent.Globals["onSpawn"] != null)
-                parent.Call(parent.Globals["onSpawn"], player, this);
-            else
-                return;          
+            LuaEngine.GetInstance().CallLuaFunction(player, this, "onSpawn");           
         }
 
         public void Update(double deltaTime)
         {
-            LuaScript parent = null, child = null;
-
-            if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
-
-            if (parent == null && child == null)
-            {
-                //LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
-                return;
-            }
-
-            //Run Script
-            if (child != null && child.Globals["onThink"] != null)
-                child.Call(child.Globals["onThink"], this, deltaTime);
-            else if (parent != null && parent.Globals["onThink"] != null)
-                parent.Call(parent.Globals["onThink"], this, deltaTime);
-            else
-                return;
+            LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", deltaTime);         
         }
 
         //A party member list packet came, set the party

@@ -447,12 +447,12 @@ namespace FFXIVClassic_Map_Server
 
             player.SendMessage(0x20, "", "Doing Seamless Zone Change");
 
-            LuaEngine.OnZoneIn(player);
+            LuaEngine.GetInstance().CallLuaFunction(player, newZone, "onZoneIn");
         }
 
         //Adds a second zone to pull actors from. Used for an improved seamless zone change.
         public void MergeZones(Player player, uint mergedZoneId)
-        {           
+        {
             //Add player to new zone and update
             Zone mergedZone = GetZone(mergedZoneId);
 
@@ -467,7 +467,7 @@ namespace FFXIVClassic_Map_Server
 
             player.SendMessage(0x20, "", "Merging Zones");
 
-            LuaEngine.OnZoneIn(player);
+            LuaEngine.GetInstance().CallLuaFunction(player, mergedZone, "onZoneIn");
         }
 
         //Checks all seamless bounding boxes in region to see if player needs to merge or zonechange
@@ -602,7 +602,7 @@ namespace FFXIVClassic_Map_Server
             if (newArea is PrivateArea)
                 player.SendGameMessage(GetActor(), 34108, 0x20);
 
-            LuaEngine.OnZoneIn(player);
+            LuaEngine.GetInstance().CallLuaFunction(player, newArea, "onZoneIn");
         }
 
         //Moves actor within zone to spawn position
@@ -680,7 +680,7 @@ namespace FFXIVClassic_Map_Server
 
             player.playerSession.LockUpdates(false);
 
-            LuaEngine.OnZoneIn(player);
+            LuaEngine.GetInstance().CallLuaFunction(player, playerArea, "onZoneIn");
         }
 
         public void ReloadZone(uint zoneId)

@@ -14,6 +14,8 @@ using System.IO;
 using System.Diagnostics;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.actors.area;
+using System.Threading;
 
 namespace FFXIVClassic_Map_Server.lua
 {
@@ -23,216 +25,285 @@ namespace FFXIVClassic_Map_Server.lua
         const string FILEPATH_ZONE = "./scripts/unique/{0}/zone.lua";
         const string FILEPATH_COMMANDS = "./scripts/commands/{0}.lua";
         const string FILEPATH_DIRECTORS = "./scripts/directors/{0}.lua";
-        const string FILEPATH_NPCS = "./scripts/zones/{0}/npcs/{1}.lua";
+        const string FILEPATH_NPCS = "./scripts/unique/{0}/{1}/{2}.lua";
 
-        public LuaEngine()
+        private static LuaEngine mThisEngine;
+        private Dictionary<Coroutine, ulong> mSleepingOnTime = new Dictionary<Coroutine, ulong>();
+        private Dictionary<string, List<Coroutine>> mSleepingOnSignal = new Dictionary<string, List<Coroutine>>();
+        private Dictionary<uint, Coroutine> mSleepingOnPlayerEvent = new Dictionary<uint, Coroutine>();
+
+        private Timer luaTimer;
+
+
+        private LuaEngine()
         {
             UserData.RegistrationPolicy = InteropRegistrationPolicy.Automatic;
+
+            luaTimer = new Timer(new TimerCallback(PulseSleepingOnTime),
+                           null, TimeSpan.Zero, TimeSpan.FromMilliseconds(50));
         }
 
-        public static List<LuaParam> DoActorInstantiate(Player player, Actor target)
+        public static LuaEngine GetInstance()
         {
-            string luaPath;
+            if (mThisEngine == null)
+                mThisEngine = new LuaEngine();
 
-            if (target is Npc)
+            return mThisEngine;
+        }
+
+        public void AddWaitCoroutine(Coroutine coroutine, float seconds)
+        {
+            ulong time = Utils.MilisUnixTimeStampUTC() + (ulong)(seconds * 1000);
+            mSleepingOnTime.Add(coroutine, time);
+        }
+
+        public void AddWaitSignalCoroutine(Coroutine coroutine, string signal)
+        {
+            if (!mSleepingOnSignal.ContainsKey(signal))
+                mSleepingOnSignal.Add(signal, new List<Coroutine>());
+            mSleepingOnSignal[signal].Add(coroutine);
+        }
+
+        public void AddWaitEventCoroutine(Player player, Coroutine coroutine)
+        {
+            if (!mSleepingOnPlayerEvent.ContainsKey(player.actorId))
+                mSleepingOnPlayerEvent.Add(player.actorId, coroutine);
+        }
+
+        public void PulseSleepingOnTime(object state)
+        {
+            ulong currentTime = Utils.MilisUnixTimeStampUTC();
+            List<Coroutine> mToAwake = new List<Coroutine>();
+
+            foreach (KeyValuePair<Coroutine, ulong> entry in mSleepingOnTime)
             {
-                luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.GetName());
-                if (File.Exists(luaPath))
-                {
-                    LuaScript script = LoadScript(luaPath);
+                if (entry.Value <= currentTime)
+                    mToAwake.Add(entry.Key);
+            }
 
-                    if (script == null)
-                        return null;
+            foreach (Coroutine key in mToAwake)
+            {
+                mSleepingOnTime.Remove(key);
+                DynValue value = key.Resume();
+                ResolveResume(key, value);
+            }
+        }
 
-                    DynValue result = script.Call(script.Globals["init"], target);
+        public void OnSignal(string signal)
+        {
+            List<Coroutine> mToAwake = new List<Coroutine>();
+
+            if (mSleepingOnSignal.ContainsKey(signal))
+            {
+                mToAwake.AddRange(mSleepingOnSignal[signal]);
+                mSleepingOnSignal.Remove(signal);
+            }
+
+            foreach (Coroutine key in mToAwake)
+            { 
+                DynValue value = key.Resume();
+                ResolveResume(key, value);
+            }
+        }
+
+        public void OnEventUpdate(Player player)
+        {
+            if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
+            {
+                mSleepingOnPlayerEvent[player.actorId].Resume();
+                mSleepingOnPlayerEvent.Remove(player.actorId);
+            }
+            else
+                player.EndEvent();
+        }
+
+        private static string GetScriptPath(Actor target)
+        {
+            if (target is Player)
+            {
+                return String.Format(FILEPATH_PLAYER);
+            }
+            else if (target is Npc)
+            {
+                return null;
+            }
+            else if (target is Command)
+            {
+                return String.Format(FILEPATH_COMMANDS, target.GetName());
+            }
+            else if (target is Director)
+            {
+                return String.Format(FILEPATH_DIRECTORS, ((Director)target).GetScriptPath());
+            }
+            else if (target is Area)
+            {
+                return String.Format(FILEPATH_ZONE, ((Zone)target).zoneName);
+            }
+            else
+                return "";
+        }
+
+        private List<LuaParam> CallLuaFunctionNpcForReturn(Player player, Npc target, string funcName, params object[] args)
+        {
+            LuaScript parent = null, child = null;
+
+            if (File.Exists("./scripts/base/" + target.classPath + ".lua"))
+                parent = LuaEngine.LoadScript("./scripts/base/" + target.classPath + ".lua");
+
+            Area area = target.zone;
+            if (area is PrivateArea)
+            {
+                if (File.Exists(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", area.zoneName, ((PrivateArea)area).GetPrivateAreaName(), target.className, target.GetUniqueId())))
+                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", area.zoneName, ((PrivateArea)area).GetPrivateAreaName(), target.className, target.GetUniqueId()));
+            }
+            else
+            {
+                if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", area.zoneName, target.className, target.GetUniqueId())))
+                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", area.zoneName, target.className, target.GetUniqueId()));
+            }
+
+            if (parent == null && child == null)
+            {
+                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+            }
+
+            //Run Script
+            DynValue result;
+
+            if (child != null && child.Globals[funcName] != null)
+                result = child.Call(child.Globals[funcName], this);
+            else if (parent != null && parent.Globals[funcName] != null)
+                result = parent.Call(parent.Globals[funcName], this);
+            else
+                return null;
+
+            List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
+            return lparams;
+        }
+
+        private void CallLuaFunctionNpc(Player player, Npc target, string funcName, params object[] args)
+        {
+            LuaScript parent = null, child = null;
+
+            if (File.Exists("./scripts/base/" + target.classPath + ".lua"))
+                parent = LuaEngine.LoadScript("./scripts/base/" + target.classPath + ".lua");
+
+            Area area = target.zone;
+            if (area is PrivateArea)
+            {
+                if (File.Exists(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", area.zoneName, ((PrivateArea)area).GetPrivateAreaName(), target.className, target.GetUniqueId())))
+                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", area.zoneName, ((PrivateArea)area).GetPrivateAreaName(), target.className, target.GetUniqueId()));
+            }
+            else
+            {
+                if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", area.zoneName, target.className, target.GetUniqueId())))
+                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", area.zoneName, target.className, target.GetUniqueId()));
+            }
+
+            if (parent == null && child == null)
+            {
+                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+            }
+
+            //Run Script
+            Coroutine coroutine = null;
+
+            if (child != null && !child.Globals.Get(funcName).IsNil())
+                coroutine = child.CreateCoroutine(child.Globals[funcName]).Coroutine;
+            else if (parent.Globals.Get(funcName) != null && !parent.Globals.Get(funcName).IsNil())
+                coroutine = parent.CreateCoroutine(parent.Globals[funcName]).Coroutine;
+
+            if (coroutine != null)
+            {
+                DynValue value = coroutine.Resume();
+                ResolveResume(coroutine, value);
+            }
+        }
+
+        public List<LuaParam> CallLuaFunctionForReturn(Player player, Actor target, string funcName, params object[] args)
+        {
+            //Need a seperate case for NPCs cause that child/parent thing.
+            if (target is Npc)
+                return CallLuaFunctionNpcForReturn(player, (Npc)target, funcName, args);
+
+            string luaPath = GetScriptPath(target);
+            LuaScript script = LoadScript(luaPath);
+            if (script != null)
+            {
+                if (!script.Globals.Get(funcName).IsNil())
+                {                    
+                    //Run Script
+                    DynValue result = script.Call(script.Globals[funcName], this);                    
                     List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
                     return lparams;
                 }
                 else
                 {
-                    SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
-                    return null;
+                    SendError(player, String.Format("ERROR: Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
                 }
             }
-
+            else
+            {
+                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+            }
             return null;
         }
 
-        public static Coroutine DoActorOnEventStarted(Player player, Actor target, EventStartPacket eventStart)
-        {           
-            string luaPath;
-
-            if (target is Command)
-            {
-                luaPath = String.Format(FILEPATH_COMMANDS, target.GetName());
-            }
-            else if (target is Director)
-            {
-                luaPath = String.Format(FILEPATH_DIRECTORS, target.GetName());
-            }
-            else
-                luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.GetName());
-
-            if (File.Exists(luaPath))
-            {
-                LuaScript script = LoadScript(luaPath);
-
-                if (script == null)
-                    return null;
-
-                if (!script.Globals.Get("onEventStarted").IsNil())
-                    return script.CreateCoroutine(script.Globals["onEventStarted"]).Coroutine;
-                else
-                    return null;
-            }
-            else
-            {
-                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
-                return null;
-            }
-
-        }
-
-        public static void DoActorOnSpawn(Player player, Npc target)
+        public void CallLuaFunction(Player player, Actor target, string funcName, params object[] args)
         {
-            string luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.GetName());
-
-            if (File.Exists(luaPath))
-            {
-                LuaScript script = LoadScript(luaPath);
-
-                if (script == null)
-                    return;
-
-                //Run Script
-                if (!script.Globals.Get("onSpawn").IsNil())
-                    script.Call(script.Globals["onSpawn"], player, target);
-            }
-            else
-            {
-                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
-            }
-
-        }
-
-        public static void DoActorOnEventUpdated(Player player, Actor target, EventUpdatePacket eventUpdate)
-        {
+            //Need a seperate case for NPCs cause that child/parent thing.
             if (target is Npc)
+                CallLuaFunctionNpc(player, (Npc)target, funcName, args);
+
+            string luaPath = GetScriptPath(target);
+            LuaScript script = LoadScript(luaPath);
+            if (script != null)
             {
-                ((Npc)target).DoEventUpdate(player, eventUpdate);
-                return;
-            }
-
-            string luaPath;
-
-            if (target is Command)
-                luaPath = String.Format(FILEPATH_COMMANDS, target.GetName());
-            else if (target is Director)
-                luaPath = String.Format(FILEPATH_DIRECTORS, target.GetName());
-            else
-                luaPath = String.Format(FILEPATH_NPCS, target.zoneId, target.GetName());
-
-            if (File.Exists(luaPath))
-            {
-                LuaScript script = LoadScript(luaPath);
-
-                if (script == null)
-                    return;
-
-                //Have to Do this to combine LuaParams
-                List<Object> objects = new List<Object>();
-                objects.Add(player);
-                objects.Add(target);
-                objects.Add(eventUpdate.val2);
-                objects.AddRange(LuaUtils.CreateLuaParamObjectList(eventUpdate.luaParams));
-
-                //Run Script
-                if (!script.Globals.Get("onEventUpdate").IsNil())
-                    script.Call(script.Globals["onEventUpdate"], objects.ToArray());
+                if (!script.Globals.Get(funcName).IsNil())
+                {
+                    Coroutine coroutine = script.CreateCoroutine(script.Globals[funcName]).Coroutine;
+                    coroutine.Resume(player, target, args);                    
+                }
+                else
+                {
+                    SendError(player, String.Format("ERROR: Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
+                }
             }
             else
             {
                 SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
-            }
+            }            
         }
 
-        public static void OnZoneIn(Player player)
+        public void EventStarted(Player player, Actor target, EventStartPacket eventStart)
         {
-            string luaPath = String.Format(FILEPATH_ZONE, player.GetZone().zoneName);
-
-            if (File.Exists(luaPath))
-            {
-                LuaScript script = LoadScript(luaPath);
-
-                if (script == null)
-                    return;
-
-                //Run Script
-                if (!script.Globals.Get("onZoneIn").IsNil())
-                    script.Call(script.Globals["onZoneIn"], player.GetZone(), player);
-            }
+            CallLuaFunction(player, target, "onEventStarted");
         }
 
-        public static void OnZoneInDone(Player player)
+        private DynValue ResolveResume(Coroutine coroutine, DynValue value)
         {
-            string luaPath = String.Format(FILEPATH_ZONE, player.GetZone().zoneName);
+            if (value == null || value.IsVoid())
+                return value;
 
-            if (File.Exists(luaPath))
+            if (value.Tuple != null && value.Tuple.Length >= 1 && value.Tuple[0].String != null)
             {
-                LuaScript script = LoadScript(luaPath);
-
-                if (script == null)
-                    return;
-
-                //Run Script
-                if (!script.Globals.Get("onZoneInDone").IsNil())
-                    script.Call(script.Globals["onZoneInDone"], player.GetZone(), player);
+                switch (value.Tuple[0].String)
+                {
+                    case "_WAIT_TIME":
+                        GetInstance().AddWaitCoroutine(coroutine, (float)value.Tuple[1].Number);
+                        break;
+                    case "_WAIT_SIGNAL":
+                        GetInstance().AddWaitSignalCoroutine(coroutine, (string)value.Tuple[1].String);
+                        break;
+                    case "_WAIT_EVENT":
+                        GetInstance().AddWaitEventCoroutine(new Player(null, 0), coroutine);
+                        break;
+                    default:
+                        return value;
+                }
             }
-        }
 
-        public static void OnBeginLogin(Player player)
-        {
-            if (File.Exists(FILEPATH_PLAYER))
-            {
-                LuaScript script = LoadScript(FILEPATH_PLAYER);
-
-                if (script == null)
-                    return;
-
-                //Run Script
-                if (!script.Globals.Get("onBeginLogin").IsNil())
-                    script.Call(script.Globals["onBeginLogin"], player);
-            }
-        }
-
-        public static void OnLogin(Player player)
-        {
-            if (File.Exists(FILEPATH_PLAYER))
-            {
-                LuaScript script = LoadScript(FILEPATH_PLAYER);
-
-                if (script == null)
-                    return;
-
-                //Run Script
-                if (!script.Globals.Get("onLogin").IsNil())
-                    script.Call(script.Globals["onLogin"], player);
-            }
-        }
-
-        public static void OnPlayerUpdate(Player player, double delta)
-        {
-            if (File.Exists(FILEPATH_PLAYER))
-            {
-                LuaScript script = LoadScript(FILEPATH_PLAYER);
-
-                if (script == null)
-                    return;
-
-                //Run Script
-                if (!script.Globals.Get("onUpdate").IsNil())
-                    script.Call(script.Globals["onUpdate"], player);
-            }
+            return value;
         }
 
         #region RunGMCommand
@@ -361,8 +432,12 @@ namespace FFXIVClassic_Map_Server.lua
                     // push the arg count too
                     LuaParam.Insert(1, i);
 
-                    // run the script
-                    script.Call(script.Globals["onTrigger"], LuaParam.ToArray());
+                    // run the script                    
+                    //script.Call(script.Globals["onTrigger"], LuaParam.ToArray());
+
+                    Coroutine coroutine = script.CreateCoroutine(script.Globals["onTrigger"]).Coroutine;
+                    DynValue value = coroutine.Resume(player, LuaParam.ToArray());
+                    GetInstance().ResolveResume(coroutine, value);
                     return;
                 }
             }
@@ -371,13 +446,16 @@ namespace FFXIVClassic_Map_Server.lua
         }
         #endregion
 
-        public static LuaScript LoadScript(string filename)
+        public static LuaScript LoadScript(string path)
         {
+            if (!File.Exists(path))
+                return null;
+
             LuaScript script = LoadGlobals();
 
             try
             {
-                script.DoFile(filename);
+                script.DoFile(path);
             }
             catch (SyntaxErrorException e)
             {
@@ -398,13 +476,16 @@ namespace FFXIVClassic_Map_Server.lua
             script.Globals["GetStaticActorById"] = (Func<uint, Actor>)Server.GetStaticActors;
             script.Globals["GetWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
             script.Globals["GetItemGamedata"] = (Func<uint, Item>)Server.GetItemGamedata;
+            script.Globals["GetLuaInstance"] = (Func<LuaEngine>)LuaEngine.GetInstance;
 
             script.Options.DebugPrint = s => { Program.Log.Debug(s); };
             return script;
         }
 
-        public static void SendError(Player player, string message)
+        private static void SendError(Player player, string message)
         {
+            if (player == null)
+                return;
             List<SubPacket> SendError = new List<SubPacket>();
             SendError.Add(EndEventPacket.BuildPacket(player.actorId, player.currentEventOwner, player.currentEventName));
             player.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", message);

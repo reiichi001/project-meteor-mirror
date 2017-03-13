@@ -126,10 +126,7 @@
     <Compile Include="dataobjects\SeamlessBoundry.cs" />
     <Compile Include="dataobjects\SearchEntry.cs" />
     <Compile Include="lua\LuaEngine.cs" />
-    <Compile Include="lua\LuaEvent.cs" />
-    <Compile Include="lua\LuaNpc.cs" />
     <Compile Include="lua\LuaParam.cs" />
-    <Compile Include="lua\LuaPlayer.cs" />
     <Compile Include="lua\LuaScript.cs" />
     <Compile Include="lua\LuaUtils.cs" />
     <Compile Include="PacketProcessor.cs" />

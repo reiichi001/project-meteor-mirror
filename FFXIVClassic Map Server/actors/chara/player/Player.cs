@@ -1226,98 +1226,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void StartEvent(Actor owner, EventStartPacket start)
         {
-            //Have to do this to combine LuaParams
-            List<Object> objects = new List<Object>();
-            objects.Add(this);
-            objects.Add(owner);
-            objects.Add(start.triggerName);
-
-            if (start.luaParams != null)
-                objects.AddRange(LuaUtils.CreateLuaParamObjectList(start.luaParams));
-
-            if (owner is Npc)
-            {
-                currentEventRunning = ((Npc)owner).GetEventStartCoroutine(this);
-
-                if (currentEventRunning != null)
-                {
-                    try
-                    {
-                        currentEventRunning.Resume(objects.ToArray());
-                    }
-                    catch (ScriptRuntimeException e)
-                    {
-                        Program.Log.Error("[LUA] {0}", e.DecoratedMessage);
-                        EndEvent();
-                    }
-                }
-                else
-                {
-                    EndEvent();
-                }
-            }
-            else if (owner is Director)
-            {
-                currentEventRunning = ((Director)owner).GetEventStartCoroutine(this);
-
-                if (currentEventRunning != null)
-                {
-                    try
-                    {
-                        currentEventRunning.Resume(objects.ToArray());
-                    }
-                    catch (ScriptRuntimeException e)
-                    {
-                        Program.Log.Error("[LUA] {0}", e.DecoratedMessage);
-                        EndEvent();
-                    }
-                }
-                else
-                {
-                    EndEvent();
-                }
-            }
-            else
-            {
-                currentEventRunning = LuaEngine.DoActorOnEventStarted(this, owner, start);
-
-                if (currentEventRunning != null)
-                {
-                    try
-                    {
-                        currentEventRunning.Resume(objects.ToArray());
-                    }
-                    catch (ScriptRuntimeException e)
-                    {
-                        Program.Log.Error("[LUA] {0}", e.DecoratedMessage);
-                        EndEvent();
-                    }
-                }
-                else
-                {
-                    EndEvent();
-                }
-            }
-                
+            LuaEngine.GetInstance().EventStarted(this, owner, start);
         }
 
         public void UpdateEvent(EventUpdatePacket update)
         {
-            if (currentEventRunning == null)
-                return;
-
-            if (currentEventRunning.State == CoroutineState.Suspended)
-            {
-                try
-                {
-                    currentEventRunning.Resume(LuaUtils.CreateLuaParamObjectList(update.luaParams));
-                }
-                catch (ScriptRuntimeException e)
-                {
-                    Program.Log.Error("[LUA] {0}", e.DecoratedMessage);
-                    EndEvent();
-                }
-            }
+            LuaEngine.GetInstance().OnEventUpdate(this);            
         } 
 
         public void KickEvent(Actor actor, string conditionName, params object[] parameters)
@@ -1455,7 +1369,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void Update(double delta)
         {
-            LuaEngine.OnPlayerUpdate(this, delta);
+            LuaEngine.GetInstance().CallLuaFunction(this, this, "OnUpdate", delta);
         }
 
     }

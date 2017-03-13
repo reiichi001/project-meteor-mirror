@@ -23,8 +23,7 @@ namespace FFXIVClassic_Map_Server
         private Socket mServerSocket;
 
         private Dictionary<uint, Session> mSessionList = new Dictionary<uint, Session>();        
-        private LuaEngine mLuaEngine = new LuaEngine();
-
+     
         private static CommandProcessor mCommandProcessor = new CommandProcessor();
         private static ZoneConnection mWorldConnection = new ZoneConnection();
         private static WorldManager mWorldManager;

@@ -70,39 +70,23 @@ namespace FFXIVClassic_Map_Server.actors.director
 
         public void OnTalkEvent(Player player, Npc npc)
         {
-            if (File.Exists("./scripts/directors/" + directorScriptPath + ".lua"))
-            {
-                LuaScript script = LuaEngine.LoadScript("./scripts/directors/" + directorScriptPath + ".lua");
-
-                if (script == null)
-                    return;
-
-                //Run Script
-                if (!script.Globals.Get("onTalkEvent").IsNil())
-                    script.Call(script.Globals["onTalkEvent"], player, npc);
-            }
-            else
-            {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for director {0}.", GetName()));
-            }
+            LuaEngine.GetInstance().CallLuaFunction(player, this, "onTalkEvent", npc);
         }
 
         public void OnCommandEvent(Player player, Command command)
         {
-            if (File.Exists("./scripts/directors/" + directorScriptPath + ".lua"))
-            {
-                LuaScript script = LuaEngine.LoadScript("./scripts/directors/" + directorScriptPath + ".lua");
+            LuaEngine.GetInstance().CallLuaFunction(player, this, "onCommandEvent", command);
+        }        
 
-                if (script == null)
-                    return;
-
-                //Run Script
-                if (!script.Globals.Get("onCommandEvent").IsNil())
-                    script.Call(script.Globals["onCommandEvent"], player, command);
-            }
-            else
+        public void DoActorInit(string directorPath)
+        {
+            List<LuaParam> lparams = LuaEngine.GetInstance().CallLuaFunctionForReturn(null, this, "init");            
+            
+            if (lparams.Count == 1 && lparams[0].value is string)
             {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for director {0}.", GetName()));
+                classPath = (string)lparams[0].value;
+                className = classPath.Substring(classPath.LastIndexOf("/") + 1);
+                isCreated = true;
             }
         }
 
@@ -124,52 +108,6 @@ namespace FFXIVClassic_Map_Server.actors.director
         {
             childrenOwners.Clear();
             Server.GetWorldManager().GetZone(zoneId).DeleteDirector(actorId);
-        }
-
-        public void DoActorInit(string directorPath)
-        {
-            LuaScript script = null;
-
-            if (File.Exists("./scripts/directors/" + directorPath + ".lua"))
-                script = LuaEngine.LoadScript("./scripts/directors/" + directorPath + ".lua");
-            else
-                return;
-
-            DynValue result;
-
-            if (script != null && script.Globals["init"] != null)
-                result = script.Call(script.Globals["init"], this);
-            else
-                return;
-
-            List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
-
-            if (lparams.Count == 1 && lparams[0].value is string)
-            {
-                classPath = (string)lparams[0].value;
-                className = classPath.Substring(classPath.LastIndexOf("/") + 1);
-                isCreated = true;
-            }
-        }
-
-        public Coroutine GetEventStartCoroutine(Player player)
-        {
-            LuaScript script = null;
-
-            if (File.Exists("./scripts/directors/" + directorScriptPath + ".lua"))
-                script = LuaEngine.LoadScript("./scripts/directors/" + directorScriptPath + ".lua");
-            else
-                return null;
-            
-            //Run Script
-            Coroutine coroutine;
-
-            if (script != null && !script.Globals.Get("onEventStarted").IsNil())
-                coroutine = script.CreateCoroutine(script.Globals["onEventStarted"]).Coroutine;            
-            else
-                return null;
-
-            return coroutine;
         }
 
         public bool IsCreated()
