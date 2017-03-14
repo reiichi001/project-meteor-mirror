@@ -1231,7 +1231,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void UpdateEvent(EventUpdatePacket update)
         {
-            LuaEngine.GetInstance().OnEventUpdate(this);            
+            LuaEngine.GetInstance().OnEventUpdate(this, update.luaParams);            
         } 
 
         public void KickEvent(Actor actor, string conditionName, params object[] parameters)

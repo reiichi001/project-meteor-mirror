@@ -85,7 +85,7 @@ namespace FFXIVClassic_Map_Server.lua
             {
                 mSleepingOnTime.Remove(key);
                 DynValue value = key.Resume();
-                ResolveResume(key, value);
+                ResolveResume(null, key, value);
             }
         }
 
@@ -102,16 +102,18 @@ namespace FFXIVClassic_Map_Server.lua
             foreach (Coroutine key in mToAwake)
             { 
                 DynValue value = key.Resume();
-                ResolveResume(key, value);
+                ResolveResume(null, key, value);
             }
         }
 
-        public void OnEventUpdate(Player player)
+        public void OnEventUpdate(Player player, List<LuaParam> args)
         {
             if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
             {
-                mSleepingOnPlayerEvent[player.actorId].Resume();
-                mSleepingOnPlayerEvent.Remove(player.actorId);
+                Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];                
+                mSleepingOnPlayerEvent.Remove(player.actorId);               
+                DynValue value = coroutine.Resume(LuaUtils.CreateLuaParamObjectList(args));
+                ResolveResume(null, coroutine, value);
             }
             else
                 player.EndEvent();
@@ -203,6 +205,7 @@ namespace FFXIVClassic_Map_Server.lua
             if (parent == null && child == null)
             {
                 LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+                return;
             }
 
             //Run Script
@@ -215,8 +218,8 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (coroutine != null)
             {
-                DynValue value = coroutine.Resume();
-                ResolveResume(coroutine, value);
+                DynValue value = coroutine.Resume(player, target, args);
+                ResolveResume(player, coroutine, value);
             }
         }
 
@@ -253,7 +256,10 @@ namespace FFXIVClassic_Map_Server.lua
         {
             //Need a seperate case for NPCs cause that child/parent thing.
             if (target is Npc)
+            {
                 CallLuaFunctionNpc(player, (Npc)target, funcName, args);
+                return;
+            }
 
             string luaPath = GetScriptPath(target);
             LuaScript script = LoadScript(luaPath);
@@ -262,7 +268,8 @@ namespace FFXIVClassic_Map_Server.lua
                 if (!script.Globals.Get(funcName).IsNil())
                 {
                     Coroutine coroutine = script.CreateCoroutine(script.Globals[funcName]).Coroutine;
-                    coroutine.Resume(player, target, args);                    
+                    DynValue value = coroutine.Resume(player, target, args);
+                    ResolveResume(player, coroutine, value);
                 }
                 else
                 {
@@ -277,15 +284,27 @@ namespace FFXIVClassic_Map_Server.lua
 
         public void EventStarted(Player player, Actor target, EventStartPacket eventStart)
         {
-            CallLuaFunction(player, target, "onEventStarted");
+            if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
+            {
+                Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];                
+                mSleepingOnPlayerEvent.Remove(player.actorId);                
+                DynValue value = coroutine.Resume();
+                ResolveResume(null, coroutine, value);
+            }
+            else                
+                CallLuaFunction(player, target, "onEventStarted", eventStart.triggerName);
         }
 
-        private DynValue ResolveResume(Coroutine coroutine, DynValue value)
+        private DynValue ResolveResume(Player player, Coroutine coroutine, DynValue value)
         {
             if (value == null || value.IsVoid())
                 return value;
 
-            if (value.Tuple != null && value.Tuple.Length >= 1 && value.Tuple[0].String != null)
+            if (value.String != null && value.String.Equals("_WAIT_EVENT"))
+            {                
+                GetInstance().AddWaitEventCoroutine(player, coroutine);      
+            }
+            else if (value.Tuple != null && value.Tuple.Length >= 1 && value.Tuple[0].String != null)
             {
                 switch (value.Tuple[0].String)
                 {
@@ -296,7 +315,7 @@ namespace FFXIVClassic_Map_Server.lua
                         GetInstance().AddWaitSignalCoroutine(coroutine, (string)value.Tuple[1].String);
                         break;
                     case "_WAIT_EVENT":
-                        GetInstance().AddWaitEventCoroutine(new Player(null, 0), coroutine);
+                        GetInstance().AddWaitEventCoroutine((Player)value.Tuple[1].UserData.Object, coroutine);
                         break;
                     default:
                         return value;
@@ -437,7 +456,7 @@ namespace FFXIVClassic_Map_Server.lua
 
                     Coroutine coroutine = script.CreateCoroutine(script.Globals["onTrigger"]).Coroutine;
                     DynValue value = coroutine.Resume(player, LuaParam.ToArray());
-                    GetInstance().ResolveResume(coroutine, value);
+                    GetInstance().ResolveResume(player, coroutine, value);
                     return;
                 }
             }

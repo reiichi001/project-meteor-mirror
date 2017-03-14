@@ -53,14 +53,19 @@ INVENTORY_EQUIPMENT_OTHERPLAYER = 0x00F9; --Max 0x23
 
 --UTILS
 
+function kickEventContinue(player, actor, trigger, ...)
+	player:kickEvent(actor, trigger, ...);
+	return coroutine.yield("_WAIT_EVENT", player);
+end
+
 function callClientFunction(player, functionName, ...)
 	player:RunEventFunction(functionName, ...);	
-	result = coroutine.yield("_WAIT_EVENT");
+	result = coroutine.yield("_WAIT_EVENT", player);
 	return result;
 end
 
 function wait(seconds)
-	return coroutine.yield(_WAIT_TIME, seconds);
+	return coroutine.yield("_WAIT_TIME", seconds);
 end
 
 function waitForSignal(signal)

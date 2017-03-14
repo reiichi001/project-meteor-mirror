@@ -1,3 +1,5 @@
+require ("global")
+
 --[[
 
 ActivateCommand Script
@@ -10,15 +12,12 @@ function onEventStarted(player, command, triggerName)
 	
 	if (player:GetState() == 0) then
 		player:ChangeState(2);
+		sendSignal("playerActive");
 	elseif (player:GetState() == 2) then
 		player:ChangeState(0); 
+		sendSignal("playerPassive");
 	end
 		
 	player:endEvent();
-	
-	--For Opening Tutorial
-	--if (player:HasQuest("Man0l0") or player:HasQuest("Man0g0") or player:HasQuest("Man0u0")) then
-		--player:GetDirector("Quest/QuestDirectorMan0l001"):OnCommandEvent(player, command);	
-	--end	
-	
+
 end

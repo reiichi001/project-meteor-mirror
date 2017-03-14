@@ -19,10 +19,28 @@ end
 function onEventStarted(player, actor, triggerName)	
 
 	man0l0Quest = player:GetQuest("Man0l0");
+
 	callClientFunction(player, "delegateEvent", player, man0l0Quest, "processTtrBtl001", nil, nil, nil);
+	player:EndEvent();
+	waitForSignal("playerActive");
+	kickEventContinue(player, actor, "noticeEvent", "noticeEvent");
 	callClientFunction(player, "delegateEvent", player, man0l0Quest, "processTtrBtl002", nil, nil, nil);
-	callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEvent000_2", nil, nil, nil);
+	player:EndEvent();
 	
+	
+	wait(4);
+	player:SendRequestedInfo(5); --Close TutorialWidget
+	player:SendRequestedInfo(2, nil, nil, 9055, 9055, 9055); --Open TutorialSuccessWidget for attacking enemy
+	wait(4);
+	player:SendRequestedInfo(4, nil, nil, nil, 12); --Open TP TutorialWidget
+	wait(4); --Should be wait for TP signal
+	player:SendRequestedInfo(5); --Close TutorialWidget
+	player:SendRequestedInfo(4, nil, nil, nil, 13); --Open WS TutorialWidget
+	wait(4); --Should be wait for weaponskillUsed signal
+	player:SendRequestedInfo(5); --Close TutorialWidget
+	player:SendRequestedInfo(2, nil, nil, 9065, 9065, 9065); --Open TutorialSuccessWidget for weapon skill
+	wait(4); --Should be wait for mobkill
+	callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEvent000_2", nil, nil, nil);		
 	player:ChangeMusic(7);
 	callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEvent000_3", nil, nil, nil);	
 	
