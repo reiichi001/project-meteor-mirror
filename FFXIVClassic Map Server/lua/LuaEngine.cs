@@ -185,6 +185,11 @@ namespace FFXIVClassic_Map_Server.lua
 
         private void CallLuaFunctionNpc(Player player, Npc target, string funcName, params object[] args)
         {
+            object[] args2 = new object[args.Length + 2];
+            Array.Copy(args, 0, args2, 2, args.Length);
+            args2[0] = player;
+            args2[1] = target;
+
             LuaScript parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + target.classPath + ".lua"))
@@ -218,7 +223,7 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (coroutine != null)
             {
-                DynValue value = coroutine.Resume(player, target, args);
+                DynValue value = coroutine.Resume(args2);
                 ResolveResume(player, coroutine, value);
             }
         }
@@ -261,6 +266,11 @@ namespace FFXIVClassic_Map_Server.lua
                 return;
             }
 
+            object[] args2 = new object[args.Length + 2];
+            Array.Copy(args, 0, args2, 2, args.Length);
+            args2[0] = player;
+            args2[1] = target;
+
             string luaPath = GetScriptPath(target);
             LuaScript script = LoadScript(luaPath);
             if (script != null)
@@ -268,7 +278,7 @@ namespace FFXIVClassic_Map_Server.lua
                 if (!script.Globals.Get(funcName).IsNil())
                 {
                     Coroutine coroutine = script.CreateCoroutine(script.Globals[funcName]).Coroutine;
-                    DynValue value = coroutine.Resume(player, target, args);
+                    DynValue value = coroutine.Resume(args2);
                     ResolveResume(player, coroutine, value);
                 }
                 else
@@ -284,6 +294,8 @@ namespace FFXIVClassic_Map_Server.lua
 
         public void EventStarted(Player player, Actor target, EventStartPacket eventStart)
         {
+            List<LuaParam> lparams = eventStart.luaParams;
+            lparams.Insert(0, new LuaParam(2, eventStart.triggerName));
             if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
             {
                 Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];                
@@ -292,7 +304,7 @@ namespace FFXIVClassic_Map_Server.lua
                 ResolveResume(null, coroutine, value);
             }
             else                
-                CallLuaFunction(player, target, "onEventStarted", eventStart.triggerName);
+                CallLuaFunction(player, target, "onEventStarted", LuaUtils.CreateLuaParamObjectList(lparams));
         }
 
         private DynValue ResolveResume(Player player, Coroutine coroutine, DynValue value)
