@@ -18,10 +18,10 @@ function onBeginLogin(player)
 			
 	--For Opening. Set Director and reset position incase d/c
 	if	   (player:HasQuest(110001) == true) then
-		--director = player:GetZone():CreateDirector("OpeningDirector");
-		--player:AddDirector(director);
-		--player:SetLoginDirector(director);		
-		--player:KickEvent(director, "noticeEvent", true);
+		director = player:GetZone():CreateDirector("OpeningDirector");
+		player:AddDirector(director);
+		player:SetLoginDirector(director);		
+		player:KickEvent(director, "noticeEvent", true);
 		
 		player.positionX = 0.016;
 		player.positionY = 10.35;

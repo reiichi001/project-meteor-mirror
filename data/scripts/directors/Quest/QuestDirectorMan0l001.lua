@@ -34,7 +34,7 @@ function onEventStarted(player, actor, triggerName)
 	
 	wait(6); --Should be wait for mobkill
 	worldMaster = GetWorldMaster();
-	player:SendRequestedInfo("attention", worldMaster, "", 51073, 1);
+	player:SendDataPacket("attention", worldMaster, "", 51073, 1);
 	wait(7);
 	player:ChangeMusic(7);
 	player:ChangeState(0); 
@@ -72,9 +72,6 @@ function onPushEvent(player, npc)
 end
 
 function onCommandEvent(player, command)
-
-	quest = GetStaticActor("Man0l0");
-	callClientFunction(player, "delegateEvent", player, quest, "processTtrBtl002", nil, nil, nil);	
 
 end
 

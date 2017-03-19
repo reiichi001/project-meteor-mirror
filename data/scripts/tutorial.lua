@@ -31,7 +31,7 @@ TUTORIAL_DEFEATENEMY = 18;
 --Helper functions
 
 function showTutorialSuccessWidget(player, textId)
-	player:SendRequestedInfo(2, nil, nil, textId);
+	player:SendDataPacket(2, nil, nil, textId);
 end
 
 function openTutorialWidget(player, controllerType, widgetId)
@@ -39,17 +39,17 @@ function openTutorialWidget(player, controllerType, widgetId)
 	if (controllerType ~= CONTROLLER_GAMEPAD) then
 		controllerType = CONTROLLER_KEYBOARD;
 	end
-	player:SendRequestedInfo(4, nil, nil, controllerType, widgetId);
+	player:SendDataPacket(4, nil, nil, controllerType, widgetId);
 end
 
 function closeTutorialWidget(player)
-	player:SendRequestedInfo(5);
+	player:SendDataPacket(5);
 end
 
 function startTutorialMode(player)
-	player:SendRequestedInfo(9);
+	player:SendDataPacket(9);
 end
 
 function endTutorialMode(player)
-	player:SendRequestedInfo(7);
+	player:SendDataPacket(7);
 end
