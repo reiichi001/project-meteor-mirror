@@ -139,7 +139,7 @@ namespace FFXIVClassic_Map_Server.lua
             }
             else if (target is Area)
             {
-                return String.Format(FILEPATH_ZONE, ((Zone)target).zoneName);
+                return String.Format(FILEPATH_ZONE, ((Area)target).zoneName);
             }
             else
                 return "";
@@ -288,7 +288,8 @@ namespace FFXIVClassic_Map_Server.lua
             }
             else
             {
-                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+                if (!(target is Area))
+                    SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
             }            
         }
 
@@ -467,7 +468,7 @@ namespace FFXIVClassic_Map_Server.lua
                     //script.Call(script.Globals["onTrigger"], LuaParam.ToArray());
 
                     Coroutine coroutine = script.CreateCoroutine(script.Globals["onTrigger"]).Coroutine;
-                    DynValue value = coroutine.Resume(player, LuaParam.ToArray());
+                    DynValue value = coroutine.Resume(LuaParam.ToArray());
                     GetInstance().ResolveResume(player, coroutine, value);
                     return;
                 }

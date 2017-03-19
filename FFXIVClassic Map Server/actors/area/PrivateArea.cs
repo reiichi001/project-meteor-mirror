@@ -21,6 +21,7 @@ namespace FFXIVClassic_Map_Server.actors.area
             : base(id, parent.zoneName, parent.regionId, className, bgmDay, bgmNight, bgmBattle, parent.isIsolated, parent.isInn, parent.canRideChocobo, parent.canStealth, true)
         {
             this.parentZone = parent;
+            this.zoneName = parent.zoneName;
             this.privateAreaName = privateAreaName;
             this.privateAreaType = privateAreaType;
         }
