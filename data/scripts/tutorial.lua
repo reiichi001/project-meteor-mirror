@@ -36,8 +36,9 @@ end
 
 function openTutorialWidget(player, controllerType, widgetId)
 	--Default to keyboard if somethings fucky
-	if (controllerType ~= CONTROLLER_GAMEPAD)
+	if (controllerType ~= CONTROLLER_GAMEPAD) then
 		controllerType = CONTROLLER_KEYBOARD;
+	end
 	player:SendRequestedInfo(4, nil, nil, controllerType, widgetId);
 end
 

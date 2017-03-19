@@ -18,12 +18,12 @@ end
 
 function onEventStarted(player, actor, triggerName)	
 
-	quest = GetStaticActor("Man0g0");
+	quest = player:GetQuest("Man0g0");
 	callClientFunction(player, "delegateEvent", player, quest, "processTtrBtl001", nil, nil, nil);
 	callClientFunction(player, "delegateEvent", player, quest, "processEvent010_1", nil, nil, nil);
+	player:ChangeMusic(7);
 	callClientFunction(player, "delegateEvent", player, quest, "processEvent020_1", nil, nil, nil);	
-	GetWorldManager():DoZoneChange(player, 1);
-	player:EndEvent();
+	
 	--sendDataPacket: Success
 	--sendDataPacket: CloseWidget
 	--IF DoW:
@@ -40,7 +40,10 @@ function onEventStarted(player, actor, triggerName)
 	--IF DEAD
 	--sendDataPacket: Attention
 	
+	quest:NextPhase(10);	
 	player:EndEvent();
+	
+	GetWorldManager():DoZoneChange(player, 155, "PrivateAreaMasterPast", 1, 15, 175.38, -1.21, -1156.51, -2.1);
 	
 end
 

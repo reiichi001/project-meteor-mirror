@@ -21,7 +21,7 @@ function onBeginLogin(player)
 		--director = player:GetZone():CreateDirector("OpeningDirector");
 		--player:AddDirector(director);
 		--player:SetLoginDirector(director);		
-		--player:KickEvent(director, "noticeEvent", "noticeEvent");
+		--player:KickEvent(director, "noticeEvent", true);
 		
 		player.positionX = 0.016;
 		player.positionY = 10.35;
