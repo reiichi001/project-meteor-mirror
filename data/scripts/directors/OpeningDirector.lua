@@ -31,10 +31,11 @@ function onTalkEvent(player, npc)
 ;
 	if (player:HasQuest(110001) == true) then
 		man0l0Quest = player:GetQuest("man0l0");
+		
 		if (man0l0Quest:GetQuestFlag(MAN0L0_FLAG_MINITUT_DONE1) == true and man0l0Quest:GetQuestFlag(MAN0L0_FLAG_MINITUT_DONE2) == true and man0l0Quest:GetQuestFlag(MAN0L0_FLAG_MINITUT_DONE3) == true) then
 			doorNpc = GetWorldManager():GetActorInWorldByUniqueId("exit_door");		
 			player:SetEventStatus(doorNpc, "pushDefault", true, 0x2);
-			doorNpc:SetQuestGraphic(player, 0x3);					
+			doorNpc:SetQuestGraphic(player, 0x3);
 		end
 	elseif (player:HasQuest(110005) == true) then	
 		man0g0Quest = player:GetQuest("man0g0");
@@ -50,7 +51,7 @@ function onTalkEvent(player, npc)
 		if (man0u0Quest:GetQuestFlag(MAN0U0_FLAG_MINITUT_DONE1) == true and man0u0Quest:GetQuestFlag(MAN0U0_FLAG_MINITUT_DONE2) == true and man0u0Quest:GetQuestFlag(MAN0U0_FLAG_MINITUT_DONE3) == true) then			
 			exitTriggerNpc = GetWorldManager():GetActorInWorldByUniqueId("exit_trigger");		
 			player:SetEventStatus(exitTriggerNpc, "pushDefault", true, 0x2);
-			exitTriggerNpc:SetQuestGraphic(player, 0x3);					
+			exitTriggerNpc:SetQuestGraphic(player, 0x2);					
 		end
 	end
 

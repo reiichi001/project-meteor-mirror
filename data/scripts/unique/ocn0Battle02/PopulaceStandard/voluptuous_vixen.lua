@@ -7,6 +7,8 @@ function onSpawn(player, npc)
 	if (man0l0Quest ~= nil) then
 		if (man0l0Quest:GetQuestFlag(MAN0L0_FLAG_MINITUT_DONE2) == false) then
 			npc:SetQuestGraphic(player, 0x2);
+		else
+			npc:SetQuestGraphic(player, 0x0);
 		end
 	end	
 end

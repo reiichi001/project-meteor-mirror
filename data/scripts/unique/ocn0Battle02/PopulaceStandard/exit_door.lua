@@ -10,8 +10,8 @@ function onSpawn(player, npc)
 			player:SetEventStatus(npc, "pushDefault", true, 0x2);
 			npc:SetQuestGraphic(player, 0x3);
 		else
-			player:SetEventStatus(npc, "pushDefault", true, 0x2);
-			npc:SetQuestGraphic(player, 0x3);
+			player:SetEventStatus(npc, "pushDefault", false, 0x2);
+			npc:SetQuestGraphic(player, 0x0);
 		end
 	end
 	
