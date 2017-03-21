@@ -1095,6 +1095,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     {
                         Database.SaveQuest(this, questScenario[i]);
                         questScenario[i] = null;
+                        playerWork.questScenario[i] = 0;
                         SendQuestClientUpdate(i);
                         break;
                     }
