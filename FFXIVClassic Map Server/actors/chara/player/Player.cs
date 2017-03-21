@@ -1271,7 +1271,7 @@ namespace FFXIVClassic_Map_Server.Actors
         
         public void SendInstanceUpdate()
         {
-            Server.GetWorldManager().SeamlessCheck(this);
+            //Server.GetWorldManager().SeamlessCheck(this);
 
             //Update Instance
             List<Actor> aroundMe = new List<Actor>();

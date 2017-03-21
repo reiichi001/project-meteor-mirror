@@ -147,6 +147,11 @@ namespace FFXIVClassic_Map_Server.lua
 
         private List<LuaParam> CallLuaFunctionNpcForReturn(Player player, Npc target, string funcName, params object[] args)
         {
+            object[] args2 = new object[args.Length + 2];
+            Array.Copy(args, 0, args2, 2, args.Length);
+            args2[0] = player;
+            args2[1] = target;
+
             LuaScript parent = null, child = null;
 
             if (File.Exists("./scripts/base/" + target.classPath + ".lua"))
@@ -173,9 +178,9 @@ namespace FFXIVClassic_Map_Server.lua
             DynValue result;
 
             if (child != null && child.Globals[funcName] != null)
-                result = child.Call(child.Globals[funcName], this);
+                result = child.Call(child.Globals[funcName], args2);
             else if (parent != null && parent.Globals[funcName] != null)
-                result = parent.Call(parent.Globals[funcName], this);
+                result = parent.Call(parent.Globals[funcName], args2);
             else
                 return null;
 
@@ -218,7 +223,7 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (child != null && !child.Globals.Get(funcName).IsNil())
                 coroutine = child.CreateCoroutine(child.Globals[funcName]).Coroutine;
-            else if (parent.Globals.Get(funcName) != null && !parent.Globals.Get(funcName).IsNil())
+            else if (parent != null && parent.Globals.Get(funcName) != null && !parent.Globals.Get(funcName).IsNil())
                 coroutine = parent.CreateCoroutine(parent.Globals[funcName]).Coroutine;
 
             if (coroutine != null)

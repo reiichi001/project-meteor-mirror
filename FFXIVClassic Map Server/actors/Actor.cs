@@ -60,6 +60,18 @@ namespace FFXIVClassic_Map_Server.Actors
             this.moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_ACTIVE;
         }
 
+        public void SetPushCircleRange(string triggerName, float size)
+        {
+            if (eventConditions == null || eventConditions.pushWithCircleEventConditions == null)
+                return;
+
+            foreach (EventList.PushCircleEventCondition condition in eventConditions.pushWithCircleEventConditions)
+            {
+                if (condition.conditionName.Equals(triggerName))
+                    condition.radius = size;
+            }
+        }
+
         public SubPacket CreateAddActorPacket(uint playerActorId, byte val)
         {
             return AddActorPacket.BuildPacket(actorId, playerActorId, val);

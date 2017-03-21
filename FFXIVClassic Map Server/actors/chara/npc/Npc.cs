@@ -63,12 +63,6 @@ namespace FFXIVClassic_Map_Server.Actors
             for (int i = 0; i < 32; i++ )            
                 charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);            
 
-            if (className.Equals("JellyfishScenarioLimsaLv00"))
-            {
-                charaWork.property[2] = 1;
-                npcWork.hateType = 1;
-            }
-
             npcWork.pushCommand = actorClass.pushCommand;
             npcWork.pushCommandSub = actorClass.pushCommandSub;
             npcWork.pushCommandPriority = actorClass.pushCommandPriority;
@@ -99,6 +93,11 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (lParams != null && lParams.Count >= 3 && lParams[2].typeID == 0 && (int)lParams[2].value == 0)
                 isStatic = true;
+            else
+            {
+                charaWork.property[2] = 1;
+                npcWork.hateType = 1;
+            }
 
             if (lParams == null)
             {
@@ -139,6 +138,10 @@ namespace FFXIVClassic_Map_Server.Actors
             else if (uniqueIdentifier.Equals("door2"))
             {
                 subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, 0xB09, 0x1af));
+            }
+            else if (uniqueIdentifier.Equals("closed_gridania_gate"))
+            {
+                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, 0xB79, 0x141));
             }
             else if (uniqueIdentifier.Equals("uldah_mapshipport_1"))
             {
