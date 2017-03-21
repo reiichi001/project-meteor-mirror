@@ -1032,13 +1032,13 @@ namespace FFXIVClassic_Map_Server.Actors
             return -1;
         }
 
-        public void AddQuest(uint id)
+        public void AddQuest(uint id, bool isSilent = false)
         {
             Actor actor = Server.GetStaticActors((0xA0F00000 | id));
-            AddQuest(actor.actorName);
+            AddQuest(actor.actorName, isSilent);
         }
 
-        public void AddQuest(string name)
+        public void AddQuest(string name, bool isSilent = false)
         {
             Actor actor = Server.GetStaticActors(name);
 
@@ -1056,6 +1056,33 @@ namespace FFXIVClassic_Map_Server.Actors
             questScenario[freeSlot] = new Quest(this, playerWork.questScenario[freeSlot], name, null, 0);
             Database.SaveQuest(this, questScenario[freeSlot]);
             SendQuestClientUpdate(freeSlot);
+
+            if (!isSilent)
+            {
+                SendGameMessage(Server.GetWorldManager().GetActor(), 25224, 0x20, (object)questScenario[freeSlot].GetQuestId());
+                questScenario[freeSlot].NextPhase(0);
+            }
+        }
+
+        public void CompleteQuest(uint id)
+        {
+            Actor actor = Server.GetStaticActors((0xA0F00000 | id));
+            CompleteQuest(actor.actorName);
+        }
+
+        public void CompleteQuest(string name)
+        {
+            Actor actor = Server.GetStaticActors(name);
+
+            if (actor == null)
+                return;
+
+            uint id = actor.actorId;
+            if (HasQuest(id))
+            {
+                SendGameMessage(Server.GetWorldManager().GetActor(), 25086, 0x20, (object)GetQuest(id).GetQuestId());
+                RemoveQuest(id);
+            }
         }
 
         public void RemoveQuest(uint id)
@@ -1066,8 +1093,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     if (questScenario[i] != null && questScenario[i].actorId == id)
                     {
-                        questScenario[i] = null;
                         Database.SaveQuest(this, questScenario[i]);
+                        questScenario[i] = null;
                         SendQuestClientUpdate(i);
                         break;
                     }
