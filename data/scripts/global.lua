@@ -60,8 +60,7 @@ end
 
 function callClientFunction(player, functionName, ...)
 	player:RunEventFunction(functionName, ...);	
-	result = coroutine.yield("_WAIT_EVENT", player);
-	return result;
+	return coroutine.yield("_WAIT_EVENT", player);	
 end
 
 function wait(seconds)
