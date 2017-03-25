@@ -70,7 +70,22 @@ namespace FFXIVClassic_Map_Server
                     if (UInt16.TryParse(val, out port) && (legit = true))
                         OPTIONS_PORT = val;
                 }
-
+                else if (arg == "user" && (legit = true))
+                {
+                    DATABASE_USERNAME = val;
+                }
+                else if (arg == "p" && (legit = true))
+                {
+                    DATABASE_PASSWORD = val;
+                }
+                else if (arg == "db" && (legit = true))
+                {
+                    DATABASE_NAME = val;
+                }
+                else if (arg == "host" && (legit = true))
+                {
+                    DATABASE_HOST = val;
+                }
                 if (!legit)
                 {
                     Program.Log.Error("Invalid parameter <{0}> for argument: <--{1}> or argument doesnt exist!", val, arg);

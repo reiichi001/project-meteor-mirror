@@ -53,7 +53,7 @@ namespace FFXIVClassic_Map_Server
             zoneList = new Dictionary<uint, Zone>();
             int count1 = 0;
             int count2 = 0;
-
+            
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
