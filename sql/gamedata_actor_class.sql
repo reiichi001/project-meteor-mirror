@@ -6,7 +6,7 @@ Target Host: localhost
 Target Database: ffxiv_server
 Date: 3/8/2017 9:12:48 AM
 */
-
+SET autocommit=0;
 SET FOREIGN_KEY_CHECKS=0;
 -- ----------------------------
 -- Table structure for gamedata_actor_class
@@ -8007,3 +8007,5 @@ INSERT INTO `gamedata_actor_class` VALUES ('9220405', '', '2', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('9220406', '', '2', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('9220407', '', '2', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('9220408', '', '2', '0', null);
+
+COMMIT;
