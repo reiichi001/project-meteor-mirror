@@ -1122,6 +1122,32 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public bool CanAcceptQuest(string name)
+        {
+            if (!IsQuestCompleted(name) && !HasQuest(name))
+                return true;
+            else
+                return false;
+        }
+
+        public bool CanAcceptQuest(uint id)
+        {
+            Actor actor = Server.GetStaticActors((0xA0F00000 | id));
+            return CanAcceptQuest(actor.actorName);
+        }
+
+        public bool IsQuestCompleted(string id)
+        {
+            bool isCompleted = Database.IsQuestCompleted(this, id);
+            return isCompleted;
+        }
+
+        public bool IsQuestCompleted(uint id)
+        {
+            Actor actor = Server.GetStaticActors((0xA0F00000 | id));
+            return IsQuestCompleted(actor.actorName);
+        }
+
         public Quest GetQuest(uint id)
         {
             for (int i = 0; i < questScenario.Length; i++)

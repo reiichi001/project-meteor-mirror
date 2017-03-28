@@ -354,6 +354,31 @@ namespace FFXIVClassic_Map_Server
                 }
             }
         }
+        
+        public static bool IsQuestCompleted(Player player, string questId)
+        {
+            bool isCompleted = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand("SELECT * FROM characters_quest_completed WHERE characterId = @charaId and questId = @questId", conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@questId", questId);
+                    isCompleted = (int)cmd.ExecuteScalar() > 0;
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return isCompleted;
+        }
 
         public static void LoadPlayerCharacter(Player player)
         {            
