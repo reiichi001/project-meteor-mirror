@@ -1032,6 +1032,33 @@ namespace FFXIVClassic_Map_Server.Actors
             return -1;
         }
 
+        //For Lua calls, cause MoonSharp goes retard with uint
+        public void AddQuest(int id, bool isSilent = false)
+        {
+            AddQuest((uint)id, isSilent);
+        }       
+        public void CompleteQuest(int id)
+        {
+            CompleteQuest((uint)id);
+        }
+        public bool HasQuest(int id)
+        {
+            return HasQuest((uint)id);
+        }
+        public Quest GetQuest(int id)
+        {
+            return GetQuest((uint)id);
+        }
+        public bool IsQuestCompleted(int id)
+        {
+            return IsQuestCompleted((uint)id);
+        }
+        public bool CanAcceptQuest(int id)
+        {
+            return CanAcceptQuest((uint)id);
+        }
+        //For Lua calls, cause MoonSharp goes retard with uint
+
         public void AddQuest(uint id, bool isSilent = false)
         {
             Actor actor = Server.GetStaticActors((0xA0F00000 | id));
@@ -1062,7 +1089,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 SendGameMessage(Server.GetWorldManager().GetActor(), 25224, 0x20, (object)questScenario[freeSlot].GetQuestId());
                 questScenario[freeSlot].NextPhase(0);
             }
-        }
+        }        
 
         public void CompleteQuest(uint id)
         {
