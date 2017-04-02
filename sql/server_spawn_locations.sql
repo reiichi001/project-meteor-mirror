@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 3/8/2017 9:12:33 AM
+Date: 4/2/2017 2:27:23 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -26,7 +26,7 @@ CREATE TABLE `server_spawn_locations` (
   `animationId` int(10) unsigned NOT NULL DEFAULT '0',
   `customDisplayName` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=855 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=882 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records 
@@ -857,7 +857,7 @@ INSERT INTO `server_spawn_locations` VALUES ('830', '2290003', 'opening_niellefr
 INSERT INTO `server_spawn_locations` VALUES ('831', '2203301', 'opening_goobbue', '184', '', '0', '-10.31', '193', '50.73', '-1.06', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('832', '1090373', 'opening_stoper_uldah', '184', '', '0', '27.42', '192', '126.94', '0.33', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('833', '1090385', 'opening_stoper_uldah_battle', '184', '', '0', '-24.34', '192', '34.22', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('834', '2201404', 'opening_wolf1', '167', '', '0', '0', '0', '0', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('834', '2201404', 'opening_wolf1', '166', 'ContentSimpleContent30010', '1', '0', '0', '0', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('835', '1000444', 'undignified_adventurer', '230', 'PrivateAreaMasterPast', '1', '-832.36', '6', '209.44', '-0.35', '0', '1041', null);
 INSERT INTO `server_spawn_locations` VALUES ('836', '1000438', 'well-traveled_merchant', '230', 'PrivateAreaMasterPast', '1', '-831.73', '6', '196.77', '0.86', '0', '1035', null);
 INSERT INTO `server_spawn_locations` VALUES ('837', '1000447', 'voluptuous_vixen', '230', 'PrivateAreaMasterPast', '1', '-863.34', '4', '236.13', '0.93', '0', '1016', null);
@@ -877,4 +877,31 @@ INSERT INTO `server_spawn_locations` VALUES ('850', '1000075', 'crapulous_advent
 INSERT INTO `server_spawn_locations` VALUES ('851', '1000100', 'relaxing_adventurer', '133', 'PrivateAreaMasterPast', '2', '-449.132', '39.5', '196.246', '3.108', '0', '1003', null);
 INSERT INTO `server_spawn_locations` VALUES ('852', '1000167', 'mytesyn', '133', 'PrivateAreaMasterPast', '2', '-435.2', '40', '207.07', '-1.9', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('853', '1000077', 'debonair_pirate', '133', 'PrivateAreaMasterPast', '2', '-452.427', '39.5', '202.873', '2.25598', '0', '1003', null);
-INSERT INTO `server_spawn_locations` VALUES ('854', '1000001', 'yshtola', '133', 'PrivateAreaMasterPast', '2', '-463.547', '40', '183.262', '1.3983', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('854', '1000001', 'yshtola', '133', 'PrivateAreaMasterPast', '2', '-463.547', '40', '183.262', '-1.3983', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('855', '1001643', 'cocksure-cockswain', '133', 'PrivateAreaMasterPast', '2', '-445.719', '40', '221.513', '-1.59477', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('856', '1001649', 'sententious_sellsword', '133', 'PrivateAreaMasterPast', '2', '-473.359', '40', '207.664', '2.742', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('857', '1001650', 'solicitous_sellsword', '133', 'PrivateAreaMasterPast', '2', '-445.765', '43', '167.759', '-1.59122', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('858', '1000951', 'lonsygg', '155', 'PrivateAreaMasterPast', '1', '107.96', '9.4', '-1211.89', '0.3243', '0', '1031', null);
+INSERT INTO `server_spawn_locations` VALUES ('859', '1000876', 'tkebbe', '155', 'PrivateAreaMasterPast', '1', '175.76', '-1.25', '-1151.11', '-2.67', '0', '1015', null);
+INSERT INTO `server_spawn_locations` VALUES ('860', '1000017', 'farrimond', '155', 'PrivateAreaMasterPast', '1', '181.82', '-1', '-1154.03', '-1.57', '0', '1017', null);
+INSERT INTO `server_spawn_locations` VALUES ('861', '1000680', 'swethyna', '155', 'PrivateAreaMasterPast', '1', '163.58', '-1.44', '-1153.96', '2.23', '0', '1015', null);
+INSERT INTO `server_spawn_locations` VALUES ('862', '1000683', 'cecilia', '155', 'PrivateAreaMasterPast', '1', '161.5', '-1.48', '-1156.34', '1.44', '0', '1016', null);
+INSERT INTO `server_spawn_locations` VALUES ('863', '1000230', 'miounne', '155', 'PrivateAreaMasterPast', '2', '57.42', '4', '-1196.69', '1.67', '0', '1060', null);
+INSERT INTO `server_spawn_locations` VALUES ('864', '1001062', 'beaming_adventurer', '155', 'PrivateAreaMasterPast', '2', '67.4', '4', '-1208.22', '-2.63', '0', '1005', null);
+INSERT INTO `server_spawn_locations` VALUES ('865', '1001057', 'amiable_adventurer', '155', 'PrivateAreaMasterPast', '2', '64.89', '4', '-1209.33', '1.74', '0', '1002', null);
+INSERT INTO `server_spawn_locations` VALUES ('866', '1001060', 'well-bundled_adventurer', '155', 'PrivateAreaMasterPast', '2', '71.83', '4', '-1200.14', '-0.88', '0', '1005', null);
+INSERT INTO `server_spawn_locations` VALUES ('867', '1001059', 'narrow-eyed_adventurer', '155', 'PrivateAreaMasterPast', '2', '69.62', '4', '-1199.51', '1.29', '0', '1005', null);
+INSERT INTO `server_spawn_locations` VALUES ('868', '1001058', 'morose_merchant', '155', 'PrivateAreaMasterPast', '2', '66.26', '4', '-1199.79', '-2.71', '0', '1005', null);
+INSERT INTO `server_spawn_locations` VALUES ('869', '1000562', 'wispily_whiskered_woodworker', '155', 'PrivateAreaMasterPast', '2', '64.41', '4', '-1199.61', '1.71', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('870', '1000458', 'vkorolon', '155', 'PrivateAreaMasterPast', '2', '55.82', '4', '-1212.23', '1.91', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('871', '5900004', 'closed_gridania_gate', '155', 'PrivateAreaMasterPast', '1', '185', '-1', '-1154', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('872', '1099047', 'gridania_blocker1', '155', 'PrivateAreaMasterPast', '1', '105.945', '10.851', '-1217.8', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('873', '2201407', 'opening_wolf1', '166', 'ContentSimpleContent30010', '1', '374.427', '4.4', '-698.711', '-1.942', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('874', '1001430', 'kinnison', '206', '', '0', '-194', '23', '-1610', '0.9', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('875', '1099046', 'gridania_opening_exit', '155', 'PrivateAreaMasterPast', '1', '72.19', '4', '-1207.91', '1.17', '0', '0', '');
+INSERT INTO `server_spawn_locations` VALUES ('876', '1001648', 'unconcerned_passerby', '155', 'PrivateAreaMasterPast', '2', '77.577', '3.953', '-1210.66', '-0.518', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('877', '1090384', 'openingstoper_gridania', '166', 'ContentSimpleContent30010', '1', '356.09', '3.74', '-701.62', '-1.41', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('878', '2290005', 'ally_papalymo', '166', 'ContentSimpleContent30010', '1', '365.89', '4.0943', '-706.72', '-0.718', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('879', '2290006', 'ally_yda', '166', 'ContentSimpleContent30010', '1', '365.266', '4.122', '-700.73', '1.5659', '2', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('880', '2201407', 'opening_wolf2', '166', 'ContentSimpleContent30010', '1', '375.377', '4.4', '-700.247', '-1.992', '0', '0', '');
+INSERT INTO `server_spawn_locations` VALUES ('881', '2201407', 'opening_wolf3', '166', 'ContentSimpleContent30010', '1', '375.125', '4.4', '-703.591', '-1.54', '0', '0', '');

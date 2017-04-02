@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 3/7/2017 8:31:56 AM
+Date: 4/2/2017 2:27:44 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -32,11 +32,11 @@ CREATE TABLE `characters` (
   `currentPrivateAreaType` int(10) unsigned DEFAULT '0',
   `destinationZoneId` smallint(5) unsigned DEFAULT '0',
   `destinationSpawnType` tinyint(3) unsigned DEFAULT '0',
-  `guardian` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `birthDay` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `birthMonth` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `initialTown` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `tribe` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `guardian` tinyint(3) unsigned NOT NULL,
+  `birthDay` tinyint(3) unsigned NOT NULL,
+  `birthMonth` tinyint(3) unsigned NOT NULL,
+  `initialTown` tinyint(3) unsigned NOT NULL,
+  `tribe` tinyint(3) unsigned NOT NULL,
   `gcCurrent` tinyint(3) unsigned DEFAULT '0',
   `gcLimsaRank` tinyint(3) unsigned DEFAULT '127',
   `gcGridaniaRank` tinyint(3) unsigned DEFAULT '127',
