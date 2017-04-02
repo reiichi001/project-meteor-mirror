@@ -30,6 +30,7 @@ namespace FFXIVClassic_Map_Server.utils
                 currentActorPropertyPacket.AddTarget();
                 subPackets.Add(currentActorPropertyPacket.BuildPacket(playerActorId, forActor.actorId));
                 currentActorPropertyPacket = new SetActorPropetyPacket(currentTarget);
+                currentActorPropertyPacket.AddProperty(forActor, property);
             }
         }
 

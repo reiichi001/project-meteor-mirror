@@ -147,10 +147,15 @@ namespace FFXIVClassic_Map_Server.lua
 
         private List<LuaParam> CallLuaFunctionNpcForReturn(Player player, Npc target, string funcName, params object[] args)
         {
-            object[] args2 = new object[args.Length + 2];
-            Array.Copy(args, 0, args2, 2, args.Length);
-            args2[0] = player;
-            args2[1] = target;
+            object[] args2 = new object[args.Length + (player == null ? 1 : 2)];
+            Array.Copy(args, 0, args2, (player == null ? 1 : 2), args.Length);
+            if (player != null)
+            {
+                args2[0] = player;
+                args2[1] = target;
+            }
+            else
+                args2[0] = target;
 
             LuaScript parent = null, child = null;
 
@@ -160,8 +165,8 @@ namespace FFXIVClassic_Map_Server.lua
             Area area = target.zone;
             if (area is PrivateArea)
             {
-                if (File.Exists(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", area.zoneName, ((PrivateArea)area).GetPrivateAreaName(), target.className, target.GetUniqueId())))
-                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", area.zoneName, ((PrivateArea)area).GetPrivateAreaName(), target.className, target.GetUniqueId()));
+                if (File.Exists(String.Format("./scripts/unique/{0}/privatearea/{1}_{2}/{3}/{4}.lua", area.zoneName, ((PrivateArea)area).GetPrivateAreaName(), ((PrivateArea)area).GetPrivateAreaType(), target.className, target.GetUniqueId())))
+                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/privatearea/{1}_{2}/{3}/{4}.lua", area.zoneName, ((PrivateArea)area).GetPrivateAreaName(), ((PrivateArea)area).GetPrivateAreaType(), target.className, target.GetUniqueId()));
             }
             else
             {
@@ -190,10 +195,15 @@ namespace FFXIVClassic_Map_Server.lua
 
         private void CallLuaFunctionNpc(Player player, Npc target, string funcName, params object[] args)
         {
-            object[] args2 = new object[args.Length + 2];
-            Array.Copy(args, 0, args2, 2, args.Length);
-            args2[0] = player;
-            args2[1] = target;
+            object[] args2 = new object[args.Length + (player == null ? 1:2)];
+            Array.Copy(args, 0, args2, (player == null ? 1 : 2), args.Length);
+            if (player != null)
+            {
+                args2[0] = player;
+                args2[1] = target;
+            }
+            else
+                args2[0] = target;
 
             LuaScript parent = null, child = null;
 
@@ -203,8 +213,8 @@ namespace FFXIVClassic_Map_Server.lua
             Area area = target.zone;
             if (area is PrivateArea)
             {
-                if (File.Exists(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", area.zoneName, ((PrivateArea)area).GetPrivateAreaName(), target.className, target.GetUniqueId())))
-                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/privatearea/{1}/{2}/{3}.lua", area.zoneName, ((PrivateArea)area).GetPrivateAreaName(), target.className, target.GetUniqueId()));
+                if (File.Exists(String.Format("./scripts/unique/{0}/privatearea/{1}_{2}/{3}/{4}.lua", area.zoneName, ((PrivateArea)area).GetPrivateAreaName(), ((PrivateArea)area).GetPrivateAreaType(), target.className, target.GetUniqueId())))
+                    child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/privatearea/{1}_{2}/{3}/{4}.lua", area.zoneName, ((PrivateArea)area).GetPrivateAreaName(), ((PrivateArea)area).GetPrivateAreaType(), target.className, target.GetUniqueId()));
             }
             else
             {
@@ -214,7 +224,7 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (parent == null && child == null)
             {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+                LuaEngine.SendError(player, String.Format("Could not find script for actor {0}.", target.GetName()));
                 return;
             }
 
@@ -228,8 +238,15 @@ namespace FFXIVClassic_Map_Server.lua
 
             if (coroutine != null)
             {
-                DynValue value = coroutine.Resume(args2);
-                ResolveResume(player, coroutine, value);
+                try
+                {
+                    DynValue value = coroutine.Resume(args2);
+                    ResolveResume(player, coroutine, value);
+                }
+                catch (ScriptRuntimeException e)
+                {
+                    SendError(player, e.DecoratedMessage);
+                }                
             }
         }
 
@@ -252,12 +269,12 @@ namespace FFXIVClassic_Map_Server.lua
                 }
                 else
                 {
-                    SendError(player, String.Format("ERROR: Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
+                    SendError(player, String.Format("Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
                 }
             }
             else
             {
-                SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+                SendError(player, String.Format("Could not find script for actor {0}.", target.GetName()));
             }
             return null;
         }
@@ -288,13 +305,13 @@ namespace FFXIVClassic_Map_Server.lua
                 }
                 else
                 {
-                    SendError(player, String.Format("ERROR: Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
+                    SendError(player, String.Format("Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
                 }
             }
             else
             {
                 if (!(target is Area))
-                    SendError(player, String.Format("ERROR: Could not find script for actor {0}.", target.GetName()));
+                    SendError(player, String.Format("Could not find script for actor {0}.", target.GetName()));
             }            
         }
 
@@ -496,7 +513,7 @@ namespace FFXIVClassic_Map_Server.lua
             }
             catch (SyntaxErrorException e)
             {
-                Program.Log.Error("LUAERROR: {0}.", e.DecoratedMessage);
+                Program.Log.Error("{0}.", e.DecoratedMessage);
                 return null;
             }
             return script;
@@ -521,6 +538,7 @@ namespace FFXIVClassic_Map_Server.lua
 
         private static void SendError(Player player, string message)
         {
+            message = "[LuaError] " + message;
             if (player == null)
                 return;
             List<SubPacket> SendError = new List<SubPacket>();
@@ -531,3 +549,4 @@ namespace FFXIVClassic_Map_Server.lua
         
     }
 }
+ 

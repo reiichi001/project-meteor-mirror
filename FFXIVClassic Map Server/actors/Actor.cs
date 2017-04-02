@@ -68,7 +68,10 @@ namespace FFXIVClassic_Map_Server.Actors
             foreach (EventList.PushCircleEventCondition condition in eventConditions.pushWithCircleEventConditions)
             {
                 if (condition.conditionName.Equals(triggerName))
+                {
                     condition.radius = size;
+                    break;
+                }
             }
         }
 
