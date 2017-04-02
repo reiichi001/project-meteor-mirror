@@ -34,6 +34,7 @@ namespace FFXIVClassic_Map_Server.Actors
             this.positionY = posY;
             this.positionZ = posZ;
             this.rotation = rot;
+            this.currentMainState = actorState;
             this.animationId = animationId;
 
             this.displayNameId = actorClass.displayNameId;
