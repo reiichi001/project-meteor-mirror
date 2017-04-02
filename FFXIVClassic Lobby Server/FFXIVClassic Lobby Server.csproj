@@ -135,7 +135,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(SolutionDir)data\lobby_config.ini" "$(SolutionDir)$(ProjectName)$(OutDir)"</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(SolutionDir)data\lobby_config.ini" "$(SolutionDir)$(ProjectName)\$(OutDir)" /d</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

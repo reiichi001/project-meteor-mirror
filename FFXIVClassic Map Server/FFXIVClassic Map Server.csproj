@@ -295,7 +295,9 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy "$(SolutionDir)data\map_config.ini" "$(SolutionDir)$(ProjectName)$(OutDir)"</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(SolutionDir)data\map_config.ini" "$(SolutionDir)$(ProjectName)\$(OutDir)" /d
+xcopy "$(SolutionDir)data\scripts" "$(SolutionDir)$(ProjectName)\$(OutDir)scripts\" /e /d /y /s
+xcopy "$(SolutionDir)data\staticactors.bin" "$(SolutionDir)$(ProjectName)\$(OutDir)" /d</PostBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
