@@ -34,7 +34,7 @@ CREATE TABLE `server_zones` (
 -- Records 
 -- ----------------------------
 INSERT INTO `server_zones` VALUES ('0', '0', null, '--', '127.0.0.1', '1989', '', '0', '0', '0', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('128', '101', 'sea0Field01', 'Lower La Noscea', '127.0.0.1', '1990', 'ZoneMasterSeaS0', '60', '60', '21', '0', '0', '1', '0', '0');
+INSERT INTO `server_zones` VALUES ('128', '101', 'sea0Field01', 'Lower La Noscea', '127.0.0.1', '1989', 'ZoneMasterSeaS0', '60', '60', '21', '0', '0', '1', '0', '0');
 INSERT INTO `server_zones` VALUES ('129', '101', 'sea0Field02', 'Western La Noscea', '127.0.0.1', '1989', 'ZoneMasterSeaS0', '60', '60', '21', '0', '0', '1', '0', '0');
 INSERT INTO `server_zones` VALUES ('130', '101', 'sea0Field03', 'Eastern La Noscea', '127.0.0.1', '1989', 'ZoneMasterSeaS0', '60', '60', '21', '0', '0', '1', '0', '0');
 INSERT INTO `server_zones` VALUES ('131', '101', 'sea0Dungeon01', 'Mistbeard Cove', '127.0.0.1', '1989', 'ZoneMasterSeaS0', '0', '0', '0', '0', '0', '0', '0', '0');
