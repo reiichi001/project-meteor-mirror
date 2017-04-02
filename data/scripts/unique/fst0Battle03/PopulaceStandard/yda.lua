@@ -36,7 +36,7 @@ function onEventStarted(player, npc, triggerName)
 					player:AddDirector(director);
 					player:SetLoginDirector(director);
 					
-					GetWorldManager():DoZoneChange(player, 10);				
+					GetWorldManager():DoZoneChange(player, 166, "ContentSimpleContent30010", 1, 16, 362.4087, 4, -703.8168, 1.5419);
 					return;
 				else
 					callClientFunction(player, "delegateEvent", player, man0g0Quest, "processEvent000_1", nil, nil, nil);
