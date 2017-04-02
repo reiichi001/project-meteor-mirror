@@ -1,7 +1,7 @@
 local initClassItems, initRaceItems;
 
 function onBeginLogin(player)
-		
+	--[[	
 	--New character, set the initial quest
 	if (player:GetPlayTime(false) == 0) then
 		initialTown = player:GetInitialTown();
@@ -43,7 +43,7 @@ function onBeginLogin(player)
 		player:GetQuest(110009):ClearQuestData();
 		player:GetQuest(110009):ClearQuestFlags();
 	end
-	
+	--]]
 	
 end
 
