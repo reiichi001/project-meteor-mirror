@@ -354,8 +354,77 @@ namespace FFXIVClassic_Map_Server
                 }
             }
         }
+
+        public static void RemoveQuest(Player player, uint questId)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    DELETE FROM characters_quest_scenario 
+                    WHERE characterId = @charaId and questId = @questId                 
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@questId", 0xFFFFF & questId);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void CompleteQuest(Player player, uint questId)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO characters_quest_completed 
+                    (characterId, questId)
+                    VALUES
+                    (@charaId, @questId)
+                    ON DUPLICATE KEY UPDATE characterId=characterId
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@questId", 0xFFFFF & questId);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
         
-        public static bool IsQuestCompleted(Player player, string questId)
+        public static bool IsQuestCompleted(Player player, uint questId)
         {
             bool isCompleted = false;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -366,7 +435,7 @@ namespace FFXIVClassic_Map_Server
                     MySqlCommand cmd = new MySqlCommand("SELECT * FROM characters_quest_completed WHERE characterId = @charaId and questId = @questId", conn);
                     cmd.Parameters.AddWithValue("@charaId", player.actorId);
                     cmd.Parameters.AddWithValue("@questId", questId);
-                    isCompleted = (int)cmd.ExecuteScalar() > 0;
+                    isCompleted = cmd.ExecuteScalar() != null;
                 }
                 catch (MySqlException e)
                 {

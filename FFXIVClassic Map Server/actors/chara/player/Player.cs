@@ -1107,9 +1107,15 @@ namespace FFXIVClassic_Map_Server.Actors
             uint id = actor.actorId;
             if (HasQuest(id))
             {
+                Database.CompleteQuest(playerSession.GetActor(), id);
                 SendGameMessage(Server.GetWorldManager().GetActor(), 25086, 0x20, (object)GetQuest(id).GetQuestId());
                 RemoveQuest(id);
             }
+        }
+
+        public void RemoveQuestByQuestId(uint id)
+        {
+            RemoveQuest((0xA0F00000 | id));
         }
 
         public void RemoveQuest(uint id)
@@ -1120,7 +1126,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     if (questScenario[i] != null && questScenario[i].actorId == id)
                     {
-                        Database.SaveQuest(this, questScenario[i]);
+                        Database.RemoveQuest(this, questScenario[i].actorId);
                         questScenario[i] = null;
                         playerWork.questScenario[i] = 0;
                         SendQuestClientUpdate(i);
@@ -1163,16 +1169,15 @@ namespace FFXIVClassic_Map_Server.Actors
             return CanAcceptQuest(actor.actorName);
         }
 
-        public bool IsQuestCompleted(string id)
+        public bool IsQuestCompleted(string questName)
         {
-            bool isCompleted = Database.IsQuestCompleted(this, id);
-            return isCompleted;
+            Actor actor = Server.GetStaticActors(questName);
+            return IsQuestCompleted(actor.actorId);
         }
 
-        public bool IsQuestCompleted(uint id)
+        public bool IsQuestCompleted(uint questId)
         {
-            Actor actor = Server.GetStaticActors((0xA0F00000 | id));
-            return IsQuestCompleted(actor.actorName);
+            return Database.IsQuestCompleted(this, 0xFFFFF & questId);
         }
 
         public Quest GetQuest(uint id)
