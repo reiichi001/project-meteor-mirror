@@ -128,8 +128,8 @@ namespace FFXIVClassic_Map_Server.Actors
             List<LuaParam> returned = LuaEngine.GetInstance().CallLuaFunctionForReturn(owner, this, "isObjectivesComplete");
             if (returned.Count >= 1 && returned[0].typeID == 3)
             {
-                owner.SendDataPacket("attention", Server.GetWorldManager().GetActor(), "", 25225, GetQuestId());
-                owner.SendGameMessage(owner, Server.GetWorldManager().GetActor(), 25225, 0x20, (object)GetQuestId());	
+                owner.SendDataPacket("attention", Server.GetWorldManager().GetActor(), "", 25225, (object)GetQuestId());
+                owner.SendGameMessage(Server.GetWorldManager().GetActor(), 25225, 0x20, (object)GetQuestId());	
             }
         }
 
