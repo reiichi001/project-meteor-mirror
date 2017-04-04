@@ -13,7 +13,7 @@ function onEventStarted(player, actor, trigger, questId, mapCode)
 	end
 	
 	if (mapCode == nil) then	
-		player:SendDataPacket("requestedData", "qtdata", quest:GetQuestId(), 0);
+		player:SendDataPacket("requestedData", "qtdata", quest:GetQuestId(), quest:GetPhase());
 		player:EndEvent();
 	else
 		player:SendDataPacket("requestedData", "qtmap", quest:GetQuestId());
