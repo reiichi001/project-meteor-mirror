@@ -786,7 +786,8 @@ namespace FFXIVClassic_Map_Server
                         slot,
                         questId,
                         questData,
-                        questFlags
+                        questFlags,
+                        currentPhase
                         FROM characters_quest_scenario WHERE characterId = @charId";
                    
                     cmd = new MySqlCommand(query, conn);
@@ -799,6 +800,7 @@ namespace FFXIVClassic_Map_Server
                             player.playerWork.questScenario[index] = 0xA0F00000 | reader.GetUInt32(1);
                             string questData = null;
                             uint questFlags = 0;
+                            uint currentPhase = 0;
 
                             if (!reader.IsDBNull(2))
                                 questData = reader.GetString(2);
@@ -810,8 +812,11 @@ namespace FFXIVClassic_Map_Server
                             else
                                 questFlags = 0;
 
+                            if (!reader.IsDBNull(4))
+                                currentPhase = reader.GetUInt32(4);
+
                             string questName = Server.GetStaticActors(player.playerWork.questScenario[index]).actorName;
-                            player.questScenario[index] = new Quest(player, player.playerWork.questScenario[index], questName, questData, questFlags);
+                            player.questScenario[index] = new Quest(player, player.playerWork.questScenario[index], questName, questData, questFlags, currentPhase);
                         }
                     }
 

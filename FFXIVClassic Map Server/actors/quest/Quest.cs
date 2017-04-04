@@ -9,7 +9,7 @@ namespace FFXIVClassic_Map_Server.Actors
     class Quest : Actor
     {
         private Player owner;
-        private int currentPhase = 0;
+        private uint currentPhase = 0;
         private uint questFlags = 0;
         private Dictionary<string, Object> questData = new Dictionary<string, object>();
 
@@ -19,7 +19,7 @@ namespace FFXIVClassic_Map_Server.Actors
             actorName = name;            
         }
 
-        public Quest(Player owner, uint actorID, string name, string questDataJson, uint questFlags)
+        public Quest(Player owner, uint actorID, string name, string questDataJson, uint questFlags, uint currentPhase)
             : base(actorID)
         {
             this.owner = owner;
@@ -33,6 +33,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (questData == null)
                 questData = new Dictionary<string, object>();
+
+            this.currentPhase = currentPhase;
         }
        
         public void SetQuestData(string dataName, object data)
@@ -94,12 +96,12 @@ namespace FFXIVClassic_Map_Server.Actors
                 return (questFlags & (1 << bitIndex)) == (1 << bitIndex);
         }
 
-        public int GetPhase()
+        public uint GetPhase()
         {
             return currentPhase;
         }
 
-        public void NextPhase(int phaseNumber)
+        public void NextPhase(uint phaseNumber)
         {
             currentPhase = phaseNumber;
             owner.SendGameMessage(Server.GetWorldManager().GetActor(), 25116, 0x20, (object)GetQuestId());

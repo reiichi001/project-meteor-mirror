@@ -1091,7 +1091,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 return;
 
             playerWork.questScenario[freeSlot] = id;
-            questScenario[freeSlot] = new Quest(this, playerWork.questScenario[freeSlot], name, null, 0);
+            questScenario[freeSlot] = new Quest(this, playerWork.questScenario[freeSlot], name, null, 0, 0);
             Database.SaveQuest(this, questScenario[freeSlot]);
             SendQuestClientUpdate(freeSlot);
 
@@ -1165,7 +1165,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     {
                         Actor actor = Server.GetStaticActors((0xA0F00000 | newId));
                         playerWork.questScenario[i] = (0xA0F00000 | newId);
-                        questScenario[i] = new Quest(this, playerWork.questScenario[i], actor.actorName, null, 0);
+                        questScenario[i] = new Quest(this, playerWork.questScenario[i], actor.actorName, null, 0, 0);
                         Database.SaveQuest(this, questScenario[i]);
                         SendQuestClientUpdate(i);
                         break;
