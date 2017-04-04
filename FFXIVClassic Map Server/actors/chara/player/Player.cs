@@ -894,6 +894,17 @@ namespace FFXIVClassic_Map_Server.Actors
            
         }
 
+        public int GetHighestLevel()
+        {
+            int max = 0;
+            foreach (short level in charaWork.battleSave.skillLevel)
+            {
+                if (level > max)
+                    max = level;
+            }
+            return max;
+        }
+
         public InventoryItem[] GetGearset(ushort classId)
         {
             return Database.GetEquipment(this, classId);
@@ -1111,6 +1122,14 @@ namespace FFXIVClassic_Map_Server.Actors
                 SendGameMessage(Server.GetWorldManager().GetActor(), 25086, 0x20, (object)GetQuest(id).GetQuestId());
                 RemoveQuest(id);
             }
+        }
+
+        //TODO: Add checks for you being in an instance or main scenario
+        public void AbandonQuest(uint id)
+        {
+            Quest quest = GetQuest(id);
+            RemoveQuestByQuestId(id);
+            quest.DoAbandon();       
         }
 
         public void RemoveQuestByQuestId(uint id)

@@ -26,6 +26,7 @@ namespace FFXIVClassic_Map_Server.lua
         const string FILEPATH_COMMANDS = "./scripts/commands/{0}.lua";
         const string FILEPATH_DIRECTORS = "./scripts/directors/{0}.lua";
         const string FILEPATH_NPCS = "./scripts/unique/{0}/{1}/{2}.lua";
+        const string FILEPATH_QUEST = "./scripts/quests/{0}/{1}.lua";
 
         private static LuaEngine mThisEngine;
         private Dictionary<Coroutine, ulong> mSleepingOnTime = new Dictionary<Coroutine, ulong>();
@@ -140,6 +141,12 @@ namespace FFXIVClassic_Map_Server.lua
             else if (target is Area)
             {
                 return String.Format(FILEPATH_ZONE, ((Area)target).zoneName);
+            }
+            else if (target is Quest)
+            {
+                string initial = ((Quest)target).actorName.Substring(0, 3);
+                string questName = ((Quest)target).actorName;
+                return String.Format(FILEPATH_QUEST, initial, questName);
             }
             else
                 return "";
@@ -256,6 +263,16 @@ namespace FFXIVClassic_Map_Server.lua
             if (target is Npc)
                 return CallLuaFunctionNpcForReturn(player, (Npc)target, funcName, args);
 
+            object[] args2 = new object[args.Length + (player == null ? 1 : 2)];
+            Array.Copy(args, 0, args2, (player == null ? 1 : 2), args.Length);
+            if (player != null)
+            {
+                args2[0] = player;
+                args2[1] = target;
+            }
+            else
+                args2[0] = target;
+
             string luaPath = GetScriptPath(target);
             LuaScript script = LoadScript(luaPath);
             if (script != null)
@@ -263,7 +280,7 @@ namespace FFXIVClassic_Map_Server.lua
                 if (!script.Globals.Get(funcName).IsNil())
                 {                    
                     //Run Script
-                    DynValue result = script.Call(script.Globals[funcName], this);                    
+                    DynValue result = script.Call(script.Globals[funcName], args2);                    
                     List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
                     return lparams;
                 }

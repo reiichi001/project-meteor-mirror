@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.lua;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -79,7 +80,7 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 questFlags &= (uint)~(1 << bitIndex);
 
-            //Inform update
+            DoCompletionCheck();
         }
 
         public bool GetQuestFlag(int bitIndex)
@@ -103,6 +104,8 @@ namespace FFXIVClassic_Map_Server.Actors
             currentPhase = phaseNumber;
             owner.SendGameMessage(Server.GetWorldManager().GetActor(), 25116, 0x20, (object)GetQuestId());
             SaveData();
+
+            DoCompletionCheck();
         }
 
         public uint GetQuestFlags()
@@ -118,6 +121,22 @@ namespace FFXIVClassic_Map_Server.Actors
         public void SaveData()
         {
             Database.SaveQuest(owner, this);
+        }
+
+        public void DoCompletionCheck()
+        {
+            List<LuaParam> returned = LuaEngine.GetInstance().CallLuaFunctionForReturn(owner, this, "isObjectivesComplete");
+            if (returned.Count >= 1 && returned[0].typeID == 3)
+            {
+                owner.SendDataPacket("attention", Server.GetWorldManager().GetActor(), "", 25225, GetQuestId());
+                owner.SendGameMessage(owner, Server.GetWorldManager().GetActor(), 25225, 0x20, (object)GetQuestId());	
+            }
+        }
+
+        public void DoAbandon()
+        {
+            List<LuaParam> returned = LuaEngine.GetInstance().CallLuaFunctionForReturn(owner, this, "onAbandonQuest");
+            owner.SendGameMessage(owner, Server.GetWorldManager().GetActor(), 25236, 0x20, (object)GetQuestId());
         }
 
     }
