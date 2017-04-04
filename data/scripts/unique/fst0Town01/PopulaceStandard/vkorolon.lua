@@ -4,8 +4,8 @@ require ("quests/etc/etc5g0")
 function onSpawn(player, npc)
 	
 	if (player:HasQuest("Etc5g0") == true and player:GetQuest("Etc5g0"):GetPhase() == 1) then
-		npc:SetQuestGraphic(player, 0x1);
-	elseif (player:HasQuest("Etc5g0") == false and player:IsQuestCompleted("Etc5g0") == false) then
+		npc:SetQuestGraphic(player, 0x4);
+	elseif (canAcceptQuest(player)) then
 		npc:SetQuestGraphic(player, 0x2);
 	else
 		npc:SetQuestGraphic(player, 0x0);
