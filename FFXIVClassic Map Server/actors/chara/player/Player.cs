@@ -1254,6 +1254,19 @@ namespace FFXIVClassic_Map_Server.Actors
             return -1;
         }
 
+        public void SetNpcLS(uint npcLSId, bool isCalling, bool isExtra)
+        {
+            playerWork.npcLinkshellChatExtra[npcLSId] = isExtra;
+            playerWork.npcLinkshellChatCalling[npcLSId] = isCalling;
+
+            Database.SaveNpcLS(this, npcLSId, isCalling, isExtra);
+
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("playerWork/npcLinkshellChat", this, actorId);
+            propPacketUtil.AddProperty(String.Format("playerWork.npcLinkshellChatExtra[{0}]", npcLSId));
+            propPacketUtil.AddProperty(String.Format("playerWork.npcLinkshellChatCalling[{0}]", npcLSId));
+            QueuePackets(propPacketUtil.Done());
+        }
+
         private void SendQuestClientUpdate(int slot)
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("playerWork/journal", this, actorId);

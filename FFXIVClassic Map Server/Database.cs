@@ -1385,6 +1385,45 @@ namespace FFXIVClassic_Map_Server
             return success;
         }
 
+
+        public static void SaveNpcLS(Player player, uint npcLSId, bool isCalling, bool isExtra)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO characters_npclinkshell 
+                    (characterId, npcLinkshellId, isCalling, isExtra)
+                    VALUES
+                    (@charaId, @lsId, @calling, @extra)
+                    ON DUPLICATE KEY UPDATE
+                    characterId = @charaId, npcLinkshellId = @lsId, isCalling = @calling, isExtra = @extra
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@lsId", npcLSId);
+                    cmd.Parameters.AddWithValue("@calling", isCalling ? 1 : 0);
+                    cmd.Parameters.AddWithValue("@extra", isExtra ? 1 : 0);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
     }
 
 }
