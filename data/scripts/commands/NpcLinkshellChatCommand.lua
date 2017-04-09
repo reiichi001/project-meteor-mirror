@@ -14,7 +14,7 @@ to hit some ID, add "nils".
 local function handleAdventurersGuild(player)
 	if (player:HasQuest(110006) == true) then
 		local man0g1Quest = player:GetQuest("Man0g1");		
-		player:SendGameMessage(man0g1Quest, 330, 39, 1300018);
+		player:SendGameMessage(man0g1Quest, 330, 39, 1300018, nil);
 	end
 end
 
