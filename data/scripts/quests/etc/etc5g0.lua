@@ -2,7 +2,7 @@
 TALKED_PFARAHR = 0;
 
 function canAcceptQuest(player)
-	return (player:HasQuest("etc5g0") == false and player:GetHighestLevel() >= 1);
+	return (player:HasQuest("etc5g0") == false and player:IsQuestCompleted("Etc5g0") == false and player:GetHighestLevel() >= 1);
 end
 
 function isObjectivesComplete(player, quest)

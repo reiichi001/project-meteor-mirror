@@ -53,7 +53,7 @@ function onTrigger(player, argc, p1, p2, p3, p4, privateArea, name, lastName)
             local z = tonumber(applyPositionOffset(p3, player_z)) or player_z;
             
             player:SendMessage(messageID, sender, string.format("setting coordinates X:%d Y:%d Z:%d within current zone (%d)", x, y, z, player_zone));
-            worldManager:DoPlayerMoveInZone(player, x, y, z, 0x0F);
+            worldManager:DoPlayerMoveInZone(player, x, y, z, player_rot, 0x00);
         else
             local zone = tonumber(applyPositionOffset(p1, player_zone)) or player_zone;
             local x = tonumber(applyPositionOffset(p2, player_x)) or player_x;
