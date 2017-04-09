@@ -73,6 +73,11 @@ namespace FFXIVClassic_Map_Server.Actors
         public const int TIMER_RETURN = 18;
         public const int TIMER_SKIRMISH = 19;
 
+        public const int NPCLS_GONE     = 0;
+        public const int NPCLS_INACTIVE = 1;
+        public const int NPCLS_ACTIVE   = 2;
+        public const int NPCLS_ALERT    = 3;
+
         public static int[] MAXEXP = {570, 700, 880, 1100, 1500, 1800, 2300, 3200, 4300, 5000,                   //Level <= 10
                                      5900, 6800, 7700, 8700, 9700, 11000, 12000, 13000, 15000, 16000,            //Level <= 20
                                      20000, 22000, 23000, 25000, 27000, 29000, 31000, 33000, 35000, 38000,       //Level <= 30
@@ -1254,8 +1259,36 @@ namespace FFXIVClassic_Map_Server.Actors
             return -1;
         }
 
-        public void SetNpcLS(uint npcLSId, bool isCalling, bool isExtra)
-        {
+        public void SetNpcLS(uint npcLSId, uint state)
+        {            
+            bool isCalling, isExtra;
+            isCalling = isExtra = false;
+
+            switch (state)
+            {
+                case NPCLS_INACTIVE:
+
+                    if (playerWork.npcLinkshellChatExtra[npcLSId] == true && playerWork.npcLinkshellChatCalling[npcLSId] == false)
+                        return;
+
+                    isExtra = true;
+                    break;
+                case NPCLS_ACTIVE:
+
+                    if (playerWork.npcLinkshellChatExtra[npcLSId] == false && playerWork.npcLinkshellChatCalling[npcLSId] == true)
+                        return;
+
+                    isCalling = true;
+                    break;
+                case NPCLS_ALERT:
+
+                    if (playerWork.npcLinkshellChatExtra[npcLSId] == true && playerWork.npcLinkshellChatCalling[npcLSId] == true)
+                        return;
+
+                    isExtra = isCalling = true;
+                    break;
+            }
+
             playerWork.npcLinkshellChatExtra[npcLSId] = isExtra;
             playerWork.npcLinkshellChatCalling[npcLSId] = isCalling;
 
