@@ -11,6 +11,13 @@ end
 
 function onEventStarted(player, actor, triggerName)	
 
+	contentGroup = GetWorldManager():CreateContentGroup(actor);
+	contentGroup:AddMember(director);
+	contentGroup:AddMember(GetWorldManager():GetActorInWorldByUniqueId("opening_jelly"));
+	contentGroup:AddMember(GetWorldManager():GetActorInWorldByUniqueId("opening_yshtola"));
+	contentGroup:AddMember(GetWorldManager():GetActorInWorldByUniqueId("opening_stahlmann"));
+	contentGroup:AddMember(player);
+
 	man0l0Quest = player:GetQuest("Man0l0");
 	startTutorialMode(player);
 	callClientFunction(player, "delegateEvent", player, man0l0Quest, "processTtrBtl001", nil, nil, nil);
