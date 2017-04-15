@@ -45,12 +45,7 @@ namespace FFXIVClassic_Map_Server.Actors
         protected List<Actor>[,] mActorBlock;
 
         LuaScript areaScript;
-
-        //Content Groups
-        public Dictionary<ulong, Group> mContentGroups = new Dictionary<ulong, Group>();
-        private Object groupLock = new Object();
-        public ulong groupIndexId = 0;
-
+        
         public Area(uint id, string zoneName, ushort regionId, string className, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
             : base(id)
         {
@@ -293,7 +288,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         #endregion
 
-        public Actor FindActorInZone(uint id)
+        public Actor FindActorInArea(uint id)
         {
             if (!mActorList.ContainsKey(id))
                 return null;
@@ -388,6 +383,29 @@ namespace FFXIVClassic_Map_Server.Actors
             AddActorToZone(npc);                          
         }
 
+        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0)
+        {
+            ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+
+            if (actorClass == null)
+                return null;
+
+            uint zoneId;
+
+            if (this is PrivateArea)
+                zoneId = ((PrivateArea)this).GetParentZone().actorId;
+            else
+                zoneId = actorId;
+
+            Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
+
+            npc.LoadEventConditions(actorClass.eventConditions);
+
+            AddActorToZone(npc);
+
+            return npc;
+        }
+
         public Director GetWeatherDirector()
         {
             return mWeatherDirector;
@@ -412,32 +430,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     }
                 }
             }
-        }
-
-        public void CreateContentGroup(uint[] initialMembers)
-        {
-            lock (groupLock)
-            {
-                ContentGroup contentGroup = new ContentGroup(groupIndexId, initialMembers == null ? new uint[0] : initialMembers);
-                mContentGroups.Add(groupIndexId, contentGroup);
-                groupIndexId++;
-                if (initialMembers != null && initialMembers.Length != 0)                
-                    contentGroup.SendAll();                
-            }
-        }
-
-        public void DeleteContentGroup(ulong groupId)
-        {
-            lock (groupLock)
-            {
-                if (mContentGroups.ContainsKey(groupId) && mContentGroups[groupId] is ContentGroup)
-                {
-                    ContentGroup group = (ContentGroup) mContentGroups[groupId];
-                    group.SendDeletePackets();
-                    mContentGroups.Remove(groupId);
-                }
-            }
-        }
+        }                
 
         public Director CreateDirector(string path)
         {
@@ -481,5 +474,6 @@ namespace FFXIVClassic_Map_Server.Actors
                     a.Update(deltaTime);
             }
         }
+
     }
 }

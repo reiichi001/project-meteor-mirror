@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.packets.send.group
 {
-    class GroupMembersX08Packet
+    class ContentMembersX08Packet
     {
-        public const ushort OPCODE = 0x017F;
+        public const ushort OPCODE = 0x0183;
         public const uint PACKET_SIZE = 0x1B8;
 
         public static SubPacket buildPacket(uint playerActorID, uint locationCode, ulong sequenceId, List<GroupMember> entries, ref int offset)
@@ -30,21 +30,17 @@ namespace FFXIVClassic_Map_Server.packets.send.group
                         max = entries.Count - offset;
                     for (int i = 0; i < max; i++)
                     {
-                        binWriter.Seek(0x10 + (0x30 * i), SeekOrigin.Begin);
+                        binWriter.Seek(0x10 + (0xC * i), SeekOrigin.Begin);
 
                         GroupMember entry = entries[i];
                         binWriter.Write((UInt32)entry.actorId);
-                        binWriter.Write((Int32)entry.localizedName);
-                        binWriter.Write((UInt32)entry.unknown2);
-                        binWriter.Write((Byte)(entry.flag1? 1 : 0));
-                        binWriter.Write((Byte)(entry.isOnline? 1 : 0));
-
-                        binWriter.Write(Encoding.ASCII.GetBytes(entry.name), 0, Encoding.ASCII.GetByteCount(entry.name) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(entry.name));
+                        binWriter.Write((UInt32)1001); //Layout ID
+                        binWriter.Write((UInt32)1); //?
 
                         offset++;
                     }
                     //Write Count
-                    binWriter.Seek(0x10 + (0x30 * 8), SeekOrigin.Begin);
+                    binWriter.Seek(0x10 + (0xC * 8), SeekOrigin.Begin);
                     binWriter.Write(max);
                 }
             }

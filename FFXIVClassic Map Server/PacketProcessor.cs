@@ -182,7 +182,7 @@ namespace FFXIVClassic_Map_Server
                         if (ownerActor == null)
                         {
                             //Is it a instance actor?
-                            ownerActor = session.GetActor().zone.FindActorInZone(session.GetActor().currentEventOwner);
+                            ownerActor = session.GetActor().zone.FindActorInArea(session.GetActor().currentEventOwner);
                             if (ownerActor == null)
                             {
                                 //Is it a Director?
@@ -238,7 +238,7 @@ namespace FFXIVClassic_Map_Server
                     //Group Created Confirm
                     case 0x0133:
                         GroupCreatedPacket groupCreated = new GroupCreatedPacket(subpacket.data);
-
+                        Server.GetWorldManager().SendGroupInit(session, groupCreated.groupId);
                         break;
                     /* RECRUITMENT */
                     //Start Recruiting

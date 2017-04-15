@@ -18,7 +18,7 @@ namespace FFXIVClassic_Map_Server.packets.send.group
             this.unknown2 = unknown2;
             this.flag1 = flag1;
             this.isOnline = isOnline;
-            this.name = name;
+            this.name = name == null ? "" : name;
         }
     }
 }

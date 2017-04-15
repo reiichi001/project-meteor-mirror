@@ -115,7 +115,7 @@ namespace FFXIVClassic_Map_Server.actors.group
             }
         }
 
-        public void SendGroupPackets(Session session)
+        public virtual void SendGroupPackets(Session session)
         {
             ulong time = Utils.MilisUnixTimeStampUTC();
             List<GroupMember> members = BuildMemberList(session.id);

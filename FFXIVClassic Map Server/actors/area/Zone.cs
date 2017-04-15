@@ -16,7 +16,7 @@ namespace FFXIVClassic_Map_Server.actors.area
     class Zone : Area
     {        
         Dictionary<string, Dictionary<uint, PrivateArea>> privateAreas = new Dictionary<string, Dictionary<uint, PrivateArea>>();
-        Dictionary<string, List<PrivateArea>> instancedPrivateAreas = new Dictionary<string, List<PrivateArea>>();
+        Dictionary<string, List<PrivateAreaContent>> contentAreas = new Dictionary<string, List<PrivateAreaContent>>();
 
         public Zone(uint id, string zoneName, ushort regionId, string className, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
             : base(id, zoneName, regionId, className, bgmDay, bgmNight, bgmBattle, isIsolated, isInn, canRideChocobo, canStealth, isInstanceRaid)
@@ -93,5 +93,28 @@ namespace FFXIVClassic_Map_Server.actors.area
             }
         }
 
+        public Actor FindActorInZone(uint id)
+        {
+            if (!mActorList.ContainsKey(id))
+            {
+                foreach(Dictionary<uint, PrivateArea> paList in privateAreas.Values)
+                {
+                    foreach(PrivateArea pa in paList.Values)
+                    {
+                        Actor actor = pa.FindActorInArea(id);
+                        if (actor != null)
+                            return actor;
+                    }
+                }
+                return null;
+            }
+            else
+                return mActorList[id];
+        }
+
+        public void CreateContentArea()
+        {
+
+        }
     }
 }

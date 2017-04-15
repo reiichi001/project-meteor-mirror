@@ -36,12 +36,15 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<uint, ActorClass> actorClasses = new Dictionary<uint,ActorClass>();
         private Dictionary<ulong, Party> currentPlayerParties = new Dictionary<ulong, Party>(); //GroupId, Party object
 
-        private Object groupLock = new Object();
-
         private Server mServer;
 
         private const int MILIS_LOOPTIME = 10;
         private Timer mZoneTimer;
+
+        //Content Groups
+        public Dictionary<ulong, Group> mContentGroups = new Dictionary<ulong, Group>();
+        private Object groupLock = new Object();
+        public ulong groupIndexId = 1;
 
         public WorldManager(Server server)
         {
@@ -693,6 +696,68 @@ namespace FFXIVClassic_Map_Server
             //LoadNPCs(zone.actorId);
 
         }
+
+        public ContentGroup CreateContentGroup(Director director)
+        {
+            return CreateContentGroup(director, null);
+        }
+
+        public ContentGroup CreateContentGroup(Director director, params Actor[] actors)
+        {
+            if (director == null)
+                return null;
+
+            lock (groupLock)
+            {
+                uint[] initialMembers = null;
+
+                if (actors != null)
+                {
+                    initialMembers = new uint[actors.Length];
+                    for (int i = 0; i < actors.Length; i++)
+                        initialMembers[i] = actors[i].actorId;
+                }
+
+                groupIndexId = groupIndexId | 0x3000000000000000;
+
+                ContentGroup contentGroup = new ContentGroup(groupIndexId, director, initialMembers);
+                mContentGroups.Add(groupIndexId, contentGroup);
+                groupIndexId++;
+                if (initialMembers != null && initialMembers.Length != 0)
+                    contentGroup.SendAll();
+
+                return contentGroup;
+            }
+        }
+
+        public void DeleteContentGroup(ulong groupId)
+        {
+            lock (groupLock)
+            {
+                if (mContentGroups.ContainsKey(groupId) && mContentGroups[groupId] is ContentGroup)
+                {
+                    ContentGroup group = (ContentGroup)mContentGroups[groupId];
+                    group.SendDeletePackets();
+                    mContentGroups.Remove(groupId);
+                }
+            }
+        }
+
+        public void CreateContentArea(String scriptPath)
+        {
+            LuaScript script = LuaEngine.LoadScript(scriptPath);
+        
+        }
+
+        public bool SendGroupInit(Session session, ulong groupId)
+        {
+            if (mContentGroups.ContainsKey(groupId))
+            {
+                mContentGroups[groupId].SendInitWorkValues(session);
+                return true;
+            }
+            return false;
+        }
         
         public void RequestWorldLinkshellCreate(Player player, string name, ushort crest)
         {
@@ -857,7 +922,7 @@ namespace FFXIVClassic_Map_Server
             {
                 Actor a = zone.FindActorInZone(charId);
                 if (a != null)
-                    return a;
+                    return a;                
             }
             return null;
         }

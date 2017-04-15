@@ -76,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="actors\area\PrivateArea.cs" />
+    <Compile Include="actors\area\PrivateAreaContent.cs" />
     <Compile Include="actors\area\SpawnLocation.cs" />
     <Compile Include="actors\area\Zone.cs" />
     <Compile Include="actors\chara\npc\ActorClass.cs" />
@@ -88,11 +89,12 @@
     <Compile Include="actors\director\Director.cs" />
     <Compile Include="actors\EventList.cs" />
     <Compile Include="actors\group\ContentGroup.cs" />
+    <Compile Include="actors\group\Work\ContentGroupWork.cs" />
+    <Compile Include="actors\group\Work\GlobalTemp.cs" />
     <Compile Include="actors\group\Group.cs" />
     <Compile Include="actors\group\MonsterParty.cs" />
     <Compile Include="actors\group\Party.cs" />
     <Compile Include="actors\group\Relation.cs" />
-    <Compile Include="actors\group\Work\ContentWork.cs" />
     <Compile Include="actors\group\Work\GroupGlobalSave.cs" />
     <Compile Include="actors\group\Work\GroupGlobalTemp.cs" />
     <Compile Include="actors\group\Work\GroupMemberSave.cs" />
@@ -209,9 +211,13 @@
     <Compile Include="packets\send\groups\GroupMember.cs" />
     <Compile Include="packets\send\groups\GroupMembersBeginPacket.cs" />
     <Compile Include="packets\send\groups\GroupMembersEndPacket.cs" />
+    <Compile Include="packets\send\groups\ContentMembersX08Packet.cs" />
     <Compile Include="packets\send\groups\GroupMembersX08Packet.cs" />
+    <Compile Include="packets\send\groups\ContentMembersX16Packet.cs" />
     <Compile Include="packets\send\groups\GroupMembersX16Packet.cs" />
+    <Compile Include="packets\send\groups\ContentMembersX32Packet.cs" />
     <Compile Include="packets\send\groups\GroupMembersX32Packet.cs" />
+    <Compile Include="packets\send\groups\ContentMembersX64Packet.cs" />
     <Compile Include="packets\send\groups\GroupMembersX64Packet.cs" />
     <Compile Include="packets\send\groups\SynchGroupWorkValuesPacket.cs" />
     <Compile Include="packets\send\player\InfoRequestResponsePacket.cs" />

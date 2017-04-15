@@ -3,6 +3,7 @@ using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.utils;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -86,6 +87,18 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             player.QueuePacket(SetActorQuestGraphicPacket.BuildPacket(player.actorId, actorId, graphicNum));
         }
+
+        public void SetCurrentContentGroup(uint groupType, Player player = null)
+        {
+            charaWork.currentContentGroup = groupType;
+
+            if (player != null)
+            {
+                ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this, actorId);
+                propPacketUtil.AddProperty("charaWork.currentContentGroup");
+                player.QueuePackets(propPacketUtil.Done());
+            }
+        }        
 
     }
 

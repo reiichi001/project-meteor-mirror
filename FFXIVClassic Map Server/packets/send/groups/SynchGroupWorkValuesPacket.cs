@@ -108,7 +108,7 @@ namespace FFXIVClassic_Map_Server.packets.send.groups
             string[] split = name.Split('.');
             int arrayIndex = 0;
 
-            if (!(split[0].Equals("work") || split[0].Equals("partyGroupWork")))
+            if (!(split[0].Equals("work") || split[0].Equals("partyGroupWork") || split[0].Equals("contentGroupWork")))
                 return;
 
             Object curObj = group;

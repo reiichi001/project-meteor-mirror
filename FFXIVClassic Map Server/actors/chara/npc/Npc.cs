@@ -206,6 +206,9 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this, playerActorId);
 
+            //Potential
+            propPacketUtil.AddProperty("charaWork.battleSave.potencial");
+
             //Properties
             for (int i = 0; i < charaWork.property.Length; i++)
             {

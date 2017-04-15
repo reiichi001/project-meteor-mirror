@@ -552,7 +552,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 director.GetSpawnPackets(actorId).DebugPrintPacket();
                 QueuePacket(director.GetSpawnPackets(actorId));
                 QueuePacket(director.GetInitPackets(actorId));
-                //QueuePacket(director.GetSetEventStatusPackets(actorId));
             }        
 
         }
@@ -634,7 +633,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void ChangeAnimation(uint animId)
         {
-            Actor a = zone.FindActorInZone(currentTarget);
+            Actor a = zone.FindActorInArea(currentTarget);
             if (a is Npc)
                 ((Npc)a).animationId = animId;
         }
@@ -1321,6 +1320,13 @@ namespace FFXIVClassic_Map_Server.Actors
                 director.AddChild(this);
                 //QueuePacket(director.GetSetEventStatusPackets(actorId));
             }
+        }
+
+        public void SendDirectorPackets(Director director)
+        {
+            director.GetSpawnPackets(actorId).DebugPrintPacket();
+            QueuePacket(director.GetSpawnPackets(actorId));
+            QueuePacket(director.GetInitPackets(actorId));        
         }
 
         public void RemoveDirector(Director director)
