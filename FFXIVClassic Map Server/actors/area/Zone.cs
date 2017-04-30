@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic_Map_Server.actors.director;
 
 namespace FFXIVClassic_Map_Server.actors.area
 {
@@ -17,9 +18,10 @@ namespace FFXIVClassic_Map_Server.actors.area
     {        
         Dictionary<string, Dictionary<uint, PrivateArea>> privateAreas = new Dictionary<string, Dictionary<uint, PrivateArea>>();
         Dictionary<string, List<PrivateAreaContent>> contentAreas = new Dictionary<string, List<PrivateAreaContent>>();
+        Object contentAreasLock = new Object();
 
-        public Zone(uint id, string zoneName, ushort regionId, string className, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
-            : base(id, zoneName, regionId, className, bgmDay, bgmNight, bgmBattle, isIsolated, isInn, canRideChocobo, canStealth, isInstanceRaid)
+        public Zone(uint id, string zoneName, ushort regionId, string classPath, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
+            : base(id, zoneName, regionId, classPath, bgmDay, bgmNight, bgmBattle, isIsolated, isInn, canRideChocobo, canStealth, isInstanceRaid)
         {
 
         }
@@ -54,7 +56,7 @@ namespace FFXIVClassic_Map_Server.actors.area
             bool isEntranceDesion = false;
 
             List<LuaParam> lParams;
-            lParams = LuaUtils.CreateLuaParamList("/Area/Zone/" + className, false, true, zoneName, "", -1, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, true, isInstanceRaid, isEntranceDesion);
+            lParams = LuaUtils.CreateLuaParamList(classPath, false, true, zoneName, "", -1, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, true, isInstanceRaid, isEntranceDesion);
             return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);        
         }
 
@@ -112,9 +114,30 @@ namespace FFXIVClassic_Map_Server.actors.area
                 return mActorList[id];
         }
 
-        public void CreateContentArea()
+        public PrivateAreaContent CreateContentArea(Player starterPlayer, string areaClassPath, string contentScript, string areaName, string directorName)
         {
+            lock (contentAreasLock)
+            {
+                Director director = CreateDirector(directorName);
 
+                if (director == null)
+                    return null;
+
+                if (!contentAreas.ContainsKey(areaName))
+                    contentAreas.Add(areaName, new List<PrivateAreaContent>());
+                PrivateAreaContent contentArea = new PrivateAreaContent(this, classPath, areaName, 1, director, starterPlayer);                
+                contentAreas[areaName].Add(contentArea);
+                return contentArea;
+            }
         }
+
+        public void DeleteContentArea(PrivateAreaContent area)
+        {
+            if (contentAreas.ContainsKey(area.GetPrivateAreaName()))
+            {
+                contentAreas[area.GetPrivateAreaName()].Remove(area);
+            }
+        }
+
     }
 }

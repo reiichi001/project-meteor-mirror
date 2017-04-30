@@ -45,8 +45,8 @@ namespace FFXIVClassic_Map_Server.Actors
         protected List<Actor>[,] mActorBlock;
 
         LuaScript areaScript;
-        
-        public Area(uint id, string zoneName, ushort regionId, string className, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
+
+        public Area(uint id, string zoneName, ushort regionId, string classPath, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
             : base(id)
         {
 
@@ -66,7 +66,8 @@ namespace FFXIVClassic_Map_Server.Actors
             this.customDisplayName = "_areaMaster";
             this.actorName = String.Format("_areaMaster@{0:X5}",id<<8);
 
-            this.className = className;
+            this.classPath = classPath;
+            this.className = classPath.Substring(classPath.LastIndexOf("/") + 1);
 
             numXBlocks = (maxX - minX) / boundingGridSize;
             numYBlocks = (maxY - minY) / boundingGridSize;

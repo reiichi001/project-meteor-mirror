@@ -70,17 +70,17 @@ namespace FFXIVClassic_Map_Server.actors.director
 
         public void OnTalkEvent(Player player, Npc npc)
         {
-            LuaEngine.GetInstance().CallLuaFunction(player, this, "onTalkEvent", npc);
+            LuaEngine.GetInstance().CallLuaFunction(player, this, "onTalkEvent", false, npc);
         }
 
         public void OnCommandEvent(Player player, Command command)
         {
-            LuaEngine.GetInstance().CallLuaFunction(player, this, "onCommandEvent", command);
+            LuaEngine.GetInstance().CallLuaFunction(player, this, "onCommandEvent", false, command);
         }        
 
         public void DoActorInit(string directorPath)
         {
-            List<LuaParam> lparams = LuaEngine.GetInstance().CallLuaFunctionForReturn(null, this, "init");            
+            List<LuaParam> lparams = LuaEngine.GetInstance().CallLuaFunctionForReturn(null, this, "init", false);            
             
             if (lparams.Count == 1 && lparams[0].value is string)
             {

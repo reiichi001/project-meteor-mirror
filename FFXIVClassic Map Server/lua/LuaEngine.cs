@@ -23,6 +23,7 @@ namespace FFXIVClassic_Map_Server.lua
     {
         const string FILEPATH_PLAYER = "./scripts/player.lua";
         const string FILEPATH_ZONE = "./scripts/unique/{0}/zone.lua";
+        const string FILEPATH_CONTENT = "./scripts/content/{0}.lua";
         const string FILEPATH_COMMANDS = "./scripts/commands/{0}.lua";
         const string FILEPATH_DIRECTORS = "./scripts/directors/{0}.lua";
         const string FILEPATH_NPCS = "./scripts/unique/{0}/{1}/{2}.lua";
@@ -138,6 +139,10 @@ namespace FFXIVClassic_Map_Server.lua
             {
                 return String.Format(FILEPATH_DIRECTORS, ((Director)target).GetScriptPath());
             }
+            else if (target is PrivateAreaContent)
+            {
+                return String.Format(FILEPATH_CONTENT, ((PrivateAreaContent)target).GetPrivateAreaName());
+            }
             else if (target is Area)
             {
                 return String.Format(FILEPATH_ZONE, ((Area)target).zoneName);
@@ -152,7 +157,7 @@ namespace FFXIVClassic_Map_Server.lua
                 return "";
         }
 
-        private List<LuaParam> CallLuaFunctionNpcForReturn(Player player, Npc target, string funcName, params object[] args)
+        private List<LuaParam> CallLuaFunctionNpcForReturn(Player player, Npc target, string funcName, bool optional, params object[] args)
         {
             object[] args2 = new object[args.Length + (player == null ? 1 : 2)];
             Array.Copy(args, 0, args2, (player == null ? 1 : 2), args.Length);
@@ -200,7 +205,7 @@ namespace FFXIVClassic_Map_Server.lua
             return lparams;
         }
 
-        private void CallLuaFunctionNpc(Player player, Npc target, string funcName, params object[] args)
+        private void CallLuaFunctionNpc(Player player, Npc target, string funcName, bool optional, params object[] args)
         {
             object[] args2 = new object[args.Length + (player == null ? 1:2)];
             Array.Copy(args, 0, args2, (player == null ? 1 : 2), args.Length);
@@ -257,11 +262,11 @@ namespace FFXIVClassic_Map_Server.lua
             }
         }
 
-        public List<LuaParam> CallLuaFunctionForReturn(Player player, Actor target, string funcName, params object[] args)
+        public List<LuaParam> CallLuaFunctionForReturn(Player player, Actor target, string funcName, bool optional, params object[] args)
         {
             //Need a seperate case for NPCs cause that child/parent thing.
             if (target is Npc)
-                return CallLuaFunctionNpcForReturn(player, (Npc)target, funcName, args);
+                return CallLuaFunctionNpcForReturn(player, (Npc)target, funcName, optional, args);
 
             object[] args2 = new object[args.Length + (player == null ? 1 : 2)];
             Array.Copy(args, 0, args2, (player == null ? 1 : 2), args.Length);
@@ -286,22 +291,41 @@ namespace FFXIVClassic_Map_Server.lua
                 }
                 else
                 {
-                    SendError(player, String.Format("Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
+                    if (!optional)
+                        SendError(player, String.Format("Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
                 }
             }
             else
             {
-                SendError(player, String.Format("Could not find script for actor {0}.", target.GetName()));
+                if (!optional)
+                    SendError(player, String.Format("Could not find script for actor {0}.", target.GetName()));
             }
             return null;
         }
 
-        public void CallLuaFunction(Player player, Actor target, string funcName, params object[] args)
+        public List<LuaParam> CallLuaFunctionForReturn(string path, string funcName, bool optional, params object[] args)
+        {
+            string luaPath = path;
+            LuaScript script = LoadScript(luaPath);
+            if (script != null)
+            {
+                if (!script.Globals.Get(funcName).IsNil())
+                {
+                    //Run Script
+                    DynValue result = script.Call(script.Globals[funcName], args);
+                    List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
+                    return lparams;
+                }               
+            }
+            return null;
+        }
+
+        public void CallLuaFunction(Player player, Actor target, string funcName, bool optional, params object[] args)
         {
             //Need a seperate case for NPCs cause that child/parent thing.
             if (target is Npc)
             {
-                CallLuaFunctionNpc(player, (Npc)target, funcName, args);
+                CallLuaFunctionNpc(player, (Npc)target, funcName, optional, args);
                 return;
             }
 
@@ -322,12 +346,13 @@ namespace FFXIVClassic_Map_Server.lua
                 }
                 else
                 {
-                    SendError(player, String.Format("Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
+                    if (!optional)
+                        SendError(player, String.Format("Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
                 }
             }
             else
             {
-                if (!(target is Area))
+                if (!(target is Area) && !optional)
                     SendError(player, String.Format("Could not find script for actor {0}.", target.GetName()));
             }            
         }
@@ -344,7 +369,7 @@ namespace FFXIVClassic_Map_Server.lua
                 ResolveResume(null, coroutine, value);
             }
             else                
-                CallLuaFunction(player, target, "onEventStarted", LuaUtils.CreateLuaParamObjectList(lparams));
+                CallLuaFunction(player, target, "onEventStarted", false, LuaUtils.CreateLuaParamObjectList(lparams));
         }
 
         private DynValue ResolveResume(Player player, Coroutine coroutine, DynValue value)

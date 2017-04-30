@@ -83,7 +83,7 @@ namespace FFXIVClassic_Map_Server.Actors
             List<LuaParam> lParams;
 
             Player player = Server.GetWorldManager().GetPCInWorld(playerActorId);
-            lParams = LuaEngine.GetInstance().CallLuaFunctionForReturn(player, this, "init");
+            lParams = LuaEngine.GetInstance().CallLuaFunctionForReturn(player, this, "init", false);
 
             if (uniqueIdentifier.Equals("1"))
             {
@@ -381,12 +381,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void DoOnActorSpawn(Player player)
         {
-            LuaEngine.GetInstance().CallLuaFunction(player, this, "onSpawn");           
+            LuaEngine.GetInstance().CallLuaFunction(player, this, "onSpawn", true);           
         }
 
         public void Update(double deltaTime)
         {
-            LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", deltaTime);         
+            LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, deltaTime);         
         }
 
         //A party member list packet came, set the party

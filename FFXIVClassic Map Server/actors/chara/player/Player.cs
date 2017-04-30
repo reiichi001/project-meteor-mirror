@@ -552,7 +552,10 @@ namespace FFXIVClassic_Map_Server.Actors
                 director.GetSpawnPackets(actorId).DebugPrintPacket();
                 QueuePacket(director.GetSpawnPackets(actorId));
                 QueuePacket(director.GetInitPackets(actorId));
-            }        
+            }
+
+            if (currentContentGroup != null)
+                currentContentGroup.SendGroupPackets(playerSession);
 
         }
 
@@ -1526,7 +1529,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void Update(double delta)
         {
-            LuaEngine.GetInstance().CallLuaFunction(this, this, "OnUpdate", delta);
+            LuaEngine.GetInstance().CallLuaFunction(this, this, "OnUpdate", true, delta);
         }
 
     }

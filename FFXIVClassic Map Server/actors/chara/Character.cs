@@ -54,6 +54,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public CharaWork charaWork = new CharaWork();
 
         public Group currentParty = null;
+        public ContentGroup currentContentGroup = null;
 
         public Character(uint actorID) : base(actorID)
         {            
@@ -88,9 +89,14 @@ namespace FFXIVClassic_Map_Server.Actors
             player.QueuePacket(SetActorQuestGraphicPacket.BuildPacket(player.actorId, actorId, graphicNum));
         }
 
-        public void SetCurrentContentGroup(uint groupType, Player player = null)
+        public void SetCurrentContentGroup(ContentGroup group, Player player = null)
         {
-            charaWork.currentContentGroup = groupType;
+            if (group != null)
+                charaWork.currentContentGroup = group.GetTypeId();
+            else
+                charaWork.currentContentGroup = 0;
+
+            currentContentGroup = group;
 
             if (player != null)
             {

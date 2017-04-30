@@ -68,7 +68,7 @@ namespace FFXIVClassic_Map_Server
                                     id,
                                     zoneName,
                                     regionId,
-                                    className,
+                                    classPath,
                                     dayMusic,
                                     nightMusic,
                                     battleMusic,
@@ -450,7 +450,7 @@ namespace FFXIVClassic_Map_Server
 
             player.SendMessage(0x20, "", "Doing Seamless Zone Change");
 
-            LuaEngine.GetInstance().CallLuaFunction(player, newZone, "onZoneIn");
+            LuaEngine.GetInstance().CallLuaFunction(player, newZone, "onZoneIn", true);
         }
 
         //Adds a second zone to pull actors from. Used for an improved seamless zone change.
@@ -470,7 +470,7 @@ namespace FFXIVClassic_Map_Server
 
             player.SendMessage(0x20, "", "Merging Zones");
 
-            LuaEngine.GetInstance().CallLuaFunction(player, mergedZone, "onZoneIn");
+            LuaEngine.GetInstance().CallLuaFunction(player, mergedZone, "onZoneIn", true);
         }
 
         //Checks all seamless bounding boxes in region to see if player needs to merge or zonechange
@@ -574,6 +574,8 @@ namespace FFXIVClassic_Map_Server
                 return;
             }
 
+            player.playerSession.LockUpdates(true);
+
             Area oldZone = player.zone;
             //Remove player from currentZone if transfer else it's login
             if (player.zone != null)
@@ -594,6 +596,16 @@ namespace FFXIVClassic_Map_Server
             player.positionZ = spawnZ;
             player.rotation = spawnRotation;
 
+            //Delete content if have
+            if (player.currentContentGroup != null)
+            {
+                player.currentContentGroup.RemoveMember(player.actorId);
+                player.SetCurrentContentGroup(null, player);
+
+                if (oldZone is PrivateAreaContent)
+                    ((PrivateAreaContent)oldZone).CheckDestroy();
+            }                 
+
             //Send packets
             player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
             player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10), true, false);
@@ -601,11 +613,13 @@ namespace FFXIVClassic_Map_Server
             player.playerSession.ClearInstance();
             player.SendInstanceUpdate();
 
+            player.playerSession.LockUpdates(false);
+
             //Send "You have entered an instance" if it's a Private Area
             if (newArea is PrivateArea)
                 player.SendGameMessage(GetActor(), 34108, 0x20);
 
-            LuaEngine.GetInstance().CallLuaFunction(player, newArea, "onZoneIn");
+            LuaEngine.GetInstance().CallLuaFunction(player, newArea, "onZoneIn", true);
         }
 
         //Moves actor within zone to spawn position
@@ -648,6 +662,55 @@ namespace FFXIVClassic_Map_Server
             }            
         }
 
+        //Moves actor to new zone, and sends packets to spawn at the given coords.
+        public void DoZoneChangeContent(Player player, PrivateAreaContent contentArea, float spawnX, float spawnY, float spawnZ, float spawnRotation, ushort spawnType = SetActorPositionPacket.SPAWNTYPE_WARP_DUTY)
+        {
+            //Content area was null
+            if (contentArea == null)
+            {
+                Program.Log.Debug("Request to change to content area not on this server by: {0}.", player.customDisplayName);
+                return;
+            }
+
+            player.playerSession.LockUpdates(true);
+
+            Area oldZone = player.zone;
+            //Remove player from currentZone if transfer else it's login
+            if (player.zone != null)
+            {
+                oldZone.RemoveActorFromZone(player);
+            }
+
+            contentArea.AddActorToZone(player);
+
+            //Update player actor's properties
+            player.zoneId = contentArea.GetParentZone().actorId;
+
+            player.privateArea = contentArea.GetPrivateAreaName();
+            player.privateAreaType = contentArea.GetPrivateAreaType();
+            player.zone = contentArea;
+            player.positionX = spawnX;
+            player.positionY = spawnY;
+            player.positionZ = spawnZ;
+            player.rotation = spawnRotation;
+
+            //Send "You have entered an instance" if it's a Private Area
+            player.SendGameMessage(GetActor(), 34108, 0x20);
+
+            //Send packets
+            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
+            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10), true, false);
+            player.SendZoneInPackets(this, spawnType);
+            player.playerSession.ClearInstance();
+            player.SendInstanceUpdate();
+
+            player.playerSession.LockUpdates(false);
+
+            
+
+            LuaEngine.GetInstance().CallLuaFunction(player, contentArea, "onZoneIn", true);
+        }
+
         //Session started, zone into world
         public void DoZoneIn(Player player, bool isLogin, ushort spawnType)
         {
@@ -683,7 +746,7 @@ namespace FFXIVClassic_Map_Server
 
             player.playerSession.LockUpdates(false);
 
-            LuaEngine.GetInstance().CallLuaFunction(player, playerArea, "onZoneIn");
+            LuaEngine.GetInstance().CallLuaFunction(player, playerArea, "onZoneIn", true);
         }
 
         public void ReloadZone(uint zoneId)
@@ -741,12 +804,6 @@ namespace FFXIVClassic_Map_Server
                     mContentGroups.Remove(groupId);
                 }
             }
-        }
-
-        public void CreateContentArea(String scriptPath)
-        {
-            LuaScript script = LuaEngine.LoadScript(scriptPath);
-        
         }
 
         public bool SendGroupInit(Session session, ulong groupId)

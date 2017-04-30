@@ -40,7 +40,7 @@ namespace FFXIVClassic_Map_Server.actors.group
             members.Add(actor.actorId);
             if (actor is Character)
             {
-                ((Character)actor).SetCurrentContentGroup(GetTypeId());
+                ((Character)actor).SetCurrentContentGroup(this);
                 SendCurrentContentSync(actor);
             }
             SendGroupPacketsAll(members);
@@ -50,16 +50,17 @@ namespace FFXIVClassic_Map_Server.actors.group
         {
             members.Remove(memberId);
             SendGroupPacketsAll(members);
+            CheckDestroy();
         }
 
         public override List<GroupMember> BuildMemberList(uint id)
         {
             List<GroupMember> groupMembers = new List<GroupMember>();
-            groupMembers.Add(new GroupMember(id, -1, 0, false, true, Server.GetWorldManager().GetActorInWorld(id).customDisplayName));
+            groupMembers.Add(new GroupMember(id, -1, 0, false, true, ""));
             foreach (uint charaId in members)
             {
                 if (charaId != id)
-                    groupMembers.Add(new GroupMember(charaId, -1, 0, false, true, Server.GetWorldManager().GetActorInWorld(charaId).customDisplayName));
+                    groupMembers.Add(new GroupMember(charaId, -1, 0, false, true, ""));
             }
             return groupMembers;
         }
@@ -137,6 +138,24 @@ namespace FFXIVClassic_Map_Server.actors.group
         public void DeleteAll()
         {
             SendDeletePackets(members);
+        }
+
+
+        public void CheckDestroy()
+        {
+            bool foundSession = false;
+            foreach (uint memberId in members)
+            {
+                Session session = Server.GetServer().GetSession(memberId);
+                if (session != null)
+                {
+                    foundSession = true;
+                    break;
+                }
+            }
+
+            if (!foundSession)
+                Server.GetWorldManager().DeleteContentGroup(groupIndex);
         }
 
     }

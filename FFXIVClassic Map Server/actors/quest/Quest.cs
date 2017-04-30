@@ -127,7 +127,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void DoCompletionCheck()
         {
-            List<LuaParam> returned = LuaEngine.GetInstance().CallLuaFunctionForReturn(owner, this, "isObjectivesComplete");
+            List<LuaParam> returned = LuaEngine.GetInstance().CallLuaFunctionForReturn(owner, this, "isObjectivesComplete", true);
             if (returned != null && returned.Count >= 1 && returned[0].typeID == 3)
             {
                 owner.SendDataPacket("attention", Server.GetWorldManager().GetActor(), "", 25225, (object)GetQuestId());
@@ -137,7 +137,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void DoAbandon()
         {
-            LuaEngine.GetInstance().CallLuaFunctionForReturn(owner, this, "onAbandonQuest");
+            LuaEngine.GetInstance().CallLuaFunctionForReturn(owner, this, "onAbandonQuest", true);
             owner.SendGameMessage(owner, Server.GetWorldManager().GetActor(), 25236, 0x20, (object)GetQuestId());
         }
 

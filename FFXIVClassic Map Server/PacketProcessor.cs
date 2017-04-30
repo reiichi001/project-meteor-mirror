@@ -120,9 +120,9 @@ namespace FFXIVClassic_Map_Server
                         LangaugeCodePacket langCode = new LangaugeCodePacket(subpacket.data);
                         session = mServer.AddSession(subpacket.header.targetId);
 
-                        LuaEngine.GetInstance().CallLuaFunction(session.GetActor(), session.GetActor(), "onBeginLogin");                    
+                        LuaEngine.GetInstance().CallLuaFunction(session.GetActor(), session.GetActor(), "onBeginLogin", true);                    
                         Server.GetWorldManager().DoZoneIn(session.GetActor(), true, 0x1);
-                        LuaEngine.GetInstance().CallLuaFunction(session.GetActor(), session.GetActor(), "onLogin");
+                        LuaEngine.GetInstance().CallLuaFunction(session.GetActor(), session.GetActor(), "onLogin", true);
                         session.languageCode = langCode.languageCode;
                         break;
                     //Unknown - Happens a lot at login, then once every time player zones
