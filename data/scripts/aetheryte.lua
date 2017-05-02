@@ -109,5 +109,5 @@ aetheryteChildLinks = {
 }
 
 aetheryteTeleportPositions = {
-	[1280001] = {0.0, 0.0, 0.0}
+	[1280002] = {128, 29.97, 45.83, -35.47}
 }
