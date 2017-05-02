@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 4/2/2017 2:27:44 PM
+Date: 5/1/2017 10:28:15 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -45,5 +45,7 @@ CREATE TABLE `characters` (
   `restBonus` int(10) DEFAULT '0',
   `achievementPoints` int(10) unsigned DEFAULT '0',
   `currentActiveLinkshell` varchar(32) NOT NULL DEFAULT '',
+  `homepoint` int(10) unsigned NOT NULL DEFAULT '0',
+  `homepointInn` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=164 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=utf8;

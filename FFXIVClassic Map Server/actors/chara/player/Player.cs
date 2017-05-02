@@ -128,6 +128,10 @@ namespace FFXIVClassic_Map_Server.Actors
         public Quest[] questScenario = new Quest[16];
         public Quest[] questGuildleve = new Quest[8];
 
+        //Aetheryte
+        public uint homepoint = 0;
+        public byte homepointInn = 0;
+
         private List<Director> ownedDirectors = new List<Director>();
         private Director loginInitDirector = null;
 
@@ -1039,6 +1043,36 @@ namespace FFXIVClassic_Map_Server.Actors
             return playerWork.initialTown;
         }
 
+        public uint GetHomePoint()
+        {
+            return homepoint;
+        }
+
+        public byte GetHomePointInn()
+        {
+            return homepointInn;
+        }
+
+        public void SetHomePoint(uint aetheryteId)
+        {            
+            homepoint = aetheryteId;
+            Database.SavePlayerHomePoints(this);
+        }
+
+        public void SetHomePointInn(byte townId)
+        {
+            homepointInn = townId;
+            Database.SavePlayerHomePoints(this);
+        }
+
+        public bool HasAetheryteNodeUnlocked(uint aetheryteId)
+        {
+            if (aetheryteId != 0)
+                return true;
+            else
+                return false;
+        }
+
         public int GetFreeQuestSlot()
         {
             for (int i = 0; i < questScenario.Length; i++)
@@ -1526,6 +1560,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 Server.GetWorldManager().NoMembersInParty((Party)currentParty);
             currentParty = null;
         }
+
+        
 
         public void Update(double delta)
         {

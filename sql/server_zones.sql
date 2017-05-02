@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 3/7/2017 8:30:14 AM
+Date: 5/1/2017 10:29:02 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -38,7 +38,7 @@ INSERT INTO `server_zones` VALUES ('128', '101', 'sea0Field01', 'Lower La Noscea
 INSERT INTO `server_zones` VALUES ('129', '101', 'sea0Field02', 'Western La Noscea', '127.0.0.1', '1989', '/Area/Zone/ZoneMasterSeaS0', '60', '60', '21', '0', '0', '1', '0', '0');
 INSERT INTO `server_zones` VALUES ('130', '101', 'sea0Field03', 'Eastern La Noscea', '127.0.0.1', '1989', '/Area/Zone/ZoneMasterSeaS0', '60', '60', '21', '0', '0', '1', '0', '0');
 INSERT INTO `server_zones` VALUES ('131', '101', 'sea0Dungeon01', 'Mistbeard Cove', '127.0.0.1', '1989', '/Area/Zone/ZoneMasterSeaS0', '0', '0', '0', '0', '0', '0', '0', '0');
-INSERT INTO `server_zones` VALUES ('132', '101', 'sea0Dungeon02', 'Cassiopeia Hollow', '127.0.0.1', '1989', '/Area/Zone/ZoneMasterSeaS0', '0', '0', '0', '0', '0', '0', '0', '0');
+INSERT INTO `server_zones` VALUES ('132', '101', 'sea0Dungeon03', 'Cassiopeia Hollow', '127.0.0.1', '1989', '/Area/Zone/ZoneMasterSeaS0', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('133', '101', 'sea0Town01', 'Limsa Lominsa', '127.0.0.1', '1989', '/Area/Zone/ZoneMasterSeaS0', '59', '59', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('134', '202', 'sea0Market01', 'Market Wards', '127.0.0.1', '1989', '/Area/Zone/ZoneMasterMarketSeaS0', '0', '0', '0', '0', '0', '0', '0', '0');
 INSERT INTO `server_zones` VALUES ('135', '101', 'sea0Field04', 'Upper La Noscea', '127.0.0.1', '1989', '/Area/Zone/ZoneMasterSeaS0', '60', '60', '21', '0', '0', '1', '0', '0');

@@ -10,8 +10,8 @@ function onSpawn(player, npc)
 			player:SetEventStatus(npc, "pushDefault", true, 0x2);
 			npc:SetQuestGraphic(player, 0x3);
 		else
-			player:SetEventStatus(npc, "pushDefault", false, 0x2);
-			npc:SetQuestGraphic(player, 0x0);
+			player:SetEventStatus(npc, "pushDefault", true, 0x2);
+			npc:SetQuestGraphic(player, 0x3);
 		end
 	end
 	
@@ -27,16 +27,21 @@ function onEventStarted(player, npc, triggerName)
 		
 		man0l0Quest:NextPhase(5);
 		
-		worldMaster = GetWorldMaster();
-		player:SendGameMessage(player, worldMaster, 34108, 0x20);	
-		player:SendGameMessage(player, worldMaster, 50011, 0x20);	
-
-		director = player:GetZone():CreateDirector("Quest/QuestDirectorMan0l001");
+		contentArea = player:GetZone():CreateContentArea(player, "/Area/PrivateArea/Content/PrivateAreaMasterSimpleContent", "man0l01", "SimpleContent30002", "Quest/QuestDirectorMan0l001");
+		
+		if (contentArea == nil) then
+			player:EndEvent();
+			return;
+		end
+		
+		director = contentArea:GetContentDirector();
+		
 		player:KickEvent(director, "noticeEvent", true);
 		player:AddDirector(director);
-		player:SetLoginDirector(director);
+		player:SetLoginDirector(director);		
 		
-		GetWorldManager():DoZoneChange(player, 9);
+		GetWorldManager():DoZoneChangeContent(player, contentArea, -5, 16.35, 6, 0.5, 16);		
+		
 	else
 		player:EndEvent();
 	end	

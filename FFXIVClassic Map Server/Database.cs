@@ -302,6 +302,42 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public static void SavePlayerHomePoints(Player player)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    UPDATE characters SET 
+                    homepoint = @homepoint,
+                    homepointInn = @homepointInn
+                    WHERE id = @charaId
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@homepoint", player.homepoint);
+                    cmd.Parameters.AddWithValue("@homepointInn", player.homepointInn);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
         public static void SaveQuest(Player player, Quest quest)
         {
             int slot = player.GetQuestSlot(quest.actorId);
@@ -486,7 +522,9 @@ namespace FFXIVClassic_Map_Server
                     destinationZoneId,
                     destinationSpawnType,
                     currentPrivateArea,
-                    currentPrivateAreaType
+                    currentPrivateAreaType,
+                    homepoint,
+                    homepointInn
                     FROM characters WHERE id = @charId";                    
 
                     cmd = new MySqlCommand(query, conn);
@@ -517,6 +555,8 @@ namespace FFXIVClassic_Map_Server
                             player.playerWork.restBonusExpRate = reader.GetInt32(17);
                             player.achievementPoints = reader.GetUInt32(18);
                             player.playTime = reader.GetUInt32(19);
+                            player.homepoint = reader.GetUInt32("homepoint");
+                            player.homepointInn = reader.GetByte("homepointInn");
                             player.destinationZone = reader.GetUInt32("destinationZoneId");
                             player.destinationSpawnType = reader.GetByte("destinationSpawnType");
 

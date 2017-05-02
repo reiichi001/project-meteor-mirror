@@ -2,21 +2,30 @@ require ("global")
 require ("tutorial")
 require ("quests/man/man0l0")
 
---processTtrBtl001: Active Mode Tutorial
---processTtrBtl002: Targetting Tutorial (After active mode done)
-
 function init()
 	return "/Director/Quest/QuestDirectorMan0l001";
 end
 
-function onEventStarted(player, actor, triggerName)	
+function onCreateContentArea(players, director, contentArea, contentGroup)
 
-	contentGroup = GetWorldManager():CreateContentGroup(actor);
-	contentGroup:AddMember(director);
-	contentGroup:AddMember(GetWorldManager():GetActorInWorldByUniqueId("opening_jelly"));
-	contentGroup:AddMember(GetWorldManager():GetActorInWorldByUniqueId("opening_yshtola"));
-	contentGroup:AddMember(GetWorldManager():GetActorInWorldByUniqueId("opening_stahlmann"));
+	yshtola = contentArea:SpawnActor(2290001, "yshtola", -8, 16.35, 6, 0.5);
+	stahlmann = contentArea:SpawnActor(2290002, "stahlmann", 0, 16.35, 22, 3);
+	
+	mob1 = contentArea:SpawnActor(2205403, "mob1", -3.02+3, 17.35, 14.24, -2.81);
+	mob2 = contentArea:SpawnActor(2205403, "mob2", -3.02, 17.35, 14.24, -2.81);
+	mob3 = contentArea:SpawnActor(2205403, "mob3", -3.02-3, 17.35, 14.24, -2.81);
+	
 	contentGroup:AddMember(player);
+	contentGroup:AddMember(director);
+	contentGroup:AddMember(yshtola);
+	contentGroup:AddMember(stahlmann);
+	contentGroup:AddMember(mob1);
+	contentGroup:AddMember(mob2);
+	contentGroup:AddMember(mob3);
+	
+end
+
+function onEventStarted(player, director, triggerName)	
 
 	man0l0Quest = player:GetQuest("Man0l0");
 	startTutorialMode(player);
@@ -24,7 +33,7 @@ function onEventStarted(player, actor, triggerName)
 	player:EndEvent();
 	waitForSignal("playerActive");
 	wait(1); --If this isn't here, the scripts bugs out. TODO: Find a better alternative.
-	kickEventContinue(player, actor, "noticeEvent", "noticeEvent");	
+	kickEventContinue(player, director, "noticeEvent", "noticeEvent");	
 	callClientFunction(player, "delegateEvent", player, man0l0Quest, "processTtrBtl002", nil, nil, nil);
 	player:EndEvent();
 	wait(4);
@@ -45,7 +54,7 @@ function onEventStarted(player, actor, triggerName)
 	wait(7);
 	player:ChangeMusic(7);
 	player:ChangeState(0); 
-	kickEventContinue(player, actor, "noticeEvent", "noticeEvent");
+	kickEventContinue(player, director, "noticeEvent", "noticeEvent");
 	callClientFunction(player, "delegateEvent", player, man0l0Quest, "processEvent000_3", nil, nil, nil);	
 	
 	--[[
@@ -64,26 +73,7 @@ function onEventStarted(player, actor, triggerName)
 	man0l0Quest:NextPhase(10);	
 	player:EndEvent();
 	
+	player:GetZone():ContentFinished();
 	GetWorldManager():DoZoneChange(player, 230, "PrivateAreaMasterPast", 1, 15, -826.868469, 6, 193.745865, -0.008368492);
 	
-end
-
-function onUpdate()
-end
-
-function onTalkEvent(player, npc)
-
-end
-
-function onPushEvent(player, npc)
-end
-
-function onCommandEvent(player, command)
-
-end
-
-function onEventUpdate(player, npc)
-end
-
-function onCommand(player, command)	
 end

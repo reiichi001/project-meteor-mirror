@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 4/2/2017 2:27:23 PM
+Date: 5/1/2017 10:28:49 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -558,9 +558,9 @@ INSERT INTO `server_spawn_locations` VALUES ('526', '1000450', 'lanky_traveler',
 INSERT INTO `server_spawn_locations` VALUES ('527', '1000451', 'grinning_adventurer', '193', '', '0', '-1.1', '9.85', '-33.62', '-0.82', '0', '1026', null);
 INSERT INTO `server_spawn_locations` VALUES ('528', '1001652', 'rostnsthal', '193', '', '0', '-7.73', '9.967', '-27.44', '1.6', '0', '1041', null);
 INSERT INTO `server_spawn_locations` VALUES ('529', '1090025', 'exit_door', '193', '', '0', '0', '10', '-18', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('530', '2205403', '', '193', '', '0', '-3.02', '17.35', '14.24', '-2.81', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('531', '2290001', '', '193', '', '0', '-8', '16.35', '6', '0.5', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('532', '2290002', '', '193', '', '0', '0', '16.35', '22', '3', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('530', '2205403', 'opening_jelly', '193', '', '0', '-3.02', '17.35', '14.24', '-2.81', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('531', '2290001', 'opening_yshtola', '193', '', '0', '-8', '16.35', '6', '0.5', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('532', '2290002', 'opening_stahlmann', '193', '', '0', '0', '16.35', '22', '3', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('533', '1000009', 'yda', '166', '', '0', '353.37', '3.88', '-698.98', '-2.6', '0', '1007', null);
 INSERT INTO `server_spawn_locations` VALUES ('534', '1000010', 'papalymo', '166', '', '0', '353.37', '3.75', '-703.09', '-2.6', '0', '1000', null);
 INSERT INTO `server_spawn_locations` VALUES ('535', '1090384', 'openingstoper_gridania', '166', '', '0', '356.09', '3.74', '-701.62', '-1.41', '0', '0', null);
@@ -755,7 +755,7 @@ INSERT INTO `server_spawn_locations` VALUES ('728', '1200052', 'test_mining_poin
 INSERT INTO `server_spawn_locations` VALUES ('729', '5900013', 'ship_route_1', '200', '', '0', '0', '10', '-128', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('730', '5900014', 'ship_route_2', '200', '', '0', '0', '10', '128', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('731', '1280001', 'limsa_aetheryte', '230', '', '0', '-400', '43', '338', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('732', '1280002', 'camp_beardedrock_aetheryte', '128', '', '0', '32', '-31', '-31', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('732', '1280002', 'camp_beardedrock_aetheryte', '128', '', '0', '29.97', '45.83', '-35.47', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('733', '1280003', 'camp_skullvalley_aetheryte', '129', '', '0', '-992', '62', '-1121', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('734', '1280004', 'camp_baldknoll_aetheryte', '129', '', '0', '-1889', '54', '-1379', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('735', '1280005', 'camp_bloodshore_aetheryte', '130', '', '0', '1128', '46', '-926', '0', '0', '0', null);
@@ -771,8 +771,8 @@ INSERT INTO `server_spawn_locations` VALUES ('744', '1280014', 'agelysswise_aeth
 INSERT INTO `server_spawn_locations` VALUES ('745', '1280015', 'zelmasrun_aetherytegate', '135', '', '0', '-125', '61', '-1440', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('746', '1280016', 'bronzelake_aetherytegate', '135', '', '0', '-320', '53', '-1826', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('747', '1280017', 'oakwood_aetherytegate', '135', '', '0', '-894', '42', '-2188', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('748', '1280018', 'mistbeardcove_aetherytegate', '0', '', '0', '-1694.5', '-19', '-1534', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('749', '1280020', 'cassiopeia_aetherytegate', '0', '', '0', '1344.5', '-53', '-869', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('748', '1280018', 'mistbeardcove_aetherytegate', '131', '', '0', '-1694.5', '-19', '-1534', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('749', '1280020', 'cassiopeia_aetherytegate', '132', '', '0', '1343.5', '-54.38', '-870.84', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('750', '1280031', 'uldah_aetheryte', '175', '', '0', '240.45', '185.93', '-9.56', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('751', '1280032', 'camp_blackbrush_aetheryte', '170', '', '0', '33', '201', '-482', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('752', '1280033', 'camp_drybone_aetheryte', '171', '', '0', '1251', '265', '-545', '0', '0', '0', null);
@@ -857,7 +857,6 @@ INSERT INTO `server_spawn_locations` VALUES ('830', '2290003', 'opening_niellefr
 INSERT INTO `server_spawn_locations` VALUES ('831', '2203301', 'opening_goobbue', '184', '', '0', '-10.31', '193', '50.73', '-1.06', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('832', '1090373', 'opening_stoper_uldah', '184', '', '0', '27.42', '192', '126.94', '0.33', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('833', '1090385', 'opening_stoper_uldah_battle', '184', '', '0', '-24.34', '192', '34.22', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('834', '2201404', 'opening_wolf1', '166', 'ContentSimpleContent30010', '1', '0', '0', '0', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('835', '1000444', 'undignified_adventurer', '230', 'PrivateAreaMasterPast', '1', '-832.36', '6', '209.44', '-0.35', '0', '1041', null);
 INSERT INTO `server_spawn_locations` VALUES ('836', '1000438', 'well-traveled_merchant', '230', 'PrivateAreaMasterPast', '1', '-831.73', '6', '196.77', '0.86', '0', '1035', null);
 INSERT INTO `server_spawn_locations` VALUES ('837', '1000447', 'voluptuous_vixen', '230', 'PrivateAreaMasterPast', '1', '-863.34', '4', '236.13', '0.93', '0', '1016', null);

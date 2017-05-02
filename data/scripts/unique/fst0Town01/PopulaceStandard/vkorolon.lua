@@ -30,8 +30,13 @@ function onEventStarted(player, npc)
 		
 		if (choice == 1) then
 			GetWorldManager():DoZoneChange(player, 13);
-		elseif (choice == 2) then
-			--Do Set Homepoint
+		elseif (choice == 2) then			
+			if (player:GetHomePointInn() ~= 2) then
+				player:SetHomePointInn(2);
+				player:SendGameMessage(GetWorldMaster(), 60019, 0x20, 2075); --Secondary homepoint set to the Roost
+			else			
+				player:SendGameMessage(GetWorldMaster(), 51140, 0x20); --This inn is already your Secondary Homepoint
+			end
 		end
 	elseif (result == 1) then		
 		callClientFunction(player, "delegateEvent", player, defaultFst, "defaultTalkWithVkorolon_001", -1, -1);

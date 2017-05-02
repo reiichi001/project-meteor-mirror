@@ -104,7 +104,12 @@ namespace FFXIVClassic_Map_Server.Actors
                 propPacketUtil.AddProperty("charaWork.currentContentGroup");
                 player.QueuePackets(propPacketUtil.Done());
             }
-        }        
+        }     
+   
+        public void PlayAnimation(uint animId)
+        {            
+            zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, actorId, animId));
+        }
 
     }
 

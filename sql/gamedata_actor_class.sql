@@ -4,9 +4,9 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 4/2/2017 2:27:36 PM
+Date: 5/1/2017 10:28:42 PM
 */
-SET autocommit=0;
+
 SET FOREIGN_KEY_CHECKS=0;
 -- ----------------------------
 -- Table structure for gamedata_actor_class
@@ -4723,7 +4723,7 @@ INSERT INTO `gamedata_actor_class` VALUES ('2103907', '', '3103907', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2103908', '', '3103908', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2103909', '', '3103909', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2103910', '', '3103910', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('2104001', '/Chara/Npc/Monster/Lemming/LemmingStandard', '3104027', '7', null);
+INSERT INTO `gamedata_actor_class` VALUES ('2104001', '/Chara/Npc/Monster/Lemming/LemmingStandard', '3104027', '23', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('2104002', '', '3104002', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2104003', '', '3104003', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2104004', '', '3104004', '0', null);
@@ -4941,7 +4941,7 @@ INSERT INTO `gamedata_actor_class` VALUES ('2105611', '', '3105610', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2105612', '', '3105611', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2105613', '', '3105611', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2105614', '', '3105611', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('2105701', '/Chara/Npc/Monster/Mole/MoleMoleStandard', '3105701', '7', null);
+INSERT INTO `gamedata_actor_class` VALUES ('2105701', '/Chara/Npc/Monster/Mole/MoleMoleStandard', '3105701', '23', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('2105702', '', '3105702', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2105703', '', '3105703', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2105704', '', '3105704', '0', null);
@@ -5701,10 +5701,10 @@ INSERT INTO `gamedata_actor_class` VALUES ('2201309', '', '3201309', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2201401', '', '3201401', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2201402', '', '3201402', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2201403', '', '3201403', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('2201404', '/Chara/Npc/Monster/Wolf/WolfStandard', '3201405', '7', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('2201404', '/Chara/Npc/Monster/Wolf/WolfStandard', '3201405', '23', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('2201405', '', '3201419', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2201406', '', '3201404', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('2201407', '/Chara/Npc/Monster/Wolf/WolfStandard', '3201406', '7', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('2201407', '/Chara/Npc/Monster/Wolf/WolfStandard', '3201406', '23', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('2201408', '', '3201407', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2201409', '', '3201408', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2201410', '', '3201409', '0', null);
@@ -5882,7 +5882,7 @@ INSERT INTO `gamedata_actor_class` VALUES ('2203201', '', '3203201', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2203202', '', '3203202', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2203203', '', '3203203', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2203204', '', '3203204', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('2203301', '/Chara/Npc/Monster/Goobbue/GoobbueLesserStandard', '3203301', '7', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('2203301', '/Chara/Npc/Monster/Goobbue/GoobbueLesserStandard', '3203301', '23', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('2203302', '', '3203302', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2203303', '', '3203303', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2203401', '', '3203401', '0', null);
@@ -6055,7 +6055,7 @@ INSERT INTO `gamedata_actor_class` VALUES ('2205310', '', '3205310', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2205311', '', '3205311', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2205401', '', '3205401', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2205402', '', '3205402', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('2205403', '/Chara/Npc/Monster/Jellyfish/JellyfishScenarioLimsaLv00', '3205403', '7', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('2205403', '/Chara/Npc/Monster/Jellyfish/JellyfishScenarioLimsaLv00', '3205403', '23', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('2205404', '', '3205404', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2205405', '', '3205405', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2205406', '', '3205406', '0', null);
@@ -6665,12 +6665,12 @@ INSERT INTO `gamedata_actor_class` VALUES ('2289041', '', '3280323', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2289042', '', '3280324', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2289043', '', '3280325', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2289044', '', '3280403', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('2290001', '/Chara/Npc/Monster/Fighter/FighterAllyOpeningHealer', '1900006', '7', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
-INSERT INTO `gamedata_actor_class` VALUES ('2290002', '/Chara/Npc/Monster/Fighter/FighterAllyOpeningAttacker', '1600179', '7', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
-INSERT INTO `gamedata_actor_class` VALUES ('2290003', '/Chara/Npc/Monster/Fighter/FighterAllyOpeningHealer', '1200024', '7', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
-INSERT INTO `gamedata_actor_class` VALUES ('2290004', '/Chara/Npc/Monster/Fighter/FighterAllyOpeningAttacker', '1000010', '7', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
-INSERT INTO `gamedata_actor_class` VALUES ('2290005', '/Chara/Npc/Monster/Fighter/FighterAllyOpeningHealer', '1400004', '7', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
-INSERT INTO `gamedata_actor_class` VALUES ('2290006', '/Chara/Npc/Monster/Fighter/FighterAllyOpeningAttacker', '2300120', '7', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('2290001', '/Chara/Npc/Monster/Fighter/FighterAllyOpeningHealer', '1900006', '23', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('2290002', '/Chara/Npc/Monster/Fighter/FighterAllyOpeningAttacker', '1600179', '23', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('2290003', '/Chara/Npc/Monster/Fighter/FighterAllyOpeningHealer', '1200024', '23', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('2290004', '/Chara/Npc/Monster/Fighter/FighterAllyOpeningAttacker', '1000010', '23', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('2290005', '/Chara/Npc/Monster/Fighter/FighterAllyOpeningHealer', '1400004', '23', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('2290006', '/Chara/Npc/Monster/Fighter/FighterAllyOpeningAttacker', '2300120', '23', '{\r\n  \"talkEventConditions\": [],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"emoteEventConditions\": [],\r\n  \"pushWithCircleEventConditions\": []\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('2290007', '', '1500024', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2290008', '', '1900054', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('2290009', '', '1000029', '0', null);
@@ -8007,5 +8007,3 @@ INSERT INTO `gamedata_actor_class` VALUES ('9220405', '', '2', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('9220406', '', '2', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('9220407', '', '2', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('9220408', '', '2', '0', null);
-
-COMMIT;
