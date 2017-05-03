@@ -21,6 +21,7 @@ eventGLJoin () - Ask to join party leader's leve
 
 require ("global")
 require ("aetheryte")
+require ("utils")
 
 function init(npc)
 	return false, false, 0, 0;	
@@ -29,12 +30,19 @@ end
 function onEventStarted(player, aetheryte, triggerName)
 
 	aetheryteId = aetheryte:GetActorClassId();
-	parentNode = aetheryteParentLinks[aetheryteId];
-	menuChoice = callClientFunction(player, "eventAetheryteChildSelect", true, aetheryteChildLinks[aetheryteId], 100, 1);
+	parentNode = aetheryteChildLinks[aetheryteId];
+	menuChoice = callClientFunction(player, "eventAetheryteChildSelect", true, parentNode, 100, 1);
 	
 	--Teleport
 	if (menuChoice == 2) then
+		printf("%ud", parentNode);
+		destination = aetheryteTeleportPositions[parentNode];
 		
+		if (destination ~= nil) then
+			randoPos = getRandomPointInBand(destination[2], destination[4], 3, 5);
+			rotation = getAngleFacing(randoPos.x, randoPos.y, destination[2], destination[4]);
+			GetWorldManager():DoZoneChange(player, destination[1], nil, 0, 2, randoPos.x, destination[3], randoPos.y, rotation);
+		end
 	--Init Levequest
 	elseif (menuChoice == -1) then
 		doLevequestInit(player, aetheryte);

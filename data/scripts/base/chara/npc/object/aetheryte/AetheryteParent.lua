@@ -25,6 +25,7 @@ eventGLJoin () - Ask to join party leader's leve
 
 require ("global")
 require ("aetheryte")
+require ("utils")
 
 function init(npc)
 	return false, false, 0, 0;	
@@ -38,25 +39,27 @@ function onEventStarted(player, aetheryte, triggerName)
 	local listPosition = 1;
 	local activeChildNodes = {0, 0, 0, 0, 0};
 	
-	if (player:HasAetheryteNodeUnlocked(childNodes[1])) then
-		activeChildNodes[listPosition] = childNodes[1];
-		listPosition = listPosition+1;
-	end
-	if (player:HasAetheryteNodeUnlocked(childNodes[2])) then
-		activeChildNodes[listPosition] = childNodes[2];
-		listPosition = listPosition+1;
-	end
-	if (player:HasAetheryteNodeUnlocked(childNodes[3])) then
-		activeChildNodes[listPosition] = childNodes[3];
-		listPosition = listPosition+1;
-	end
-	if (player:HasAetheryteNodeUnlocked(childNodes[4])) then
-		activeChildNodes[listPosition] = childNodes[4];
-		listPosition = listPosition+1;
-	end
-	if (player:HasAetheryteNodeUnlocked(childNodes[5])) then
-		activeChildNodes[listPosition] = childNodes[5];
-		listPosition = listPosition+1;
+	if (childNodes ~= nil) then
+		if (player:HasAetheryteNodeUnlocked(childNodes[1])) then
+			activeChildNodes[listPosition] = childNodes[1];
+			listPosition = listPosition+1;
+		end
+		if (player:HasAetheryteNodeUnlocked(childNodes[2])) then
+			activeChildNodes[listPosition] = childNodes[2];
+			listPosition = listPosition+1;
+		end
+		if (player:HasAetheryteNodeUnlocked(childNodes[3])) then
+			activeChildNodes[listPosition] = childNodes[3];
+			listPosition = listPosition+1;
+		end
+		if (player:HasAetheryteNodeUnlocked(childNodes[4])) then
+			activeChildNodes[listPosition] = childNodes[4];
+			listPosition = listPosition+1;
+		end
+		if (player:HasAetheryteNodeUnlocked(childNodes[5])) then
+			activeChildNodes[listPosition] = childNodes[5];
+			listPosition = listPosition+1;
+		end
 	end
 	
 	local showTeleportOptions = true;
@@ -82,6 +85,12 @@ function onEventStarted(player, aetheryte, triggerName)
 			player:SendGameMessage(player, aetheryte, 127, 0x20, 3, 5);
 		--Teleport to Gate
 		elseif (choice > 0) then
+			destination = aetheryteTeleportPositions[activeChildNodes[choice]];
+			if (destination ~= nil) then
+				randoPos = getRandomPointInBand(destination[2], destination[4], 3, 5);
+				rotation = getAngleFacing(randoPos.x, randoPos.y, destination[2], destination[4]);
+				GetWorldManager():DoZoneChange(player, destination[1], nil, 0, 2, randoPos.x, destination[3], randoPos.y, rotation);
+			end
 		end		
 	end
 	

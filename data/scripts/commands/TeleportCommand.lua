@@ -12,6 +12,7 @@ eventConfirm(isReturn, isInBattle, cityReturnNum, 138821, forceAskReturnOnly)
 
 require ("global")
 require ("aetheryte")
+require ("utils")
 
 teleportMenuToAetheryte = {
 	[1] = {
@@ -74,8 +75,10 @@ function onEventStarted(player, actor, triggerName, isTeleport)
 					player:SendGameMessage(worldMaster, 34105, 0x20);			
 					--Do teleport		
 					destination = aetheryteTeleportPositions[teleportMenuToAetheryte[regionChoice][aetheryteChoice]];			
-					if (destination ~= nil) then
-						GetWorldManager():DoZoneChange(player, destination[1], nil, 0, 2, destination[2], destination[3], destination[4], 0.0);
+					if (destination ~= nil) then						
+						randoPos = getRandomPointInBand(destination[2], destination[4], 3, 5);
+						rotation = getAngleFacing(randoPos.x, randoPos.y, destination[2], destination[4]);
+						GetWorldManager():DoZoneChange(player, destination[1], nil, 0, 2, randoPos.x, destination[3], randoPos.y, rotation);
 					end
 				end
 				player:endEvent();
@@ -93,7 +96,7 @@ function onEventStarted(player, actor, triggerName, isTeleport)
 				--Return to Inn		
 				if (player:GetHomePointInn() == 1) then
 					GetWorldManager():DoZoneChange(player, 12);
-				elseif (player:GetHomePointInn() == 3) then
+				elseif (player:GetHomePointInn() == 2) then
 					GetWorldManager():DoZoneChange(player, 13);
 				elseif (player:GetHomePointInn() == 3) then
 					GetWorldManager():DoZoneChange(player, 11);
@@ -102,7 +105,9 @@ function onEventStarted(player, actor, triggerName, isTeleport)
 				--Return to Homepoint
 				destination = aetheryteTeleportPositions[player:GetHomePoint()];
 				if (destination ~= nil) then
-					GetWorldManager():DoZoneChange(player, destination[1], nil, 0, 2, destination[2], destination[3], destination[4], 0.0);
+					randoPos = getRandomPointInBand(destination[2], destination[4], 3, 5);
+					rotation = getAngleFacing(randoPos.x, randoPos.y, destination[2], destination[4]);
+					GetWorldManager():DoZoneChange(player, destination[1], nil, 0, 2, randoPos.x, destination[3], randoPos.y, rotation);
 				end
 			end
 		end
