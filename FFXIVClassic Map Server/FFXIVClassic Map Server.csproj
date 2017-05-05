@@ -182,6 +182,7 @@
     <Compile Include="packets\send\actor\inventory\InventoryListX64Packet.cs" />
     <Compile Include="packets\send\actor\inventory\InventoryListX32Packet.cs" />
     <Compile Include="packets\send\actor\PlayAnimationOnActorPacket.cs" />
+    <Compile Include="packets\send\actor\PlayBGAnimation.cs" />
     <Compile Include="packets\send\actor\_0x132Packet.cs" />
     <Compile Include="packets\send\actor\SetActorIsZoningPacket.cs" />
     <Compile Include="packets\send\actor\battle\BattleActionX01Packet.cs" />

@@ -407,6 +407,34 @@ namespace FFXIVClassic_Map_Server.Actors
             return npc;
         }
 
+        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, uint regionId, uint layoutId)
+        {
+            ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+
+            if (actorClass == null)
+                return null;
+
+            uint zoneId;
+
+            if (this is PrivateArea)
+                zoneId = ((PrivateArea)this).GetParentZone().actorId;
+            else
+                zoneId = actorId;
+
+            Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, 0, regionId, layoutId);
+
+            npc.LoadEventConditions(actorClass.eventConditions);
+
+            AddActorToZone(npc);
+
+            return npc;
+        }
+
+        public void DespawnActor(string uniqueId)
+        {
+            RemoveActorFromZone(FindActorInZoneByUniqueID(uniqueId));
+        }
+
         public Director GetWeatherDirector()
         {
             return mWeatherDirector;

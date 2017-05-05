@@ -24,6 +24,7 @@ namespace FFXIVClassic_Map_Server.Actors
     {
         private uint actorClassId;
         private string uniqueIdentifier;
+        private uint regionId, layoutId;
 
         public NpcWork npcWork = new NpcWork();
 
@@ -71,6 +72,43 @@ namespace FFXIVClassic_Map_Server.Actors
             GenerateActorName((int)actorNumber);            
         }
 
+        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, uint region, uint layout)
+            : base((4 << 28 | spawnedArea.actorId << 19 | (uint)actorNumber))
+        {
+            this.positionX = posX;
+            this.positionY = posY;
+            this.positionZ = posZ;
+            this.rotation = rot;
+            this.currentMainState = 0;
+            this.animationId = 0;
+
+            this.displayNameId = actorClass.displayNameId;
+
+            this.uniqueIdentifier = uniqueId;
+
+            this.zoneId = spawnedArea.actorId;
+            this.zone = spawnedArea;
+
+            this.actorClassId = actorClass.actorClassId;
+
+            LoadNpcAppearance(actorClass.actorClassId);
+
+            this.classPath = actorClass.classPath;
+            className = classPath.Substring(classPath.LastIndexOf("/") + 1);
+
+            for (int i = 0; i < 32; i++)
+                charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);
+
+            npcWork.pushCommand = actorClass.pushCommand;
+            npcWork.pushCommandSub = actorClass.pushCommandSub;
+            npcWork.pushCommandPriority = actorClass.pushCommandPriority;
+
+            this.regionId = region;
+            this.layoutId = layout;
+
+            GenerateActorName((int)actorNumber);
+        }
+
         public SubPacket CreateAddActorPacket(uint playerActorId)
         {
             return AddActorPacket.BuildPacket(actorId, playerActorId, 8);
@@ -100,7 +138,16 @@ namespace FFXIVClassic_Map_Server.Actors
              //   npcWork.hateType = 1;
             }
 
-            if (lParams == null)
+            if (regionId != 0 && layoutId != 0)
+            {
+                string classPathFake = "/Chara/Npc/MapObj/MapObjStandard";
+                string classNameFake = "MapObjStandard";
+                lParams = LuaUtils.CreateLuaParamList(classPathFake, false, false, false, false, false, actorClassId, false, false, 0, 0, regionId, layoutId);
+                isStatic = true;
+                //ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams).DebugPrintSubPacket();
+                return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams);                
+            }
+            else if (lParams == null)
             {
                 string classPathFake = "/Chara/Npc/Populace/PopulaceStandard";
                 string classNameFake = "PopulaceStandard";
@@ -132,7 +179,11 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateSpeedPacket(playerActorId));            
             subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x0));
 
-            if (uniqueIdentifier.Equals("door1"))
+            if (regionId != 0 && layoutId != 0)
+            {
+                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, layoutId, regionId));
+            }
+            else if (uniqueIdentifier.Equals("door1"))
             {
                 subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, 0xB0D, 0x1af));
             }
@@ -382,6 +433,11 @@ namespace FFXIVClassic_Map_Server.Actors
         public void DoOnActorSpawn(Player player)
         {
             LuaEngine.GetInstance().CallLuaFunction(player, this, "onSpawn", true);           
+        }
+
+        public void PlayMapObjAnimation(Player player, string animationName)
+        {
+            player.QueuePacket(PlayBGAnimation.BuildPacket(actorId, player.actorId, animationName));
         }
 
         public void Update(double deltaTime)
