@@ -81,7 +81,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public SubPacket CreateIdleAnimationPacket(uint playerActorId)
         {
-            return SetActorIdleAnimationPacket.BuildPacket(actorId, playerActorId, animationId);
+            return SetActorSubStatPacket.BuildPacket(actorId, playerActorId, 0, 0, 0, 0, 0, 0, animationId);
         }
 
         public void SetQuestGraphic(Player player, int graphicNum)
