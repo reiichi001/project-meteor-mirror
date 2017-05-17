@@ -405,6 +405,10 @@ namespace FFXIVClassic_Map_Server.lua
         #region RunGMCommand
         public static void RunGMCommand(Player player, String cmd, string[] param, bool help = false)
         {
+            bool playerNull = player == null;
+            if (playerNull && param.Length >= 2)
+                player = Server.GetWorldManager().GetPCInWorld(param[1] + " " + param[2]);            
+
             // load from scripts/commands/gm/ directory
             var path = String.Format("./scripts/commands/gm/{0}.lua", cmd.ToLower());
 
@@ -490,7 +494,7 @@ namespace FFXIVClassic_Map_Server.lua
                     // we'll push our lua params here
                     List<object> LuaParam = new List<object>();
 
-                    var i = 0;
+                    var i = playerNull ? 2 : 0;
                     for (; i < parameters.Length; ++i)
                     {
                         try
@@ -526,7 +530,7 @@ namespace FFXIVClassic_Map_Server.lua
                     // the script can double check the player exists, we'll push them anyways
                     LuaParam.Insert(0, player);
                     // push the arg count too
-                    LuaParam.Insert(1, i);
+                    LuaParam.Insert(1, i - (playerNull ? 2 : 0));
 
                     // run the script                    
                     //script.Call(script.Globals["onTrigger"], LuaParam.ToArray());

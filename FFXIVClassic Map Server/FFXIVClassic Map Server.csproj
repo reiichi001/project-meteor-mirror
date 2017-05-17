@@ -196,7 +196,7 @@
     <Compile Include="packets\send\actor\inventory\EquipmentListX08Packet.cs" />
     <Compile Include="packets\send\actor\RemoveActorPacket.cs" />
     <Compile Include="packets\send\actor\SetActorIconPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorIdleAnimationPacket.cs" />
+    <Compile Include="packets\send\actor\SetActorSubStatPacket.cs" />
     <Compile Include="packets\send\actor\SetActorStatusPacket.cs" />
     <Compile Include="packets\send\actor\_0xD9Packet.cs" />
     <Compile Include="packets\send\actor\_0xD8Packet.cs" />

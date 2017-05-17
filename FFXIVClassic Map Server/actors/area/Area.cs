@@ -355,7 +355,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     if (isIsolated && packet.header.sourceId != a.actorId)
                         continue;
 
-                    SubPacket clonedPacket = new SubPacket(packet, actor.actorId);
+                    SubPacket clonedPacket = new SubPacket(packet, a.actorId);
                     Player p = (Player)a;                        
                     p.QueuePacket(clonedPacket);
                 }

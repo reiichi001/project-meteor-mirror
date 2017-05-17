@@ -321,6 +321,12 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             return actorClassId;
         }
+        
+        public void ChangeNpcAppearance(uint id)
+        {
+            LoadNpcAppearance(id);
+            zone.BroadcastPacketAroundActor(this, CreateAppearancePacket(actorId));
+        }
 
         public void LoadNpcAppearance(uint id)
         {
