@@ -10,9 +10,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>FFXIVClassic_Map_Server</RootNamespace>
     <AssemblyName>FFXIVClassic Map Server</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>1d22ec4a</NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -24,6 +25,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -58,16 +60,20 @@
       <HintPath>..\packages\MySql.Data.6.9.8\lib\net45\MySql.Data.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.8.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
       <HintPath>..\packages\NLog.4.3.5\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="SharpNav, Version=1.0.0.1, Culture=neutral, PublicKeyToken=b467138d8cacd85b, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>.\SharpNav.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -131,6 +137,21 @@
     <Compile Include="lua\LuaParam.cs" />
     <Compile Include="lua\LuaScript.cs" />
     <Compile Include="lua\LuaUtils.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Detour\DetourCommon.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Detour\DetourNavMesh.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Detour\DetourNavMeshBuilder.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Detour\DetourNavMeshQuery.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Detour\DetourNode.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Detour\DetourStatus.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\Recast.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastArea.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastContour.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastFilter.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastLayers.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastMesh.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastMeshDetail.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastRasterization.cs" />
+    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastRegion.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\receive\ChatMessagePacket.cs" />
     <Compile Include="packets\receive\events\EventUpdatePacket.cs" />
@@ -310,6 +331,7 @@
     <Compile Include="Server.cs" />
     <Compile Include="utils\ActorPropertyPacketUtil.cs" />
     <Compile Include="utils\CharacterUtils.cs" />
+    <Compile Include="utils\NavmeshUtils.cs" />
     <Compile Include="utils\SQLGeneration.cs" />
     <Compile Include="actors\area\Area.cs" />
     <Compile Include="WorldManager.cs" />
@@ -332,6 +354,7 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(SolutionDir)data\map_config.ini" "$(SolutionDir)$(ProjectName)\$(OutDir)" /d

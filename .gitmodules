@@ -1,0 +1,3 @@
+[submodule "FFXIVClassic Map Server/navmesh/rcdtcs"]
+	path = FFXIVClassic Map Server/navmesh/rcdtcs
+	url = https://github.com/jlalleve/rcdtcs

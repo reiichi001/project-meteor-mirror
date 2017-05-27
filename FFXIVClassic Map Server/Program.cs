@@ -16,6 +16,8 @@ namespace FFXIVClassic_Map_Server
     class Program
     {
         public static Logger Log;
+        public static Server Server;
+        public static Random Random;
 
         static void Main(string[] args)
         {
@@ -55,9 +57,10 @@ namespace FFXIVClassic_Map_Server
             //Start server if A-OK
             if (startServer)
             {
-                Server server = new Server();
+                Random = new Random();
+                Server = new Server();
                 
-                server.StartServer();
+                Server.StartServer();
 
                 while (startServer)
                 {

@@ -351,5 +351,32 @@ namespace FFXIVClassic.Common
         {
             return (value >> bits) | (value << (16 - bits));
         }
+
+        public static float Clamp(float val, float min, float max)
+        {
+
+            return Math.Max(Math.Min(max, val), min);
+        }
+
+        public static float Distance(float x, float y, float z, float x2, float y2, float z2)
+        {
+            if (x == x2 && y == y2 && z == z2)
+                return 0.0f;
+
+            return (float)Math.Sqrt(DistanceSquared(x, y, z, x2, y2, z2));
+        }
+
+        public static float DistanceSquared(float x, float y, float z, float x2, float y2, float z2)
+        {
+            if (x == x2 && y == y2 && z == z2)
+                return 0.0f;
+
+            // todo: my maths is shit
+            var dx = x - x2;
+            var dy = y - y2;
+            var dz = z - z2;
+
+            return dx * dx + dy * dy + dz * dz;
+        }
     }
 }

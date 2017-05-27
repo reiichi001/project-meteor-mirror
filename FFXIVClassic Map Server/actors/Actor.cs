@@ -40,6 +40,13 @@ namespace FFXIVClassic_Map_Server.Actors
         public string className;
         public List<LuaParam> classParams;
 
+        public List<utils.Vector3> positionUpdates = new List<utils.Vector3>();
+        public DateTime lastAiUpdate;
+        public DateTime lastMoveUpdate;
+        public Actor target;
+
+        public bool hasMoved = false;
+        public bool isAtSpawn = true;
         public EventList eventConditions;
 
         public Actor(uint actorId)
@@ -126,7 +133,30 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public SubPacket CreatePositionUpdatePacket(uint playerActorId)
         {
-            return MoveActorToPositionPacket.BuildPacket(actorId, playerActorId, positionX, positionY, positionZ, rotation, moveState);
+            int updateMs = 300;
+            var diffTime = (DateTime.Now - lastMoveUpdate);
+
+            if (this.target != null)
+            {
+                updateMs = 150;
+            }
+            if (diffTime.Milliseconds >= updateMs && hasMoved)
+            {
+                hasMoved = (this.positionUpdates != null && this.positionUpdates.Count > 0);
+                if (hasMoved)
+                {
+                    var pos = positionUpdates[0];
+                    positionUpdates.Remove(pos);
+
+                    positionX = pos.X;
+                    positionY = pos.Y;
+                    positionZ = pos.Z;
+                    //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
+                }
+                lastMoveUpdate = DateTime.Now;
+                return MoveActorToPositionPacket.BuildPacket(actorId, playerActorId, positionX, positionY, positionZ, rotation, moveState);
+            }
+            return null;
         }
 
         public SubPacket CreateStatePacket(uint playerActorID)
@@ -323,7 +353,78 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         public void Update(double deltaTime)
-        {            
+        {
+            // todo: this is retarded
+            if (this is Zone || this is Area || this is Player)
+                return;
+
+            var diffTime = (DateTime.Now - lastAiUpdate);
+
+            // todo: this too
+            if (diffTime.Milliseconds >= deltaTime)
+            {
+                bool foundActor = false;
+                foreach (var actor in ((Area)zone).GetActorsAroundActor(this, 50))
+                {
+                    if (actor is Player && actor != this)
+                    {
+                        var player = actor as Player;
+
+                        var distance = Utils.Distance(positionX, positionY, positionZ, player.positionX, player.positionY, player.positionZ);
+
+                        int maxDistance = player == target ? 25 : 15;
+
+                        if (distance <= maxDistance)
+                        {
+                            foundActor = true;
+
+                            if (!hasMoved)
+                            {
+                                if (distance >= 3)
+                                {
+                                    FollowTarget(player, 2.0f);
+                                }
+                                // too close, spread out
+                                else if (distance <= 0.64f)
+                                {
+                                    var minRadius = 0.65f;
+                                    var maxRadius = 0.85f;
+
+                                    var angle = Program.Random.NextDouble() * Math.PI * 2;
+                                    var radius = Math.Sqrt(Program.Random.NextDouble() * (maxRadius - minRadius)) + minRadius;
+
+                                    float x = (float)(radius * Math.Cos(angle));
+                                    float z = (float)(radius * Math.Sin(angle));
+
+                                    positionUpdates.Add(new utils.Vector3(positionX + x, positionY, positionZ + z));
+
+                                    hasMoved = true;
+                                }
+                                else if (target != null)
+                                {
+                                    // todo: actually make IsFacing work
+                                    if(!IsFacing(target.positionX, target.positionY))
+                                        LookAt(target);
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+                // 5 seconds before back to spawn
+                if ((DateTime.Now - lastMoveUpdate).Seconds >= 5 && !foundActor)
+                {
+                    // 10 yalms spawn radius just because
+                    this.isAtSpawn = Utils.Distance(positionX, positionY, positionZ, oldPositionX, oldPositionY, oldPositionZ) <= 18.0f;
+
+                    if (this.isAtSpawn != true && this.target == null && oldPositionX != 0.0f && oldPositionY != 0.0f && oldPositionZ != 0.0f)
+                        PathTo(oldPositionX, oldPositionY, oldPositionZ, 3.0f);
+
+                    lastMoveUpdate = DateTime.Now;
+                    this.target = null;
+                }
+                lastAiUpdate = DateTime.Now;
+            }
         }
 
         public void GenerateActorName(int actorNumber)
@@ -491,6 +592,110 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint GetZoneID()
         {
             return zoneId;
+        }
+
+        public bool IsFacing(float x, float y, byte checkAngle = 45)
+        {
+            var rot1 = this.rotation;
+
+            var dX = this.positionX - x;
+            var dY = this.positionY - y;
+
+            var rot2 = Math.Atan2(dY, dX);
+
+            var dRot = Math.PI - rot2 + Math.PI / 2;
+
+            Program.Log.Error("IsFacing Rotation {0} Rotation2 {1}", rot1, rot2);
+            return rot1 == rot2;
+        }
+
+        public void LookAt(Actor actor)
+        {
+            if (actor != null)
+            {
+                LookAt(actor.positionX, actor.positionY);
+            }
+            else
+            {
+                Program.Log.Error("Actor.LookAt() unable to find actor!");
+            }
+        }
+
+        public void LookAt(float x, float y)
+        {
+            var rot1 = this.rotation;
+
+            var dX = this.positionX - x;
+            var dY = this.positionY - y;
+
+            var rot2 = Math.Atan2(dY, dX);
+
+            var dRot = Math.PI - rot2 + Math.PI / 2;
+
+            Program.Log.Error("LookAt Rotation {0} Rotation2 {1}", rot1, rot2);
+
+            this.hasMoved = rot2 != rot1;
+            this.rotation = (float)dRot;
+        }
+
+        public void PathTo(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40)
+        {
+            var pos = new utils.Vector3(positionX, positionY, positionZ);
+            var dest = new utils.Vector3(x, y, z);
+
+            var sw = new System.Diagnostics.Stopwatch();
+            sw.Start();
+
+            var path = utils.NavmeshUtils.GetPath(((Zone)GetZone()), pos, dest, stepSize, maxPath);
+
+            if (path != null)
+            {
+                if (oldPositionX == 0.0f && oldPositionY == 0.0f && oldPositionZ == 0.0f)
+                {
+                    oldPositionX = positionX;
+                    oldPositionY = positionY;
+                    oldPositionZ = positionZ;
+                }
+
+                // todo: something went wrong
+                if (path.Count == 0)
+                {
+                    positionX = oldPositionX;
+                    positionY = oldPositionY;
+                    positionZ = oldPositionZ;
+                }
+
+                positionUpdates = path;
+
+                this.hasMoved = true;
+                this.isAtSpawn = false;
+
+                sw.Stop();
+                ((Zone)zone).pathCalls++;
+                ((Zone)zone).pathCallTime += sw.ElapsedMilliseconds;
+                Program.Log.Error("[{0}][{1}] Created {2} points in {3} milliseconds", actorId, actorName, path.Count, sw.ElapsedMilliseconds);
+            }   
+        }
+
+        public void FollowTarget(Actor target, float stepSize = 1.2f, int maxPath = 25)
+        {
+            if (target != null)
+            {
+                var player = target as Player;
+
+                if (this.target != target)
+                    this.target = target;
+
+                this.moveState = player.moveState;
+                this.moveSpeeds = player.moveSpeeds;
+
+                PathTo(player.positionX, player.positionY, player.positionZ, stepSize, maxPath);
+            }
+        }
+
+        public void OnPath()
+        {
+            // todo: lua function onPath in mob script
         }
     }
 }

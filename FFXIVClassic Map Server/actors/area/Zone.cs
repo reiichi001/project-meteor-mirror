@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+
 using FFXIVClassic_Map_Server.actors.director;
 
 namespace FFXIVClassic_Map_Server.actors.area
@@ -20,10 +22,31 @@ namespace FFXIVClassic_Map_Server.actors.area
         Dictionary<string, List<PrivateAreaContent>> contentAreas = new Dictionary<string, List<PrivateAreaContent>>();
         Object contentAreasLock = new Object();
 
+        public Detour.dtNavMesh navMesh;
+        public SharpNav.TiledNavMesh tiledNavMesh;
+        public SharpNav.NavMeshQuery navMeshQuery;
+        public Int64 pathCalls;
+        public Int64 pathCallTime;
+
         public Zone(uint id, string zoneName, ushort regionId, string classPath, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
             : base(id, zoneName, regionId, classPath, bgmDay, bgmNight, bgmBattle, isIsolated, isInn, canRideChocobo, canStealth, isInstanceRaid)
         {
-
+            // central thanalan navmesh
+            if (id == 170)
+            {
+                try
+                {
+                    //navMesh = utils.NavmeshUtils.LoadNavmesh("wil_w0_fld01.bin");
+                    tiledNavMesh = utils.NavmeshUtils.LoadNavmesh(tiledNavMesh, "wil_w0_fld01.snb");
+                    navMeshQuery = new SharpNav.NavMeshQuery(tiledNavMesh, 100);
+                    GC.Collect(2);
+                }
+                catch(Exception e)
+                {
+                    Program.Log.Error(e.Message);
+                }
+                
+            }
         }
 
         public void AddPrivateArea(PrivateArea pa)

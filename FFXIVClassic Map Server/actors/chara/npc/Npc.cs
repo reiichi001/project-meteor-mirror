@@ -151,8 +151,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 isStatic = true;
             else
             {
-            //    charaWork.property[2] = 1;
-             //   npcWork.hateType = 1;
+                charaWork.property[2] = 1;
+                npcWork.hateType = 1;
             }
 
             if (lParams == null)

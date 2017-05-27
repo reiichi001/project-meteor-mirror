@@ -120,6 +120,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 
             }
 
+            bool checkedThisTick = false;
             //Add new actors or move
             for (int i = 0; i < list.Count; i++)
             {
@@ -131,10 +132,25 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 if (actorInstanceList.Contains(actor))
                 {
                     //Don't send for static characters (npcs)
-                    if (actor is Character && ((Character)actor).isStatic)
+                    // todo: this is retarded, need actual mob class
+                    if (actor is Character && !actor.hasMoved && ((Character)actor).isStatic)
                         continue;
 
-                    GetActor().QueuePacket(actor.CreatePositionUpdatePacket(playerActor.actorId));
+                    // todo: again, this is retarded but debug stuff
+                    var zone = (actors.area.Zone)actor.zone;
+                    if(zone != null && !checkedThisTick)
+                    {
+                        if (zone.pathCalls > 0)
+                        {
+                            checkedThisTick = true;
+                            Program.Log.Error("Number of pathfinding calls {0} average time {1}", zone.pathCalls, zone.pathCallTime / zone.pathCalls);
+                        }
+                    }
+
+                    var packet = actor.CreatePositionUpdatePacket(playerActor.actorId);
+
+                    if (packet != null)
+                        GetActor().QueuePacket(packet);
                 }
                 else
                 {
