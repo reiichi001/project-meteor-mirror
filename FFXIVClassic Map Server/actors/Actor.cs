@@ -151,6 +151,10 @@ namespace FFXIVClassic_Map_Server.Actors
                     positionX = pos.X;
                     positionY = pos.Y;
                     positionZ = pos.Z;
+
+                    if (target != null)
+                        LookAt(target);
+
                     //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
                 }
                 lastMoveUpdate = DateTime.Now;
@@ -400,11 +404,10 @@ namespace FFXIVClassic_Map_Server.Actors
 
                                     hasMoved = true;
                                 }
-                                else if (target != null)
+
+                                if (target != null)
                                 {
-                                    // todo: actually make IsFacing work
-                                    if(!IsFacing(target.positionX, target.positionY))
-                                        LookAt(target);
+                                    LookAt(target);
                                 }
                             }
                         }
@@ -605,8 +608,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             var dRot = Math.PI - rot2 + Math.PI / 2;
 
-            Program.Log.Error("IsFacing Rotation {0} Rotation2 {1}", rot1, rot2);
-            return rot1 == rot2;
+            return rot1 == (float)dRot;
         }
 
         public void LookAt(Actor actor)
@@ -632,10 +634,11 @@ namespace FFXIVClassic_Map_Server.Actors
 
             var dRot = Math.PI - rot2 + Math.PI / 2;
 
-            Program.Log.Error("LookAt Rotation {0} Rotation2 {1}", rot1, rot2);
+            // pending move, dont need to unset it
+            if (!hasMoved)
+                hasMoved = rot1 != (float)dRot;
 
-            this.hasMoved = rot2 != rot1;
-            this.rotation = (float)dRot;
+            rotation = (float)dRot;
         }
 
         public void PathTo(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40)
