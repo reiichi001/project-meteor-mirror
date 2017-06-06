@@ -22,7 +22,6 @@ namespace FFXIVClassic_Map_Server.actors.area
         Dictionary<string, List<PrivateAreaContent>> contentAreas = new Dictionary<string, List<PrivateAreaContent>>();
         Object contentAreasLock = new Object();
 
-        public Detour.dtNavMesh navMesh;
         public SharpNav.TiledNavMesh tiledNavMesh;
         public SharpNav.NavMeshQuery navMeshQuery;
         public Int64 pathCalls;

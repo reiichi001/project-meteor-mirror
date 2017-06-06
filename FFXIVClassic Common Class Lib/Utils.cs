@@ -352,16 +352,31 @@ namespace FFXIVClassic.Common
             return (value >> bits) | (value << (16 - bits));
         }
 
-        public static float Clamp(float val, float min, float max)
+        public static T Clamp<T>(this T value, T min, T max) where T : IComparable<T>
         {
-
-            return Math.Max(Math.Min(max, val), min);
+            if (value.CompareTo(min) < 0)
+                return min;
+            else if (value.CompareTo(max) > 0)
+                return max;
+            else
+                return value;
         }
 
-        public static int Clamp(int val, int min, int max)
+        public static T Min<T>(this T value, T min) where T : IComparable<T>
+        {
+            if (value.CompareTo(min) > 0)
+                return min;
+            else
+                return value;
+        }
+
+        public static T Max<T>(this T value, T max) where T : IComparable<T>
         {
 
-            return Math.Max(Math.Min(max, val), min);
+            if (value.CompareTo(max) < 0)
+                return max;
+            else
+                return value;
         }
 
         public static float Distance(float x, float y, float z, float x2, float y2, float z2)

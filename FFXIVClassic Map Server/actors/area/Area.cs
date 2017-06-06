@@ -202,6 +202,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 mActorBlock[gridOldX, gridOldY].Remove(actor);
                 mActorBlock[gridX, gridY].Add(actor);
             }
+            this.hasMoved = true;
         }
 
         public List<Actor> GetActorsAroundPoint(float x, float y, int checkDistance)

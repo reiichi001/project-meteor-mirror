@@ -134,7 +134,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 {
                     //Don't send for static characters (npcs)
                     // todo: this is retarded, need actual mob class
-                    if (actor is Character && !actor.hasMoved && ((Character)actor).isStatic)
+                    if (actor is Character && !actor.hasMoved)
                         continue;
 
                     // todo: again, this is retarded but debug stuff

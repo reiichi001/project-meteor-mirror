@@ -69,7 +69,7 @@
     </Reference>
     <Reference Include="SharpNav, Version=1.0.0.1, Culture=neutral, PublicKeyToken=b467138d8cacd85b, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>.\SharpNav.dll</HintPath>
+      <HintPath>navmesh\SharpNav.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -137,21 +137,6 @@
     <Compile Include="lua\LuaParam.cs" />
     <Compile Include="lua\LuaScript.cs" />
     <Compile Include="lua\LuaUtils.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Detour\DetourCommon.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Detour\DetourNavMesh.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Detour\DetourNavMeshBuilder.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Detour\DetourNavMeshQuery.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Detour\DetourNode.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Detour\DetourStatus.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\Recast.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastArea.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastContour.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastFilter.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastLayers.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastMesh.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastMeshDetail.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastRasterization.cs" />
-    <Compile Include="navmesh\rcdtcs\Assets\Rcdtcs\Recast\RecastRegion.cs" />
     <Compile Include="PacketProcessor.cs" />
     <Compile Include="packets\receive\ChatMessagePacket.cs" />
     <Compile Include="packets\receive\events\EventUpdatePacket.cs" />
@@ -354,7 +339,9 @@
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="navmesh\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(SolutionDir)data\map_config.ini" "$(SolutionDir)$(ProjectName)\$(OutDir)" /d

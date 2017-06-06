@@ -94,28 +94,11 @@ namespace FFXIVClassic_Map_Server.utils
             return false;
         }
 
-        public static Detour.dtNavMesh LoadNavmesh(string path)
-        {
-            var bytes = File.ReadAllBytes(path);
-            var start = 0;
-
-            var navmesh = Detour.NavMeshSetBuild.FromBytes(bytes, ref start);
-            return navmesh;
-        }
-
         public static SharpNav.TiledNavMesh LoadNavmesh(TiledNavMesh navmesh, string filePath)
         {
             var serialiser = new SharpNav.IO.Json.NavMeshJsonSerializer();
             return serialiser.Deserialize(filePath);
             //return navmesh = new SharpNav.IO.Json.NavMeshJsonSerializer().Deserialize(filePath);
-        }
-
-        public static List<Vector3> GetPath(Detour.dtNavMesh navmesh, Vector3 start, Vector3 end)
-        {
-            var path = new Vector3[] { };
-
-
-            return path.ToList();
         }
 
         #region sharpnav stuff
@@ -127,16 +110,19 @@ namespace FFXIVClassic_Map_Server.utils
             var navMesh = zone.tiledNavMesh;
             var navMeshQuery = zone.navMeshQuery;
             
-            if (navMesh == null || (startVec.X == endVec.X && startVec.Y == endVec.Y && startVec.Z == endVec.Z))
+            if (navMesh == null || (startVec.X == endVec.X && startVec.Y == endVec.Y && startVec.Z == endVec.Z && polyRadius == 0.0f))
             {
+                Program.Log.Error("ass");
                 return null;
             }
 
-            float distanceSquared = FFXIVClassic.Common.Utils.DistanceSquared(startVec.X, startVec.Y, startVec.Z, endVec.X, endVec.Y, endVec.Z);
+            // we dont care about distance if picking random point
+            float distanceSquared = polyRadius == 0.0f ? FFXIVClassic.Common.Utils.DistanceSquared(startVec.X, startVec.Y, startVec.Z, endVec.X, endVec.Y, endVec.Z) : 100;
             
             // no point pathing if in range
             if (distanceSquared < 4 && Math.Abs(startVec.Y - endVec.Y) < 1.1f)
             {
+                Program.Log.Error("shit");
                 return null;
             }
 
@@ -145,8 +131,6 @@ namespace FFXIVClassic_Map_Server.utils
             NavQueryFilter filter = new NavQueryFilter();
 
             NavPoint startPt, endPt;
-            RaycastHit hit;
-            PathCorridor corridor = new PathCorridor();
 
             try
             {
@@ -171,6 +155,9 @@ namespace FFXIVClassic_Map_Server.utils
                 navMeshQuery.ClosestPointOnPoly(path[npolys - 1], endPt.Position, ref targetPos);
 
                 smoothPath.Add(new Vector3(iterPos));
+
+                if (npolys <= 1)
+                    System.Diagnostics.Debugger.Break();
 
                 //float STEP_SIZE = 0.70f;
                 float SLOP = 0.15f;
@@ -214,7 +201,7 @@ namespace FFXIVClassic_Map_Server.utils
                     iterPos = result;
 
                     //handle end of path when close enough
-                    if (endOfPath && InRange(iterPos, steerPos, SLOP, 1000.0f))
+                    if (endOfPath && InRange(iterPos, steerPos, SLOP, 10.0f))
                     {
                         //reached end of path
                         iterPos = targetPos;
