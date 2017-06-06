@@ -120,6 +120,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 
             }
 
+            // todo: this is retarded (checking moved crap demo added)
             bool checkedThisTick = false;
             //Add new actors or move
             for (int i = 0; i < list.Count; i++)

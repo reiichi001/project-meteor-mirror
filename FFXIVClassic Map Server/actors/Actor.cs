@@ -368,11 +368,32 @@ namespace FFXIVClassic_Map_Server.Actors
             if (diffTime.Milliseconds >= deltaTime)
             {
                 bool foundActor = false;
+                bool skipFollow = false;
+
+                // leash back to spawn
+                if (this.oldPositionX != 0.0f && this.oldPositionY != 0.0f && this.oldPositionZ != 0.0f)
+                {
+                    var spawnDistance = Utils.Distance(positionX, positionY, positionZ, oldPositionX, oldPositionY, oldPositionZ);
+
+                    if (spawnDistance >= 45)
+                    {
+                        skipFollow = true;
+                    }
+                }
+
                 foreach (var actor in ((Area)zone).GetActorsAroundActor(this, 50))
                 {
                     if (actor is Player && actor != this)
                     {
                         var player = actor as Player;
+
+                        if (skipFollow)
+                        {
+                            // todo: despawn self for player
+
+                            continue;
+                        }
+
 
                         var distance = Utils.Distance(positionX, positionY, positionZ, player.positionX, player.positionY, player.positionZ);
 
@@ -414,16 +435,28 @@ namespace FFXIVClassic_Map_Server.Actors
                         break;
                     }
                 }
+                var diffMove = (DateTime.Now - lastMoveUpdate);
+
                 // 5 seconds before back to spawn
-                if ((DateTime.Now - lastMoveUpdate).Seconds >= 5 && !foundActor)
+                if (diffMove.Seconds >= 5 && !foundActor)
                 {
-                    // 10 yalms spawn radius just because
-                    this.isAtSpawn = Utils.Distance(positionX, positionY, positionZ, oldPositionX, oldPositionY, oldPositionZ) <= 18.0f;
+                    // leash to spawn
+                    this.isAtSpawn = Utils.Distance(positionX, positionY, positionZ, oldPositionX, oldPositionY, oldPositionZ) <= 25.0f;
 
-                    if (this.isAtSpawn != true && this.target == null && oldPositionX != 0.0f && oldPositionY != 0.0f && oldPositionZ != 0.0f)
-                        PathTo(oldPositionX, oldPositionY, oldPositionZ, 3.0f);
-
-                    lastMoveUpdate = DateTime.Now;
+                    if (this.target == null && skipFollow)
+                    {
+                        // not in spawn range
+                        if (!this.isAtSpawn)
+                        {
+                            PathTo(oldPositionX, oldPositionY, oldPositionZ, 3.0f);
+                        }
+                        // within spawn range, find a random point
+                        else if (diffMove.Seconds >= 15)
+                        {
+                            //Program.Log.Error("Picking random point to walk to! ");
+                            PathTo(oldPositionX, oldPositionY, oldPositionZ, 2.5f, 25, 8.5f);
+                        }
+                    }
                     this.target = null;
                 }
                 lastAiUpdate = DateTime.Now;
@@ -641,7 +674,7 @@ namespace FFXIVClassic_Map_Server.Actors
             rotation = (float)dRot;
         }
 
-        public void PathTo(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40)
+        public void PathTo(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40, float polyRadius = 0.0f)
         {
             var pos = new utils.Vector3(positionX, positionY, positionZ);
             var dest = new utils.Vector3(x, y, z);
@@ -649,7 +682,7 @@ namespace FFXIVClassic_Map_Server.Actors
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
-            var path = utils.NavmeshUtils.GetPath(((Zone)GetZone()), pos, dest, stepSize, maxPath);
+            var path = utils.NavmeshUtils.GetPath(((Zone)GetZone()), pos, dest, stepSize, maxPath, polyRadius);
 
             if (path != null)
             {
@@ -687,8 +720,30 @@ namespace FFXIVClassic_Map_Server.Actors
                 var player = target as Player;
 
                 if (this.target != target)
-                    this.target = target;
+                {
+                    #region super important performance critical code
+                    var chatMode = Program.Random.Next(12);
+                    var emphasis = Program.Random.Next(9);
+                    var drag = Program.Random.Next(7);
 
+                    string oni = "ONI";
+                    string chan = "CHA";
+
+                    for(var i = 0; i < emphasis; ++i)
+                        oni += "I";
+
+                    for (var i = 0; i < drag; ++i)
+                        chan += "A";
+
+                    oni += "-";
+                    chan += "N";
+
+
+                    player.SendMessage((uint)chatMode, "Rowena", oni + chan);
+                    #endregion
+
+                    this.target = target;
+                }
                 this.moveState = player.moveState;
                 this.moveSpeeds = player.moveSpeeds;
 

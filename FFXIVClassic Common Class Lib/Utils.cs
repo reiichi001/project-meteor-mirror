@@ -358,6 +358,12 @@ namespace FFXIVClassic.Common
             return Math.Max(Math.Min(max, val), min);
         }
 
+        public static int Clamp(int val, int min, int max)
+        {
+
+            return Math.Max(Math.Min(max, val), min);
+        }
+
         public static float Distance(float x, float y, float z, float x2, float y2, float z2)
         {
             if (x == x2 && y == y2 && z == z2)

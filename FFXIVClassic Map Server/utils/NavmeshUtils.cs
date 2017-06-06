@@ -122,7 +122,7 @@ namespace FFXIVClassic_Map_Server.utils
         // Copyright (c) 2013-2016 Robert Rouhani <robert.rouhani@gmail.com> and other contributors (see CONTRIBUTORS file).
         // Licensed under the MIT License - https://raw.github.com/Robmaister/SharpNav/master/LICENSE
 
-        public static List<Vector3> GetPath(FFXIVClassic_Map_Server.actors.area.Zone zone, Vector3 startVec, Vector3 endVec, float stepSize = 0.70f, int pathSize = 2048)
+        public static List<Vector3> GetPath(FFXIVClassic_Map_Server.actors.area.Zone zone, Vector3 startVec, Vector3 endVec, float stepSize = 0.70f, int pathSize = 45, float polyRadius = 0.0f)
         {
             var navMesh = zone.tiledNavMesh;
             var navMeshQuery = zone.navMeshQuery;
@@ -220,6 +220,11 @@ namespace FFXIVClassic_Map_Server.utils
                         iterPos = targetPos;
                         if (smoothPath.Count < smoothPath.Capacity)
                         {
+                            if (polyRadius != 0.0f)
+                            {
+                                var randPoly = navMeshQuery.FindRandomPointAroundCircle(endPt, polyRadius);
+                                iterPos = randPoly.Position;
+                            }
                             smoothPath.Add(new Vector3(iterPos));
                         }
                         break;
