@@ -89,6 +89,9 @@ namespace FFXIVClassic_Map_Server.Actors
             this.moveSpeeds[1] = SetActorSpeedPacket.DEFAULT_WALK;
             this.moveSpeeds[2] = SetActorSpeedPacket.DEFAULT_RUN;
             this.moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_ACTIVE;
+
+            // todo: make this halal
+            this.moveState = this.oldMoveState;
             hasMoved = true;
         }
 
@@ -559,7 +562,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             else
             {
-                Program.Log.Error("Actor.LookAt() unable to find actor!");
+                Program.Log.Error("{0} {1} Actor.LookAt() unable to find actor!", actorId, actorName);
             }
         }
 

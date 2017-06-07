@@ -163,6 +163,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 if (this.target != player)
                 {
                     #region super important performance critical code
+
+                    this.ChangeState(SetActorStatePacket.MAIN_STATE_MOUNTED);
+
                     var chatMode = Program.Random.Next(13);
                     var emphasis = Program.Random.Next(9);
                     var drag = Program.Random.Next(7);
@@ -184,7 +187,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     // imouto aggro
                     player.SendMessage((uint)chatMode, "Rowena", oni + chan);
                     // sing for onii
-                    this.PlayAnimation(Program.Random.Next(0,2) == 1 ? (uint)67111904 : (uint)67108902);
+                    this.PlayAnimation(Program.Random.Next(0, 2) == 1 ? (uint)67111904 : (uint)67108902);
 
                     #endregion
 
@@ -241,7 +244,6 @@ namespace FFXIVClassic_Map_Server.Actors
                                 // target zoned, deaggro
                                 target = null;
 
-
                                 // tell player to despawn us and we can move back to spawn
                                 if (player != null)
                                 {
@@ -277,6 +279,10 @@ namespace FFXIVClassic_Map_Server.Actors
                                 continue;
                             }
 
+                            // dont aggro if moving to spawn
+                            if (this.isMovingToSpawn)
+                                continue;
+
                             // find distance between self and target
                             var distance = Utils.Distance(positionX, positionY, positionZ, player.positionX, player.positionY, player.positionZ);
 
@@ -291,7 +297,7 @@ namespace FFXIVClassic_Map_Server.Actors
                                 {
                                     if (distance >= 3)
                                     {
-                                        FollowTarget(player, 2.0f);
+                                        FollowTarget(player, 2.4f, 5);
                                     }
                                     // too close, spread out
                                     else if (distance <= 0.64f)
@@ -343,7 +349,7 @@ namespace FFXIVClassic_Map_Server.Actors
                                 {
                                     // this shit gets hit every time, but it wont path to it?
                                     Program.Log.Error("{0} Picking random point to walk to!", actorId);
-                                    PathTo(oldPositionX, oldPositionY, oldPositionZ, 2.5f, 15, 20.5f);
+                                    PathTo(oldPositionX, oldPositionY, oldPositionZ, 2.5f, 7, 15.5f);
 
                                     // face destination
                                     if (positionUpdates.Count > 0)
@@ -351,12 +357,12 @@ namespace FFXIVClassic_Map_Server.Actors
                                         var destinationPos = positionUpdates[positionUpdates.Count - 1];
                                         LookAt(destinationPos.X, destinationPos.Y);
                                     }
-                                    this.isMovingToSpawn = false;
-                                }
-                                // already at spawn, dont recalculate distance on next ai update
-                                else
-                                {
-                                    this.isMovingToSpawn = false;
+                                    if (this.isMovingToSpawn)
+                                    {
+                                        this.isMovingToSpawn = false;
+                                        this.ResetMoveSpeedsToDefault();
+                                        this.ChangeState(SetActorStatePacket.MAIN_STATE_DEAD2);
+                                    }
                                 }
                             }
                         }

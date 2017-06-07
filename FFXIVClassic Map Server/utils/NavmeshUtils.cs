@@ -112,7 +112,6 @@ namespace FFXIVClassic_Map_Server.utils
             
             if (navMesh == null || (startVec.X == endVec.X && startVec.Y == endVec.Y && startVec.Z == endVec.Z && polyRadius == 0.0f))
             {
-                Program.Log.Error("ass");
                 return null;
             }
 
@@ -122,7 +121,6 @@ namespace FFXIVClassic_Map_Server.utils
             // no point pathing if in range
             if (distanceSquared < 4 && Math.Abs(startVec.Y - endVec.Y) < 1.1f)
             {
-                Program.Log.Error("shit");
                 return null;
             }
 
@@ -154,10 +152,14 @@ namespace FFXIVClassic_Map_Server.utils
                 navMeshQuery.ClosestPointOnPoly(startPt.Polygon, startPt.Position, ref iterPos);
                 navMeshQuery.ClosestPointOnPoly(path[npolys - 1], endPt.Position, ref targetPos);
 
-                smoothPath.Add(new Vector3(iterPos));
+                // set target to random point at end of path
+                if (polyRadius != 0.0f)
+                {
+                    var randPoly = navMeshQuery.FindRandomPointAroundCircle(endPt, polyRadius);
+                    targetPos = randPoly.Position;
+                }
 
-                if (npolys <= 1)
-                    System.Diagnostics.Debugger.Break();
+                smoothPath.Add(new Vector3(iterPos));
 
                 //float STEP_SIZE = 0.70f;
                 float SLOP = 0.15f;
@@ -201,17 +203,12 @@ namespace FFXIVClassic_Map_Server.utils
                     iterPos = result;
 
                     //handle end of path when close enough
-                    if (endOfPath && InRange(iterPos, steerPos, SLOP, 10.0f))
+                    if (endOfPath && InRange(iterPos, steerPos, SLOP, 1000.0f))
                     {
                         //reached end of path
                         iterPos = targetPos;
                         if (smoothPath.Count < smoothPath.Capacity)
                         {
-                            if (polyRadius != 0.0f)
-                            {
-                                var randPoly = navMeshQuery.FindRandomPointAroundCircle(endPt, polyRadius);
-                                iterPos = randPoly.Position;
-                            }
                             smoothPath.Add(new Vector3(iterPos));
                         }
                         break;
