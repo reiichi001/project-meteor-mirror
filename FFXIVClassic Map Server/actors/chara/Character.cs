@@ -252,7 +252,7 @@ namespace FFXIVClassic_Map_Server.Actors
                                 {
                                     // make sure we dont tell player to despawn us twice
                                     targId = player.actorId;
-                                    player.QueuePacket(RemoveActorPacket.BuildPacket(player.actorId, actorId));
+                                    //player.QueuePacket(RemoveActorPacket.BuildPacket(player.actorId, actorId));
                                 }
                             }
                             this.isMovingToSpawn = true;
@@ -268,6 +268,8 @@ namespace FFXIVClassic_Map_Server.Actors
                             this.lastMoveUpdate = this.lastMoveUpdate.AddSeconds(-5);
                         }
                     }
+                    Player closestPlayer = null;
+                    float closestPlayerDistance = 1000.0f;
 
                     foreach (var actor in zone.GetActorsAroundActor(this, 65))
                     {
@@ -278,7 +280,7 @@ namespace FFXIVClassic_Map_Server.Actors
                             // dont despawn again if we already told target to despawn us
                             if (despawnOutOfRange && player.actorId != targId)
                             {
-                                player.QueuePacket(RemoveActorPacket.BuildPacket(player.actorId, this.actorId));
+                                //player.QueuePacket(RemoveActorPacket.BuildPacket(player.actorId, this.actorId));
                                 continue;
                             }
 
@@ -289,43 +291,48 @@ namespace FFXIVClassic_Map_Server.Actors
                             // find distance between self and target
                             var distance = Utils.Distance(positionX, positionY, positionZ, player.positionX, player.positionY, player.positionZ);
 
-                            int maxDistance = player == target ? 27 : 15;
+                            int maxDistance = player == target ? 27 : 10;
 
                             // check target isnt too far
-                            if (distance <= maxDistance)
+                            // todo: create cone thing for IsFacing
+                            if (distance <= maxDistance && distance <= closestPlayerDistance && (IsFacing(player) || true))
                             {
+                                closestPlayerDistance = distance;
+                                closestPlayer = player;
                                 foundActor = true;
-
-                                if (!hasMoved)
-                                {
-                                    if (distance >= 3)
-                                    {
-                                        FollowTarget(player, 2.4f, 5);
-                                    }
-                                    // too close, spread out
-                                    else if (distance <= 0.64f)
-                                    {
-                                        var minRadius = 0.65f;
-                                        var maxRadius = 0.85f;
-
-                                        var angle = Program.Random.NextDouble() * Math.PI * 2;
-                                        var radius = Math.Sqrt(Program.Random.NextDouble() * (maxRadius - minRadius)) + minRadius;
-
-                                        float x = (float)(radius * Math.Cos(angle));
-                                        float z = (float)(radius * Math.Sin(angle));
-
-                                        positionUpdates.Add(new utils.Vector3(positionX + x, positionY, positionZ + z));
-
-                                        hasMoved = true;
-                                    }
-
-                                    if (target != null)
-                                    {
-                                        LookAt(target);
-                                    }
-                                }
                             }
-                            break;
+                        }
+                    }
+
+                    if (foundActor)
+                    {
+                        if (!hasMoved)
+                        {
+                            if (closestPlayerDistance >= 3)
+                            {
+                                FollowTarget(closestPlayer, 2.4f, 5);
+                            }
+                            // too close, spread out
+                            else if (closestPlayerDistance <= 0.64f)
+                            {
+                                var minRadius = 0.65f;
+                                var maxRadius = 0.85f;
+
+                                var angle = Program.Random.NextDouble() * Math.PI * 2;
+                                var radius = Math.Sqrt(Program.Random.NextDouble() * (maxRadius - minRadius)) + minRadius;
+
+                                float x = (float)(radius * Math.Cos(angle));
+                                float z = (float)(radius * Math.Sin(angle));
+
+                                positionUpdates.Add(new utils.Vector3(positionX + x, positionY, positionZ + z));
+
+                                hasMoved = true;
+                            }
+
+                            if (target != null)
+                            {
+                                LookAt(target);
+                            }
                         }
                     }
                     var diffMove = (DateTime.Now - lastMoveUpdate);

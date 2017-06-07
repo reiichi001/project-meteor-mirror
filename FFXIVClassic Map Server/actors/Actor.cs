@@ -540,12 +540,32 @@ namespace FFXIVClassic_Map_Server.Actors
             return zoneId;
         }
 
-        public bool IsFacing(float x, float y, byte checkAngle = 45)
+        public bool IsFacing(float x, float y)
         {
             var rot1 = this.rotation;
 
             var dX = this.positionX - x;
             var dY = this.positionY - y;
+
+            var rot2 = Math.Atan2(dY, dX);
+
+            var dRot = Math.PI - rot2 + Math.PI / 2;
+
+            return rot1 == (float)dRot;
+        }
+
+        public bool IsFacing(Actor target)
+        {
+            if (target == null)
+            {
+                Program.Log.Error("[{0}][{1}] IsFacing no target!", actorId, actorName);
+                return false;
+            }
+
+            var rot1 = this.rotation;
+
+            var dX = this.positionX - target.positionX;
+            var dY = this.positionY - target.positionY;
 
             var rot2 = Math.Atan2(dY, dX);
 
