@@ -150,6 +150,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 sw.Stop();
                 ((Zone)zone).pathCalls++;
                 ((Zone)zone).pathCallTime += sw.ElapsedMilliseconds;
+                if (path.Count == 1)
+                    Program.Log.Error($"mypos: {positionX} {positionY} {positionZ} | targetPos: {x} {y} {z} | step {stepSize} | maxPath {maxPath} | polyRadius {polyRadius}");
+
                 Program.Log.Error("[{0}][{1}] Created {2} points in {3} milliseconds", actorId, actorName, path.Count, sw.ElapsedMilliseconds);
             }
         }
@@ -233,7 +236,7 @@ namespace FFXIVClassic_Map_Server.Actors
                         var spawnDistance = Utils.Distance(positionX, positionY, positionZ, oldPositionX, oldPositionY, oldPositionZ);
 
                         // despawn if too far from spawn so client can reload me
-                        if (spawnDistance >= 63)
+                        if (spawnDistance >= 64.4)
                         {
                             despawnOutOfRange = true;
 
@@ -347,9 +350,7 @@ namespace FFXIVClassic_Map_Server.Actors
                                 // within spawn range, find a random point
                                 else if (diffMove.Seconds >= 15 && !hasMoved)
                                 {
-                                    // this shit gets hit every time, but it wont path to it?
-                                    Program.Log.Error("{0} Picking random point to walk to!", actorId);
-                                    PathTo(oldPositionX, oldPositionY, oldPositionZ, 2.5f, 7, 15.5f);
+                                    PathTo(oldPositionX, oldPositionY, oldPositionZ, 2.5f, 7, 10.5f);
 
                                     // face destination
                                     if (positionUpdates.Count > 0)
