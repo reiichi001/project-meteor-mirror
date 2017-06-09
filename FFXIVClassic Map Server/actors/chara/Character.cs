@@ -60,6 +60,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public Group currentParty = null;
         public ContentGroup currentContentGroup = null;
 
+        public DateTime lastAiUpdate;
+
         public Character(uint actorID) : base(actorID)
         {            
             //Init timer array to "notimer"
@@ -150,10 +152,11 @@ namespace FFXIVClassic_Map_Server.Actors
                 sw.Stop();
                 ((Zone)zone).pathCalls++;
                 ((Zone)zone).pathCallTime += sw.ElapsedMilliseconds;
-                if (path.Count == 1)
-                    Program.Log.Error($"mypos: {positionX} {positionY} {positionZ} | targetPos: {x} {y} {z} | step {stepSize} | maxPath {maxPath} | polyRadius {polyRadius}");
 
-                Program.Log.Error("[{0}][{1}] Created {2} points in {3} milliseconds", actorId, actorName, path.Count, sw.ElapsedMilliseconds);
+                if (path.Count == 1)
+                    Program.Log.Info($"mypos: {positionX} {positionY} {positionZ} | targetPos: {x} {y} {z} | step {stepSize} | maxPath {maxPath} | polyRadius {polyRadius}");
+
+                //Program.Log.Error("[{0}][{1}] Created {2} points in {3} milliseconds", actorId, actorName, path.Count, sw.ElapsedMilliseconds);
             }
         }
 
@@ -210,6 +213,11 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void Update(double deltaTime)
         {
+            // todo: actual ai controllers
+            // todo: mods to control different params instead of hardcode
+            // todo: other ai helpers
+
+            // time elapsed since last ai update
             var diffTime = (DateTime.Now - lastAiUpdate);
 
             if (this is Player)
@@ -235,106 +243,89 @@ namespace FFXIVClassic_Map_Server.Actors
                     {
                         var spawnDistance = Utils.Distance(positionX, positionY, positionZ, oldPositionX, oldPositionY, oldPositionZ);
 
-                        // despawn if too far from spawn so client can reload me
-                        if (spawnDistance >= 64.4)
-                        {
-                            despawnOutOfRange = true;
-
-                            if (target != null)
-                            {
-                                var player = target as Player;
-
-                                // target zoned, deaggro
-                                target = null;
-
-                                // tell player to despawn us and we can move back to spawn
-                                if (player != null)
-                                {
-                                    // make sure we dont tell player to despawn us twice
-                                    targId = player.actorId;
-                                    //player.QueuePacket(RemoveActorPacket.BuildPacket(player.actorId, actorId));
-                                }
-                            }
-                            this.isMovingToSpawn = true;
-                            this.positionUpdates.Clear();
-                            this.lastMoveUpdate = this.lastMoveUpdate.AddSeconds(-5);
-                        }
+                        // todo: actual spawn leash and modifiers read from table
                         // set a leash to path back to spawn even if have target
-                        else if (spawnDistance >= 55)
+                        if (spawnDistance >= 55)
                         {
                             this.isMovingToSpawn = true;
                             this.target = null;
-                            this.positionUpdates.Clear();
                             this.lastMoveUpdate = this.lastMoveUpdate.AddSeconds(-5);
+                            ClearPositionUpdates();
                         }
                     }
+
+                    // check if player
+                    if (target != null && target is Player)
+                    {
+                        var player = target as Player;
+
+                        // deaggro if zoning/logging
+                        if (player.playerSession.isUpdatesLocked || player.isZoneChanging || player.isZoning)
+                        {
+                            target = null;
+                            ClearPositionUpdates();
+                        }
+                    }
+
                     Player closestPlayer = null;
                     float closestPlayerDistance = 1000.0f;
 
-                    foreach (var actor in zone.GetActorsAroundActor(this, 65))
+                    // dont bother checking for any in-range players if going back to spawn
+                    if (!this.isMovingToSpawn)
                     {
-                        if (actor is Player && actor != this)
+                        foreach (var actor in zone.GetActorsAroundActor(this, 65))
                         {
-                            var player = actor as Player;
-
-                            // dont despawn again if we already told target to despawn us
-                            if (despawnOutOfRange && player.actorId != targId)
+                            if (actor is Player && actor != this)
                             {
-                                //player.QueuePacket(RemoveActorPacket.BuildPacket(player.actorId, this.actorId));
-                                continue;
+                                var player = actor as Player;
+
+                                // skip if zoning/logging
+                                if (player != null && player.isZoning || player.isZoning || player.playerSession.isUpdatesLocked)
+                                    continue;
+
+                                // find distance between self and target
+                                var distance = Utils.Distance(positionX, positionY, positionZ, player.positionX, player.positionY, player.positionZ);
+
+                                int maxDistance = player == target ? 27 : 10;
+
+                                // check target isnt too far
+                                // todo: create cone thing for IsFacing
+                                if (distance <= maxDistance && distance <= closestPlayerDistance && (IsFacing(player) || true))
+                                {
+                                    closestPlayerDistance = distance;
+                                    closestPlayer = player;
+                                    foundActor = true;
+                                }
                             }
+                        }
 
-                            // dont aggro if moving to spawn
-                            if (this.isMovingToSpawn)
-                                continue;
-
-                            // find distance between self and target
-                            var distance = Utils.Distance(positionX, positionY, positionZ, player.positionX, player.positionY, player.positionZ);
-
-                            int maxDistance = player == target ? 27 : 10;
-
-                            // check target isnt too far
-                            // todo: create cone thing for IsFacing
-                            if (distance <= maxDistance && distance <= closestPlayerDistance && (IsFacing(player) || true))
+                        // found a target
+                        if (foundActor)
+                        {
+                            // make sure we're not already moving so we dont spam packets
+                            if (!hasMoved)
                             {
-                                closestPlayerDistance = distance;
-                                closestPlayer = player;
-                                foundActor = true;
+                                // todo: include model size and mob specific distance checks
+                                if (closestPlayerDistance >= 3)
+                                {
+                                    FollowTarget(closestPlayer, 2.4f, 5);
+                                }
+                                // too close, spread out
+                                else if (closestPlayerDistance <= 0.64f)
+                                {
+                                    QueuePositionUpdate(target.FindRandomPointAroundActor(0.65f, 0.85f));
+                                }
+
+                                // we have a target, face them
+                                if (target != null)
+                                {
+                                    LookAt(target);
+                                }
                             }
                         }
                     }
 
-                    if (foundActor)
-                    {
-                        if (!hasMoved)
-                        {
-                            if (closestPlayerDistance >= 3)
-                            {
-                                FollowTarget(closestPlayer, 2.4f, 5);
-                            }
-                            // too close, spread out
-                            else if (closestPlayerDistance <= 0.64f)
-                            {
-                                var minRadius = 0.65f;
-                                var maxRadius = 0.85f;
-
-                                var angle = Program.Random.NextDouble() * Math.PI * 2;
-                                var radius = Math.Sqrt(Program.Random.NextDouble() * (maxRadius - minRadius)) + minRadius;
-
-                                float x = (float)(radius * Math.Cos(angle));
-                                float z = (float)(radius * Math.Sin(angle));
-
-                                positionUpdates.Add(new utils.Vector3(positionX + x, positionY, positionZ + z));
-
-                                hasMoved = true;
-                            }
-
-                            if (target != null)
-                            {
-                                LookAt(target);
-                            }
-                        }
-                    }
+                    // time elapsed since last move update
                     var diffMove = (DateTime.Now - lastMoveUpdate);
 
                     // player disappeared
@@ -357,6 +348,7 @@ namespace FFXIVClassic_Map_Server.Actors
                                 // within spawn range, find a random point
                                 else if (diffMove.Seconds >= 15 && !hasMoved)
                                 {
+                                    // pick a random point within 10 yalms or spawn
                                     PathTo(oldPositionX, oldPositionY, oldPositionZ, 2.5f, 7, 10.5f);
 
                                     // face destination
@@ -377,6 +369,7 @@ namespace FFXIVClassic_Map_Server.Actors
                         // todo: this is retarded. actually no it isnt, i didnt deaggro if out of range..
                         target = null;
                     }
+                    // update last ai update time to now
                     lastAiUpdate = DateTime.Now;
                 }
             }

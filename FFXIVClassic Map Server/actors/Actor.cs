@@ -41,7 +41,6 @@ namespace FFXIVClassic_Map_Server.Actors
         public List<LuaParam> classParams;
 
         public List<utils.Vector3> positionUpdates = new List<utils.Vector3>();
-        public DateTime lastAiUpdate;
         public DateTime lastMoveUpdate;
         public Actor target;
 
@@ -371,6 +370,10 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 ((Character)this).Update(deltaTime);
             }
+            else if (this is Zone)
+            {
+                ((Zone)this).Update(deltaTime);
+            }
         }
 
         public void GenerateActorName(int actorNumber)
@@ -540,6 +543,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return zoneId;
         }
 
+        // todo: do this properly
         public bool IsFacing(float x, float y)
         {
             var rot1 = this.rotation;
@@ -554,6 +558,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return rot1 == (float)dRot;
         }
 
+        // todo: do this properly
         public bool IsFacing(Actor target)
         {
             if (target == null)
@@ -582,7 +587,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             else
             {
-                Program.Log.Error("{0} {1} Actor.LookAt() unable to find actor!", actorId, actorName);
+                Program.Log.Error("[{0}][{1}] Actor.LookAt() unable to find actor!", actorId, actorName);
             }
         }
 
@@ -602,6 +607,36 @@ namespace FFXIVClassic_Map_Server.Actors
                 hasMoved = rot1 != (float)dRot;
 
             rotation = (float)dRot;
+        }
+
+        public void QueuePositionUpdate(utils.Vector3 pos)
+        {
+            if (positionUpdates == null)
+                positionUpdates = new List<utils.Vector3>();
+
+            positionUpdates.Add(pos);
+            this.hasMoved = true;
+        }
+
+        public void QueuePositionUpdate(float x, float y, float z)
+        {
+            QueuePositionUpdate(new utils.Vector3(x, y, z));
+        }
+
+        public void ClearPositionUpdates()
+        {
+            positionUpdates.Clear();
+        }
+
+        public utils.Vector3 FindRandomPointAroundActor(float minRadius, float maxRadius)
+        {
+            var angle = Program.Random.NextDouble() * Math.PI * 2;
+            var radius = Math.Sqrt(Program.Random.NextDouble() * (maxRadius - minRadius)) + minRadius;
+
+            float x = (float)(radius * Math.Cos(angle));
+            float z = (float)(radius * Math.Sin(angle));
+
+            return new utils.Vector3(positionX + x, positionY, positionZ + z);
         }
     }
 }

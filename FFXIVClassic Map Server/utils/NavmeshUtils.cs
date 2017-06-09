@@ -97,7 +97,7 @@ namespace FFXIVClassic_Map_Server.utils
         public static SharpNav.TiledNavMesh LoadNavmesh(TiledNavMesh navmesh, string filePath)
         {
             var serialiser = new SharpNav.IO.Json.NavMeshJsonSerializer();
-            return serialiser.Deserialize(filePath);
+            return serialiser.Deserialize(System.IO.Path.Combine("../../navmesh/", filePath));
             //return navmesh = new SharpNav.IO.Json.NavMeshJsonSerializer().Deserialize(filePath);
         }
 
@@ -110,7 +110,14 @@ namespace FFXIVClassic_Map_Server.utils
             var navMesh = zone.tiledNavMesh;
             var navMeshQuery = zone.navMeshQuery;
             
-            if (navMesh == null || (startVec.X == endVec.X && startVec.Y == endVec.Y && startVec.Z == endVec.Z && polyRadius == 0.0f))
+            // no navmesh loaded, run straight to player
+            if (navMesh == null)
+            {
+                return new List<Vector3>() { endVec };
+            }
+
+            // no need to waste cycles finding path to same point
+            if (startVec.X == endVec.X && startVec.Y == endVec.Y && startVec.Z == endVec.Z && polyRadius == 0.0f)
             {
                 return null;
             }
@@ -226,7 +233,7 @@ namespace FFXIVClassic_Map_Server.utils
                 Program.Log.Error(e.Message);
                 Program.Log.Error("Start pos {0} {1} {2} end pos {3} {4} {5}", startVec.X, startVec.Y, startVec.Z, endVec.X, endVec.Y, endVec.Z);
                 // todo: probably log this
-                return new List<Vector3>() { };
+                return new List<Vector3>() { endVec };
             }
             return smoothPath;
         }

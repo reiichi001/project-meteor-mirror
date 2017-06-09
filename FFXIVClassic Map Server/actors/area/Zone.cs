@@ -24,23 +24,28 @@ namespace FFXIVClassic_Map_Server.actors.area
 
         public SharpNav.TiledNavMesh tiledNavMesh;
         public SharpNav.NavMeshQuery navMeshQuery;
+
         public Int64 pathCalls;
         public Int64 pathCallTime;
 
-        public Zone(uint id, string zoneName, ushort regionId, string classPath, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
+        protected DateTime lastUpdate;
+
+        public Zone(uint id, string zoneName, ushort regionId, string classPath, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid, bool loadNavMesh = false)
             : base(id, zoneName, regionId, classPath, bgmDay, bgmNight, bgmBattle, isIsolated, isInn, canRideChocobo, canStealth, isInstanceRaid)
         {
-            // central thanalan navmesh
-            if (id == 170)
+            var navMeshName = loadNavMesh ? zoneName + ".snb" : "";
+
+            if (navMeshName != "")
             {
                 try
                 {
-                    //navMesh = utils.NavmeshUtils.LoadNavmesh("wil_w0_fld01.bin");
-                    tiledNavMesh = utils.NavmeshUtils.LoadNavmesh(tiledNavMesh, "wil_w0_fld01.snb");
+                    tiledNavMesh = utils.NavmeshUtils.LoadNavmesh(tiledNavMesh, navMeshName);
                     navMeshQuery = new SharpNav.NavMeshQuery(tiledNavMesh, 100);
-                    GC.Collect(2);
+
+                    if (tiledNavMesh != null)
+                        Program.Log.Info($"Loaded navmesh for {zoneName}");
                 }
-                catch(Exception e)
+                catch (Exception e)
                 {
                     Program.Log.Error(e.Message);
                 }
@@ -158,6 +163,25 @@ namespace FFXIVClassic_Map_Server.actors.area
             if (contentAreas.ContainsKey(area.GetPrivateAreaName()))
             {
                 contentAreas[area.GetPrivateAreaName()].Remove(area);
+            }
+        }
+
+        public void Update(double deltaTime)
+        {
+            // todo: again, this is retarded but debug stuff
+            var diffTime = DateTime.Now - lastUpdate;
+
+            // arbitrary cap
+            if (diffTime.Milliseconds >= 33)
+            {
+            }
+            
+            if (diffTime.Seconds >= 10)
+            {
+                if (this.pathCalls > 0)
+                {
+                    Program.Log.Error("Number of pathfinding calls {0} average time {1}", pathCalls, pathCallTime / pathCalls);
+                }
             }
         }
 

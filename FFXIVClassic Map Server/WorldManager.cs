@@ -76,7 +76,8 @@ namespace FFXIVClassic_Map_Server
                                     isInn,
                                     canRideChocobo,
                                     canStealth,
-                                    isInstanceRaid
+                                    isInstanceRaid,
+                                    loadNavMesh
                                     FROM server_zones
                                     WHERE zoneName IS NOT NULL and serverIp = @ip and serverPort = @port";
 
@@ -89,7 +90,8 @@ namespace FFXIVClassic_Map_Server
                     {
                         while (reader.Read())
                         {
-                            Zone zone = new Zone(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt16(2), reader.GetString(3), reader.GetUInt16(4), reader.GetUInt16(5), reader.GetUInt16(6), reader.GetBoolean(7), reader.GetBoolean(8), reader.GetBoolean(9), reader.GetBoolean(10), reader.GetBoolean(11));
+                            Zone zone = new Zone(reader.GetUInt32(0), reader.GetString(1), reader.GetUInt16(2), reader.GetString(3), reader.GetUInt16(4), reader.GetUInt16(5),
+                                reader.GetUInt16(6), reader.GetBoolean(7), reader.GetBoolean(8), reader.GetBoolean(9), reader.GetBoolean(10), reader.GetBoolean(11), reader.GetBoolean(12));
                             zoneList[zone.actorId] = zone;
                             count1++;
                         }
