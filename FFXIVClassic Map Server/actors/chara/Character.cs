@@ -119,8 +119,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void PathTo(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40, float polyRadius = 0.0f)
         {
-            var pos = new utils.Vector3(positionX, positionY, positionZ);
-            var dest = new utils.Vector3(x, y, z);
+            var pos = new Vector3(positionX, positionY, positionZ);
+            var dest = new Vector3(x, y, z);
 
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
@@ -156,11 +156,11 @@ namespace FFXIVClassic_Map_Server.Actors
                 if (path.Count == 1)
                     Program.Log.Info($"mypos: {positionX} {positionY} {positionZ} | targetPos: {x} {y} {z} | step {stepSize} | maxPath {maxPath} | polyRadius {polyRadius}");
 
-                //Program.Log.Error("[{0}][{1}] Created {2} points in {3} milliseconds", actorId, actorName, path.Count, sw.ElapsedMilliseconds);
+                Program.Log.Error("[{0}][{1}] Created {2} points in {3} milliseconds", actorId, actorName, path.Count, sw.ElapsedMilliseconds);
             }
         }
 
-        public void FollowTarget(Actor target, float stepSize = 1.2f, int maxPath = 25)
+        public void FollowTarget(Actor target, float stepSize = 1.2f, int maxPath = 25, float radius = 0.0f)
         {
             var player = target as Player;
 
@@ -202,13 +202,20 @@ namespace FFXIVClassic_Map_Server.Actors
                 this.moveState = player.moveState;
                 this.moveSpeeds = player.moveSpeeds;
 
-                PathTo(player.positionX, player.positionY, player.positionZ, stepSize, maxPath);
+                PathTo(player.positionX, player.positionY, player.positionZ, stepSize, maxPath, radius);
             }
         }
 
-        public void OnPath()
+        public void OnPath(ref Vector3 point)
         {
-            // todo: lua function onPath in mob script
+            if (positionUpdates != null && positionUpdates.Count > 0)
+            {
+                if (point == positionUpdates[positionUpdates.Count - 1])
+                {
+                    var myPos = new Vector3(positionX, positionY, positionZ);
+                    //point = NavmeshUtils.GetPath((Zone)zone, myPos, point, 0.35f, 1, 0.000001f, true)?[0];
+                }
+            }
         }
 
         public void Update(double deltaTime)
@@ -234,22 +241,21 @@ namespace FFXIVClassic_Map_Server.Actors
                 if (diffTime.Milliseconds >= deltaTime)
                 {
                     bool foundActor = false;
-                    bool despawnOutOfRange = false;
-
-                    var targId = target != null ? actorId : 0;
 
                     // leash back to spawn
                     if (!isMovingToSpawn && this.oldPositionX != 0.0f && this.oldPositionY != 0.0f && this.oldPositionZ != 0.0f)
                     {
-                        var spawnDistance = Utils.Distance(positionX, positionY, positionZ, oldPositionX, oldPositionY, oldPositionZ);
+                        //var spawnDistanceSq = Utils.DistanceSquared(positionX, positionY, positionZ, oldPositionX, oldPositionY, oldPositionZ);
 
                         // todo: actual spawn leash and modifiers read from table
                         // set a leash to path back to spawn even if have target
-                        if (spawnDistance >= 55)
+                        // (50 yalms)
+                        if (Utils.DistanceSquared(positionX, positionY, positionZ, oldPositionX, oldPositionY, oldPositionZ) >= 3025)
                         {
                             this.isMovingToSpawn = true;
                             this.target = null;
                             this.lastMoveUpdate = this.lastMoveUpdate.AddSeconds(-5);
+                            this.hasMoved = false;
                             ClearPositionUpdates();
                         }
                     }
@@ -260,7 +266,8 @@ namespace FFXIVClassic_Map_Server.Actors
                         var player = target as Player;
 
                         // deaggro if zoning/logging
-                        if (player.playerSession.isUpdatesLocked || player.isZoneChanging || player.isZoning)
+                        // todo: player.isZoning seems to be busted
+                        if (player.playerSession.isUpdatesLocked)
                         {
                             target = null;
                             ClearPositionUpdates();
@@ -268,7 +275,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     }
 
                     Player closestPlayer = null;
-                    float closestPlayerDistance = 1000.0f;
+                    float closestPlayerDistanceSq = 1000.0f;
 
                     // dont bother checking for any in-range players if going back to spawn
                     if (!this.isMovingToSpawn)
@@ -280,19 +287,20 @@ namespace FFXIVClassic_Map_Server.Actors
                                 var player = actor as Player;
 
                                 // skip if zoning/logging
-                                if (player != null && player.isZoning || player.isZoning || player.playerSession.isUpdatesLocked)
+                                // todo: player.isZoning seems to be busted
+                                if (player != null && player.playerSession.isUpdatesLocked)
                                     continue;
 
                                 // find distance between self and target
-                                var distance = Utils.Distance(positionX, positionY, positionZ, player.positionX, player.positionY, player.positionZ);
+                                var distanceSq = Utils.DistanceSquared(positionX, positionY, positionZ, player.positionX, player.positionY, player.positionZ);
 
-                                int maxDistance = player == target ? 27 : 10;
+                                int maxDistanceSq = player == target ? 900 : 100;
 
                                 // check target isnt too far
                                 // todo: create cone thing for IsFacing
-                                if (distance <= maxDistance && distance <= closestPlayerDistance && (IsFacing(player) || true))
+                                if (distanceSq <= maxDistanceSq && distanceSq <= closestPlayerDistanceSq && (IsFacing(player) || true))
                                 {
-                                    closestPlayerDistance = distance;
+                                    closestPlayerDistanceSq = distanceSq;
                                     closestPlayer = player;
                                     foundActor = true;
                                 }
@@ -306,12 +314,12 @@ namespace FFXIVClassic_Map_Server.Actors
                             if (!hasMoved)
                             {
                                 // todo: include model size and mob specific distance checks
-                                if (closestPlayerDistance >= 3)
+                                if (closestPlayerDistanceSq >= 9)
                                 {
-                                    FollowTarget(closestPlayer, 2.4f, 5);
+                                    FollowTarget(closestPlayer, 2.5f, 4);
                                 }
                                 // too close, spread out
-                                else if (closestPlayerDistance <= 0.64f)
+                                else if (closestPlayerDistanceSq <= 0.85f)
                                 {
                                     QueuePositionUpdate(target.FindRandomPointAroundActor(0.65f, 0.85f));
                                 }
@@ -328,14 +336,15 @@ namespace FFXIVClassic_Map_Server.Actors
                     // time elapsed since last move update
                     var diffMove = (DateTime.Now - lastMoveUpdate);
 
+                    // todo: modifier for DelayBeforeRoamToSpawn
                     // player disappeared
-                    if (diffMove.Seconds >= 5 && !foundActor)
+                    if (!foundActor && diffMove.Seconds >= 5)
                     {
                         // dont path if havent moved before
-                        if (oldPositionX != 0.0f && oldPositionY != 0.0f && oldPositionZ != 0.0f)
+                        if (!hasMoved && oldPositionX != 0.0f && oldPositionY != 0.0f && oldPositionZ != 0.0f)
                         {
                             // check within spawn radius
-                            this.isAtSpawn = Utils.Distance(positionX, positionY, positionZ, oldPositionX, oldPositionY, oldPositionZ) <= 25.0f;
+                            this.isAtSpawn = Utils.DistanceSquared(positionX, positionY, positionZ, oldPositionX, oldPositionY, oldPositionZ) <= 625.0f;
 
                             // make sure we have no target
                             if (this.target == null)
@@ -346,10 +355,11 @@ namespace FFXIVClassic_Map_Server.Actors
                                     PathTo(oldPositionX, oldPositionY, oldPositionZ, 2.8f);
                                 }
                                 // within spawn range, find a random point
-                                else if (diffMove.Seconds >= 15 && !hasMoved)
+                                else if (diffMove.Seconds >= 15)
                                 {
-                                    // pick a random point within 10 yalms or spawn
-                                    PathTo(oldPositionX, oldPositionY, oldPositionZ, 2.5f, 7, 10.5f);
+                                    // todo: polyRadius isnt euclidean distance..
+                                    // pick a random point within 10 yalms of spawn
+                                    PathTo(oldPositionX, oldPositionY, oldPositionZ, 2.5f, 7, 2.5f);
 
                                     // face destination
                                     if (positionUpdates.Count > 0)

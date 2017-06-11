@@ -40,7 +40,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public string className;
         public List<LuaParam> classParams;
 
-        public List<utils.Vector3> positionUpdates = new List<utils.Vector3>();
+        public List<Vector3> positionUpdates = new List<Vector3>();
         public DateTime lastMoveUpdate;
         public Actor target;
 
@@ -158,12 +158,16 @@ namespace FFXIVClassic_Map_Server.Actors
                 if (hasMoved)
                 {
                     var pos = positionUpdates[0];
-                    positionUpdates.Remove(pos);
 
+                    if (this is Character)
+                        ((Character)this).OnPath(ref pos);
+                    
                     positionX = pos.X;
                     positionY = pos.Y;
                     positionZ = pos.Z;
                     //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
+
+                    positionUpdates.RemoveAt(0);
                 }
                 lastMoveUpdate = DateTime.Now;
                 return MoveActorToPositionPacket.BuildPacket(actorId, playerActorId, positionX, positionY, positionZ, rotation, moveState);
@@ -609,10 +613,10 @@ namespace FFXIVClassic_Map_Server.Actors
             rotation = (float)dRot;
         }
 
-        public void QueuePositionUpdate(utils.Vector3 pos)
+        public void QueuePositionUpdate(Vector3 pos)
         {
             if (positionUpdates == null)
-                positionUpdates = new List<utils.Vector3>();
+                positionUpdates = new List<Vector3>();
 
             positionUpdates.Add(pos);
             this.hasMoved = true;
@@ -620,7 +624,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void QueuePositionUpdate(float x, float y, float z)
         {
-            QueuePositionUpdate(new utils.Vector3(x, y, z));
+            QueuePositionUpdate(new Vector3(x, y, z));
         }
 
         public void ClearPositionUpdates()
@@ -628,7 +632,7 @@ namespace FFXIVClassic_Map_Server.Actors
             positionUpdates.Clear();
         }
 
-        public utils.Vector3 FindRandomPointAroundActor(float minRadius, float maxRadius)
+        public Vector3 FindRandomPointAroundActor(float minRadius, float maxRadius)
         {
             var angle = Program.Random.NextDouble() * Math.PI * 2;
             var radius = Math.Sqrt(Program.Random.NextDouble() * (maxRadius - minRadius)) + minRadius;
@@ -636,7 +640,7 @@ namespace FFXIVClassic_Map_Server.Actors
             float x = (float)(radius * Math.Cos(angle));
             float z = (float)(radius * Math.Sin(angle));
 
-            return new utils.Vector3(positionX + x, positionY, positionZ + z);
+            return new Vector3(positionX + x, positionY, positionZ + z);
         }
     }
 }

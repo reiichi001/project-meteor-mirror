@@ -8,82 +8,10 @@ using SharpNav;
 using SharpNav.Pathfinding;
 using SharpNav.Crowds;
 using SharpNav.IO;
+using FFXIVClassic.Common;
 
 namespace FFXIVClassic_Map_Server.utils
 {
-    public class Vector3
-    {
-        public float X;
-        public float Y;
-        public float Z;
-        public static Vector3 Zero = new Vector3();
-
-        public Vector3(float x, float y, float z)
-        {
-            X = x;
-            Y = y;
-            Z = z;
-        }
-
-        public Vector3()
-        {
-            X = 0.0f;
-            Y = 0.0f;
-            Z = 0.0f;
-        }
-
-        public Vector3(SharpNav.Geometry.Vector3 vec)
-        {
-            X = vec.X;
-            Y = vec.Y;
-            Z = vec.Z;
-        }
-
-        public static Vector3 operator +(Vector3 lhs, Vector3 rhs)
-        {
-            Vector3 newVec = new Vector3(lhs.X, lhs.Y, lhs.Z);
-            newVec.X += rhs.X;
-            newVec.Y += rhs.Y;
-            newVec.Z += rhs.Z;
-            return newVec;
-        }
-
-        public static Vector3 operator -(Vector3 lhs, Vector3 rhs)
-        {
-            return new Vector3(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z);
-        }
-
-        public static Vector3 operator *(Vector3 lhs, Vector3 rhs)
-        {
-            return new Vector3(lhs.X * rhs.X, lhs.Y * rhs.Y, lhs.Z * rhs.Z);
-        }
-
-        public static Vector3 operator *(float scalar, Vector3 rhs)
-        {
-            return new Vector3(scalar * rhs.X, scalar * rhs.Y, scalar * rhs.Z);
-        }
-
-        public static Vector3 operator /(Vector3 lhs, Vector3 rhs)
-        {
-            return new Vector3(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z);
-        }
-
-        public float Length()
-        {
-            return (float)Math.Sqrt(this.LengthSquared());
-        }
-
-        public float LengthSquared()
-        {
-            return (this.X * this.X) + (this.Y * this.Y) + (this.Z * this.Z);
-        }
-
-        public static float Dot(Vector3 lhs, Vector3 rhs)
-        {
-            return (lhs.X * rhs.X) + (lhs.Y * rhs.Y) + (lhs.Z * rhs.Z);
-        }
-    }
-
     class NavmeshUtils
     {
 
@@ -96,8 +24,13 @@ namespace FFXIVClassic_Map_Server.utils
 
         public static SharpNav.TiledNavMesh LoadNavmesh(TiledNavMesh navmesh, string filePath)
         {
-            var serialiser = new SharpNav.IO.Json.NavMeshJsonSerializer();
-            return serialiser.Deserialize(System.IO.Path.Combine("../../navmesh/", filePath));
+            SharpNav.IO.NavMeshSerializer serializer;
+            if (System.IO.Path.GetExtension(filePath) == ".snb")
+                serializer = new SharpNav.IO.Binary.NavMeshBinarySerializer();
+            else
+                serializer = new SharpNav.IO.Json.NavMeshJsonSerializer();
+
+            return serializer.Deserialize(System.IO.Path.Combine("../../navmesh/", filePath));
             //return navmesh = new SharpNav.IO.Json.NavMeshJsonSerializer().Deserialize(filePath);
         }
 
@@ -105,11 +38,11 @@ namespace FFXIVClassic_Map_Server.utils
         // Copyright (c) 2013-2016 Robert Rouhani <robert.rouhani@gmail.com> and other contributors (see CONTRIBUTORS file).
         // Licensed under the MIT License - https://raw.github.com/Robmaister/SharpNav/master/LICENSE
 
-        public static List<Vector3> GetPath(FFXIVClassic_Map_Server.actors.area.Zone zone, Vector3 startVec, Vector3 endVec, float stepSize = 0.70f, int pathSize = 45, float polyRadius = 0.0f)
+        public static List<Vector3> GetPath(FFXIVClassic_Map_Server.actors.area.Zone zone, Vector3 startVec, Vector3 endVec, float stepSize = 0.70f, int pathSize = 45, float polyRadius = 0.0f, bool skipToTarget = false)
         {
             var navMesh = zone.tiledNavMesh;
             var navMeshQuery = zone.navMeshQuery;
-            
+
             // no navmesh loaded, run straight to player
             if (navMesh == null)
             {
@@ -166,7 +99,11 @@ namespace FFXIVClassic_Map_Server.utils
                     targetPos = randPoly.Position;
                 }
 
-                smoothPath.Add(new Vector3(iterPos));
+                if (skipToTarget)
+                {
+                    return new List<Vector3>() { new Vector3(targetPos.X, targetPos.Y, targetPos.Z) };
+                }
+                smoothPath.Add(new Vector3(iterPos.X, iterPos.Y, iterPos.Z));
 
                 //float STEP_SIZE = 0.70f;
                 float SLOP = 0.15f;
@@ -216,7 +153,7 @@ namespace FFXIVClassic_Map_Server.utils
                         iterPos = targetPos;
                         if (smoothPath.Count < smoothPath.Capacity)
                         {
-                            smoothPath.Add(new Vector3(iterPos));
+                            smoothPath.Add(new Vector3(iterPos.X, iterPos.Y, iterPos.Z));
                         }
                         break;
                     }
@@ -224,7 +161,7 @@ namespace FFXIVClassic_Map_Server.utils
                     //store results
                     if (smoothPath.Count < smoothPath.Capacity)
                     {
-                        smoothPath.Add(new Vector3(iterPos));
+                        smoothPath.Add(new Vector3(iterPos.X, iterPos.Y, iterPos.Z));
                     }
                 }
             }

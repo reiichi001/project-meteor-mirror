@@ -33,23 +33,20 @@ namespace FFXIVClassic_Map_Server.actors.area
         public Zone(uint id, string zoneName, ushort regionId, string classPath, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid, bool loadNavMesh = false)
             : base(id, zoneName, regionId, classPath, bgmDay, bgmNight, bgmBattle, isIsolated, isInn, canRideChocobo, canStealth, isInstanceRaid)
         {
-            var navMeshName = loadNavMesh ? zoneName + ".snb" : "";
-
-            if (navMeshName != "")
+            if (loadNavMesh)
             {
                 try
                 {
-                    tiledNavMesh = utils.NavmeshUtils.LoadNavmesh(tiledNavMesh, navMeshName);
+                    tiledNavMesh = utils.NavmeshUtils.LoadNavmesh(tiledNavMesh, zoneName + ".snb");
                     navMeshQuery = new SharpNav.NavMeshQuery(tiledNavMesh, 100);
 
-                    if (tiledNavMesh != null)
+                    if (tiledNavMesh != null && tiledNavMesh.Tiles[0].PolyCount > 0)
                         Program.Log.Info($"Loaded navmesh for {zoneName}");
                 }
                 catch (Exception e)
                 {
                     Program.Log.Error(e.Message);
                 }
-                
             }
         }
 

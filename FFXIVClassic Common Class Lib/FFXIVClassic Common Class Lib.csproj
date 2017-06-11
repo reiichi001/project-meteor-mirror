@@ -70,6 +70,7 @@
     <Compile Include="STA_INIFile.cs" />
     <Compile Include="SubPacket.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="Vector3.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
