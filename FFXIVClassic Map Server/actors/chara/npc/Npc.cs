@@ -17,6 +17,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic_Map_Server.actors.chara.ai;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -84,8 +85,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     isStatic = true;
                 }
             }
-
-            GenerateActorName((int)actorNumber);            
+            this.aiContainer = new AIContainer(this, null, new PathFind(this), new TargetFind(this));
         }
 
         public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, uint layout, uint instance)

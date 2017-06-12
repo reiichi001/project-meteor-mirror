@@ -956,8 +956,8 @@ namespace FFXIVClassic_Map_Server
         {          
             lock (zoneList)
             {
-                foreach (Area area in zoneList.Values)
-                    area.Update(MILIS_LOOPTIME);
+                foreach (Zone zone in zoneList.Values)
+                    zone.Update(MILIS_LOOPTIME);
             }            
         }
 

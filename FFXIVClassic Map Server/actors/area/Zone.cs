@@ -167,6 +167,7 @@ namespace FFXIVClassic_Map_Server.actors.area
         {
             // todo: again, this is retarded but debug stuff
             var diffTime = DateTime.Now - lastUpdate;
+            base.Update(deltaTime);
 
             // arbitrary cap
             if (diffTime.Milliseconds >= 33)

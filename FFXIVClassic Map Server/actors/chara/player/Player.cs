@@ -18,6 +18,8 @@ using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.packets.send.group;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
+using FFXIVClassic_Map_Server.actors.chara.ai;
+using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -247,6 +249,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             Database.LoadPlayerCharacter(this);
             lastPlayTimeUpdate = Utils.UnixTimeStampUTC();
+            this.aiContainer = new AIContainer(this, new PlayerController(this), null, new TargetFind(this));
         }
         
         public List<SubPacket> Create0x132Packets(uint playerActorId)

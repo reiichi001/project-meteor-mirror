@@ -228,6 +228,13 @@ namespace FFXIVClassic_Map_Server.Actors
             // todo: other ai helpers
 
             // time elapsed since last ai update
+
+            if (aiContainer != null)
+            {
+                this.aiContainer.Update(DateTime.Now);
+            }
+
+            /*
             var diffTime = (DateTime.Now - lastAiUpdate);
 
             if (this is Player)
@@ -386,7 +393,9 @@ namespace FFXIVClassic_Map_Server.Actors
                     lastAiUpdate = DateTime.Now;
                 }
             }
+            */
         }
+        
     }
 
 }
