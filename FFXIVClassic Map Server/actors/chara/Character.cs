@@ -5,6 +5,7 @@ using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.utils;
+using FFXIVClassic_Map_Server.actors.chara.ai;
 using System;
 
 namespace FFXIVClassic_Map_Server.Actors
@@ -61,6 +62,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public ContentGroup currentContentGroup = null;
 
         public DateTime lastAiUpdate;
+
+        public AIContainer aiContainer;
 
         public Character(uint actorID) : base(actorID)
         {            
