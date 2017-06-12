@@ -8,13 +8,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 {
     static class AttackUtils
     {
-        public static int CalculateDamage(ref Character attacker, ref Character defender)
+        public static int CalculateDamage(Character attacker, Character defender)
         {
-            int dmg = CalculateBaseDamage(ref attacker, ref defender);
+            int dmg = CalculateBaseDamage(attacker, defender);
 
             return dmg;
         }
-        public static int CalculateBaseDamage(ref Character attacker, ref Character defender)
+        public static int CalculateBaseDamage(Character attacker, Character defender)
         {
             return 0;
         }

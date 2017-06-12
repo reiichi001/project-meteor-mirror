@@ -526,12 +526,12 @@ namespace FFXIVClassic_Map_Server.Actors
             return null;
         }
 
-        public void Update(double deltaTime)
+        public void Update(DateTime tick)
         {
             lock (mActorList)
             {
                 foreach (Actor a in mActorList.Values)
-                    a.Update(deltaTime);
+                    a.Update(tick);
             }
         }
 

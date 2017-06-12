@@ -46,6 +46,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         }
 
+        public DateTime GetLatestUpdate()
+        {
+            return latestUpdate;
+        }
+
         public void Engage(Character target)
         {
             if (controller != null)

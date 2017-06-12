@@ -956,8 +956,9 @@ namespace FFXIVClassic_Map_Server
         {          
             lock (zoneList)
             {
+                var tick = DateTime.Now;
                 foreach (Zone zone in zoneList.Values)
-                    zone.Update(MILIS_LOOPTIME);
+                    zone.Update(tick);
             }            
         }
 
@@ -978,7 +979,7 @@ namespace FFXIVClassic_Map_Server
         }
 
         public Actor GetActorInWorld(uint charId)
-        {
+        {   
             foreach (Zone zone in zoneList.Values)
             {
                 Actor a = zone.FindActorInZone(charId);

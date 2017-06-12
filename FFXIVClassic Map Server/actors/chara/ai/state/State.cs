@@ -18,7 +18,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         protected DateTime startTime;
 
-        protected BasePacket errorPacket;
+        protected SubPacket errorPacket;
 
         public State(Character owner, Character target)
         {

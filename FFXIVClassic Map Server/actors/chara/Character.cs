@@ -221,7 +221,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public void Update(double deltaTime)
+        public void Update(DateTime tick)
         {
             // todo: actual ai controllers
             // todo: mods to control different params instead of hardcode
@@ -231,11 +231,11 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (aiContainer != null)
             {
-                this.aiContainer.Update(DateTime.Now);
+                this.aiContainer.Update(tick);
             }
 
             /*
-            var diffTime = (DateTime.Now - lastAiUpdate);
+            var diffTime = (tick - lastAiUpdate);
 
             if (this is Player)
             {
@@ -248,7 +248,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 //    return;
                 
                 // todo: this too
-                if (diffTime.Milliseconds >= deltaTime)
+                if (diffTime.Milliseconds >= 10)
                 {
                     bool foundActor = false;
 
@@ -344,7 +344,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     }
 
                     // time elapsed since last move update
-                    var diffMove = (DateTime.Now - lastMoveUpdate);
+                    var diffMove = (tick - lastMoveUpdate);
 
                     // todo: modifier for DelayBeforeRoamToSpawn
                     // player disappeared

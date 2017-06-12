@@ -163,11 +163,11 @@ namespace FFXIVClassic_Map_Server.actors.area
             }
         }
 
-        public void Update(double deltaTime)
+        public void Update(DateTime tick)
         {
             // todo: again, this is retarded but debug stuff
-            var diffTime = DateTime.Now - lastUpdate;
-            base.Update(deltaTime);
+            var diffTime = tick - lastUpdate;
+            base.Update(tick);
 
             // arbitrary cap
             if (diffTime.Milliseconds >= 33)

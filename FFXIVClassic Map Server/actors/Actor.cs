@@ -368,15 +368,15 @@ namespace FFXIVClassic_Map_Server.Actors
             zone.BroadcastPacketAroundActor(this, ChangeSpeedPacket);
         }
 
-        public void Update(double deltaTime)
+        public void Update(DateTime tick)
         {
             if (this is Character)
             {
-                ((Character)this).Update(deltaTime);
+                ((Character)this).Update(tick);
             }
             else if (this is Zone)
             {
-                ((Zone)this).Update(deltaTime);
+                ((Zone)this).Update(tick);
             }
         }
 
