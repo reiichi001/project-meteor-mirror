@@ -28,12 +28,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.interrupt = false;
         }
 
-        public virtual void Update(ref DateTime time) { }
+        public virtual void Update(DateTime tick) { }
         public virtual void OnStart() { }
         public virtual void OnInterrupt() { }
         public virtual void OnComplete() { }
 
         public virtual void TryInterrupt() { }
+
+        public virtual void Cleanup() { }
 
         public bool CanInterrupt()
         {
@@ -44,5 +46,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         {
             this.interrupt = interrupt;
         }
+
     }
 }

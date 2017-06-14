@@ -8,7 +8,7 @@ using FFXIVClassic_Map_Server.actors.chara.ai.state;
 using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 using FFXIVClassic_Map_Server.packets.send.actor;
 
-// port of ai code in dsp by kjLotus
+// port of ai code in dsp by kjLotus (https://github.com/DarkstarProject/darkstar/blob/master/src/map/ai)
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
     // todo: actually implement stuff
@@ -22,6 +22,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private DateTime prevUpdate;
         private PathFind pathFind;
         private TargetFind targetFind;
+        private ActionQueue actionQueue;
 
         public AIContainer(Character actor, Controller controller, PathFind pathFind, TargetFind targetFind)
         {
@@ -32,6 +33,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.targetFind = targetFind;
             latestUpdate = DateTime.Now;
             prevUpdate = latestUpdate;
+            actionQueue = new ActionQueue(owner);
         }
 
         public void Update(DateTime tick)
@@ -46,36 +48,23 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         }
 
-        public DateTime GetLatestUpdate()
+        public void InterruptStates()
         {
-            return latestUpdate;
+            while (states.Count > 0 && states.Peek().CanInterrupt())
+            {
+                states.Peek().SetInterrupted(true);
+                states.Peek().Cleanup();
+                states.Pop();
+            }
         }
 
-        public void Engage(Character target)
+        public void ClearStates()
         {
-            if (controller != null)
-                controller.Engage(target);
-            else
-                InternalEngage(target);
-        }
-
-        public bool IsEngaged()
-        {
-            // todo: check this is legit
-            return owner.currentMainState == SetActorStatePacket.MAIN_STATE_ACTIVE;
-        }
-
-        public void Disengage()
-        {
-            if (controller != null)
-                controller.Disengage();
-            else
-                InternalDisengage();
-        }
-
-        public void Cast(Character target, uint spellId)
-        {
-
+            while (states.Count > 0)
+            {
+                states.Peek().Cleanup();
+                states.Pop();
+            }
         }
 
         public void ChangeController(Controller controller)
@@ -98,6 +87,75 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 throw new Exception("shit");
             }
+        }
+
+        public DateTime GetLatestUpdate()
+        {
+            return latestUpdate;
+        }
+
+        public bool IsSpawned()
+        {
+            // todo: set a flag when finished spawning
+            return true;
+        }
+
+        public bool IsEngaged()
+        {
+            // todo: check this is legit
+            return owner.currentMainState == SetActorStatePacket.MAIN_STATE_ACTIVE;
+        }
+
+        public bool IsDead()
+        {
+            return owner.currentMainState == SetActorStatePacket.MAIN_STATE_DEAD ||
+                owner.currentMainState == SetActorStatePacket.MAIN_STATE_DEAD2;
+        }
+
+        public bool IsRoaming()
+        {
+            // todo: check mounted?
+            return owner.currentMainState == SetActorStatePacket.MAIN_STATE_PASSIVE;
+        }
+
+        public void Engage(Character target)
+        {
+            if (controller != null)
+                controller.Engage(target);
+            else
+                InternalEngage(target);
+        }
+
+        public void Disengage()
+        {
+            if (controller != null)
+                controller.Disengage();
+            else
+                InternalDisengage();
+        }
+
+        public void Cast(Character target, uint spellId)
+        {
+            if (controller != null)
+                controller.Cast(target, spellId);
+            else
+                InternalCast(target, spellId);
+        }
+
+        public void WeaponSkill(Character target, uint weaponSkillId)
+        {
+            if (controller != null)
+                controller.WeaponSkill(target, weaponSkillId);
+            else
+                InternalWeaponSkill(target, weaponSkillId);
+        }
+
+        public void MobSkill(Character target, uint mobSkillId)
+        {
+            if (controller != null)
+                controller.MobSkill(target, mobSkillId);
+            else
+                InternalMobSkill(target, mobSkillId);
         }
 
         public void InternalEngage(Character target)

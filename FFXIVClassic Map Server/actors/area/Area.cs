@@ -412,7 +412,7 @@ namespace FFXIVClassic_Map_Server.Actors
             AddActorToZone(npc);                          
         }
 
-        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0)
+        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0, bool isMob = true)
         {
             ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
 
@@ -426,7 +426,12 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 zoneId = actorId;
 
-            Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
+            Npc npc;
+
+            if(isMob)
+                npc = new Mob(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
+            else
+                npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
 
             npc.LoadEventConditions(actorClass.eventConditions);
 

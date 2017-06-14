@@ -209,7 +209,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public void OnPath(ref Vector3 point)
+        public void OnPath(Vector3 point)
         {
             if (positionUpdates != null && positionUpdates.Count > 0)
             {

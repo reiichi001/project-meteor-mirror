@@ -160,7 +160,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     var pos = positionUpdates[0];
 
                     if (this is Character)
-                        ((Character)this).OnPath(ref pos);
+                        ((Character)this).OnPath(pos);
                     
                     positionX = pos.X;
                     positionY = pos.Y;
@@ -641,6 +641,31 @@ namespace FFXIVClassic_Map_Server.Actors
             float z = (float)(radius * Math.Sin(angle));
 
             return new Vector3(positionX + x, positionY, positionZ + z);
+        }
+
+        public Player GetAsPlayer()
+        {
+            return currentSubState == SetActorStatePacket.SUB_STATE_PLAYER && this is Player ? ((Player)this) : null;
+        }
+
+        public Mob GetAsMob()
+        {
+            return currentSubState == SetActorStatePacket.SUB_STATE_MONSTER && this is Mob ? ((Mob)this) : null;
+        }
+
+        public Npc GetAsNpc()
+        {
+            return currentSubState != SetActorStatePacket.SUB_STATE_PLAYER && this is Npc ? ((Npc)this) : null;
+        }
+
+        public Actor GetAsActor()
+        {
+            return this is Actor ? ((Actor)this) : null;
+        }
+
+        public Character GetAsCharacter()
+        {
+            return this is Character ? ((Character)this) : null;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         }
 
-        public override void Update(ref DateTime time)
+        public override void Update(DateTime time)
         {
 
         }

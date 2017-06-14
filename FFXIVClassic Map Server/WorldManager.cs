@@ -954,11 +954,12 @@ namespace FFXIVClassic_Map_Server
         
         public void ZoneThreadLoop(Object state)
         {          
+            // todo: spawn new thread for each zone on startup
             lock (zoneList)
             {
-                var tick = DateTime.Now;
+                Program.Tick = DateTime.Now;
                 foreach (Zone zone in zoneList.Values)
-                    zone.Update(tick);
+                    zone.Update(Program.Tick);
             }            
         }
 
