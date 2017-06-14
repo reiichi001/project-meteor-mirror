@@ -15,12 +15,14 @@ namespace FFXIVClassic_Map_Server.Actors
 {
     class Mob : Npc
     {
+        public HateContainer hateContainer;
         public Mob(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot,
             ushort actorState, uint animationId, string customDisplayName)
             : base(actorNumber, actorClass, uniqueId, spawnedArea, posX, posY, posZ, rot, actorState, animationId, customDisplayName)  
         {
             this.aiContainer = new AIContainer(this, new MobController(this), new PathFind(this), new TargetFind(this));
             this.currentSubState = SetActorStatePacket.SUB_STATE_MONSTER;
+            this.hateContainer = new HateContainer(this);
         }
     }
 }

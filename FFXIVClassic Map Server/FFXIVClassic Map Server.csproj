@@ -90,6 +90,7 @@
     <Compile Include="actors\chara\ai\controllers\Controller.cs" />
     <Compile Include="actors\chara\ai\controllers\MobController.cs" />
     <Compile Include="actors\chara\ai\controllers\PlayerController.cs" />
+    <Compile Include="actors\chara\ai\HateContainer.cs" />
     <Compile Include="actors\chara\ai\PathFind.cs" />
     <Compile Include="actors\chara\ai\state\AttackState.cs" />
     <Compile Include="actors\chara\ai\state\State.cs" />
