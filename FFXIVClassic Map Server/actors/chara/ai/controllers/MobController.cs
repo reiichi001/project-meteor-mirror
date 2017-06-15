@@ -17,7 +17,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public override void Update(DateTime tick)
         {
-
+            // todo: handle aggro/deaggro and other shit here
+            ((Mob)this.owner).statusEffects.Update(tick);
         }
 
         public override bool Engage(Character target)

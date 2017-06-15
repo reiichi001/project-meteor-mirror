@@ -23,6 +23,7 @@ using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
 using System.Threading;
 using System.Diagnostics;
 using FFXIVClassic_Map_Server.actors.director;
+using FFXIVClassic_Map_Server.actors.chara.ai;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -35,6 +36,7 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<uint, ZoneEntrance> zoneEntranceList;
         private Dictionary<uint, ActorClass> actorClasses = new Dictionary<uint,ActorClass>();
         private Dictionary<ulong, Party> currentPlayerParties = new Dictionary<ulong, Party>(); //GroupId, Party object
+        private Dictionary<uint, StatusEffect> effectList = new Dictionary<uint, StatusEffect>(); // todo: load these in from a db table
 
         private Server mServer;
 

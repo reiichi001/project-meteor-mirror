@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
+using FFXIVClassic_Map_Server.actors.area;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
@@ -322,6 +323,31 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         // custom effects here
     }
 
+    [Flags]
+    enum StatusEffectFlags
+    {
+        None = 0x00,
+        Silent = 0x01,             // dont display effect loss message
+        LoseOnDeath = 0x02,        // effects removed on death
+        LoseOnZoning = 0x04,       // effects removed on zoning
+        LoseOnEsuna = 0x08,        // effects which can be removed with esuna (debuffs)
+        LoseOnDispel = 0x10,       // some buffs which player might be able to dispel from mob
+        LoseOnLogout = 0x20,       // effects removed on logging out
+        LoseOnAttacking = 0x40,    // effects removed when owner attacks another entity
+        LoseOnCasting = 0x80,      // effects removed when owner starts casting
+        LoseOnDamageTaken = 0x100, // effects removed when owner takes damage
+
+        PreventAction = 0x200,     // effects which prevent actions such as sleep/paralyze/petrify
+    }
+
+    enum StatusEffectOverwrite : byte
+    {
+        None,
+        Always,
+        GreaterOrEqualTo,
+        GreaterOnly,
+    }
+
     class StatusEffect
     {
         // todo: probably use get;set;
@@ -336,9 +362,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private int magnitude;      // a value specified by scripter which is guaranteed to be used by all effects
         private byte tier;          // same effect with higher tier overwrites this
         private Dictionary<string, UInt64> variables; // list of variables which belong to this effect, to be set/retrieved with GetVariable(key), SetVariable(key, val)
+        private StatusEffectFlags flags;              // death/erase/dispel etc
+        private StatusEffectOverwrite overwrite;      // 
 
-        public StatusEffect(uint id, int magnitude, uint tickMs, uint durationMs, byte tier = 0)
+        public StatusEffect(Character owner, uint id, int magnitude, uint tickMs, uint durationMs, byte tier = 0)
         {
+            this.owner = owner;
             this.id = (StatusEffectId)id;
             this.magnitude = magnitude;
             this.tickMs = tickMs;
@@ -353,6 +382,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             // name = WorldManager.GetEffectInfo(id).Name;
             // todo: check if can gain effect
             // todo: call effect's onGain
+            // todo: broadcast effect gain packet
+        }
+
+        public StatusEffect(Character owner, StatusEffect effect)
+        {
+            this.owner = owner;
+            this.id = effect.id;
+            this.magnitude = effect.magnitude;
+            this.tickMs = effect.tickMs;
+            this.durationMs = effect.durationMs;
+            this.tier = effect.tier;
+            this.startTime = effect.startTime;
+            this.lastTick = effect.lastTick;
+
+            this.name = effect.name;
+            this.flags = effect.flags;
+            this.overwrite = effect.overwrite;
+            this.variables = effect.variables;
         }
 
         // return true when duration has elapsed
@@ -365,12 +412,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 // todo: maybe keep a global lua object instead of creating a new one each time we wanna call a script
                 lastTick = tick;
             }
-            if (startTime.Millisecond + durationMs >= tick.Millisecond)
+            // todo: handle infinite duration effects?
+            if (durationMs != 0 && startTime.Millisecond + durationMs >= tick.Millisecond)
             {
                 // todo: call effect's onLose
+                // todo: broadcast effect lost packet
                 return true;
             }
             return false;
+        }
+
+        public Character GetOwner()
+        {
+            return owner;
         }
 
         public uint GetEffectId()
@@ -408,6 +462,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return variables?[key] ?? 0;
         }
 
+        public uint GetFlags()
+        {
+            return (uint)flags;
+        }
+
+        public byte GetOverwritable()
+        {
+            return (byte)overwrite;
+        }
+
+        public void SetOwner(Character owner)
+        {
+            this.owner = owner;
+        }
+
         public void SetName(string name)
         {
             this.name = name;
@@ -440,5 +509,98 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 variables[key] = val;
             }
         }
+
+        public void SetFlags(uint flags)
+        {
+            this.flags = (StatusEffectFlags)flags;
+        }
+
+        public void SetOverwritable(byte overwrite)
+        {
+            this.overwrite = (StatusEffectOverwrite)overwrite;
+        }
+    }
+
+    class StatusEffects
+    {
+        private Character owner;
+        private List<StatusEffect> effects;
+
+        public StatusEffects(Character owner)
+        {
+            this.owner = owner;
+            this.effects = new List<StatusEffect>();
+        }
+
+        public void Update(DateTime tick)
+        {
+            // list of effects to remove
+            var removeEffects = new List<StatusEffect>();
+            foreach (var effect in effects)
+            {
+                // effect's update function returns true if effect has completed
+                if (effect.Update(tick))
+                    removeEffects.Add(effect);
+            }
+
+            // remove effects from this list
+            foreach (var effect in removeEffects)
+                effects.Remove(effect);
+        }
+
+        public bool AddStatusEffect(StatusEffect effect)
+        {
+            // todo: check flags/overwritable and add effect to list
+            effects.Add(effect);
+            return true;
+        }
+
+        public StatusEffect CopyEffect(StatusEffect effect)
+        {
+            var newEffect = new StatusEffect(this.owner, effect);
+            newEffect.SetOwner(this.owner);
+
+            return AddStatusEffect(newEffect) ? newEffect : null;
+        }
+
+        public bool RemoveStatusEffectsByFlags(uint flags)
+        {
+            // build list of effects to remove
+            var removeEffects = new List<StatusEffect>();
+            foreach (var effect in effects)
+                if ((effect.GetFlags() & flags) > 0)
+                    removeEffects.Add(effect);
+
+            // remove effects from main list
+            foreach (var effect in removeEffects)
+                effects.Remove(effect);
+
+            // removed an effect with one of these flags
+            return removeEffects.Count > 0;
+        }
+
+        public StatusEffect GetStatusEffectById(uint id, uint tier = 0xFF)
+        {
+            foreach (var effect in effects)
+            {
+                if (effect.GetEffectId() == id && (tier != 0xFF ? effect.GetTier() == tier : true))
+                    return effect;
+            }
+            return null;
+        }
+
+        public List<StatusEffect> GetStatusEffectsByFlag(uint flag)
+        {
+            var list = new List<StatusEffect>();
+            foreach (var effect in effects)
+            {
+                if ((effect.GetFlags() & flag) > 0)
+                {
+                    list.Add(effect);
+                }
+            }
+            return list;
+        }
+
     }
 }

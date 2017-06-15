@@ -17,7 +17,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public override void Update(DateTime tick)
         {
+            // todo: handle player stuff on tick
 
+            ((Player)this.owner).statusEffects.Update(tick);
         }
 
         public override void ChangeTarget(Character target)
