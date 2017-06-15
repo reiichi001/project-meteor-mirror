@@ -87,7 +87,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public SubPacket CreateSpeedPacket(uint playerActorId)
         {
-            return SetActorSpeedPacket.BuildPacket(actorId, playerActorId);
+            return SetActorSpeedPacket.BuildPacket(actorId, playerActorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2], moveSpeeds[3]);
         }
 
         public SubPacket CreateSpawnPositonPacket(uint playerActorId, ushort spawnType)
