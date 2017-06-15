@@ -5,7 +5,7 @@ using FFXIVClassic.Common;
 
 namespace FFXIVClassic_Map_Server.packets.send.player
 {
-    class _0x196Packet
+    class SetSpecialEventWorkPacket
     {
         public const ushort OPCODE = 0x0196;
         public const uint PACKET_SIZE = 0x38;
@@ -17,9 +17,9 @@ namespace FFXIVClassic_Map_Server.packets.send.player
             using (MemoryStream mem = new MemoryStream(data))
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
-                {
-                    binWriter.Seek(0xE, SeekOrigin.Begin);
-                    binWriter.Write((Byte)0x01);
+                {                    
+                    binWriter.Write((UInt16)0x00);
+                    binWriter.Write((UInt16)18); //Just set it to Bomb Festival to unlock Bombdance
                 }
             }
 

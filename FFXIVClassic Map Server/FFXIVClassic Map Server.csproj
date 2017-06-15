@@ -251,7 +251,7 @@
     <Compile Include="packets\send\player\SetLatestAchievementsPacket.cs" />
     <Compile Include="packets\send\player\SetPlayerDreamPacket.cs" />
     <Compile Include="packets\send\player\SetPlayerTitlePacket.cs" />
-    <Compile Include="packets\send\player\_0x196Packet.cs" />
+    <Compile Include="packets\send\player\SetSpecialEventWorkPacket.cs" />
     <Compile Include="packets\send\PongPacket.cs" />
     <Compile Include="packets\send\QuitPacket.cs" />
     <Compile Include="packets\send\recruitment\CurrentRecruitmentDetailsPacket.cs" />

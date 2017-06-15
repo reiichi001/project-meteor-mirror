@@ -328,7 +328,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (IsMyPlayer(playerActorId))
             {
-                subpackets.Add(_0x196Packet.BuildPacket(playerActorId, playerActorId));
+                subpackets.Add(SetSpecialEventWorkPacket.BuildPacket(playerActorId, playerActorId));
 
                 if (hasChocobo && chocoboName != null && !chocoboName.Equals(""))
                 {
