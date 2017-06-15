@@ -64,7 +64,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             this.displayNameId = 0;
             this.customDisplayName = "_areaMaster";
-            this.actorName = String.Format("_areaMaster@{0:X5}",id<<8);
+            this.actorName = String.Format("_areaMaster@{0:X5}", id << 8);
 
             this.classPath = classPath;
             this.className = classPath.Substring(classPath.LastIndexOf("/") + 1);
@@ -77,12 +77,11 @@ namespace FFXIVClassic_Map_Server.Actors
 
             for (int y = 0; y < numYBlocks; y++)
             {
-                for (int x = 0; x < numXBlocks; x++ )
+                for (int x = 0; x < numXBlocks; x++)
                 {
                     mActorBlock[x, y] = new List<Actor>();
                 }
             }
-            
         }
 
         public override SubPacket CreateScriptBindPacket(uint playerActorId)
@@ -109,8 +108,11 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void AddActorToZone(Actor actor)
         {
-            if (!mActorList.ContainsKey(actor.actorId))
-                mActorList.Add(actor.actorId, actor);
+            lock (mActorList)
+            {
+                if (!mActorList.ContainsKey(actor.actorId))
+                    mActorList.Add(actor.actorId, actor);
+            }
 
             int gridX = (int)actor.positionX / boundingGridSize;
             int gridY = (int)actor.positionZ / boundingGridSize;
@@ -134,7 +136,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void RemoveActorFromZone(Actor actor)
         {
-            mActorList.Remove(actor.actorId);
+            lock (mActorList)
+                mActorList.Remove(actor.actorId);
 
             int gridX = (int)actor.positionX / boundingGridSize;
             int gridY = (int)actor.positionZ / boundingGridSize;
@@ -223,11 +226,14 @@ namespace FFXIVClassic_Map_Server.Actors
 
             List<Actor> result = new List<Actor>();
 
-            for (int gx = gridX - checkDistance; gx <= gridX + checkDistance; gx++)
+            lock (mActorBlock)
             {
-                for (int gy = gridY - checkDistance; gy <= gridY + checkDistance; gy++)
+                for (int gx = gridX - checkDistance; gx <= gridX + checkDistance; gx++)
                 {
-                    result.AddRange(mActorBlock[gx, gy]);
+                    for (int gy = gridY - checkDistance; gy <= gridY + checkDistance; gy++)
+                    {
+                        result.AddRange(mActorBlock[gx, gy]);
+                    }
                 }
             }
 
@@ -266,14 +272,16 @@ namespace FFXIVClassic_Map_Server.Actors
 
             List<Actor> result = new List<Actor>();
 
-            for (int gy = ((gridY - checkDistance) < 0 ? 0 : (gridY - checkDistance)); gy <= ((gridY + checkDistance) >= numYBlocks ? numYBlocks - 1 : (gridY + checkDistance)); gy++)
+            lock (mActorBlock)
             {
-                for (int gx = ((gridX - checkDistance) < 0 ? 0 : (gridX - checkDistance)); gx <= ((gridX + checkDistance) >= numXBlocks ? numXBlocks - 1 : (gridX + checkDistance)); gx++)
+                for (int gy = ((gridY - checkDistance) < 0 ? 0 : (gridY - checkDistance)); gy <= ((gridY + checkDistance) >= numYBlocks ? numYBlocks - 1 : (gridY + checkDistance)); gy++)
                 {
-                    result.AddRange(mActorBlock[gx, gy]);
+                    for (int gx = ((gridX - checkDistance) < 0 ? 0 : (gridX - checkDistance)); gx <= ((gridX + checkDistance) >= numXBlocks ? numXBlocks - 1 : (gridX + checkDistance)); gx++)
+                    {
+                        result.AddRange(mActorBlock[gx, gy]);
+                    }
                 }
             }
-
             //Remove players if isolation zone
             if (isIsolated)
             {
@@ -291,19 +299,25 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public Actor FindActorInArea(uint id)
         {
-            if (!mActorList.ContainsKey(id))
-                return null;
-            return mActorList[id];
+            lock (mActorList)
+            {
+                if (!mActorList.ContainsKey(id))
+                    return null;
+                return mActorList[id];
+            }
         }
 
         public Actor FindActorInZoneByUniqueID(string uniqueId)
         {
-            foreach (Actor a in mActorList.Values)
+            lock (mActorList)
             {
-                if (a is Npc)
+                foreach (Actor a in mActorList.Values)
                 {
-                    if (((Npc)a).GetUniqueId().ToLower().Equals(uniqueId))
-                        return a;
+                    if (a is Npc)
+                    {
+                        if (((Npc)a).GetUniqueId().ToLower().Equals(uniqueId))
+                            return a;
+                    }
                 }
             }
             return null;
@@ -311,33 +325,45 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public Player FindPCInZone(string name)
         {
-            foreach (Actor a in mActorList.Values)
+            lock (mActorList)
             {
-                if (a is Player)
+                foreach (Actor a in mActorList.Values)
                 {
-                    if (((Player)a).customDisplayName.ToLower().Equals(name.ToLower()))
-                        return (Player)a;
+                    if (a is Player)
+                    {
+                        if (((Player)a).customDisplayName.ToLower().Equals(name.ToLower()))
+                            return (Player)a;
+                    }
                 }
+                return null;
             }
-            return null;
         }
 
         public Player FindPCInZone(uint id)
         {
-            if (!mActorList.ContainsKey(id))
-                return null;
-            return (Player)mActorList[id];
+            lock (mActorList)
+            {
+                if (!mActorList.ContainsKey(id))
+                    return null;
+                return (Player)mActorList[id];
+            }
         }
 
         public void Clear()
         {
-            //Clear All
-            mActorList.Clear();
-            for (int y = 0; y < numYBlocks; y++)
+            lock (mActorList)
             {
-                for (int x = 0; x < numXBlocks; x++)
+                //Clear All
+                mActorList.Clear();
+                lock (mActorBlock)
                 {
-                    mActorBlock[x, y].Clear();
+                    for (int y = 0; y < numYBlocks; y++)
+                    {
+                        for (int x = 0; x < numXBlocks; x++)
+                        {
+                            mActorBlock[x, y].Clear();
+                        }
+                    }
                 }
             }
         }
@@ -450,12 +476,15 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             if (zoneWide)
             {
-                foreach (var actor in mActorList)
+                lock (mActorList)
                 {
-                    if (actor.Value is Player)
+                    foreach (var actor in mActorList)
                     {
-                        player = ((Player)actor.Value);
-                        player.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime), true, false));
+                        if (actor.Value is Player)
+                        {
+                            player = ((Player)actor.Value);
+                            player.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime), true, false));
+                        }
                     }
                 }
             }

@@ -48,7 +48,7 @@ function VerifyUser($dataConnection, $username, $password)
 		$statement->bind_result($id, $storedPasshash, $salt);
 		if(!$statement->fetch())
 		{
-			throw new Exception(__FUNCTION__ . " failed.");
+			throw new Exception("Incorrect username.");
 		}
 		
 		$saltedPassword = $password . $salt;
@@ -56,7 +56,7 @@ function VerifyUser($dataConnection, $username, $password)
 		
 		if($hashedPassword !== $storedPasshash)
 		{
-			throw new Exception(__FUNCTION__ . " failed.");
+			throw new Exception("Incorrect password.");
 		}
 		
 		return $id;
