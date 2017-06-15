@@ -771,9 +771,9 @@ namespace FFXIVClassic_Map_Server.Actors
             return mountState;
         }
 
-        public void DoEmote(uint emoteId)
+        public void DoEmote(uint animId, uint descId)
         {
-            BroadcastPacket(ActorDoEmotePacket.BuildPacket(actorId, actorId, currentTarget, emoteId), true);
+            BroadcastPacket(ActorDoEmotePacket.BuildPacket(actorId, actorId, currentTarget, animId, descId), true);
         }
 
         public void SendGameMessage(Actor sourceActor, Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
