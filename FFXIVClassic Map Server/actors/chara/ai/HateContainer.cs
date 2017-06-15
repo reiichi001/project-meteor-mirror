@@ -23,6 +23,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.isActive = isActive;
         }
     }
+
     class HateContainer
     {
         private Dictionary<Character, HateEntry> hateList;
