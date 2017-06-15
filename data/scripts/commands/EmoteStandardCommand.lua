@@ -59,7 +59,7 @@ emoteTable = {
 	[153] = {animId = 49, descId = 21439}, --Disappointed
 	[154] = {animId = 46, descId = 10105}, --Air Quotes
 	[155] = {animId = 54, descId = 21442}, --Pray
-	[156] = {animId = 55, descId = 21444}, --Fire Dance
+	[156] = {animId = 55, descId = 21445}, --Fire Dance
 };
 
 
