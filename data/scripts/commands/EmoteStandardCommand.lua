@@ -63,12 +63,16 @@ emoteTable = {
 };
 
 
-function onEventStarted(player, actor, triggerName, emoteId)
+function onEventStarted(player, actor, triggerName, emoteId, unknownArg1, arg2, arg3, targetId)
+
+	if (targetId == nil) then
+		targetId = 0;
+	end
 
 	if (player:GetState() == 0) then	
 		emote = emoteTable[emoteId];		
 		if (emote ~= nil) then
-			player:doEmote(emote.animId, emote.descId);
+			player:doEmote(targetId, emote.animId, emote.descId);
 		else
 			player:SendMessage(0x20, "", string.format("Not implemented; EmoteId: %d", emoteId));
 		end
@@ -76,7 +80,4 @@ function onEventStarted(player, actor, triggerName, emoteId)
 	
 	player:EndEvent();
 	
-end
-
-function onEventUpdate(player, npc)
 end

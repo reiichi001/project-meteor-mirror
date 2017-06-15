@@ -14,16 +14,18 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
-            if (targettedActorId == 0xC0000000)
+            if (targettedActorId == 0)
+            {
                 targettedActorId = sourceActorId;
+                if (descriptionId != 10105)
+                    descriptionId++;
+            }
 
             using (MemoryStream mem = new MemoryStream(data))
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    uint realAnimID = 0x5000000 | (animationId << 12);
-                    if (descriptionId != 10105 && targettedActorId == sourceActorId)
-                        descriptionId++;
+                    uint realAnimID = 0x5000000 | (animationId << 12);                    
                     binWriter.Write((UInt32)realAnimID);
                     binWriter.Write((UInt32)targettedActorId);
                     binWriter.Write((UInt32)descriptionId);
