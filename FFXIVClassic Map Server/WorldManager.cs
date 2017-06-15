@@ -645,7 +645,8 @@ namespace FFXIVClassic_Map_Server
             //Remove player from currentZone if transfer else it's login
             if (player.zone != null)
             {
-                player.zone.RemoveActorFromZone(player);
+                player.playerSession.LockUpdates(true);
+                player.zone.RemoveActorFromZone(player);                
                 player.zone.AddActorToZone(player);
 
                 //Update player actor's properties;
@@ -657,8 +658,9 @@ namespace FFXIVClassic_Map_Server
                 //Send packets
                 player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10), true, false);
                 player.playerSession.QueuePacket(player.CreateSpawnTeleportPacket(player.actorId, spawnType), true, false);
-                player.SendInstanceUpdate();
 
+                player.playerSession.LockUpdates(false);
+                player.SendInstanceUpdate();
             }            
         }
 

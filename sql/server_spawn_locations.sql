@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 5/2/2017 9:42:31 PM
+Date: 6/14/2017 10:19:31 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -26,7 +26,7 @@ CREATE TABLE `server_spawn_locations` (
   `animationId` int(10) unsigned NOT NULL DEFAULT '0',
   `customDisplayName` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=882 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=930 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records 
@@ -751,8 +751,8 @@ INSERT INTO `server_spawn_locations` VALUES ('722', '1001433', 'ulta', '155', ''
 INSERT INTO `server_spawn_locations` VALUES ('723', '1001432', 'mathye', '155', '', '0', '179.56', '2.75', '-1144.66', '-2.97', '0', '1041', null);
 INSERT INTO `server_spawn_locations` VALUES ('724', '1000951', 'lonsygg', '155', '', '0', '162.79', '-1.48', '-1153.32', '1.94', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('728', '1200052', 'test_mining_point', '141', '', '0', '-8.48', '45.36', '139.5', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('729', '5900013', 'ship_route_1', '200', '', '0', '0', '10', '-128', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('730', '5900014', 'ship_route_2', '200', '', '0', '0', '10', '128', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('729', '5900013', 'ferry_route_thantonoscea', '200', '', '0', '0', '10', '-128', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('730', '5900014', 'ferry_route_nosceatothan', '200', '', '0', '0', '10', '128', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('731', '1280001', 'limsa_aetheryte', '230', '', '0', '-395.1', '42.5', '337.12', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('732', '1280002', 'camp_beardedrock_aetheryte', '128', '', '0', '29.97', '45.83', '-35.47', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('733', '1280003', 'camp_skullvalley_aetheryte', '129', '', '0', '-991.88', '61.71', '-1120.79', '0', '0', '0', null);
@@ -903,3 +903,51 @@ INSERT INTO `server_spawn_locations` VALUES ('878', '2290005', 'ally_papalymo', 
 INSERT INTO `server_spawn_locations` VALUES ('879', '2290006', 'ally_yda', '166', 'ContentSimpleContent30010', '1', '365.266', '4.122', '-700.73', '1.5659', '2', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('880', '2201407', 'opening_wolf2', '166', 'ContentSimpleContent30010', '1', '375.377', '4.4', '-700.247', '-1.992', '0', '0', '');
 INSERT INTO `server_spawn_locations` VALUES ('881', '2201407', 'opening_wolf3', '166', 'ContentSimpleContent30010', '1', '375.125', '4.4', '-703.591', '-1.54', '0', '0', '');
+INSERT INTO `server_spawn_locations` VALUES ('882', '1500007', 'didiwai', '128', '', '0', '23.98', '46.05', '-42.96', '0.6', '0', '1041', null);
+INSERT INTO `server_spawn_locations` VALUES ('883', '1000613', 'nahctahr', '128', '', '0', '22.57', '45.5', '-23.08', '1.5', '0', '1041', null);
+INSERT INTO `server_spawn_locations` VALUES ('884', '1000359', 'ryssfloh', '128', '', '0', '58.78', '46.1', '-12.45', '0.6', '0', '1056', null);
+INSERT INTO `server_spawn_locations` VALUES ('885', '1000360', 'kiht_gamduhla', '128', '', '0', '8.37', '45.62', '-37.45', '-1.64', '0', '1056', null);
+INSERT INTO `server_spawn_locations` VALUES ('886', '1600016', 'sungyve', '128', '', '0', '45.86', '45.53', '-11.5', '-3.13', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('887', '1500013', 'bearded_rock_battlewarden', '128', '', '0', '56.43', '45.34', '-40.84', '-1.65', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('888', '1500008', '', '0', '', '0', '0', '0', '0', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('889', '1001291', 'ferry_man_thantonocea', '200', '', '0', '-14.52', '12.409', '127.997', '-1.57', '0', '2072', null);
+INSERT INTO `server_spawn_locations` VALUES ('890', '1001291', 'ferry_man_noceatothan', '200', '', '0', '14.52', '12.409', '-127.997', '1.57', '0', '2072', null);
+INSERT INTO `server_spawn_locations` VALUES ('891', '5900015', 'seadun6_door_centralfurnaces', '137', '', '0', '79.8', '-12.2', '-2949.8', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('892', '5900015', 'seadun6_door_dome2605', '137', '', '0', '16.011', '-12.218', '-3077.03', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('893', '5900015', 'seadun6_door_dome2610_topleft', '137', '', '0', '96.858', '-12.567', '-3055.05', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('894', '5900015', 'seadun6_door_dome2610_bottom', '137', '', '0', '144.761', '-12.497', '-2975.01', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('895', '5900015', 'seadun6_door_aurumloft', '137', '', '0', '127.904', '-11.875', '-2928', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('896', '5900015', 'seadun6_door_titandoor1', '137', '', '0', '303.918', '-19.875', '-2991.97', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('897', '5900015', 'seadun6_door_titandoor2', '137', '', '0', '320.025', '-19.875', '-3040.02', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('898', '5900015', 'seadun6_door_titandoor3', '137', '', '0', '383.833', '-19.875', '-3039.93', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('899', '5900001', 'seadun6_beastmachine1', '137', '', '0', '191.217', '-14.427', '-2924.85', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('900', '5900001', 'seadun6_beastmachine2', '137', '', '0', '191.217', '-14.427', '-2924.85', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('901', '5900015', 'rocdun1_door_chocobostables', '231', '', '0', '63.99', '181.25', '192.013', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('902', '5900015', 'rocdun1_door_thegullet', '231', '', '0', '128.173', '181.25', '192.19', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('903', '5900015', 'rocdun1_door_grandhall', '231', '', '0', '79.976', '181.25', '144.041', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('904', '5900016', 'rocdun1_barrier_grandhall', '231', '', '0', '65.725', '180.859', '81.098', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('905', '5900016', 'rocdun1_barrier_feastinghall', '231', '', '0', '-95.198', '164.884', '-13.873', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('906', '5900016', 'rocdun1_barrier_knightsquarters', '231', '', '0', '-0.544', '172.854', '-109.665', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('907', '5900016', 'rocdun1_barrier_captainsquarters', '231', '', '0', '-32.564', '172.795', '-77.364', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('908', '5900016', 'rocdun1_barrier_granary', '231', '', '0', '-74.02', '172.187', '-48.423', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('909', '5900016', 'rocdun1_barrier_unknown1', '0', '', '0', '0', '0', '0', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('910', '5900016', 'rocdun4_barrier_goldenpools_sout', '245', '', '0', '-686.923', '171.343', '1359.91', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('911', '5900016', 'rocdun4_barrier_goldenpools_nort', '245', '', '0', '-733.348', '171.92', '1230.88', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('912', '5900016', 'rocdun4_barrier_minerstare', '245', '', '0', '-996.74', '196.244', '1391.07', '0', '0', '0', '');
+INSERT INTO `server_spawn_locations` VALUES ('913', '5900016', 'rocdun4_barrier_coincnterschest', '245', '', '0', '-1083.28', '193.835', '1264.69', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('914', '5900016', 'rocdun4_barrier_map3enter', '245', '', '0', '-1163', '188.093', '1167.11', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('915', '5900001', 'fstdun3_door_entrance', '159', '', '0', '880.116', '-22.89', '648.988', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('916', '5900001', 'fstdun3_door_confessionchamber', '159', '', '0', '1216.05', '-47.89', '-912.021', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('917', '5900001', 'fstdun3_door_interrogatiochamber', '159', '', '0', '1312.07', '-63.89', '560.007', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('918', '5900001', 'fstdun3_door_executionchamber', '159', '', '0', '1456.01', '-59.89', '671.623', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('919', '5900016', 'fstdun3_barrier_tornsrest', '159', '', '0', '1119.88', '-44.125', '880.115', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('920', '5900016', 'fstdun3_barrier_foolsrest_east', '159', '', '0', '1150.34', '-47.975', '687.889', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('921', '5900016', 'fstdun3_barrier_foolsrest_west', '159', '', '0', '1120.43', '-48.125', '688.064', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('922', '5900016', 'fstdun3_barrier_seraucheforne', '159', '', '0', '1223.84', '-52', '816.426', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('923', '5900016', 'fstdun3_barrier_bergand_north', '159', '', '0', '1262.39', '-55.991', '743.272', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('924', '5900016', 'fstdun3_barrier_bergand_east', '159', '', '0', '1279.77', '-56.076', '751.932', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('925', '5900016', 'fstdun3_barrier_joukil', '159', '', '0', '1232.05', '-52.125', '672.751', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('926', '5900001', 'ferry_door1_thantonoscea', '200', '', '0', '-10.242', '7.75', '133.405', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('927', '5900001', 'ferry_door2_thantonoscea', '200', '', '0', '4.066', '4.76', '133.573', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('928', '5900001', 'ferry_door1_nosceatothan', '200', '', '0', '10.211', '7.75', '-133.43', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('929', '5900001', 'ferry_door2_nosceatothan', '200', '', '0', '-4.066', '4.76', '-133.573', '0', '0', '0', null);

@@ -24,7 +24,9 @@ namespace FFXIVClassic_Map_Server.Actors
     {
         private uint actorClassId;
         private string uniqueIdentifier;
-        private uint regionId, layoutId;
+
+        private bool isMapObj = false;
+        private uint layout, instance;
 
         public NpcWork npcWork = new NpcWork();
 
@@ -69,10 +71,24 @@ namespace FFXIVClassic_Map_Server.Actors
             npcWork.pushCommandSub = actorClass.pushCommandSub;
             npcWork.pushCommandPriority = actorClass.pushCommandPriority;
 
+            if (actorClassId == 1080078 || actorClassId == 1080079 || actorClassId == 1080080 || (actorClassId >= 1080123 && actorClassId <= 1080135) || (actorClassId >= 5000001 && actorClassId <= 5000090) || (actorClassId >= 5900001 && actorClassId <= 5900038))
+            {
+                isMapObj = true;
+                List<LuaParam> lParams = LuaEngine.GetInstance().CallLuaFunctionForReturn(null, this, "init", false);
+                if (lParams == null || lParams.Count < 6)
+                    isMapObj = false;
+                else
+                {                   
+                    layout = (uint)(Int32)lParams[4].value;
+                    instance = (uint)(Int32)lParams[5].value;
+                    isStatic = true;
+                }
+            }
+
             GenerateActorName((int)actorNumber);            
         }
 
-        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, uint region, uint layout)
+        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, uint layout, uint instance)
             : base((4 << 28 | spawnedArea.actorId << 19 | (uint)actorNumber))
         {
             this.positionX = posX;
@@ -103,8 +119,9 @@ namespace FFXIVClassic_Map_Server.Actors
             npcWork.pushCommandSub = actorClass.pushCommandSub;
             npcWork.pushCommandPriority = actorClass.pushCommandPriority;
 
-            this.regionId = region;
-            this.layoutId = layout;
+            this.isMapObj = true;
+            this.layout = layout;
+            this.instance = instance;
 
             GenerateActorName((int)actorNumber);
         }
@@ -138,16 +155,7 @@ namespace FFXIVClassic_Map_Server.Actors
              //   npcWork.hateType = 1;
             }
 
-            if (regionId != 0 && layoutId != 0)
-            {
-                string classPathFake = "/Chara/Npc/MapObj/MapObjStandard";
-                string classNameFake = "MapObjStandard";
-                lParams = LuaUtils.CreateLuaParamList(classPathFake, false, false, false, false, false, actorClassId, false, false, 0, 0, regionId, layoutId);
-                isStatic = true;
-                //ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams).DebugPrintSubPacket();
-                return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams);                
-            }
-            else if (lParams == null)
+            if (lParams == null)
             {
                 string classPathFake = "/Chara/Npc/Populace/PopulaceStandard";
                 string classNameFake = "PopulaceStandard";
@@ -179,69 +187,11 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateSpeedPacket(playerActorId));            
             subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x0));
 
-            if (regionId != 0 && layoutId != 0)
-            {
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, layoutId, regionId));
-            }
-            else if (uniqueIdentifier.Equals("door1"))
-            {
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, 0xB0D, 0x1af));
-            }
-            else if (uniqueIdentifier.Equals("door2"))
-            {
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, 0xB09, 0x1af));
-            }
-            else if (uniqueIdentifier.Equals("closed_gridania_gate"))
-            {
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, 0xB79, 0x141));
-            }
-            else if (uniqueIdentifier.Equals("uldah_mapshipport_1"))
-            {
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId,  0xdc5, 0x1af));
-                subpackets[subpackets.Count - 1].DebugPrintSubPacket();
-                subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId,  "end0"));
-                subpackets[subpackets.Count - 1].DebugPrintSubPacket();
-            }
-            else if (uniqueIdentifier.Equals("uldah_mapshipport_2"))
-            {
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId,  0x2, 0x1eb));
-                subpackets[subpackets.Count - 1].DebugPrintSubPacket();
-                subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId,  "end0"));
-                subpackets[subpackets.Count - 1].DebugPrintSubPacket();
-            }
-            else if (uniqueIdentifier.Equals("gridania_shipport"))
-            {
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId,playerActorId,  0xcde, 0x141));
-                subpackets.Add(_0xD9Packet.BuildPacket(actorId,playerActorId,  "end0"));
-            }
-            else if (uniqueIdentifier.Equals("gridania_shipport2"))
-            {
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId,  0x02, 0x187));
-                subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId,  "end0"));
-            }
-            else if (uniqueIdentifier.Equals("limsa_shipport"))
-            {
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, 0x1c8, 0xc4));
-                subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId, "spin"));
-            }
-            else if (actorClassId == 5900013)
-            {
-                uint id = 201;
-                uint id2 = 0x1415;
-                string val = "fdin";
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, id, id2));
-                subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId, val));
-            }
-            else if (actorClassId == 5900014)
-            {
-                uint id = 201;
-                uint id2 = 0x1415;
-                string val = "fdot";
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, id, id2));
-                subpackets.Add(_0xD9Packet.BuildPacket(actorId, playerActorId, val));
-            }
+            if (isMapObj)            
+                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, instance, layout));                        
             else
                 subpackets.Add(CreateAppearancePacket(playerActorId));
+
             subpackets.Add(CreateNamePacket(playerActorId));
             subpackets.Add(CreateStatePacket(playerActorId));
             subpackets.Add(CreateIdleAnimationPacket(playerActorId));
