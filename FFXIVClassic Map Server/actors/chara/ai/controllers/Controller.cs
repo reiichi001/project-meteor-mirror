@@ -33,7 +33,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public virtual void ChangeTarget(Character target)
         {
-            owner.aiContainer.InternalEngage(target);
+            owner.aiContainer.InternalChangeTarget(target);
         }
 
         public bool IsAutoAttackEnabled()

@@ -163,7 +163,7 @@ namespace FFXIVClassic_Map_Server.actors.area
             }
         }
 
-        public void Update(DateTime tick)
+        public override void Update(DateTime tick)
         {
             // todo: again, this is retarded but debug stuff
             var diffTime = tick - lastUpdate;

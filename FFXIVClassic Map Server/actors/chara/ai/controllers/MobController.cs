@@ -24,6 +24,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         public override bool Engage(Character target)
         {
             // todo: check distance, last swing time, status effects
+            this.owner.aiContainer.InternalEngage(target);
             return true;
         }
 

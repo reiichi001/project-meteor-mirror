@@ -171,35 +171,6 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 if (this.target != player)
                 {
-                    #region super important performance critical code
-
-                    this.ChangeState(SetActorStatePacket.MAIN_STATE_MOUNTED);
-
-                    var chatMode = Program.Random.Next(13);
-                    var emphasis = Program.Random.Next(9);
-                    var drag = Program.Random.Next(7);
-
-                    chatMode = chatMode.Clamp(1, 12);
-
-                    string oni = "ONI";
-                    string chan = "CHA";
-
-                    for (var i = 0; i < emphasis; ++i)
-                        oni += "I";
-
-                    for (var i = 0; i < drag; ++i)
-                        chan += "A";
-
-                    oni += "-";
-                    chan += "N";
-
-                    // imouto aggro
-                    player.SendMessage((uint)chatMode, "Rowena", oni + chan);
-                    // sing for onii
-                    this.PlayAnimation(Program.Random.Next(0, 2) == 1 ? (uint)67111904 : (uint)67108902);
-
-                    #endregion
-
                     this.target = target;
                 }
                 this.moveState = player.moveState;
@@ -221,7 +192,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public void Update(DateTime tick)
+        public override void Update(DateTime tick)
         {
             // todo: actual ai controllers
             // todo: mods to control different params instead of hardcode

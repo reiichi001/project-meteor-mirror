@@ -533,11 +533,11 @@ namespace FFXIVClassic_Map_Server.lua
                     LuaParam.Insert(1, i - (playerNull ? 2 : 0));
 
                     // run the script                    
-                    script.Call(script.Globals["onTrigger"], LuaParam.ToArray());
+                    //script.Call(script.Globals["onTrigger"], LuaParam.ToArray());
 
-                    //Coroutine coroutine = script.CreateCoroutine(script.Globals["onTrigger"]).Coroutine;
-                    //DynValue value = coroutine.Resume(LuaParam.ToArray());
-                    //GetInstance().ResolveResume(player, coroutine, value);
+                    Coroutine coroutine = script.CreateCoroutine(script.Globals["onTrigger"]).Coroutine;
+                    DynValue value = coroutine.Resume(LuaParam.ToArray());
+                    GetInstance().ResolveResume(player, coroutine, value);
                     return;
                 }
             }

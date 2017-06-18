@@ -47,6 +47,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             controller.Update(tick);
         }
 
+        public void CheckCompletedStates()
+        {
+            while (states.Count > 0 && states.Peek().IsCompleted())
+            {
+                states.Peek().Cleanup();
+                states.Pop();
+            }
+        }
+
         public void InterruptStates()
         {
             while (states.Count > 0 && states.Peek().CanInterrupt())
@@ -73,19 +82,49 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public bool CanChangeState()
         {
-            return states.Count == 0 || states.First().CanInterrupt();
+            return states.Count == 0 || states.Peek().CanInterrupt();
+        }
+
+        public void ChangeTarget(Character target)
+        {
+            if (controller != null)
+            {
+                controller.ChangeTarget(target);
+            }
         }
 
         public void ChangeState(State state)
         {
-            if (states.Count < 10)
+            if (GetCurrentState() != null)
             {
+                if (states.Count <= 10)
+                {
+                    CheckCompletedStates();
+                    states.Push(state);
+                }
+                else
+                {
+                    throw new Exception("shit");
+                }
+            }
+        }
+
+        public void ForceChangeState(State state)
+        {
+            if (states.Count <= 10)
+            {
+                CheckCompletedStates();
                 states.Push(state);
             }
             else
             {
-                throw new Exception("shit");
+                throw new Exception("force shit");
             }
+        }
+
+        public State GetCurrentState()
+        {
+            return states.Peek() ?? null;
         }
 
         public DateTime GetLatestUpdate()
@@ -157,9 +196,29 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 InternalMobSkill(target, mobSkillId);
         }
 
-        public void InternalEngage(Character target)
+        public void InternalChangeTarget(Character target)
         {
 
+        }
+
+        public bool InternalEngage(Character target)
+        {
+            if (IsEngaged())
+            {
+                if (this.owner.target != target)
+                {
+                    ChangeTarget(target);
+                    return true;
+                }
+                return false;
+            }
+
+            if (CanChangeState() || (GetCurrentState() != null && GetCurrentState().IsCompleted()))
+            {
+                ForceChangeState(new AttackState(this.owner, target));
+                return true;
+            }
+            return false;
         }
 
         public void InternalDisengage()

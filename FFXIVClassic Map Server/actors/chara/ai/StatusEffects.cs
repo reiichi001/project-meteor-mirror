@@ -363,7 +363,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private byte tier;          // same effect with higher tier overwrites this
         private Dictionary<string, UInt64> variables; // list of variables which belong to this effect, to be set/retrieved with GetVariable(key), SetVariable(key, val)
         private StatusEffectFlags flags;              // death/erase/dispel etc
-        private StatusEffectOverwrite overwrite;      // 
+        private StatusEffectOverwrite overwrite;      // how to handle adding an effect with same id (see StatusEfectOverwrite)
 
         public StatusEffect(Character owner, uint id, int magnitude, uint tickMs, uint durationMs, byte tier = 0)
         {
@@ -602,5 +602,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return list;
         }
 
+        public bool HasStatusEffectsByFlag(uint flag)
+        {
+            foreach (var effect in effects)
+            {
+                if ((effect.GetFlags() & flag) > 0)
+                    return true;
+            }
+            return false;
+        }
     }
 }

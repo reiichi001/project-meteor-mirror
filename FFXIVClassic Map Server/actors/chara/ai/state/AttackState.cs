@@ -13,6 +13,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             base(owner, target)
         {
             this.startTime = DateTime.Now;
+            // todo: should handle everything here instead of on next tick..
         }
 
         public override void OnStart()
@@ -32,7 +33,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnComplete()
         {
-
+            isCompleted = true;
         }
 
         public override void TryInterrupt()

@@ -531,7 +531,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return null;
         }
 
-        public void Update(DateTime tick)
+        public override void Update(DateTime tick)
         {
             lock (mActorList)
             {

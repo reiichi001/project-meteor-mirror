@@ -20,6 +20,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         protected SubPacket errorPacket;
 
+        protected bool isCompleted;
+
         public State(Character owner, Character target)
         {
             this.owner = owner;
@@ -29,9 +31,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         }
 
         public virtual void Update(DateTime tick) { }
-        public virtual void OnStart() { }
+        public virtual void OnStart() {  }
         public virtual void OnInterrupt() { }
-        public virtual void OnComplete() { }
+        public virtual void OnComplete() { isCompleted = true; }
 
         public virtual void TryInterrupt() { }
 
@@ -45,6 +47,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         public void SetInterrupted(bool interrupt)
         {
             this.interrupt = interrupt;
+        }
+
+        public bool IsCompleted()
+        {
+            return isCompleted;
         }
 
     }

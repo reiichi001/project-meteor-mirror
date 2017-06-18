@@ -85,6 +85,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     isStatic = true;
                 }
             }
+            GenerateActorName((int)actorNumber);
             this.aiContainer = new AIContainer(this, null, new PathFind(this), new TargetFind(this));
         }
 
