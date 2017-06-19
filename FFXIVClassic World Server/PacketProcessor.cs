@@ -56,7 +56,7 @@ namespace FFXIVClassic_World_Server
                         mServer.AddSession(client, Session.Channel.ZONE, hello.sessionId);
                         Session session = mServer.GetSession(hello.sessionId);
                         session.routing1 = mServer.GetWorldManager().GetZoneServer(session.currentZoneId);
-                        session.routing1.SendSessionStart(session);       
+                        session.routing1.SendSessionStart(session, true);       
                     }
                     else if (packet.header.connectionType == BasePacket.TYPE_CHAT)
                         mServer.AddSession(client, Session.Channel.CHAT, hello.sessionId);

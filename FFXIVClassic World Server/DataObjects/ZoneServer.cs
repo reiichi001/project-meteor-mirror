@@ -150,9 +150,9 @@ namespace FFXIVClassic_World_Server.DataObjects
             }
         }
 
-        public void SendSessionStart(Session session)
+        public void SendSessionStart(Session session, bool isLogin = false)
         {
-            SendPacket(SessionBeginPacket.BuildPacket(session));
+            SendPacket(SessionBeginPacket.BuildPacket(session, isLogin));
         }
 
         public void SendSessionEnd(Session session)
