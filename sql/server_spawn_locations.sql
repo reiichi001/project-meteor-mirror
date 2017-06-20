@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 6/14/2017 10:19:31 PM
+Date: 6/19/2017 10:24:01 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -26,7 +26,7 @@ CREATE TABLE `server_spawn_locations` (
   `animationId` int(10) unsigned NOT NULL DEFAULT '0',
   `customDisplayName` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=930 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=936 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records 
@@ -563,11 +563,11 @@ INSERT INTO `server_spawn_locations` VALUES ('532', '2290002', 'opening_stahlman
 INSERT INTO `server_spawn_locations` VALUES ('533', '1000009', 'yda', '166', '', '0', '353.37', '3.88', '-698.98', '-2.6', '0', '1007', null);
 INSERT INTO `server_spawn_locations` VALUES ('534', '1000010', 'papalymo', '166', '', '0', '353.37', '3.75', '-703.09', '-2.6', '0', '1000', null);
 INSERT INTO `server_spawn_locations` VALUES ('535', '1090384', 'openingstoper_gridania', '166', '', '0', '356.09', '3.74', '-701.62', '-1.41', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('536', '1080120', '', '244', '', '0', '159.84', '0.7', '167.17', '-0.2', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('537', '1200334', '', '244', '', '0', '159.98', '0.02', '151.9', '-0.44', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('538', '1200376', '', '244', '', '0', '164.91', '-0.1', '167.03', '0.05', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('539', '1200379', '', '244', '', '0', '155.97', '0', '165.14', '-1.65', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('540', '1200380', '', '244', '', '0', '-4.16', '0', '4.14', '-1.65', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('536', '1080120', 'inn_grid_cutscene', '244', '', '0', '159.84', '0.7', '167.17', '-0.2', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('537', '1200335', 'inn_grid_exitdoor_target', '244', '', '0', '159.98', '0.02', '151.9', '-0.44', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('538', '1200376', 'inn_grid_itemstorage', '244', '', '0', '164.91', '-0.1', '167.03', '0.05', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('539', '1200379', 'inn_grid_bed', '244', '', '0', '155.97', '0', '165.14', '-1.65', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('540', '1200380', 'inn_uld_bed', '244', '', '0', '-4.16', '0', '4.14', '-1.65', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('541', '1090264', '', '206', '', '0', '-192.57', '23.48', '-1407.58', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('542', '1001469', 'eldid', '206', '', '0', '-195.3', '23.96', '-1410.34', '0.98', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('543', '1290004', 'bgkeepout_market', '206', '', '0', '-195.3', '23.96', '-1410.34', '0', '0', '0', null);
@@ -642,11 +642,11 @@ INSERT INTO `server_spawn_locations` VALUES ('612', '1000436', 'seikfrae', '155'
 INSERT INTO `server_spawn_locations` VALUES ('613', '1001951', 'anselm', '155', '', '0', '66.94', '4', '-1194.13', '-2.32', '0', '1016', null);
 INSERT INTO `server_spawn_locations` VALUES ('614', '1700001', 'penelope', '155', '', '0', '58.08', '3.8', '-1183.33', '2.93', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('615', '1001708', 'beaudonet', '155', '', '0', '54.04', '-7', '-1218.46', '-0.59', '0', '1151', null);
-INSERT INTO `server_spawn_locations` VALUES ('616', '1200378', '', '244', '', '0', '-164', '0', '-154.21', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('617', '1080120', '', '244', '', '0', '-4', '0.7', '-0.03', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('618', '1080120', '', '244', '', '0', '-161.5', '0.7', '-152.8', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('619', '1200376', '', '244', '', '0', '-155.31', '-0.1', '-153', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('620', '1200376', '', '244', '', '0', '3.3', '-0.1', '7', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('616', '1200378', 'inn_limsa_bed', '244', '', '0', '-164', '0', '-154.21', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('617', '1080120', 'inn_uld_cutscene', '244', '', '0', '-4', '0.7', '-0.03', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('618', '1080120', 'inn_limsa_cutscene', '244', '', '0', '-161.5', '0.7', '-152.8', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('619', '1200376', 'inn_limsa_itemstorage', '244', '', '0', '-155.31', '-0.1', '-153', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('620', '1200376', 'inn_uld_itemstorage', '244', '', '0', '3.3', '-0.1', '7', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('621', '5900001', 'guild_crp', '206', '', '0', '18', '9', '-1270', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('622', '5900001', 'guild_ltw', '206', '', '0', '87', '20', '-1452', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('623', '5900001', 'fenyll_fineries', '206', '', '0', '114', '20', '-1402', '0', '0', '0', null);
@@ -951,3 +951,9 @@ INSERT INTO `server_spawn_locations` VALUES ('926', '5900001', 'ferry_door1_than
 INSERT INTO `server_spawn_locations` VALUES ('927', '5900001', 'ferry_door2_thantonoscea', '200', '', '0', '4.066', '4.76', '133.573', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('928', '5900001', 'ferry_door1_nosceatothan', '200', '', '0', '10.211', '7.75', '-133.43', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('929', '5900001', 'ferry_door2_nosceatothan', '200', '', '0', '-4.066', '4.76', '-133.573', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('930', '1090548', 'inn_grid_exitdoor_push', '244', '', '0', '159.98', '0.02', '151.9', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('931', '1200336', 'inn_uld_exitdoor_target', '244', '', '0', '-0.02', '0.02', '-8.6', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('932', '1200334', 'inn_limsa_exitdoor_target', '244', '', '0', '-160.02', '0.02', '-168.4', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('933', '1090549', 'inn_uld_exitdoor_push', '244', '', '0', '-0.02', '0.02', '-8.6', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('934', '1090547', 'inn_limsa_exitdoor_push', '244', '', '0', '-160.02', '0.02', '-168.4', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('935', '1060027', 'yoshi_p', '130', '', '0', '1117.76', '52.143', '-445.258', '2.173', '0', '0', null);
