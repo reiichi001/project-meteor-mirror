@@ -56,9 +56,12 @@ namespace FFXIVClassic_Map_Server
                     //World Server - Session Begin
                     case 0x1000:
                         subpacket.DebugPrintSubPacket();
+
+                        SessionBeginPacket beginSessionPacket = new SessionBeginPacket(subpacket.data);
+
                         session = mServer.AddSession(subpacket.header.targetId);
 
-                        if (session.GetActor().destinationZone != 0)
+                        if (beginSessionPacket.isLogin)
                             Server.GetWorldManager().DoZoneIn(session.GetActor(), false, session.GetActor().destinationSpawnType);
 
                         Program.Log.Info("{0} has been added to the session list.", session.GetActor().customDisplayName);
