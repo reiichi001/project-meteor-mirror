@@ -36,9 +36,7 @@ function onEventStarted(player, npc, triggerName)
 		player:AddDirector(director);
 		player:SetLoginDirector(director);
 		
-		GetWorldManager():DoZoneChange(player, 17);
-	
-	
+		GetWorldManager():DoZoneChange(player, 184, nil, 0, 16, -24.34, 192, 34.22, 0.78);	
 	
 end
 

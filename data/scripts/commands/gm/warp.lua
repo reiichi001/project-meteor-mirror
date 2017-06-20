@@ -39,13 +39,7 @@ function onTrigger(player, argc, p1, p2, p3, p4, privateArea, name, lastName)
     
     local worldManager = GetWorldManager();
     
-    -- treat this as a predefined warp list
-    if argc == 1 then
-        zone = tonumber(p1) or player_zone;
-        player:SendMessage(messageID, sender,  string.format("warping to zone:%u", zone));
-        worldManager:DoZoneChange(player, zone);
-    
-    elseif argc >= 3 then
+    if argc >= 3 then
         
         if argc == 3 then
             local x = tonumber(applyPositionOffset(p1, player_x)) or player_x;

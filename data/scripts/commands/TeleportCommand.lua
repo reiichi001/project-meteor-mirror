@@ -95,11 +95,11 @@ function onEventStarted(player, actor, triggerName, isTeleport)
 			if (isInn) then
 				--Return to Inn		
 				if (player:GetHomePointInn() == 1) then
-					GetWorldManager():DoZoneChange(player, 12);
+					GetWorldManager():DoZoneChange(player, 244, nil, 0, 15, -160.048, 0, -165.737, 0);
 				elseif (player:GetHomePointInn() == 2) then
-					GetWorldManager():DoZoneChange(player, 13);
+					GetWorldManager():DoZoneChange(player, 244, nil, 0, 15, 160.048, 0, 154.263, 0);
 				elseif (player:GetHomePointInn() == 3) then
-					GetWorldManager():DoZoneChange(player, 11);
+					GetWorldManager():DoZoneChange(player, 244, nil, 0, 15, 0.048, 0, -5.737, 0);
 				end			
 			elseif (choice == 1 and isInn == nil) then			
 				--Return to Homepoint
