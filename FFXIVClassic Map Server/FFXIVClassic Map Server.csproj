@@ -249,6 +249,7 @@
     <Compile Include="packets\send\player\SetHasGoobbuePacket.cs" />
     <Compile Include="packets\send\player\SetHasChocoboPacket.cs" />
     <Compile Include="packets\send\player\SetLatestAchievementsPacket.cs" />
+    <Compile Include="packets\send\player\SetPlayerItemStoragePacket.cs" />
     <Compile Include="packets\send\player\SetPlayerDreamPacket.cs" />
     <Compile Include="packets\send\player\SetPlayerTitlePacket.cs" />
     <Compile Include="packets\send\player\SetSpecialEventWorkPacket.cs" />

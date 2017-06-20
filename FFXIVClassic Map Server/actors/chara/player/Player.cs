@@ -537,16 +537,17 @@ namespace FFXIVClassic_Map_Server.Actors
             playerSession.QueuePacket(debugSpawn);            
             playerSession.QueuePacket(worldMasterSpawn);
 
+            //Inn Packets (Dream, Cutscenes, Armoire)
             if (zone.isInn)
             {
                 SetCutsceneBookPacket cutsceneBookPacket = new SetCutsceneBookPacket();
                 for (int i = 0; i < 2048; i++)
                     cutsceneBookPacket.cutsceneFlags[i] = true;
-
                 SubPacket packet = cutsceneBookPacket.BuildPacket(actorId, "<Path Companion>", 11, 1, 1);
 
                 packet.DebugPrintSubPacket();
                 QueuePacket(packet);
+                QueuePacket(SetPlayerItemStoragePacket.BuildPacket(actorId));
             }
 
             if (zone.GetWeatherDirector() != null)
