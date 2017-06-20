@@ -83,7 +83,7 @@ namespace FFXIVClassic_World_Server
 
             Console.ForegroundColor = ConsoleColor.White;
             Program.Log.Info("World Server accepting connections @ {0}:{1}", (mServerSocket.LocalEndPoint as IPEndPoint).Address, (mServerSocket.LocalEndPoint as IPEndPoint).Port);
-            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.ForegroundColor = ConsoleColor.Gray;            
 
             return true;
         }
@@ -98,9 +98,11 @@ namespace FFXIVClassic_World_Server
                     //New character since world server loaded
                     if (!mIdToNameMap.ContainsKey(id))
                         AddNameToMap(id, session.characterName);
+                    //TODO: this is technically wrong!!! Should kick out player and wait till auto-removed.
+                    if (mZoneSessionList.ContainsKey(id))
+                        mZoneSessionList.Remove(id);
 
-                    if (!mZoneSessionList.ContainsKey(id))
-                        mZoneSessionList.Add(id, session);
+                    mZoneSessionList.Add(id, session);
                     break;
                 case Session.Channel.CHAT:
                     if (!mChatSessionList.ContainsKey(id))

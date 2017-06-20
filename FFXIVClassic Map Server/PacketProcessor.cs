@@ -61,7 +61,7 @@ namespace FFXIVClassic_Map_Server
 
                         session = mServer.AddSession(subpacket.header.targetId);
 
-                        if (beginSessionPacket.isLogin)
+                        if (!beginSessionPacket.isLogin)
                             Server.GetWorldManager().DoZoneIn(session.GetActor(), false, session.GetActor().destinationSpawnType);
 
                         Program.Log.Info("{0} has been added to the session list.", session.GetActor().customDisplayName);
@@ -121,7 +121,7 @@ namespace FFXIVClassic_Map_Server
                     //Langauge Code (Client safe to send packets to now)
                     case 0x0006:
                         LangaugeCodePacket langCode = new LangaugeCodePacket(subpacket.data);
-                        session = mServer.AddSession(subpacket.header.targetId);
+                        session = mServer.GetSession(subpacket.header.targetId);
 
                         LuaEngine.GetInstance().CallLuaFunction(session.GetActor(), session.GetActor(), "onBeginLogin", true);                    
                         Server.GetWorldManager().DoZoneIn(session.GetActor(), true, 0x1);

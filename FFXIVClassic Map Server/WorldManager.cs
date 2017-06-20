@@ -737,7 +737,7 @@ namespace FFXIVClassic_Map_Server
             {
                 player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
                 player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x2), true, false);
-                player.SendZoneInPackets(this, spawnType);
+                //player.SendZoneInPackets(this, spawnType);
             }
 
             player.SendZoneInPackets(this, spawnType);
