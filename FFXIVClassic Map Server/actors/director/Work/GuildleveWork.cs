@@ -16,6 +16,7 @@ namespace FFXIVClassic_Map_Server.actors.director.Work
         public float[] markerX = new float[3];
         public float[] markerY = new float[3];
         public float[] markerZ = new float[3];
+        public sbyte signal;
     }
 
 }
