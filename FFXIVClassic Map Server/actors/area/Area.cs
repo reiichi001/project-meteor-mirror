@@ -501,6 +501,17 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public Director CreateGuildleveDirector(string path, uint glid, params object[] args)
+        {
+            lock (directorLock)
+            {
+                GuildleveDirector director = new GuildleveDirector(directorIdCount, this, path, glid, args);
+                currentDirectors.Add(directorIdCount, director);
+                directorIdCount++;
+                return director;
+            }
+        }
+
         public void DeleteDirector(uint id)
         {
             lock (directorLock)

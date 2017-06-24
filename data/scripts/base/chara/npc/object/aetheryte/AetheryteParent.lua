@@ -120,7 +120,7 @@ function doLevequestInit(player, aetheryte)
 			if (difficulty == nil) then goto SELECT_DETAIL; end			
 			confirmResult = callClientFunction(player, "eventGLStart", glId, difficulty, 1, guildleveData.favorCount, 20, 0, 0, 0, 0);
 			if (confirmResult == nil) then goto SELECT_DIFFICULTY; else			
-				director = player:GetZone():CreateDirector("Guildleve/PrivateGLBattleDetectNormal");
+				director = player:GetZone():CreateGuildleveDirector("Guildleve/PrivateGLBattleDetectNormal", glId);
 				player:AddDirector(director);
 				director:StartDirector(true, glId)
 			end
