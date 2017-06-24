@@ -490,15 +490,11 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }                
 
-        public Director CreateDirector(string path)
+        public Director CreateDirector(string path, params object[] args)
         {
             lock (directorLock)
             {
-                Director director = new Director(directorIdCount, this, path);
-
-                if (!director.IsCreated())
-                    return null;
-
+                Director director = new Director(directorIdCount, this, path, args);
                 currentDirectors.Add(directorIdCount, director);
                 directorIdCount++;
                 return director;
@@ -511,7 +507,7 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 if (currentDirectors.ContainsKey(id))
                 {
-                    currentDirectors[id].RemoveChildren();
+                    currentDirectors[id].RemoveMembers();
                     currentDirectors.Remove(id);
                 }
             }

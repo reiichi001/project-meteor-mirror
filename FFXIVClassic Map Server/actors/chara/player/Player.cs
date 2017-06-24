@@ -1420,14 +1420,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (!ownedDirectors.Contains(director))
             {
                 ownedDirectors.Add(director);
-                director.AddChild(this);
-                
-                if (spawnImmediatly)
-                {
-                    director.GetSpawnPackets(actorId).DebugPrintPacket();
-                    QueuePacket(director.GetSpawnPackets(actorId));
-                    QueuePacket(director.GetInitPackets(actorId));
-                }
+                director.AddMember(this);                
             }
         }
 
@@ -1443,7 +1436,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (!ownedDirectors.Contains(director))
             {
                 ownedDirectors.Remove(director);
-                director.RemoveChild(this);
+                director.RemoveMember(this);
             }
         }
 

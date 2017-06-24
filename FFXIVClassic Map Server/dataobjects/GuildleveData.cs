@@ -31,8 +31,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
             id = reader.GetUInt32("id");
             classType = reader.GetUInt32("classType");
             location = reader.GetUInt32("location");
-            factionCreditRequired = reader.GetByte("factionCreditRequired");
-            level = reader.GetByte("level");
+            factionCreditRequired = reader.GetUInt16("factionCreditRequired");
+            level = reader.GetUInt16("level");
             aetheryte = reader.GetUInt32("aetheryte");
             plateId = reader.GetUInt32("plateId");
             borderId = reader.GetUInt32("borderId");

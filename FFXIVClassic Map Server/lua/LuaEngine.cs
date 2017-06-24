@@ -21,13 +21,13 @@ namespace FFXIVClassic_Map_Server.lua
 {
     class LuaEngine
     {
-        const string FILEPATH_PLAYER = "./scripts/player.lua";
-        const string FILEPATH_ZONE = "./scripts/unique/{0}/zone.lua";
-        const string FILEPATH_CONTENT = "./scripts/content/{0}.lua";
-        const string FILEPATH_COMMANDS = "./scripts/commands/{0}.lua";
-        const string FILEPATH_DIRECTORS = "./scripts/directors/{0}.lua";
-        const string FILEPATH_NPCS = "./scripts/unique/{0}/{1}/{2}.lua";
-        const string FILEPATH_QUEST = "./scripts/quests/{0}/{1}.lua";
+        public const string FILEPATH_PLAYER = "./scripts/player.lua";
+        public const string FILEPATH_ZONE = "./scripts/unique/{0}/zone.lua";
+        public const string FILEPATH_CONTENT = "./scripts/content/{0}.lua";
+        public const string FILEPATH_COMMANDS = "./scripts/commands/{0}.lua";
+        public const string FILEPATH_DIRECTORS = "./scripts/directors/{0}.lua";
+        public const string FILEPATH_NPCS = "./scripts/unique/{0}/{1}/{2}.lua";
+        public const string FILEPATH_QUEST = "./scripts/quests/{0}/{1}.lua";
 
         private static LuaEngine mThisEngine;
         private Dictionary<Coroutine, ulong> mSleepingOnTime = new Dictionary<Coroutine, ulong>();
@@ -576,13 +576,14 @@ namespace FFXIVClassic_Map_Server.lua
             script.Globals["GetStaticActorById"] = (Func<uint, Actor>)Server.GetStaticActors;
             script.Globals["GetWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
             script.Globals["GetItemGamedata"] = (Func<uint, ItemData>)Server.GetItemGamedata;
+            script.Globals["GetGuildleveGamedata"] = (Func<uint, GuildleveData>)Server.GetGuildleveGamedata;
             script.Globals["GetLuaInstance"] = (Func<LuaEngine>)LuaEngine.GetInstance;
 
             script.Options.DebugPrint = s => { Program.Log.Debug(s); };
             return script;
         }
 
-        private static void SendError(Player player, string message)
+        public static void SendError(Player player, string message)
         {
             message = "[LuaError] " + message;
             if (player == null)
