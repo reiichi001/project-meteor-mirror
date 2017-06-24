@@ -575,7 +575,7 @@ namespace FFXIVClassic_Map_Server.lua
             script.Globals["GetStaticActor"] = (Func<string, Actor>)Server.GetStaticActors;
             script.Globals["GetStaticActorById"] = (Func<uint, Actor>)Server.GetStaticActors;
             script.Globals["GetWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
-            script.Globals["GetItemGamedata"] = (Func<uint, Item>)Server.GetItemGamedata;
+            script.Globals["GetItemGamedata"] = (Func<uint, ItemData>)Server.GetItemGamedata;
             script.Globals["GetLuaInstance"] = (Func<LuaEngine>)LuaEngine.GetInstance;
 
             script.Options.DebugPrint = s => { Program.Log.Debug(s); };

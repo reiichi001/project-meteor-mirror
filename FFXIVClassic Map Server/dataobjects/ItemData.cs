@@ -3,7 +3,7 @@ using System;
 
 namespace FFXIVClassic_Map_Server.dataobjects
 {
-    class Item
+    class ItemData
     {
         //Basic
         public readonly uint catalogID;
@@ -39,7 +39,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public readonly int repairLevel;
         public readonly int repairLicense;
 
-        public Item(MySqlDataReader reader)
+        public ItemData(MySqlDataReader reader)
         {
             catalogID = reader.GetUInt32("catalogID");
             name = reader.GetString("name");
@@ -387,7 +387,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
     }
 
-    class EquipmentItem : Item
+    class EquipmentItem : ItemData
     {
         //graphics
         public readonly uint graphicsWeaponId;

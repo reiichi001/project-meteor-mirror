@@ -70,11 +70,11 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public static Dictionary<uint, Item> GetItemGamedata()
+        public static Dictionary<uint, ItemData> GetItemGamedata()
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                Dictionary<uint, Item> gamedataItems = new Dictionary<uint, Item>();
+                Dictionary<uint, ItemData> gamedataItems = new Dictionary<uint, ItemData>();
           
                 try
                 {
@@ -98,16 +98,16 @@ namespace FFXIVClassic_Map_Server
                         while (reader.Read())
                         {
                             uint id = reader.GetUInt32("catalogID");
-                            Item item = null;
+                            ItemData item = null;
 
-                            if (Item.IsWeapon(id))
+                            if (ItemData.IsWeapon(id))
                                 item = new WeaponItem(reader);
-                            else if (Item.IsArmor(id))
+                            else if (ItemData.IsArmor(id))
                                 item = new ArmorItem(reader);
-                            else if (Item.IsAccessory(id))
+                            else if (ItemData.IsAccessory(id))
                                 item = new AccessoryItem(reader);
                             else
-                                item = new Item(reader);
+                                item = new ItemData(reader);
 
                             gamedataItems.Add(item.catalogID, item);
                         }
@@ -123,6 +123,47 @@ namespace FFXIVClassic_Map_Server
                 }
                 
                 return gamedataItems;
+            }
+        }
+
+        public static Dictionary<uint, GuildleveData> GetGuildleveGamedata()
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                Dictionary<uint, GuildleveData> gamedataGuildleves = new Dictionary<uint, GuildleveData>();
+
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                SELECT
+                                *                                
+                                FROM gamedata_guildleves
+                                ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint id = reader.GetUInt32("id");
+                            GuildleveData guildleve = new GuildleveData(reader);
+                            gamedataGuildleves.Add(guildleve.id, guildleve);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+
+                return gamedataGuildleves;
             }
         }
 

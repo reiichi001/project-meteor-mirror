@@ -104,6 +104,7 @@
     <Compile Include="actors\quest\Quest.cs" />
     <Compile Include="actors\StaticActors.cs" />
     <Compile Include="actors\world\WorldMaster.cs" />
+    <Compile Include="dataobjects\GuildleveData.cs" />
     <Compile Include="dataobjects\ZoneConnection.cs" />
     <Compile Include="CommandProcessor.cs" />
     <Compile Include="ConfigConstants.cs" />
@@ -123,7 +124,7 @@
     <Compile Include="actors\chara\player\PlayerWork.cs" />
     <Compile Include="dataobjects\InventoryItem.cs" />
     <Compile Include="dataobjects\Session.cs" />
-    <Compile Include="dataobjects\Item.cs" />
+    <Compile Include="dataobjects\ItemData.cs" />
     <Compile Include="dataobjects\RecruitmentDetails.cs" />
     <Compile Include="dataobjects\SeamlessBoundry.cs" />
     <Compile Include="dataobjects\SearchEntry.cs" />

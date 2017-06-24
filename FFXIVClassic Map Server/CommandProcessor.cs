@@ -14,7 +14,7 @@ namespace FFXIVClassic_Map_Server
 {
     class CommandProcessor
     {
-        private static Dictionary<uint, Item> gamedataItems = Server.GetGamedataItems();
+        private static Dictionary<uint, ItemData> gamedataItems = Server.GetGamedataItems();
 
         const UInt32 ITEM_GIL = 1000001;
       

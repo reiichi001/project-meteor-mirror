@@ -984,7 +984,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 appearanceIds[slot] = 0;            
             else
             {
-                Item item = Server.GetItemGamedata(invItem.itemId);
+                ItemData item = Server.GetItemGamedata(invItem.itemId);
                 if (item is EquipmentItem)
                 {
                     EquipmentItem eqItem = (EquipmentItem)item;

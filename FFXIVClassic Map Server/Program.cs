@@ -19,7 +19,6 @@ namespace FFXIVClassic_Map_Server
 
         static void Main(string[] args)
         {
-
             // set up logging
             Log = LogManager.GetCurrentClassLogger();
 #if DEBUG

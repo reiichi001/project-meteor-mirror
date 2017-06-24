@@ -92,7 +92,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (!IsSpaceForAdd(itemId, quantity))
                 return false;
 
-            Item gItem = Server.GetItemGamedata(itemId);
+            ItemData gItem = Server.GetItemGamedata(itemId);
             List<ushort> slotsToUpdate = new List<ushort>();
             List<SubPacket> addItemPackets = new List<SubPacket>();
 
@@ -175,7 +175,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             //New item that spilled over
             for (int i = 0; i < itemId.Length; i++)
             {
-                Item gItem = Server.GetItemGamedata(itemId[i]);
+                ItemData gItem = Server.GetItemGamedata(itemId[i]);
                 InventoryItem addedItem = Database.AddItem(owner, itemId[i], 1, (byte)1, gItem.isExclusive ? (byte)0x3 : (byte)0x0, gItem.durability, inventoryCode);
                 list.Add(addedItem);
             }
@@ -457,7 +457,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             for (int i = 0; i < list.Count; i++)
             {
                 InventoryItem item = list[i];
-                Item gItem = Server.GetItemGamedata(item.itemId);
+                ItemData gItem = Server.GetItemGamedata(item.itemId);
                 if (item.itemId == itemId && item.quantity < gItem.maxStack)
                 {
                     quantityCount -= (gItem.maxStack - item.quantity);
