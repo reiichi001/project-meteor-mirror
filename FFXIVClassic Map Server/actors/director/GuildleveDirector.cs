@@ -64,6 +64,18 @@ namespace FFXIVClassic_Map_Server.actors.director
             SendPacketsToPlayers(propertyBuilder.Done());
         }
 
+        public void UpdateMarkers(int markerIndex, float x, float y, float z)
+        {
+            guildleveWork.markerX[markerIndex] = x;
+            guildleveWork.markerY[markerIndex] = y;
+            guildleveWork.markerZ[markerIndex] = z;
+            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/marker", this, actorId);
+            propertyBuilder.AddProperty(String.Format("guildleveWork.markerX[{0}]", markerIndex));
+            propertyBuilder.AddProperty(String.Format("guildleveWork.markerY[{0}]", markerIndex));
+            propertyBuilder.AddProperty(String.Format("guildleveWork.markerZ[{0}]", markerIndex));
+            SendPacketsToPlayers(propertyBuilder.Done());
+        }
+
         public void SendPacketsToPlayers(List<SubPacket> packets)
         {
             List<Actor> players = GetPlayerMembers();
