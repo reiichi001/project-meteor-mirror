@@ -26,6 +26,7 @@ eventGLJoin () - Ask to join party leader's leve
 require ("global")
 require ("aetheryte")
 require ("utils")
+require ("guildleve")
 
 function init(npc)
 	return false, false, 0, 0;	
@@ -99,17 +100,29 @@ function onEventStarted(player, aetheryte, triggerName)
 end
 
 function doLevequestInit(player, aetheryte)
+	local worldMaster = GetWorldMaster();
 	::SELECT_LOOP::
 	unknown, glId = callClientFunction(player, "eventGLSelect", 0x0);
 	if (glId ~= 0) then
 		::SELECT_DETAIL::
+		guildleveData = GetGuildleveGamedata(glId);
+		
+		if (guildleveData == nil) then
+			player:SendMessage(0x20, "", "An error has occured... aborting.");
+			return;
+		end
+		
 		unknown, begin = callClientFunction(player, "eventGLSelectDetail", glId, 0xa, 0xf4241, 1000, 0, 0, 0, true, false);
 		if (begin) then
 			::SELECT_DIFFICULTY::
+			player:SendGameMessage(worldMaster, 50014, 0x20); --"Please select a difficulty level. This may be lowered later."
 			difficulty = callClientFunction(player, "eventGLDifficulty", glId);			
 			if (difficulty == nil) then goto SELECT_DETAIL; end			
-			confirmResult = callClientFunction(player, "eventGLStart", glId, difficulty, 1, 10, 20, 0, 0, 0, 0);
-			if (confirmResult == nil) then goto SELECT_DIFFICULTY; else
+			confirmResult = callClientFunction(player, "eventGLStart", glId, difficulty, 1, guildleveData.favorCount, 20, 0, 0, 0, 0);
+			if (confirmResult == nil) then goto SELECT_DIFFICULTY; else			
+				director = player:GetZone():CreateDirector("Guildleve/PrivateGLBattleDetectNormal");
+				player:AddDirector(director);
+				director:StartDirector(true, glId)
 			end
 		else
 			goto SELECT_LOOP;
