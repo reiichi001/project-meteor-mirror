@@ -126,7 +126,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         //Quest Actors (MUST MATCH playerWork.questScenario/questGuildleve)
         public Quest[] questScenario = new Quest[16];
-        public Quest[] questGuildleve = new Quest[8];
+        public uint[] questGuildleve = new uint[8];
 
         //Aetheryte
         public uint homepoint = 0;
@@ -1090,6 +1090,17 @@ namespace FFXIVClassic_Map_Server.Actors
             return -1;
         }
 
+        public int GetFreeGuildleveSlot()
+        {
+            for (int i = 0; i < questGuildleve.Length; i++)
+            {
+                if (questGuildleve[i] == 0)
+                    return i;
+            }
+
+            return -1;
+        }
+
         //For Lua calls, cause MoonSharp goes retard with uint
         public void AddQuest(int id, bool isSilent = false)
         {
@@ -1116,6 +1127,37 @@ namespace FFXIVClassic_Map_Server.Actors
             return CanAcceptQuest((uint)id);
         }
         //For Lua calls, cause MoonSharp goes retard with uint
+
+        public void AddGuildleve(uint id)
+        {
+            int freeSlot = GetFreeGuildleveSlot();
+
+            if (freeSlot == -1)
+                return;
+
+            playerWork.questScenario[freeSlot] = id;
+            questGuildleve[freeSlot] = id;
+            Database.SaveGuildleve(this, id, freeSlot);
+            SendGuildleveClientUpdate(freeSlot);
+        }
+
+        public void RemoveGuildleve(uint id)
+        {
+            if (HasGuildleve(id))
+            {
+                for (int i = 0; i < questGuildleve.Length; i++)
+                {
+                    if (questGuildleve[i] != null && questGuildleve[i] == id)
+                    {
+                        Database.RemoveGuildleve(this, id);
+                        questGuildleve[i] = 0;
+                        playerWork.questGuildleve[i] = 0;
+                        SendGuildleveClientUpdate(i);
+                        break;
+                    }
+                }
+            }
+        }
 
         public void AddQuest(uint id, bool isSilent = false)
         {
@@ -1290,6 +1332,17 @@ namespace FFXIVClassic_Map_Server.Actors
             return false;
         }
 
+        public bool HasGuildleve(uint id)
+        {
+            for (int i = 0; i < questGuildleve.Length; i++)
+            {
+                if (questGuildleve[i] != null && questGuildleve[i] == id)
+                    return true;
+            }
+
+            return false;
+        }
+
         public int GetQuestSlot(uint id)
         {
             for (int i = 0; i < questScenario.Length; i++)
@@ -1349,19 +1402,32 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePackets(propPacketUtil.Done());
         }
 
+        private void SendGuildleveClientUpdate(int slot)
+        {
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("playerWork/journal", this, actorId);
+            propPacketUtil.AddProperty(String.Format("playerWork.questGuildleve[{0}]", slot));
+            QueuePackets(propPacketUtil.Done());
+        }
+
         public void SetLoginDirector(Director director)
         {
             if (ownedDirectors.Contains(director))
                 loginInitDirector = director;
         }
 
-        public void AddDirector(Director director)
+        public void AddDirector(Director director, bool spawnImmediatly = false)
         {            
             if (!ownedDirectors.Contains(director))
             {
                 ownedDirectors.Add(director);
                 director.AddChild(this);
-                //QueuePacket(director.GetSetEventStatusPackets(actorId));
+                
+                if (spawnImmediatly)
+                {
+                    director.GetSpawnPackets(actorId).DebugPrintPacket();
+                    QueuePacket(director.GetSpawnPackets(actorId));
+                    QueuePacket(director.GetInitPackets(actorId));
+                }
             }
         }
 

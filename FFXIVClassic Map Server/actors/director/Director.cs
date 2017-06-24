@@ -30,7 +30,8 @@ namespace FFXIVClassic_Map_Server.actors.director
             eventConditions = new EventList();
             eventConditions.noticeEventConditions = new List<EventList.NoticeEventCondition>();
             eventConditions.noticeEventConditions.Add(new EventList.NoticeEventCondition("noticeEvent",  0xE,0x0));
-            eventConditions.noticeEventConditions.Add(new EventList.NoticeEventCondition("noticeRequest",0x0,0x1));
+            eventConditions.noticeEventConditions.Add(new EventList.NoticeEventCondition("noticeRequest", 0x0, 0x1));
+            eventConditions.noticeEventConditions.Add(new EventList.NoticeEventCondition("reqForChild", 0x0, 0x1));
         }       
 
         public override SubPacket CreateScriptBindPacket(uint playerActorId)
@@ -42,7 +43,10 @@ namespace FFXIVClassic_Map_Server.actors.director
             actualLParams.Insert(3, new LuaParam(4, 4));
             actualLParams.Insert(4, new LuaParam(4, 4));
             actualLParams.Insert(5, new LuaParam(4, 4));
-            actualLParams.Insert(6, new LuaParam(0, (int)0x13883));
+
+            List<LuaParam> lparams = LuaEngine.GetInstance().CallLuaFunctionForReturn(null, this, "init", false);
+            for (int i = 1; i < lparams.Count; i++)
+                actualLParams.Add(lparams[i]);
 
             return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, actualLParams);
         }
@@ -82,7 +86,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         {
             List<LuaParam> lparams = LuaEngine.GetInstance().CallLuaFunctionForReturn(null, this, "init", false);            
             
-            if (lparams.Count == 1 && lparams[0].value is string)
+            if (lparams.Count >= 1 && lparams[0].value is string)
             {
                 classPath = (string)lparams[0].value;
                 className = classPath.Substring(classPath.LastIndexOf("/") + 1);

@@ -391,6 +391,79 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public static void SaveGuildleve(Player player, uint glId, int slot)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO characters_quest_guildleve_regional 
+                    (characterId, slot, guildleveId, abandoned, completed)
+                    VALUES
+                    (@charaId, @slot, @guildleveId, @abandoned, @completed)
+                    ON DUPLICATE KEY UPDATE
+                    guildleveId = @guildleveId, abandoned = @abandoned, completed = @completed
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@slot", slot);
+                    cmd.Parameters.AddWithValue("@guildleveId", glId);
+                    cmd.Parameters.AddWithValue("@abandoned", 0);
+                    cmd.Parameters.AddWithValue("@completed", 0);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void RemoveGuildleve(Player player, uint glId)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    DELETE FROM characters_quest_guildleve_regional 
+                    WHERE characterId = @charaId and guildleveId = @guildleveId                 
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@guildleveId", glId);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
         public static void RemoveQuest(Player player, uint questId)
         {
             string query;
