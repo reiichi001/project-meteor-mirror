@@ -372,12 +372,12 @@ namespace FFXIVClassic_Map_Server.lua
                 CallLuaFunction(player, target, "onEventStarted", false, LuaUtils.CreateLuaParamObjectList(lparams));
         }
 
-        private DynValue ResolveResume(Player player, Coroutine coroutine, DynValue value)
+        public DynValue ResolveResume(Player player, Coroutine coroutine, DynValue value)
         {
             if (value == null || value.IsVoid())
                 return value;
 
-            if (value.String != null && value.String.Equals("_WAIT_EVENT"))
+            if (player != null && value.String != null && value.String.Equals("_WAIT_EVENT"))
             {                
                 GetInstance().AddWaitEventCoroutine(player, coroutine);      
             }

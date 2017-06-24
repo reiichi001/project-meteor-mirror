@@ -87,6 +87,8 @@
     <Compile Include="actors\chara\Work.cs" />
     <Compile Include="actors\debug\Debug.cs" />
     <Compile Include="actors\director\Director.cs" />
+    <Compile Include="actors\director\GuildleveDirector.cs" />
+    <Compile Include="actors\director\Work\GuildleveWork.cs" />
     <Compile Include="actors\EventList.cs" />
     <Compile Include="actors\group\ContentGroup.cs" />
     <Compile Include="actors\group\Work\ContentGroupWork.cs" />

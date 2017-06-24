@@ -38,7 +38,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void QueuePacket(SubPacket subPacket, bool isAuthed, bool isEncrypted)
         {
-            //subPacket.header.targetId = id;
+            subPacket.header.targetId = id;
             Server.GetWorldConnection().QueuePacket(subPacket, isAuthed, isEncrypted);
         }
 

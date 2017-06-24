@@ -110,6 +110,9 @@ namespace FFXIVClassic_Map_Server.actors.director
                     p.QueuePacket(GetInitPackets(p.actorId));
                 }
             }
+
+
+            StartCoroutine("mainLoop", this);
         }
 
         public void AddMember(Actor actor)
@@ -216,6 +219,22 @@ namespace FFXIVClassic_Map_Server.actors.director
                     DynValue result = directorScript.Call(directorScript.Globals[funcName], args);
                     List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
                     return lparams;
+                }
+                else
+                    Program.Log.Error("Could not find script for director {0}.", GetName());
+            }
+            return null;
+        }
+
+        private List<LuaParam> StartCoroutine(string funcName, params object[] args)
+        {
+            if (directorScript != null)
+            {
+                if (!directorScript.Globals.Get(funcName).IsNil())
+                {
+                    currentCoroutine = directorScript.CreateCoroutine(directorScript.Globals[funcName]).Coroutine;
+                    DynValue value = currentCoroutine.Resume(args);
+                    LuaEngine.GetInstance().ResolveResume(null, currentCoroutine, value);
                 }
                 else
                     Program.Log.Error("Could not find script for director {0}.", GetName());

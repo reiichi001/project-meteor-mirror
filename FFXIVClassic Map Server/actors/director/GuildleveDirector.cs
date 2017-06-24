@@ -36,7 +36,7 @@ namespace FFXIVClassic_Map_Server.actors.director
             guildleveWork.startTime = Utils.UnixTimeStampUTC();
             ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/start", this, actorId);
             propertyBuilder.AddProperty("guildleveWork.startTime");
-            SendPacketsToPlayers(propertyBuilder.Done());
+            SendPacketsToPlayers(propertyBuilder.Done());            
         }
 
         public void EndGuildleve()
