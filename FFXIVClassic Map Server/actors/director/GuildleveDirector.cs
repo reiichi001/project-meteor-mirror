@@ -28,6 +28,15 @@ namespace FFXIVClassic_Map_Server.actors.director
             guildleveWork.aimNum[2] = guildleveData.aimNum[2];
             guildleveWork.aimNum[3] = guildleveData.aimNum[3];
 
+            if (guildleveWork.aimNum[0] != 0)
+                guildleveWork.uiState[0] = 1;
+            if (guildleveWork.aimNum[1] != 0)
+                guildleveWork.uiState[1] = 1;
+            if (guildleveWork.aimNum[2] != 0)
+                guildleveWork.uiState[2] = 1;
+            if (guildleveWork.aimNum[3] != 0)
+                guildleveWork.uiState[3] = 1;
+
             guildleveWork.aimNumNow[0] = guildleveWork.aimNumNow[1] = guildleveWork.aimNumNow[2] = guildleveWork.aimNumNow[3] = 0;
         }
 
@@ -49,6 +58,40 @@ namespace FFXIVClassic_Map_Server.actors.director
             propertyBuilder.AddProperty("guildleveWork.startTime");
             SendPacketsToPlayers(propertyBuilder.Done());
         }   
+
+        public void SyncAllInfo()
+        {
+            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/infoVariable", this, actorId);
+
+            if (guildleveWork.aimNum[0] != 0)
+                propertyBuilder.AddProperty("guildleveWork.aimNum[0]");
+            if (guildleveWork.aimNum[1] != 0)
+                propertyBuilder.AddProperty("guildleveWork.aimNum[1]");
+            if (guildleveWork.aimNum[2] != 0)
+                propertyBuilder.AddProperty("guildleveWork.aimNum[2]");
+            if (guildleveWork.aimNum[3] != 0)
+                propertyBuilder.AddProperty("guildleveWork.aimNum[3]");
+
+            if (guildleveWork.aimNumNow[0] != 0)
+                propertyBuilder.AddProperty("guildleveWork.aimNumNow[0]");
+            if (guildleveWork.aimNumNow[1] != 0)
+                propertyBuilder.AddProperty("guildleveWork.aimNumNow[1]");
+            if (guildleveWork.aimNumNow[2] != 0)
+                propertyBuilder.AddProperty("guildleveWork.aimNumNow[2]");
+            if (guildleveWork.aimNumNow[3] != 0)
+                propertyBuilder.AddProperty("guildleveWork.aimNumNow[3]");
+
+            if (guildleveWork.uiState[0] != 0)
+                propertyBuilder.AddProperty("guildleveWork.uiState[0]");
+            if (guildleveWork.uiState[1] != 0)
+                propertyBuilder.AddProperty("guildleveWork.uiState[1]");
+            if (guildleveWork.uiState[2] != 0)
+                propertyBuilder.AddProperty("guildleveWork.uiState[2]");
+            if (guildleveWork.uiState[3] != 0)
+                propertyBuilder.AddProperty("guildleveWork.uiState[3]");
+
+            SendPacketsToPlayers(propertyBuilder.Done());
+        }
 
         public void UpdateAimNumNow(int index, sbyte value)
         {

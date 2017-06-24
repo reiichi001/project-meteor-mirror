@@ -20,5 +20,6 @@ function mainLoop(thisDirector)
 
 	wait(3)
 	thisDirector:StartGuildleve();
+	thisDirector:SyncAllInfo();
 	
 end

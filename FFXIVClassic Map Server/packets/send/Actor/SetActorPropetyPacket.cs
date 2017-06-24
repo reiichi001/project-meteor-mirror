@@ -159,6 +159,8 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor
                     return AddByte(id, (byte)(((bool)curObj) ? 1 : 0));
                 else if (curObj is byte)
                     return AddByte(id, (byte)curObj);
+                else if (curObj is sbyte)
+                    return AddByte(id, (byte)(sbyte)curObj);
                 else if (curObj is ushort)
                     return AddShort(id, (ushort)curObj);
                 else if (curObj is short)
