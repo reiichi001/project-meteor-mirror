@@ -18,6 +18,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         private List<Actor> members = new List<Actor>();
         private bool isCreated = false;
         private bool isDeleted = false;
+        private bool isDeleting = false;
 
         private Script directorScript;
         private Coroutine currentCoroutine;
@@ -121,6 +122,7 @@ namespace FFXIVClassic_Map_Server.actors.director
 
         public void EndDirector()
         {
+            isDeleting = true;
             if (this is GuildleveDirector)
                 ((GuildleveDirector)this).EndGuildleveDirector();
 
@@ -141,7 +143,9 @@ namespace FFXIVClassic_Map_Server.actors.director
         public void RemoveMember(Actor actor)
         {
             if (members.Contains(actor))
-                members.Remove(actor);       
+                members.Remove(actor);
+            if (GetPlayerMembers().Count == 0 && !isDeleting)
+                EndDirector();
         }
 
         public List<Actor> GetMembers()

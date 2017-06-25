@@ -596,6 +596,11 @@ namespace FFXIVClassic_Map_Server
             player.positionZ = spawnZ;
             player.rotation = spawnRotation;
 
+            //Delete any GL directors
+            GuildleveDirector glDirector = player.GetGuildleveDirector();
+            if (glDirector != null)
+                player.RemoveDirector(glDirector);
+
             //Delete content if have
             if (player.currentContentGroup != null)
             {

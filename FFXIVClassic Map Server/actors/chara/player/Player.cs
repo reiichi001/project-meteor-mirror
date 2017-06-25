@@ -1441,12 +1441,12 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public Director GetGuildleveDirector()
+        public GuildleveDirector GetGuildleveDirector()
         {
             foreach (Director d in ownedDirectors)
             {
                 if (d is GuildleveDirector)
-                    return d;
+                    return (GuildleveDirector)d;
             }
 
             return null;

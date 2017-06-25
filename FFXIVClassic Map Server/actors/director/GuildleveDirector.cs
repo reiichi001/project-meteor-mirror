@@ -46,8 +46,6 @@ namespace FFXIVClassic_Map_Server.actors.director
                 guildleveWork.uiState[3] = 1;
 
             guildleveWork.aimNumNow[0] = guildleveWork.aimNumNow[1] = guildleveWork.aimNumNow[2] = guildleveWork.aimNumNow[3] = 0;
-
-            LoadGuildleve();
         }
 
         public void LoadGuildleve()

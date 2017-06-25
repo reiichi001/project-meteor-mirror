@@ -501,7 +501,7 @@ namespace FFXIVClassic_Map_Server.Actors
             lock (directorLock)
             {
                 Director director = new Director(directorIdCount, this, path, args);
-                currentDirectors.Add(directorIdCount, director);
+                currentDirectors.Add(director.actorId, director);
                 directorIdCount++;
                 return director;
             }
@@ -549,7 +549,7 @@ namespace FFXIVClassic_Map_Server.Actors
             lock (directorLock)
             {
                 GuildleveDirector director = new GuildleveDirector(directorIdCount, this, directorScriptPath, glid, difficulty, owner, args);
-                currentDirectors.Add(directorIdCount, director);
+                currentDirectors.Add(director.actorId, director);
                 directorIdCount++;
                 return director;
             }

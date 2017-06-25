@@ -128,7 +128,7 @@ namespace FFXIVClassic_Map_Server.actors.group
 
         public void DeleteGroup()
         {
-            SendDeletePackets();
+            SendDeletePackets(members);
             for (int i = 0; i < members.Count; i++)
             {
                 Session s = Server.GetServer().GetSession(members[i]);
