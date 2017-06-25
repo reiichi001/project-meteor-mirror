@@ -368,6 +368,12 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public void BroadcastPacketsAroundActor(Actor actor, List<SubPacket> packets)
+        {
+            foreach (SubPacket packet in packets)
+                BroadcastPacketAroundActor(actor, packet);
+        }
+
         public void BroadcastPacketAroundActor(Actor actor, SubPacket packet)
         {
             if (isIsolated)
@@ -501,11 +507,48 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public Director CreateGuildleveDirector(string path, uint glid, params object[] args)
+        public Director CreateGuildleveDirector(uint glid, byte difficulty, Player owner, params object[] args)
         {
+            String directorScriptPath = "";
+
+            uint type = Server.GetGuildleveGamedata(glid).plateId;
+
+            if (glid == 10801 || glid == 12401 || glid == 11601)
+                directorScriptPath = "Guildleve/PrivateGLBattleTutorial";
+            else
+            {
+                switch (type)
+                {
+                    case 20021:
+                        directorScriptPath = "Guildleve/PrivateGLBattleSweepNormal";
+                        break;
+                    case 20022:
+                        directorScriptPath = "Guildleve/PrivateGLBattleChaseNormal";
+                        break;
+                    case 20023:
+                        directorScriptPath = "Guildleve/PrivateGLBattleOrbNormal";
+                        break;
+                    case 20024:
+                        directorScriptPath = "Guildleve/PrivateGLBattleHuntNormal";
+                        break;
+                    case 20025:
+                        directorScriptPath = "Guildleve/PrivateGLBattleGatherNormal";
+                        break;
+                    case 20026:
+                        directorScriptPath = "Guildleve/PrivateGLBattleRoundNormal";
+                        break;
+                    case 20027:
+                        directorScriptPath = "Guildleve/PrivateGLBattleSurviveNormal";
+                        break;
+                    case 20028:
+                        directorScriptPath = "Guildleve/PrivateGLBattleDetectNormal";
+                        break;                   
+                }
+            }
+
             lock (directorLock)
             {
-                GuildleveDirector director = new GuildleveDirector(directorIdCount, this, path, glid, args);
+                GuildleveDirector director = new GuildleveDirector(directorIdCount, this, directorScriptPath, glid, difficulty, owner, args);
                 currentDirectors.Add(directorIdCount, director);
                 directorIdCount++;
                 return director;
@@ -518,7 +561,8 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 if (currentDirectors.ContainsKey(id))
                 {
-                    currentDirectors[id].RemoveMembers();
+                    if (!currentDirectors[id].IsDeleted())
+                        currentDirectors[id].EndDirector();
                     currentDirectors.Remove(id);
                 }
             }

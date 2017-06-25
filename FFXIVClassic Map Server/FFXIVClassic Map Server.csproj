@@ -90,6 +90,7 @@
     <Compile Include="actors\director\GuildleveDirector.cs" />
     <Compile Include="actors\director\Work\GuildleveWork.cs" />
     <Compile Include="actors\EventList.cs" />
+    <Compile Include="actors\group\GLContentGroup.cs" />
     <Compile Include="actors\group\ContentGroup.cs" />
     <Compile Include="actors\group\Work\ContentGroupWork.cs" />
     <Compile Include="actors\group\Work\GlobalTemp.cs" />

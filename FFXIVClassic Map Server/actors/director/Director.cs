@@ -17,6 +17,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         private string directorScriptPath;
         private List<Actor> members = new List<Actor>();
         private bool isCreated = false;
+        private bool isDeleted = false;
 
         private Script directorScript;
         private Coroutine currentCoroutine;
@@ -26,6 +27,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         {
             directorId = id;
             this.zone = zone;
+            this.zoneId = zone.actorId;
             directorScriptPath = directorPath;
 
             LoadLuaScript();
@@ -111,10 +113,25 @@ namespace FFXIVClassic_Map_Server.actors.director
                 }
             }
 
+            if (this is GuildleveDirector)
+                ((GuildleveDirector)this).LoadGuildleve();
 
-            StartCoroutine("mainLoop", this);
+            StartCoroutine("main", this);
         }
 
+        public void EndDirector()
+        {
+            if (this is GuildleveDirector)
+                ((GuildleveDirector)this).EndGuildleveDirector();
+
+            List<Actor> players = GetPlayerMembers();
+            foreach (Actor player in players)
+                ((Player)player).RemoveDirector(this);
+            members.Clear();
+            isDeleted = true;
+            Server.GetWorldManager().GetZone(zoneId).DeleteDirector(actorId);
+        }
+        
         public void AddMember(Actor actor)
         {
             if (!members.Contains(actor))
@@ -124,15 +141,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         public void RemoveMember(Actor actor)
         {
             if (members.Contains(actor))
-                members.Remove(actor);
-            if (members.Count == 0)
-                Server.GetWorldManager().GetZone(zoneId).DeleteDirector(actorId);
-        }
-
-        public void RemoveMembers()
-        {
-            members.Clear();
-            Server.GetWorldManager().GetZone(zoneId).DeleteDirector(actorId);
+                members.Remove(actor);       
         }
 
         public List<Actor> GetMembers()
@@ -153,6 +162,11 @@ namespace FFXIVClassic_Map_Server.actors.director
         public bool IsCreated()
         {
             return isCreated;
+        }
+
+        public bool IsDeleted()
+        {
+            return isDeleted;
         }
 
         public void GenerateActorName(int actorNumber)

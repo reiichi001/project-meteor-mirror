@@ -89,7 +89,7 @@ namespace FFXIVClassic_Map_Server.Actors
             player.QueuePacket(SetActorQuestGraphicPacket.BuildPacket(player.actorId, actorId, graphicNum));
         }
 
-        public void SetCurrentContentGroup(ContentGroup group, Player player = null)
+        public void SetCurrentContentGroup(ContentGroup group)
         {
             if (group != null)
                 charaWork.currentContentGroup = group.GetTypeId();
@@ -98,12 +98,10 @@ namespace FFXIVClassic_Map_Server.Actors
 
             currentContentGroup = group;
 
-            if (player != null)
-            {
-                ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this, actorId);
-                propPacketUtil.AddProperty("charaWork.currentContentGroup");
-                player.QueuePackets(propPacketUtil.Done());
-            }
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this, actorId);
+            propPacketUtil.AddProperty("charaWork.currentContentGroup");            
+            zone.BroadcastPacketsAroundActor(this, propPacketUtil.Done());
+
         }     
    
         public void PlayAnimation(uint animId)

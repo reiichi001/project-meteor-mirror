@@ -600,7 +600,7 @@ namespace FFXIVClassic_Map_Server
             if (player.currentContentGroup != null)
             {
                 player.currentContentGroup.RemoveMember(player.actorId);
-                player.SetCurrentContentGroup(null, player);
+                player.SetCurrentContentGroup(null);
 
                 if (oldZone is PrivateAreaContent)
                     ((PrivateAreaContent)oldZone).CheckDestroy();
@@ -762,11 +762,6 @@ namespace FFXIVClassic_Map_Server
 
         }
 
-        public ContentGroup CreateContentGroup(Director director)
-        {
-            return CreateContentGroup(director, null);
-        }
-
         public ContentGroup CreateContentGroup(Director director, params Actor[] actors)
         {
             if (director == null)
@@ -795,6 +790,62 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public ContentGroup CreateContentGroup(Director director, List<Actor> actors)
+        {
+            if (director == null)
+                return null;
+
+            lock (groupLock)
+            {
+                uint[] initialMembers = null;
+
+                if (actors != null)
+                {
+                    initialMembers = new uint[actors.Count];
+                    for (int i = 0; i < actors.Count; i++)
+                        initialMembers[i] = actors[i].actorId;
+                }
+
+                groupIndexId = groupIndexId | 0x3000000000000000;
+
+                ContentGroup contentGroup = new ContentGroup(groupIndexId, director, initialMembers);
+                mContentGroups.Add(groupIndexId, contentGroup);
+                groupIndexId++;
+                if (initialMembers != null && initialMembers.Length != 0)
+                    contentGroup.SendAll();
+
+                return contentGroup;
+            }
+        }
+
+        public ContentGroup CreateGLContentGroup(Director director, List<Actor> actors)
+        {
+            if (director == null)
+                return null;
+
+            lock (groupLock)
+            {
+                uint[] initialMembers = null;
+
+                if (actors != null)
+                {
+                    initialMembers = new uint[actors.Count];
+                    for (int i = 0; i < actors.Count; i++)
+                        initialMembers[i] = actors[i].actorId;
+                }
+
+                groupIndexId = groupIndexId | 0x2000000000000000;
+
+                GLContentGroup contentGroup = new GLContentGroup(groupIndexId, director, initialMembers);
+                mContentGroups.Add(groupIndexId, contentGroup);
+                groupIndexId++;
+                if (initialMembers != null && initialMembers.Length != 0)
+                    contentGroup.SendAll();
+
+                return contentGroup;
+            }
+        }
+
         public void DeleteContentGroup(ulong groupId)
         {
             lock (groupLock)
@@ -802,7 +853,6 @@ namespace FFXIVClassic_Map_Server
                 if (mContentGroups.ContainsKey(groupId) && mContentGroups[groupId] is ContentGroup)
                 {
                     ContentGroup group = (ContentGroup)mContentGroups[groupId];
-                    group.SendDeletePackets();
                     mContentGroups.Remove(groupId);
                 }
             }

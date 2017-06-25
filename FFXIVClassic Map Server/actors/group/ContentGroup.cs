@@ -25,7 +25,13 @@ namespace FFXIVClassic_Map_Server.actors.group
             if (initialMembers != null)
             {
                 for (int i = 0; i < initialMembers.Length; i++)
+                {
+                    Session s = Server.GetServer().GetSession(initialMembers[i]);
+                    if (s != null)
+                        s.GetActor().SetCurrentContentGroup(this);
+
                     members.Add(initialMembers[i]);
+                }
             }
 
             this.director = director;
@@ -38,11 +44,10 @@ namespace FFXIVClassic_Map_Server.actors.group
                 return;
 
             members.Add(actor.actorId);
-            if (actor is Character)
-            {
-                ((Character)actor).SetCurrentContentGroup(this);
-                SendCurrentContentSync(actor);
-            }
+
+            if (actor is Character)            
+                ((Character)actor).SetCurrentContentGroup(this);          
+  
             SendGroupPacketsAll(members);
         }
         
@@ -110,20 +115,6 @@ namespace FFXIVClassic_Map_Server.actors.group
 
         }
 
-        public void SendCurrentContentSync(Actor currentContentChanged)
-        {
-            foreach (uint memberId in members)
-            {
-                Session session = Server.GetServer().GetSession(memberId);
-                if (session != null)
-                {
-                    ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", currentContentChanged, session.id);
-                    propPacketUtil.AddProperty("charaWork.currentContentGroup");
-                    session.GetActor().QueuePackets(propPacketUtil.Done());
-                }
-            }            
-        }
-
         public override uint GetTypeId()
         {
             return Group.ContentGroup_SimpleContentGroup24B;
@@ -135,11 +126,18 @@ namespace FFXIVClassic_Map_Server.actors.group
             SendGroupPacketsAll(members);            
         }
 
-        public void DeleteAll()
+        public void DeleteGroup()
         {
-            SendDeletePackets(members);
+            SendDeletePackets();
+            for (int i = 0; i < members.Count; i++)
+            {
+                Session s = Server.GetServer().GetSession(members[i]);
+                if (s != null)
+                    s.GetActor().SetCurrentContentGroup(null);
+                members.Remove(members[i]);
+            }
+            Server.GetWorldManager().DeleteContentGroup(groupIndex);
         }
-
 
         public void CheckDestroy()
         {
@@ -155,7 +153,7 @@ namespace FFXIVClassic_Map_Server.actors.group
             }
 
             if (!foundSession)
-                Server.GetWorldManager().DeleteContentGroup(groupIndex);
+                DeleteGroup();
         }
 
     }

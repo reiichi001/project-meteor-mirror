@@ -795,7 +795,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, log, LuaUtils.CreateLuaParamList(msgParams)));
         }
 
-        public void SendGameMessage(Actor textIdOwner, ushort textId, byte log, string customSender, params object[] msgParams)
+        public void SendGameMessageCustomSender(Actor textIdOwner, ushort textId, byte log, string customSender, params object[] msgParams)
         {
             if (msgParams == null || msgParams.Length == 0)
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log));
@@ -803,7 +803,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, customSender, log, LuaUtils.CreateLuaParamList(msgParams)));
         }
 
-        public void SendGameMessage(Actor textIdOwner, ushort textId, byte log, uint displayId, params object[] msgParams)
+        public void SendGameMessageDisplayIDSender(Actor textIdOwner, ushort textId, byte log, uint displayId, params object[] msgParams)
         {
             if (msgParams == null || msgParams.Length == 0)
                 QueuePacket(GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, actorId, textIdOwner.actorId, textId, displayId, log));
@@ -1433,11 +1433,23 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void RemoveDirector(Director director)
         {
-            if (!ownedDirectors.Contains(director))
+            if (ownedDirectors.Contains(director))
             {
+                QueuePacket(RemoveActorPacket.BuildPacket(actorId, director.actorId));
                 ownedDirectors.Remove(director);
                 director.RemoveMember(this);
             }
+        }
+
+        public Director GetGuildleveDirector()
+        {
+            foreach (Director d in ownedDirectors)
+            {
+                if (d is GuildleveDirector)
+                    return d;
+            }
+
+            return null;
         }
 
         public Director GetDirector(string directorName)
