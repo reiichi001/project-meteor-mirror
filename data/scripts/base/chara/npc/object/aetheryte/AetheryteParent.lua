@@ -11,9 +11,8 @@ eventGLSelect(?) - Open GL selector
 eventGLSelectDetail(glid, ?, reward, rewardQuantity, subreward, subrewardQuantity, faction, ?, completed) - Show GL details
 eventGLDifficulty() - Open difficulty selector
 eventGLStart(glId, difficulty, evaluatingFaction, areaFactionStanding, factionReward, warningBoundByDuty, warningTooFar, warningYouCannotRecieve, warningChangingClass) - Confirmation dialog
-
 eventGLBoost(currentFavor, minNeeded) - Ask player for Guardian Aspect
-eventGLPlay(??) - Open Menu (GL active version)
+eventGLPlay(glId, showLeveLink, leveLinkFaction, leveLinkFactionStanding, leveLinkReward, guardianFavorAmount, guardianFavorNeeded, currentDifficulty, jobNameForChange) - Open Menu (GL active version)
 eventGLReward (glId, clearTime, missionBonus, difficultyBonus, factionNumber, factionBonus, factionCredit, reward, rewardQuantity, subreward, subrewardQuantity, difficulty) - Open reward window
 eventGLJoin () - Ask to join party leader's leve
 
@@ -33,7 +32,30 @@ function init(npc)
 end
 
 function onEventStarted(player, aetheryte, triggerName)
-		
+	
+	if (player:GetGuildleveDirector() ~= nil) then
+		doGuildleveMenu(player, aetheryte);
+	else
+		doNormalMenu(player, aetheryte);
+	end	
+	
+	player:EndEvent();
+	
+end
+
+function doGuildleveMenu(player, aetheryte)
+
+	local currentGLDirector = player:GetGuildleveDirector();	
+	local choice = callClientFunction(player, "eventGLPlay", currentGLDirector.guildleveId, true, 1, 500, 400, guardian, 8, currentGLDirector.selectedDifficulty, 2);
+
+	--Abandon
+	if (choice == 6) then
+		currentGLDirector:AbandonGuildleve();
+	end
+	
+end
+
+function doNormalMenu(player, aetheryte)
 	local aetheryteId = aetheryte:GetActorClassId();
 	local childNodes = aetheryteParentLinks[aetheryteId];
 	
@@ -94,9 +116,6 @@ function onEventStarted(player, aetheryte, triggerName)
 			end
 		end		
 	end
-	
-	player:EndEvent();
-	
 end
 
 function doLevequestInit(player, aetheryte)
@@ -119,10 +138,14 @@ function doLevequestInit(player, aetheryte)
 			difficulty = callClientFunction(player, "eventGLDifficulty", glId);			
 			if (difficulty == nil) then goto SELECT_DETAIL; end			
 			confirmResult = callClientFunction(player, "eventGLStart", glId, difficulty, 1, guildleveData.favorCount, 20, 0, 0, 0, 0);
-			if (confirmResult == nil) then goto SELECT_DIFFICULTY; else			
-				director = player:GetZone():CreateGuildleveDirector("Guildleve/PrivateGLBattleTutorial", glId);
+			if (confirmResult == nil) then goto SELECT_DIFFICULTY; else
+							
+				player:SendGameMessage(worldMaster, 50036, 0x20, glId, player);
+				player:PlayAnimation(getGLStartAnimationFromSheet(guildleveData.borderId, guildleveData.plateId, true));				
+				director = player:GetZone():CreateGuildleveDirector(glId, difficulty, player);
 				player:AddDirector(director);
 				director:StartDirector(true, glId)
+				
 			end
 		else
 			goto SELECT_LOOP;

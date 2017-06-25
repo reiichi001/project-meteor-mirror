@@ -112,10 +112,18 @@ namespace FFXIVClassic_Map_Server.lua
         {
             if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
             {
-                Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];                
-                mSleepingOnPlayerEvent.Remove(player.actorId);               
-                DynValue value = coroutine.Resume(LuaUtils.CreateLuaParamObjectList(args));
-                ResolveResume(null, coroutine, value);
+                try
+                {
+                    Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];
+                    mSleepingOnPlayerEvent.Remove(player.actorId);
+                    DynValue value = coroutine.Resume(LuaUtils.CreateLuaParamObjectList(args));
+                    ResolveResume(null, coroutine, value);
+                }
+                catch (ScriptRuntimeException e)
+                {
+                    LuaEngine.SendError(player, String.Format("OnEventUpdated: {0}", e.DecoratedMessage));
+                    player.EndEvent();
+                }
             }
             else
                 player.EndEvent();
@@ -364,9 +372,17 @@ namespace FFXIVClassic_Map_Server.lua
             if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
             {
                 Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];                
-                mSleepingOnPlayerEvent.Remove(player.actorId);                
-                DynValue value = coroutine.Resume();
-                ResolveResume(null, coroutine, value);
+                mSleepingOnPlayerEvent.Remove(player.actorId);
+
+                try{
+                    DynValue value = coroutine.Resume();
+                    ResolveResume(null, coroutine, value);                  
+                }
+                catch (ScriptRuntimeException e)
+                {
+                    LuaEngine.SendError(player, String.Format("OnEventStarted: {0}", e.DecoratedMessage));
+                    player.EndEvent();
+                }                
             }
             else                
                 CallLuaFunction(player, target, "onEventStarted", false, LuaUtils.CreateLuaParamObjectList(lparams));
