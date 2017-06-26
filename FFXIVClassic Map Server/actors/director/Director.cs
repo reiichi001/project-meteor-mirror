@@ -123,6 +123,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         public void EndDirector()
         {
             isDeleting = true;
+
             if (this is GuildleveDirector)
                 ((GuildleveDirector)this).EndGuildleveDirector();
 

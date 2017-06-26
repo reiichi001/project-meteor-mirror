@@ -23,6 +23,8 @@ namespace FFXIVClassic_Map_Server.actors.director
         public GuildleveData guildleveData;
         public GuildleveWork guildleveWork = new GuildleveWork();
 
+        public bool isEnded = false;
+
         public GuildleveDirector(uint id, Area zone, string directorPath, uint guildleveId, byte selectedDifficulty, Player guildleveOwner, params object[] args)
             : base(id, zone, directorPath, args)
         {
@@ -83,9 +85,27 @@ namespace FFXIVClassic_Map_Server.actors.director
 
         public void EndGuildleve(bool wasCompleted)
         {
+            if (isEnded)
+                return;
+            isEnded = true;
+
             if (wasCompleted)
             {
+                foreach (Actor a in GetPlayerMembers())
+                {
+                    Player player = (Player)a;
+                    player.PlayAnimation(0x02000002);
+                    player.ChangeMusic(81);
+                    player.SendGameMessage(Server.GetWorldManager().GetActor(), 50023, 0x20, (object)(int)guildleveId);
+                    player.SendDataPacket("attention", Server.GetWorldManager().GetActor(), "", 50023, (object)(int)guildleveId);
+                }
+            }
 
+            foreach (Actor a in GetNpcMembers())
+            {
+                Npc npc = (Npc)a;
+                npc.Despawn();
+                RemoveMember(a);
             }
 
             guildleveWork.startTime = 0;
@@ -96,6 +116,11 @@ namespace FFXIVClassic_Map_Server.actors.director
             propertyBuilder.AddProperty("guildleveWork.startTime");
             SendPacketsToPlayers(propertyBuilder.Done());
             
+            if (wasCompleted)
+            {
+                Npc aetheryteNode = zone.SpawnActor(1200040, String.Format("{0}:warpExit", guildleveOwner.actorName), guildleveOwner.positionX, guildleveOwner.positionY, guildleveOwner.positionZ);
+                contentGroup.AddMember(aetheryteNode);
+            }
         }   
         
         public void AbandonGuildleve()

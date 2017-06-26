@@ -28,5 +28,10 @@ function main(thisDirector)
 	thisDirector:UpdateAimNumNow(0, 2);
 	wait(3);
 	thisDirector:UpdateAimNumNow(0, 3);
+	wait(3);
+	thisDirector:UpdateAimNumNow(0, 4);
+	
+	wait(2);
+	thisDirector:EndGuildleve(true);
 	
 end

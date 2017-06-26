@@ -467,6 +467,11 @@ namespace FFXIVClassic_Map_Server.Actors
             RemoveActorFromZone(FindActorInZoneByUniqueID(uniqueId));
         }
 
+        public void DespawnActor(Actor actor)
+        {
+            RemoveActorFromZone(actor);
+        }
+
         public Director GetWeatherDirector()
         {
             return mWeatherDirector;

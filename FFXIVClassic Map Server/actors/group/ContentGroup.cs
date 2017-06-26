@@ -134,7 +134,11 @@ namespace FFXIVClassic_Map_Server.actors.group
                 Session s = Server.GetServer().GetSession(members[i]);
                 if (s != null)
                     s.GetActor().SetCurrentContentGroup(null);
+                Actor a = director.GetZone().FindActorInArea(members[i]);
+                if (a is Npc)
+                    ((Npc)a).Despawn();
                 members.Remove(members[i]);
+                i--;
             }
             Server.GetWorldManager().DeleteContentGroup(groupIndex);
         }

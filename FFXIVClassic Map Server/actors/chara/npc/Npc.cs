@@ -396,6 +396,11 @@ namespace FFXIVClassic_Map_Server.Actors
             player.QueuePacket(PlayBGAnimation.BuildPacket(actorId, player.actorId, animationName));
         }
 
+        public void Despawn()
+        {
+            zone.DespawnActor(this);
+        }
+
         public void Update(double deltaTime)
         {
             LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, deltaTime);         
