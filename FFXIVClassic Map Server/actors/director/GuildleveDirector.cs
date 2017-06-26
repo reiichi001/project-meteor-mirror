@@ -98,7 +98,7 @@ namespace FFXIVClassic_Map_Server.actors.director
                 {
                     Player player = (Player)a;
                     player.MarkGuildleve(guildleveId, true, true);
-                    player.PlayAnimation(0x02000002);
+                    player.PlayAnimation(0x02000002, true);
                     player.ChangeMusic(81);
                     player.SendGameMessage(Server.GetWorldManager().GetActor(), 50023, 0x20, (object)(int)guildleveId);
                     player.SendDataPacket("attention", Server.GetWorldManager().GetActor(), "", 50023, (object)(int)guildleveId);

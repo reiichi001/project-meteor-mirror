@@ -104,9 +104,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
         }     
    
-        public void PlayAnimation(uint animId)
+        public void PlayAnimation(uint animId, bool onlySelf = false)
         {            
-            zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, actorId, animId));
+            if (onlySelf)
+            {
+                if (this is Player)
+                    ((Player)this).QueuePacket(PlayAnimationOnActorPacket.BuildPacket(actorId, actorId, animId));
+            }
+            else
+                zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, actorId, animId));
         }
 
     }
