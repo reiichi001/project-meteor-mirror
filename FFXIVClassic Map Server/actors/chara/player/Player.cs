@@ -1092,9 +1092,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public int GetFreeGuildleveSlot()
         {
-            for (int i = 0; i < questGuildleve.Length; i++)
+            for (int i = 0; i < work.guildleveId.Length; i++)
             {
-                if (questGuildleve[i] == 0)
+                if (work.guildleveId[i] == 0)
                     return i;
             }
 
@@ -1135,8 +1135,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (freeSlot == -1)
                 return;
 
-            playerWork.questScenario[freeSlot] = id;
-            questGuildleve[freeSlot] = id;
+            work.guildleveId[freeSlot] = (ushort)id;
             Database.SaveGuildleve(this, id, freeSlot);
             SendGuildleveClientUpdate(freeSlot);
         }
@@ -1145,14 +1144,14 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (HasGuildleve(id))
             {
-                for (int i = 0; i < questGuildleve.Length; i++)
+                for (int i = 0; i < work.guildleveId.Length; i++)
                 {
-                    if (questGuildleve[i] != null && questGuildleve[i] == id)
+                    if (work.guildleveId[i] == id)
                     {
-                        work.guildleveChecked[i] = abandoned;
-                        work.guildleveDone[i] = completed;
+                        work.guildleveChecked[i] = completed;
+                        work.guildleveDone[i] = abandoned;
                         Database.MarkGuildleve(this, id, abandoned, completed);
-                        SendGuildleveClientUpdate(i);
+                        SendGuildleveMarkClientUpdate(i);
                     }
                 }
             }
@@ -1162,13 +1161,12 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (HasGuildleve(id))
             {
-                for (int i = 0; i < questGuildleve.Length; i++)
+                for (int i = 0; i < work.guildleveId.Length; i++)
                 {
-                    if (questGuildleve[i] != null && questGuildleve[i] == id)
+                    if (work.guildleveId[i] == id)
                     {
                         Database.RemoveGuildleve(this, id);
-                        questGuildleve[i] = 0;
-                        playerWork.questGuildleve[i] = 0;
+                        work.guildleveId[i] = 0;
                         SendGuildleveClientUpdate(i);
                         break;
                     }
@@ -1351,9 +1349,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public bool HasGuildleve(uint id)
         {
-            for (int i = 0; i < questGuildleve.Length; i++)
+            for (int i = 0; i < work.guildleveId.Length; i++)
             {
-                if (questGuildleve[i] != null && questGuildleve[i] == id)
+                if (work.guildleveId[i] == id)
                     return true;
             }
 
@@ -1421,8 +1419,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         private void SendGuildleveClientUpdate(int slot)
         {
-            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("playerWork/journal", this, actorId);
-            propPacketUtil.AddProperty(String.Format("playerWork.questGuildleve[{0}]", slot));
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("work/guildleve", this, actorId);
+            propPacketUtil.AddProperty(String.Format("work.guildleveId[{0}]", slot));
             QueuePackets(propPacketUtil.Done());
         }
 

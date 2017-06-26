@@ -24,6 +24,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         public GuildleveWork guildleveWork = new GuildleveWork();
 
         public bool isEnded = false;
+        public uint completionTime = 0;
 
         public GuildleveDirector(uint id, Area zone, string directorPath, uint guildleveId, byte selectedDifficulty, Player guildleveOwner, params object[] args)
             : base(id, zone, directorPath, args)
@@ -89,12 +90,14 @@ namespace FFXIVClassic_Map_Server.actors.director
                 return;
             isEnded = true;
 
+            completionTime = Utils.UnixTimeStampUTC() - guildleveWork.startTime;
+
             if (wasCompleted)
             {
                 foreach (Actor a in GetPlayerMembers())
                 {
                     Player player = (Player)a;
-                    player.MarkGuildleve(guildleveId, false, true);
+                    player.MarkGuildleve(guildleveId, true, true);
                     player.PlayAnimation(0x02000002);
                     player.ChangeMusic(81);
                     player.SendGameMessage(Server.GetWorldManager().GetActor(), 50023, 0x20, (object)(int)guildleveId);
