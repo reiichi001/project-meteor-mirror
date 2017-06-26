@@ -10,11 +10,11 @@ require ("guildleve")
 --72: Harvest Leve
 
 function init(thisDirector)	
-	return "/Director/Guildleve/PrivateGLBattleDetectNormal", 0x4e25, thisDirector.guildleveId, 6, 0, 0, 0;
+	return "/Director/Guildleve/PrivateGLBattleSweepNormal", 0x4e25, thisDirector.guildleveId, 6, 0, 0, 0;
 end
 
 function main(thisDirector)
-
+	
 	wait(3);
 	
 	thisDirector:StartGuildleve();
