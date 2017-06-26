@@ -37,9 +37,12 @@ function main(thisDirector)
 	wait(3);
 	thisDirector:UpdateAimNumNow(0, 3);
 	
+	wait(3);	
+	thisDirector:EndGuildleve(true);
+	
 end
 
-function attentionMessage(player, textId, args ...)
+function attentionMessage(player, textId, ...)
 	player:SendGameMessage(GetWorldMaster(), textId, 0x20, args);
 	player:SendDataPacket("attention", GetWorldMaster(), "", textId, args);
 end
