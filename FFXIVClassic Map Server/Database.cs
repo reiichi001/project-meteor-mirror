@@ -432,6 +432,42 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public static void MarkGuildleve(Player player, uint glId, bool isAbandoned, bool isCompleted)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    UPDATE characters_quest_guildleve_regional
+                    SET abandoned = @abandoned, completed = @completed
+                    WHERE characterId = @charaId and guildleveId = @guildleveId
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@guildleveId", glId);
+                    cmd.Parameters.AddWithValue("@abandoned", isAbandoned);
+                    cmd.Parameters.AddWithValue("@completed", isCompleted);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
         public static void SaveGuildleve(Player player, uint glId, int slot)
         {
             string query;

@@ -94,6 +94,7 @@ namespace FFXIVClassic_Map_Server.actors.director
                 foreach (Actor a in GetPlayerMembers())
                 {
                     Player player = (Player)a;
+                    player.MarkGuildleve(guildleveId, false, true);
                     player.PlayAnimation(0x02000002);
                     player.ChangeMusic(81);
                     player.SendGameMessage(Server.GetWorldManager().GetActor(), 50023, 0x20, (object)(int)guildleveId);
@@ -128,7 +129,8 @@ namespace FFXIVClassic_Map_Server.actors.director
             foreach (Actor p in GetPlayerMembers())
             {
                 Player player = (Player)p;                
-                player.SendGameMessage(Server.GetWorldManager().GetActor(), 50147, 0x20, (object)guildleveId);                
+                player.SendGameMessage(Server.GetWorldManager().GetActor(), 50147, 0x20, (object)guildleveId);
+                player.MarkGuildleve(guildleveId, true, false);
             }
 
             EndGuildleve(false);

@@ -1141,6 +1141,23 @@ namespace FFXIVClassic_Map_Server.Actors
             SendGuildleveClientUpdate(freeSlot);
         }
 
+        public void MarkGuildleve(uint id, bool abandoned, bool completed)
+        {
+            if (HasGuildleve(id))
+            {
+                for (int i = 0; i < questGuildleve.Length; i++)
+                {
+                    if (questGuildleve[i] != null && questGuildleve[i] == id)
+                    {
+                        work.guildleveChecked[i] = abandoned;
+                        work.guildleveDone[i] = completed;
+                        Database.MarkGuildleve(this, id, abandoned, completed);
+                        SendGuildleveClientUpdate(i);
+                    }
+                }
+            }
+        }
+
         public void RemoveGuildleve(uint id)
         {
             if (HasGuildleve(id))
@@ -1406,6 +1423,14 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("playerWork/journal", this, actorId);
             propPacketUtil.AddProperty(String.Format("playerWork.questGuildleve[{0}]", slot));
+            QueuePackets(propPacketUtil.Done());
+        }
+
+        private void SendGuildleveMarkClientUpdate(int slot)
+        {
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("work/guildleve", this, actorId);
+            propPacketUtil.AddProperty(String.Format("work.guildleveDone[{0}]", slot));
+            propPacketUtil.AddProperty(String.Format("work.guildleveChecked[{0}]", slot));
             QueuePackets(propPacketUtil.Done());
         }
 
