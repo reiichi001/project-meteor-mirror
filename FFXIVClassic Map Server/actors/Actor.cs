@@ -321,9 +321,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public void ChangeState(ushort newState)
         {
             currentMainState = newState;
-            SubPacket ChangeStatePacket = SetActorStatePacket.BuildPacket(actorId, newState, currentSubState);
-            //TODO: Fill this out!
-            SubPacket battleActionPacket = BattleActionX01Packet.BuildPacket(actorId, actorId, actorId, 0, 0, 0, 0, 0, 0);
+            SubPacket ChangeStatePacket = SetActorStatePacket.BuildPacket(actorId, newState, currentSubState);       
+            SubPacket battleActionPacket = BattleActionX01Packet.BuildPacket(actorId, actorId, actorId, 0x72000062, 1, 0, 0x05209, 0, 0);
             zone.BroadcastPacketAroundActor(this, ChangeStatePacket);
             zone.BroadcastPacketAroundActor(this, battleActionPacket);
         }

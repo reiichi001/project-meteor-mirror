@@ -51,7 +51,7 @@ namespace FFXIVClassic_World_Server.Packets.Send.Subpackets
                     }
                 }
 
-                return new SubPacket(OPCODE, playerActorID, targetID, data);
+                return new SubPacket(OPCODE, playerActorID, data);
             }
 
     }

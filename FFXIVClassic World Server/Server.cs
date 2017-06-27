@@ -337,7 +337,7 @@ namespace FFXIVClassic_World_Server
             else if (mZoneSessionList.ContainsKey(sessionId))
             {
                 ClientConnection conn = mZoneSessionList[sessionId].clientConnection;
-                conn.QueuePacket(subpacket, true, false);
+                conn.QueuePacket(subpacket);
                 conn.FlushQueuedSendPackets();
             }
 

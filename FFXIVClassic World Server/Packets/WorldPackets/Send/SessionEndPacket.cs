@@ -31,7 +31,7 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Send
                 }
             }
 
-            return new SubPacket(true, OPCODE, 0, session.sessionId, data);
+            return new SubPacket(true, OPCODE, 0, data);
         }
 
         public static SubPacket BuildPacket(Session session, uint destinationZoneId, string destinationPrivateArea, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
@@ -57,7 +57,7 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Send
                 }
             }
 
-            return new SubPacket(true, OPCODE, 0, session.sessionId, data);
+            return new SubPacket(true, OPCODE, 0, data);
         }
     }
 }
