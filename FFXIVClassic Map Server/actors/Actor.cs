@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using FFXIVClassic_Map_Server.actors.area;
 using System.Reflection;
 using System.ComponentModel;
+using FFXIVClassic_Map_Server.packets.send.actor.battle;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -321,7 +322,8 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             currentMainState = newState;
             SubPacket ChangeStatePacket = SetActorStatePacket.BuildPacket(actorId, newState, currentSubState);
-            SubPacket battleActionPacket = BattleAction1Packet.BuildPacket(actorId);
+            //TODO: Fill this out!
+            SubPacket battleActionPacket = BattleActionX01Packet.BuildPacket(actorId, actorId, actorId, 0, 0, 0, 0, 0, 0);
             zone.BroadcastPacketAroundActor(this, ChangeStatePacket);
             zone.BroadcastPacketAroundActor(this, battleActionPacket);
         }
