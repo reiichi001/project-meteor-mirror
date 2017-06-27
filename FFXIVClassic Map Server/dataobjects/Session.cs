@@ -135,13 +135,17 @@ namespace FFXIVClassic_Map_Server.dataobjects
                     if (actor is Character && ((Character)actor).isStatic)
                         continue;
 
-                    GetActor().QueuePacket(actor.CreatePositionUpdatePacket(playerActor.actorId));
+                    GetActor().QueuePacket(actor.CreatePositionUpdatePacket());
                 }
                 else
                 {
-                    GetActor().QueuePacket(actor.GetSpawnPackets(playerActor.actorId, 1));
-                    GetActor().QueuePacket(actor.GetInitPackets(playerActor.actorId));
-                    GetActor().QueuePacket(actor.GetSetEventStatusPackets(playerActor.actorId));
+                    if (actor is Player)                    
+                        GetActor().QueuePacket(actor.GetSpawnPackets(playerActor, 1));                    
+                    else                    
+                        GetActor().QueuePacket(actor.GetSpawnPackets(1));                    
+
+                    GetActor().QueuePacket(actor.GetInitPackets());
+                    GetActor().QueuePacket(actor.GetSetEventStatusPackets());
                     actorInstanceList.Add(actor);
 
                     if (actor is Npc)

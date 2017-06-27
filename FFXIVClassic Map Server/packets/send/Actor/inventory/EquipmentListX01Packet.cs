@@ -23,7 +23,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.inventory
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, playerActorID, data);
         }
     }
 }

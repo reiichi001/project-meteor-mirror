@@ -30,7 +30,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.inventory
                 data = mem.GetBuffer();
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, playerActorID, data);
         }
 
 

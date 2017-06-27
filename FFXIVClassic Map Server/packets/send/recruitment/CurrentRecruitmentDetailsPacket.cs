@@ -22,7 +22,7 @@ namespace FFXIVClassic_Map_Server.packets.send.recruitment
                 {
                     if (details == null)
                     {
-                        return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+                        return new SubPacket(OPCODE, sourceActorId, data);
                     }
 
                     binWriter.Write((UInt32)details.purposeId);

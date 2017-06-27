@@ -72,9 +72,9 @@ namespace FFXIVClassic.Common
             offset += header.subpacketSize;
         }
 
-        public SubPacket(ushort opcode, uint sourceId, byte[] data) : this(true, opcode, sourceId, targetId, data) { }
+        public SubPacket(ushort opcode, uint sourceId, byte[] data) : this(true, opcode, sourceId, data) { }
 
-        public SubPacket(bool isGameMessage, ushort opcode, uint sourceId, uint targetId, byte[] data)
+        public SubPacket(bool isGameMessage, ushort opcode, uint sourceId, byte[] data)
         {
             header = new SubPacketHeader();
 

@@ -9,7 +9,7 @@ namespace FFXIVClassic_Map_Server.packets.send
 
         public static SubPacket BuildPacket(uint playerActorID)
         {
-            return new SubPacket(OPCODE, playerActorID, playerActorID, new byte[8]);
+            return new SubPacket(OPCODE, playerActorID, new byte[8]);
         }
     }
 }

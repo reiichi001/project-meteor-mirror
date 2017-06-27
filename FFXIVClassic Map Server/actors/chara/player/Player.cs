@@ -274,10 +274,10 @@ namespace FFXIVClassic_Map_Server.Actors
          * Timer Array - 20 Number
         */
 
-        public override SubPacket CreateScriptBindPacket(Player player)
+        public override SubPacket CreateScriptBindPacket(Player requestPlayer)
         {
             List<LuaParam> lParams;
-            if (IsMyPlayer(player.actorId))
+            if (IsMyPlayer(requestPlayer.actorId))
             {
                 if (loginInitDirector != null)
                     lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, true, loginInitDirector, true, 0, false, timers, true);
@@ -292,11 +292,11 @@ namespace FFXIVClassic_Map_Server.Actors
             return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);
         }
 
-        public override BasePacket GetSpawnPackets(Player player, ushort spawnType)
+        public override BasePacket GetSpawnPackets(Player requestPlayer, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(CreateAddActorPacket( 8));
-            if (IsMyPlayer(player.actorId))
+            subpackets.Add(CreateAddActorPacket(8));
+            if (IsMyPlayer(requestPlayer.actorId))
                 subpackets.AddRange(Create0x132Packets());
             subpackets.Add(CreateSpeedPacket());
             subpackets.Add(CreateSpawnPositonPacket(spawnType));
@@ -308,12 +308,12 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateInitStatusPacket());
             subpackets.Add(CreateSetActorIconPacket());
             subpackets.Add(CreateIsZoneingPacket());
-            subpackets.AddRange(CreatePlayerRelatedPackets(player));
-            subpackets.Add(CreateScriptBindPacket(player));            
+            subpackets.AddRange(CreatePlayerRelatedPackets(requestPlayer.actorId));
+            subpackets.Add(CreateScriptBindPacket(requestPlayer));            
             return BasePacket.CreatePacket(subpackets, true, false);
         }
 
-        public List<SubPacket> CreatePlayerRelatedPackets(Player player)
+        public List<SubPacket> CreatePlayerRelatedPackets(uint requestingPlayerActorId)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
 
@@ -326,7 +326,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (currentJob != 0)
                 subpackets.Add(SetCurrentJobPacket.BuildPacket(actorId, currentJob));
 
-            if (IsMyPlayer(player.actorId))
+            if (IsMyPlayer(requestingPlayerActorId))
             {
                 subpackets.Add(SetSpecialEventWorkPacket.BuildPacket(actorId));
 
@@ -512,7 +512,7 @@ namespace FFXIVClassic_Map_Server.Actors
             
             QueuePacket(SetMapPacket.BuildPacket(actorId, zone.regionId, zone.actorId));
 
-            QueuePacket(GetSpawnPackets(player, spawnType));            
+            QueuePacket(GetSpawnPackets(this, spawnType));            
             //GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
 
             #region Inventory & Equipment
@@ -529,9 +529,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
             playerSession.QueuePacket(GetInitPackets());
 
-            BasePacket areaMasterSpawn = zone.GetSpawnPackets(actorId);
-            BasePacket debugSpawn = world.GetDebugActor().GetSpawnPackets(actorId);
-            BasePacket worldMasterSpawn = world.GetActor().GetSpawnPackets(actorId);
+            BasePacket areaMasterSpawn = zone.GetSpawnPackets();
+            BasePacket debugSpawn = world.GetDebugActor().GetSpawnPackets();
+            BasePacket worldMasterSpawn = world.GetActor().GetSpawnPackets();
             
             playerSession.QueuePacket(areaMasterSpawn);
             playerSession.QueuePacket(debugSpawn);            
@@ -552,16 +552,16 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (zone.GetWeatherDirector() != null)
             {
-                BasePacket weatherDirectorSpawn = zone.GetWeatherDirector().GetSpawnPackets(actorId);
+                BasePacket weatherDirectorSpawn = zone.GetWeatherDirector().GetSpawnPackets();
                 playerSession.QueuePacket(weatherDirectorSpawn);
             }
 
             
             foreach (Director director in ownedDirectors)
             {
-                director.GetSpawnPackets(actorId).DebugPrintPacket();
-                QueuePacket(director.GetSpawnPackets(actorId));
-                QueuePacket(director.GetInitPackets(actorId));
+                director.GetSpawnPackets().DebugPrintPacket();
+                QueuePacket(director.GetSpawnPackets());
+                QueuePacket(director.GetInitPackets());
             }
 
             if (currentContentGroup != null)
@@ -1451,7 +1451,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             director.GetSpawnPackets().DebugPrintPacket();
             QueuePacket(director.GetSpawnPackets());
-            QueuePacket(director.GetInitPackets(actorId));        
+            QueuePacket(director.GetInitPackets());        
         }
 
         public void RemoveDirector(Director director)

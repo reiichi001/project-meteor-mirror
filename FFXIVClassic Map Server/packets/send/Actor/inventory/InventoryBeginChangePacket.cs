@@ -11,13 +11,13 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.inventory
         {
             byte[] data = new byte[8];
             data[0] = 2;
-            return new SubPacket(OPCODE, sourceActorId, targetActorId, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
 
         public static SubPacket BuildPacket(uint playerActorID)
         {
             byte[] data = new byte[8];
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, playerActorID, data);
         }
     }
 }

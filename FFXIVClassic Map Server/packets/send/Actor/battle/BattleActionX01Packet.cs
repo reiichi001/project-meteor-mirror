@@ -41,7 +41,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
                 }
             }
 
-            return new SubPacket(OPCODE, sourceActorId, playerActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
     }
 }

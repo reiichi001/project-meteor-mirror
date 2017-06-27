@@ -115,7 +115,7 @@ namespace FFXIVClassic_Map_Server
                         }
 
                         if (chatMessage.logType == SendMessagePacket.MESSAGE_TYPE_SAY || chatMessage.logType == SendMessagePacket.MESSAGE_TYPE_SHOUT)
-                            session.GetActor().BroadcastPacket(SendMessagePacket.BuildPacket(session.id, session.id, chatMessage.logType, session.GetActor().customDisplayName, chatMessage.message), false);
+                            session.GetActor().BroadcastPacket(SendMessagePacket.BuildPacket(session.id, chatMessage.logType, session.GetActor().customDisplayName, chatMessage.message), false);
 
                         break;
                     //Langauge Code (Client safe to send packets to now)
@@ -150,7 +150,7 @@ namespace FFXIVClassic_Map_Server
 
                         SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
                         session.GetActor().currentTarget = setTarget.actorID;
-                        session.GetActor().BroadcastPacket(SetActorTargetAnimatedPacket.BuildPacket(session.id, session.id, setTarget.actorID), true);
+                        session.GetActor().BroadcastPacket(SetActorTargetAnimatedPacket.BuildPacket(session.id, setTarget.actorID), true);
                         break;
                     //Lock Target
                     case 0x00CC:

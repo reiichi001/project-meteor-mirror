@@ -98,7 +98,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             currentContentGroup = group;
 
-            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this, actorId);
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this);
             propPacketUtil.AddProperty("charaWork.currentContentGroup");            
             zone.BroadcastPacketsAroundActor(this, propPacketUtil.Done());
 

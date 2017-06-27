@@ -40,7 +40,7 @@ namespace FFXIVClassic_Map_Server.actors.director
             eventConditions.noticeEventConditions.Add(new EventList.NoticeEventCondition("reqForChild", 0x0, 0x1));            
         }       
 
-        public override SubPacket CreateScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket()
         {
             List<LuaParam> actualLParams = new List<LuaParam>();
             actualLParams.Insert(0, new LuaParam(2, classPath));
@@ -54,28 +54,28 @@ namespace FFXIVClassic_Map_Server.actors.director
             for (int i = 1; i < lparams.Count; i++)
                 actualLParams.Add(lparams[i]);
 
-            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, actualLParams);
+            return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, actualLParams);
         }
 
-        public override BasePacket GetSpawnPackets(uint playerActorId, ushort spawnType)
+        public override BasePacket GetSpawnPackets(ushort spawnType = 1)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(CreateAddActorPacket(playerActorId, 0));
-            subpackets.AddRange(GetEventConditionPackets(playerActorId));
-            subpackets.Add(CreateSpeedPacket(playerActorId));
-            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0));
-            subpackets.Add(CreateNamePacket(playerActorId));
-            subpackets.Add(CreateStatePacket(playerActorId));
-            subpackets.Add(CreateIsZoneingPacket(playerActorId));
-            subpackets.Add(CreateScriptBindPacket(playerActorId));
+            subpackets.Add(CreateAddActorPacket(0));
+            subpackets.AddRange(GetEventConditionPackets());
+            subpackets.Add(CreateSpeedPacket());
+            subpackets.Add(CreateSpawnPositonPacket(0));
+            subpackets.Add(CreateNamePacket());
+            subpackets.Add(CreateStatePacket());
+            subpackets.Add(CreateIsZoneingPacket());
+            subpackets.Add(CreateScriptBindPacket());
             return BasePacket.CreatePacket(subpackets, true, false);
         }        
 
-        public override BasePacket GetInitPackets(uint playerActorId)
+        public override BasePacket GetInitPackets()
         {
             SetActorPropetyPacket initProperties = new SetActorPropetyPacket("/_init");
             initProperties.AddTarget();
-            return BasePacket.CreatePacket(initProperties.BuildPacket(playerActorId, actorId), true, false);
+            return BasePacket.CreatePacket(initProperties.BuildPacket(actorId), true, false);
         }
 
         public void OnTalkEvent(Player player, Npc npc)
@@ -108,9 +108,9 @@ namespace FFXIVClassic_Map_Server.actors.director
             {
                 foreach (Player p in GetPlayerMembers())
                 {
-                    GetSpawnPackets(p.actorId).DebugPrintPacket();
-                    p.QueuePacket(GetSpawnPackets(p.actorId));
-                    p.QueuePacket(GetInitPackets(p.actorId));
+                    GetSpawnPackets().DebugPrintPacket();
+                    p.QueuePacket(GetSpawnPackets());
+                    p.QueuePacket(GetInitPackets());
                 }
             }
 

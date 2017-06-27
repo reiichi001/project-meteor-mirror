@@ -612,8 +612,8 @@ namespace FFXIVClassic_Map_Server
             }                 
 
             //Send packets
-            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
-            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10), true, false);
+            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId));
+            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10));
             player.SendZoneInPackets(this, spawnType);
             player.playerSession.ClearInstance();
             player.SendInstanceUpdate();
@@ -661,8 +661,8 @@ namespace FFXIVClassic_Map_Server
                 player.rotation = spawnRotation;
 
                 //Send packets
-                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10), true, false);
-                player.playerSession.QueuePacket(player.CreateSpawnTeleportPacket(player.actorId, spawnType), true, false);
+                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10));
+                player.playerSession.QueuePacket(player.CreateSpawnTeleportPacket(spawnType));
 
                 player.playerSession.LockUpdates(false);
                 player.SendInstanceUpdate();
@@ -705,8 +705,8 @@ namespace FFXIVClassic_Map_Server
             player.SendGameMessage(GetActor(), 34108, 0x20);
 
             //Send packets
-            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
-            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10), true, false);
+            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId));
+            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10));
             player.SendZoneInPackets(this, spawnType);
             player.playerSession.ClearInstance();
             player.SendInstanceUpdate();
@@ -740,8 +740,8 @@ namespace FFXIVClassic_Map_Server
             //Send packets            
             if (!isLogin)
             {
-                player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
-                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x2), true, false);
+                player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId));
+                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x2));
                 //player.SendZoneInPackets(this, spawnType);
             }
 

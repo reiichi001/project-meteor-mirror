@@ -17,23 +17,23 @@ namespace FFXIVClassic_Map_Server.Actors
             this.className = "WorldMaster";
         }
 
-        public override SubPacket CreateScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket()
         {
             List<LuaParam> lParams;
             lParams = LuaUtils.CreateLuaParamList("/World/WorldMaster_event", false, false, false, false, false, null);
-            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
+            return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);
         }
 
-        public override BasePacket GetSpawnPackets(uint playerActorId)
+        public override BasePacket GetSpawnPackets()
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(CreateAddActorPacket(playerActorId, 0));
-            subpackets.Add(CreateSpeedPacket(playerActorId));
-            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x1));
-            subpackets.Add(CreateNamePacket(playerActorId));
-            subpackets.Add(CreateStatePacket(playerActorId));
-            subpackets.Add(CreateIsZoneingPacket(playerActorId));
-            subpackets.Add(CreateScriptBindPacket(playerActorId));
+            subpackets.Add(CreateAddActorPacket(0));
+            subpackets.Add(CreateSpeedPacket());
+            subpackets.Add(CreateSpawnPositonPacket(0x1));
+            subpackets.Add(CreateNamePacket());
+            subpackets.Add(CreateStatePacket());
+            subpackets.Add(CreateIsZoneingPacket());
+            subpackets.Add(CreateScriptBindPacket());
             return BasePacket.CreatePacket(subpackets, true, false);
         }
     }

@@ -178,7 +178,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);
         }
         
-        public override BasePacket GetSpawnPackets(ushort spawnType)
+        public override BasePacket GetSpawnPackets(Player player, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket());
@@ -197,7 +197,7 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateInitStatusPacket());
             subpackets.Add(CreateSetActorIconPacket());
             subpackets.Add(CreateIsZoneingPacket());           
-            subpackets.Add(CreateScriptBindPacket());            
+            subpackets.Add(CreateScriptBindPacket(player));            
 
             return BasePacket.CreatePacket(subpackets, true, false);
         }

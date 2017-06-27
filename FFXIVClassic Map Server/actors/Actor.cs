@@ -240,6 +240,25 @@ namespace FFXIVClassic_Map_Server.Actors
             return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, classParams);
         }
 
+        public virtual SubPacket CreateScriptBindPacket()
+        {
+            return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, classParams);
+        }
+
+        public virtual BasePacket GetSpawnPackets(Player player, ushort spawnType)
+        {
+            List<SubPacket> subpackets = new List<SubPacket>();
+            subpackets.Add(CreateAddActorPacket(8));
+            subpackets.AddRange(GetEventConditionPackets());
+            subpackets.Add(CreateSpeedPacket());
+            subpackets.Add(CreateSpawnPositonPacket( spawnType));
+            subpackets.Add(CreateNamePacket());
+            subpackets.Add(CreateStatePacket());
+            subpackets.Add(CreateIsZoneingPacket());
+            subpackets.Add(CreateScriptBindPacket(player));
+            return BasePacket.CreatePacket(subpackets, true, false);
+        }
+
         public virtual BasePacket GetSpawnPackets()
         {
             return GetSpawnPackets(0x1);
@@ -251,7 +270,7 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateAddActorPacket(8));
             subpackets.AddRange(GetEventConditionPackets());
             subpackets.Add(CreateSpeedPacket());
-            subpackets.Add(CreateSpawnPositonPacket( spawnType));
+            subpackets.Add(CreateSpawnPositonPacket(spawnType));
             subpackets.Add(CreateNamePacket());
             subpackets.Add(CreateStatePacket());
             subpackets.Add(CreateIsZoneingPacket());
