@@ -36,10 +36,10 @@ namespace FFXIVClassic_Map_Server.dataobjects
             Server.GetWorldConnection().QueuePacket(basePacket);
         }
 
-        public void QueuePacket(SubPacket subPacket, bool isAuthed, bool isEncrypted)
+        public void QueuePacket(SubPacket subPacket)
         {
-            subPacket.header.targetId = id;
-            Server.GetWorldConnection().QueuePacket(subPacket, isAuthed, isEncrypted);
+            subPacket.SetTargetId(id);
+            Server.GetWorldConnection().QueuePacket(subPacket, true, false);
         }
 
         public Player GetActor()
@@ -107,7 +107,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                     if (npc.GetUniqueId().Equals("1") && milliseconds - lastMilis > 1000)
                     {
                         lastMilis = milliseconds;
-                        GetActor().QueuePacket(RemoveActorPacket.BuildPacket(playerActor.actorId, actorInstanceList[i].actorId));
+                        GetActor().QueuePacket(RemoveActorPacket.BuildPacket(actorInstanceList[i].actorId));
                         actorInstanceList.RemoveAt(i);
                         continue;
                     }
@@ -115,7 +115,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
                 if (!list.Contains(actorInstanceList[i]))
                 {
-                    GetActor().QueuePacket(RemoveActorPacket.BuildPacket(playerActor.actorId, actorInstanceList[i].actorId));
+                    GetActor().QueuePacket(RemoveActorPacket.BuildPacket(actorInstanceList[i].actorId));
                     actorInstanceList.RemoveAt(i);
                 }
                 
