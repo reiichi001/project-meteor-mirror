@@ -2,16 +2,15 @@
 
 using FFXIVClassic.Common;
 using System;
-using System.Text;
 
 namespace  FFXIVClassic_Map_Server.packets.send.actor
 {
-    class _0xD9Packet
+    class SetActorBGPropertiesPacket
     {
-        public const ushort OPCODE = 0x00D9;
+        public const ushort OPCODE = 0x00D8;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket BuildPacket(uint sourceActorId, string anim)
+        public static SubPacket BuildPacket(uint sourceActorId, uint val1, uint val2)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -19,7 +18,8 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    binWriter.Write(Encoding.ASCII.GetBytes(anim), 0, Encoding.ASCII.GetByteCount(anim) >= 4 ? 4 : Encoding.ASCII.GetByteCount(anim));
+                    binWriter.Write((UInt32)val1);
+                    binWriter.Write((UInt32)val2);
                 }
             }
 

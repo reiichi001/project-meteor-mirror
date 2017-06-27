@@ -187,7 +187,7 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateSpawnPositonPacket(0x0));
 
             if (isMapObj)            
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId, instance, layout));                        
+                subpackets.Add(SetActorBGPropertiesPacket.BuildPacket(actorId, instance, layout));                        
             else
                 subpackets.Add(CreateAppearancePacket());
 
