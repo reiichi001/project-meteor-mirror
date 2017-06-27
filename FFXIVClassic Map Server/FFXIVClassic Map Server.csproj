@@ -159,7 +159,6 @@
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />
     <Compile Include="packets\send\actor\ActorSpecialGraphicPacket.cs" />
-    <Compile Include="packets\send\actor\BattleAction1Packet.cs" />
     <Compile Include="packets\send\actor\battle\BattleAction.cs" />
     <Compile Include="packets\send\actor\battle\BattleActionX00Packet.cs" />
     <Compile Include="packets\send\actor\battle\BattleActionX18Packet.cs" />
