@@ -8,7 +8,7 @@ namespace FFXIVClassic_Map_Server.packets.send.login
 {
     class Login0x7ResponsePacket
     {
-        public static BasePacket BuildPacket(uint actorID, uint time, uint type)
+        public static BasePacket BuildPacket(uint sourceActorId, uint time, uint type)
         {
             byte[] data = new byte[0x18];
 
@@ -24,7 +24,7 @@ namespace FFXIVClassic_Map_Server.packets.send.login
                         binWriter.Write((uint)0);
                         binWriter.Write((uint)0xFFFFFD7F);
 
-                        binWriter.Write((uint)actorID);
+                        binWriter.Write((uint)sourceActorId);
                         binWriter.Write((uint)time);
                     }
                     catch (Exception)

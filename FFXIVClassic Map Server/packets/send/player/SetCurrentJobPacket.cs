@@ -9,9 +9,9 @@ namespace FFXIVClassic_Map_Server.packets.send.player
         public const ushort OPCODE = 0x01A4;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket BuildPacket(uint sourceActorID, uint targetActorID, uint jobId)
+        public static SubPacket BuildPacket(uint sourceActorId, uint jobId)
         {
-            return new SubPacket(OPCODE, sourceActorID, targetActorID, BitConverter.GetBytes((uint)jobId));
+            return new SubPacket(OPCODE, sourceActorId, BitConverter.GetBytes((uint)jobId));
         }
     }
 }
