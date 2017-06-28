@@ -299,7 +299,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (IsMyPlayer(requestPlayer.actorId))
                 subpackets.AddRange(Create0x132Packets());
             subpackets.Add(CreateSpeedPacket());
-            subpackets.Add(CreateSpawnPositonPacket(spawnType));
+            subpackets.Add(CreateSpawnPositonPacket(this, spawnType));
             subpackets.Add(CreateAppearancePacket());
             subpackets.Add(CreateNamePacket());
             subpackets.Add(_0xFPacket.BuildPacket(actorId));

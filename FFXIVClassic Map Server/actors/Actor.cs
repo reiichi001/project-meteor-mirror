@@ -93,8 +93,13 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public SubPacket CreateSpawnPositonPacket(ushort spawnType)
         {
+            return CreateSpawnPositonPacket(null, spawnType);
+        }
+
+        public SubPacket CreateSpawnPositonPacket(Player player, ushort spawnType)
+        {
             //TODO: FIX THIS IF
-            uint playerActorId = 0; //Get Rid
+            uint playerActorId = player == null ? 0 : player.actorId; //Get Rid
             SubPacket spawnPacket;
             if (!spawnedFirstTime && playerActorId == actorId)
                 spawnPacket = SetActorPositionPacket.BuildPacket(actorId, 0, positionX, positionY, positionZ, rotation, 0x1, false);
@@ -252,7 +257,7 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateAddActorPacket(8));
             subpackets.AddRange(GetEventConditionPackets());
             subpackets.Add(CreateSpeedPacket());
-            subpackets.Add(CreateSpawnPositonPacket( spawnType));
+            subpackets.Add(CreateSpawnPositonPacket(player, spawnType));
             subpackets.Add(CreateNamePacket());
             subpackets.Add(CreateStatePacket());
             subpackets.Add(CreateIsZoneingPacket());
@@ -271,7 +276,7 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateAddActorPacket(8));
             subpackets.AddRange(GetEventConditionPackets());
             subpackets.Add(CreateSpeedPacket());
-            subpackets.Add(CreateSpawnPositonPacket(spawnType));
+            subpackets.Add(CreateSpawnPositonPacket(null, spawnType));
             subpackets.Add(CreateNamePacket());
             subpackets.Add(CreateStatePacket());
             subpackets.Add(CreateIsZoneingPacket());
