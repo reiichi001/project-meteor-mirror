@@ -292,7 +292,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);
         }
 
-        public override BasePacket GetSpawnPackets(Player requestPlayer, ushort spawnType)
+        public override List<SubPacket> GetSpawnPackets(Player requestPlayer, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket(8));
@@ -310,7 +310,7 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateIsZoneingPacket());
             subpackets.AddRange(CreatePlayerRelatedPackets(requestPlayer.actorId));
             subpackets.Add(CreateScriptBindPacket(requestPlayer));            
-            return BasePacket.CreatePacket(subpackets, true, false);
+            return subpackets;
         }
 
         public List<SubPacket> CreatePlayerRelatedPackets(uint requestingPlayerActorId)
@@ -347,7 +347,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return subpackets;
         }
 
-        public override BasePacket GetInitPackets()
+        public override List<SubPacket> GetInitPackets()
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this);
                         
@@ -494,7 +494,7 @@ namespace FFXIVClassic_Map_Server.Actors
             propPacketUtil.AddProperty("playerWork.birthdayDay");
             propPacketUtil.AddProperty("playerWork.initialTown");
             
-            return BasePacket.CreatePacket(propPacketUtil.Done(), true, false);
+            return propPacketUtil.Done();
         }
 
         public void SendSeamlessZoneInPackets()
@@ -529,9 +529,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
             playerSession.QueuePacket(GetInitPackets());
 
-            BasePacket areaMasterSpawn = zone.GetSpawnPackets();
-            BasePacket debugSpawn = world.GetDebugActor().GetSpawnPackets();
-            BasePacket worldMasterSpawn = world.GetActor().GetSpawnPackets();
+            List<SubPacket> areaMasterSpawn = zone.GetSpawnPackets();
+            List<SubPacket> debugSpawn = world.GetDebugActor().GetSpawnPackets();
+            List<SubPacket> worldMasterSpawn = world.GetActor().GetSpawnPackets();
             
             playerSession.QueuePacket(areaMasterSpawn);
             playerSession.QueuePacket(debugSpawn);            
@@ -552,14 +552,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (zone.GetWeatherDirector() != null)
             {
-                BasePacket weatherDirectorSpawn = zone.GetWeatherDirector().GetSpawnPackets();
-                playerSession.QueuePacket(weatherDirectorSpawn);
+                playerSession.QueuePacket(zone.GetWeatherDirector().GetSpawnPackets());
             }
 
             
             foreach (Director director in ownedDirectors)
             {
-                director.GetSpawnPackets().DebugPrintPacket();
                 QueuePacket(director.GetSpawnPackets());
                 QueuePacket(director.GetInitPackets());
             }
@@ -596,9 +594,9 @@ namespace FFXIVClassic_Map_Server.Actors
             return actorId == otherActorId;
         }        
 
-        public void QueuePacket(BasePacket packet)
+        public void QueuePacket(List<SubPacket> packets)
         {
-            playerSession.QueuePacket(packet);
+            playerSession.QueuePacket(packets);
         }
 
         public void QueuePacket(SubPacket packet)
@@ -616,10 +614,10 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             try
             {
-                BasePacket packet = new BasePacket(path);
+               // BasePacket packet = new BasePacket(path);
 
-                packet.ReplaceActorID(actorId);
-                QueuePacket(packet);
+                //packet.ReplaceActorID(actorId);
+                //QueuePacket(packet);
             }
             catch (Exception e)
             {
@@ -1449,7 +1447,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendDirectorPackets(Director director)
         {
-            director.GetSpawnPackets().DebugPrintPacket();
             QueuePacket(director.GetSpawnPackets());
             QueuePacket(director.GetInitPackets());        
         }

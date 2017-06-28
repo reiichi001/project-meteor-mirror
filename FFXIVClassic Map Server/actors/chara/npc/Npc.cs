@@ -177,8 +177,8 @@ namespace FFXIVClassic_Map_Server.Actors
             //ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams).DebugPrintSubPacket();
             return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);
         }
-        
-        public override BasePacket GetSpawnPackets(Player player, ushort spawnType)
+
+        public override List<SubPacket> GetSpawnPackets(Player player, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket());
@@ -199,10 +199,10 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateIsZoneingPacket());           
             subpackets.Add(CreateScriptBindPacket(player));            
 
-            return BasePacket.CreatePacket(subpackets, true, false);
+            return subpackets;
         }
 
-        public override BasePacket GetInitPackets()
+        public override List<SubPacket> GetInitPackets()
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this);
 
@@ -258,7 +258,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 propPacketUtil.AddProperty("npcWork.pushCommandPriority");
             }
 
-            return BasePacket.CreatePacket(propPacketUtil.Done(), true, false);
+            return propPacketUtil.Done();
         }
 
         public string GetUniqueId()

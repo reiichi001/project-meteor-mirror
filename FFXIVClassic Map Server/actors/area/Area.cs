@@ -91,7 +91,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return ActorInstantiatePacket.BuildPacket(actorId, actorName, "ZoneDefault", lParams);
         }
 
-        public override BasePacket GetSpawnPackets()
+        public override List<SubPacket> GetSpawnPackets()
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket(0));            
@@ -101,7 +101,7 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateStatePacket());
             subpackets.Add(CreateIsZoneingPacket());
             subpackets.Add(CreateScriptBindPacket());
-            return BasePacket.CreatePacket(subpackets, true, false);
+            return subpackets;
         }
 
         #region Actor Management
@@ -483,7 +483,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (player != null && !zoneWide)
             {
-                player.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime), true, false));
+                player.QueuePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime));
             }
             if (zoneWide)
             {
@@ -494,7 +494,7 @@ namespace FFXIVClassic_Map_Server.Actors
                         if (actor.Value is Player)
                         {
                             player = ((Player)actor.Value);
-                            player.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime), true, false));
+                            player.QueuePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime));
                         }
                     }
                 }

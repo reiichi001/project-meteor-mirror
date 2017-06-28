@@ -17,14 +17,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         private BlockingCollection<SubPacket> SendPacketQueue = new BlockingCollection<SubPacket>(1000);
         public int lastPartialSize = 0;
 
-        public void QueuePacket(BasePacket packet)
-        {
-            List<SubPacket> subPackets = packet.GetSubpackets();
-            foreach (SubPacket s in subPackets)
-                SendPacketQueue.Add(s);
-        }
-
-        public void QueuePacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)
+        public void QueuePacket(SubPacket subpacket)
         {
             SendPacketQueue.Add(subpacket);
         }
@@ -68,7 +61,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public void RequestZoneChange(uint sessionId, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
         {
             WorldRequestZoneChangePacket.BuildPacket(sessionId, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation).DebugPrintSubPacket();
-            QueuePacket(WorldRequestZoneChangePacket.BuildPacket(sessionId, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation), true, false);
+            QueuePacket(WorldRequestZoneChangePacket.BuildPacket(sessionId, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation));
         }
     }
 }

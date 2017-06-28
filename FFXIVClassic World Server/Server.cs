@@ -169,10 +169,10 @@ namespace FFXIVClassic_World_Server
         {
             uint sessionId = subpacket.header.targetId;
             Session session = GetSession(sessionId);
-
+            subpacket.DebugPrintSubPacket();     
             if (subpacket.gameMessage.opcode >= 0x1000)
             {
-                subpacket.DebugPrintSubPacket();                
+                //subpacket.DebugPrintSubPacket();                
 
                 switch (subpacket.gameMessage.opcode)
                 {

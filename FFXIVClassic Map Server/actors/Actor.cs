@@ -184,13 +184,13 @@ namespace FFXIVClassic_Map_Server.Actors
             return subpackets;
         }
 
-        public BasePacket GetSetEventStatusPackets()
+        public List<SubPacket> GetSetEventStatusPackets()
         {
             List<SubPacket> subpackets = new List<SubPacket>();
 
             //Return empty list
             if (eventConditions == null)
-                return BasePacket.CreatePacket(subpackets, true, false);
+                return subpackets;
 
             if (eventConditions.talkEventConditions != null)
             {
@@ -228,7 +228,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 2, condition.conditionName));
             }
 
-            return BasePacket.CreatePacket(subpackets, true, false);
+            return subpackets;
         }
 
         public SubPacket CreateIsZoneingPacket()
@@ -246,7 +246,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, classParams);
         }
 
-        public virtual BasePacket GetSpawnPackets(Player player, ushort spawnType)
+        public virtual List<SubPacket> GetSpawnPackets(Player player, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket(8));
@@ -257,15 +257,15 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateStatePacket());
             subpackets.Add(CreateIsZoneingPacket());
             subpackets.Add(CreateScriptBindPacket(player));
-            return BasePacket.CreatePacket(subpackets, true, false);
+            return subpackets;
         }
 
-        public virtual BasePacket GetSpawnPackets()
+        public virtual List<SubPacket> GetSpawnPackets()
         {
             return GetSpawnPackets(0x1);
         }
 
-        public virtual BasePacket GetSpawnPackets(ushort spawnType)
+        public virtual List<SubPacket> GetSpawnPackets(ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket(8));
@@ -276,17 +276,19 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateStatePacket());
             subpackets.Add(CreateIsZoneingPacket());
             subpackets.Add(CreateScriptBindPacket());
-            return BasePacket.CreatePacket(subpackets, true, false);
+            return subpackets;
         }
 
-        public virtual BasePacket GetInitPackets()
+        public virtual List<SubPacket> GetInitPackets()
         {
+            List<SubPacket> packets = new List<SubPacket>();
             SetActorPropetyPacket initProperties = new SetActorPropetyPacket("/_init");
             initProperties.AddByte(0xE14B0CA8, 1);
             initProperties.AddByte(0x2138FD71, 1);
             initProperties.AddByte(0xFBFBCFB1, 1);
             initProperties.AddTarget();
-            return BasePacket.CreatePacket(initProperties.BuildPacket(actorId), true, false);
+            packets.Add(initProperties.BuildPacket(actorId));
+            return packets;
         }
 
         public override bool Equals(Object obj)

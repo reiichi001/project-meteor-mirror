@@ -876,55 +876,55 @@ namespace FFXIVClassic_Map_Server
         public void RequestWorldLinkshellCreate(Player player, string name, ushort crest)
         {
             SubPacket packet = CreateLinkshellPacket.BuildPacket(player.playerSession, name, crest, player.actorId);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellCrestModify(Player player, string name, ushort crest)
         {
             SubPacket packet = ModifyLinkshellPacket.BuildPacket(player.playerSession, 1, name, null, crest, 0);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellDelete(Player player, string name)
         {
             SubPacket packet = DeleteLinkshellPacket.BuildPacket(player.playerSession, name);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellRankChange(Player player, string lsname, string memberName, byte newRank)
         {
             SubPacket packet = LinkshellRankChangePacket.BuildPacket(player.playerSession, memberName, lsname, newRank);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellInviteMember(Player player, string lsname, uint invitedActorId)
         {
             SubPacket packet = LinkshellInvitePacket.BuildPacket(player.playerSession, invitedActorId, lsname);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellCancelInvite(Player player)
         {
             SubPacket packet = LinkshellInviteCancelPacket.BuildPacket(player.playerSession);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellLeave(Player player, string lsname)
         {
             SubPacket packet = LinkshellLeavePacket.BuildPacket(player.playerSession, lsname, null, false);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellKick(Player player, string lsname, string kickedName)
         {
             SubPacket packet = LinkshellLeavePacket.BuildPacket(player.playerSession, lsname, kickedName, true);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellChangeActive(Player player, string lsname)
         {
             SubPacket packet = LinkshellChangePacket.BuildPacket(player.playerSession, lsname);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         private void RequestWorldServerZoneChange(Player player, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)

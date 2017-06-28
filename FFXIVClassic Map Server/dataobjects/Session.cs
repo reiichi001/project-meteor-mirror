@@ -31,15 +31,16 @@ namespace FFXIVClassic_Map_Server.dataobjects
             actorInstanceList.Add(playerActor);
         }
 
-        public void QueuePacket(BasePacket basePacket)
+        public void QueuePacket(List<SubPacket> packets)
         {
-            Server.GetWorldConnection().QueuePacket(basePacket);
+            foreach (SubPacket s in packets)
+                QueuePacket(s);
         }
 
         public void QueuePacket(SubPacket subPacket)
         {
             subPacket.SetTargetId(id);
-            Server.GetWorldConnection().QueuePacket(subPacket, true, false);
+            Server.GetWorldConnection().QueuePacket(subPacket);
         }
 
         public Player GetActor()

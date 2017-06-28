@@ -241,7 +241,6 @@
     <Compile Include="packets\send\actor\MoveActorToPositionPacket.cs" />
     <Compile Include="packets\send\actor\SetActorAppearancePacket.cs" />
     <Compile Include="packets\send\actor\SetActorPositionPacket.cs" />
-    <Compile Include="packets\send\login\0x7ResponsePacket.cs" />
     <Compile Include="packets\send\LogoutPacket.cs" />
     <Compile Include="packets\send\player\SetCompletedAchievementsPacket.cs" />
     <Compile Include="packets\send\player\AchievementEarnedPacket.cs" />
@@ -336,8 +335,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)data\map_config.ini" "$(SolutionDir)$(ProjectName)\$(OutDir)" /d
-xcopy "$(SolutionDir)data\scripts" "$(SolutionDir)$(ProjectName)\$(OutDir)scripts\" /e /d /y /s</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>

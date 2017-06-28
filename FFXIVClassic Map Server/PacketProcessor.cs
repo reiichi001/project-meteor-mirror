@@ -35,7 +35,7 @@ namespace FFXIVClassic_Map_Server
 
         public void ProcessPacket(ZoneConnection client, SubPacket subpacket)
         {                          
-                Session session = mServer.GetSession(subpacket.header.targetId);
+                Session session = mServer.GetSession(subpacket.header.sourceId);
 
                 if (session == null && subpacket.gameMessage.opcode != 0x1000)
                     return;
@@ -59,7 +59,7 @@ namespace FFXIVClassic_Map_Server
 
                         SessionBeginPacket beginSessionPacket = new SessionBeginPacket(subpacket.data);
 
-                        session = mServer.AddSession(subpacket.header.targetId);
+                        session = mServer.AddSession(subpacket.header.sourceId);
 
                         if (!beginSessionPacket.isLogin)
                             Server.GetWorldManager().DoZoneIn(session.GetActor(), false, session.GetActor().destinationSpawnType);
@@ -80,7 +80,7 @@ namespace FFXIVClassic_Map_Server
                         Server.GetServer().RemoveSession(session.id);
                         Program.Log.Info("{0} has been removed from the session list.", session.GetActor().customDisplayName);
 
-                        client.QueuePacket(SessionEndConfirmPacket.BuildPacket(session, endSessionPacket.destinationZoneId), true, false);
+                        session.QueuePacket(SessionEndConfirmPacket.BuildPacket(session, endSessionPacket.destinationZoneId));
                         client.FlushQueuedSendPackets();
                         break;
                     //World Server - Party Synch
@@ -92,14 +92,14 @@ namespace FFXIVClassic_Map_Server
                     case 0x0001:
                         //subpacket.DebugPrintSubPacket();
                         PingPacket pingPacket = new PingPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(PongPacket.BuildPacket(session.id, pingPacket.time), true, false));
+                        session.QueuePacket(PongPacket.BuildPacket(session.id, pingPacket.time));
                         session.Ping();
                         break;
                     //Unknown
                     case 0x0002:
 
                         subpacket.DebugPrintSubPacket();
-                        client.QueuePacket(_0x2Packet.BuildPacket(session.id), true, false);
+                        session.QueuePacket(_0x2Packet.BuildPacket(session.id));
                         client.FlushQueuedSendPackets();
 
                         break;
@@ -121,8 +121,6 @@ namespace FFXIVClassic_Map_Server
                     //Langauge Code (Client safe to send packets to now)
                     case 0x0006:
                         LangaugeCodePacket langCode = new LangaugeCodePacket(subpacket.data);
-                        session = mServer.GetSession(subpacket.header.targetId);
-
                         LuaEngine.GetInstance().CallLuaFunction(session.GetActor(), session.GetActor(), "onBeginLogin", true);                    
                         Server.GetWorldManager().DoZoneIn(session.GetActor(), true, 0x1);
                         LuaEngine.GetInstance().CallLuaFunction(session.GetActor(), session.GetActor(), "onLogin", true);
@@ -247,15 +245,15 @@ namespace FFXIVClassic_Map_Server
                     //Start Recruiting
                     case 0x01C3:
                         StartRecruitingRequestPacket recruitRequestPacket = new StartRecruitingRequestPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(StartRecruitingResponse.BuildPacket(session.id, true), true, false));
+                        session.QueuePacket(StartRecruitingResponse.BuildPacket(session.id, true));
                         break;
                     //End Recruiting
                     case 0x01C4:
-                        client.QueuePacket(BasePacket.CreatePacket(EndRecruitmentPacket.BuildPacket(session.id), true, false));
+                        session.QueuePacket(EndRecruitmentPacket.BuildPacket(session.id));
                         break;
                     //Party Window Opened, Request State
                     case 0x01C5:
-                        client.QueuePacket(BasePacket.CreatePacket(RecruiterStatePacket.BuildPacket(session.id, false, false, 0), true, false));
+                        session.QueuePacket(RecruiterStatePacket.BuildPacket(session.id, false, false, 0));
                         break;
                     //Search Recruiting
                     case 0x01C7:
@@ -271,7 +269,7 @@ namespace FFXIVClassic_Map_Server
                         details.subTaskId = 1;
                         details.comment = "This is a test details packet sent by the server. No implementation has been Created yet...";
                         details.num[0] = 1;
-                        client.QueuePacket(BasePacket.CreatePacket(CurrentRecruitmentDetailsPacket.BuildPacket(session.id, details), true, false));
+                        session.QueuePacket(CurrentRecruitmentDetailsPacket.BuildPacket(session.id, details));
                         break;
                     //Accepted Recruiting
                     case 0x01C6:
@@ -280,64 +278,64 @@ namespace FFXIVClassic_Map_Server
                     /* SOCIAL STUFF */
                     case 0x01C9:
                         AddRemoveSocialPacket addBlackList = new AddRemoveSocialPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(BlacklistAddedPacket.BuildPacket(session.id, true, addBlackList.name), true, false));
+                        session.QueuePacket(BlacklistAddedPacket.BuildPacket(session.id, true, addBlackList.name));
                         break;
                     case 0x01CA:
                         AddRemoveSocialPacket RemoveBlackList = new AddRemoveSocialPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(BlacklistRemovedPacket.BuildPacket(session.id, true, RemoveBlackList.name), true, false));
+                        session.QueuePacket(BlacklistRemovedPacket.BuildPacket(session.id, true, RemoveBlackList.name));
                         break;
                     case 0x01CB:
                         int offset1 = 0;
-                        client.QueuePacket(BasePacket.CreatePacket(SendBlacklistPacket.BuildPacket(session.id, new String[] { "Test" }, ref offset1), true, false));
+                        session.QueuePacket(SendBlacklistPacket.BuildPacket(session.id, new String[] { "Test" }, ref offset1));
                         break;
                     case 0x01CC:
                         AddRemoveSocialPacket addFriendList = new AddRemoveSocialPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(FriendlistAddedPacket.BuildPacket(session.id, true, (uint)addFriendList.name.GetHashCode(), true, addFriendList.name), true, false));
+                        session.QueuePacket(FriendlistAddedPacket.BuildPacket(session.id, true, (uint)addFriendList.name.GetHashCode(), true, addFriendList.name));
                         break;
                     case 0x01CD:
                         AddRemoveSocialPacket RemoveFriendList = new AddRemoveSocialPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(FriendlistRemovedPacket.BuildPacket(session.id, true, RemoveFriendList.name), true, false));
+                        session.QueuePacket(FriendlistRemovedPacket.BuildPacket(session.id, true, RemoveFriendList.name));
                         break;
                     case 0x01CE:
                         int offset2 = 0;
-                        client.QueuePacket(BasePacket.CreatePacket(SendFriendlistPacket.BuildPacket(session.id, new Tuple<long, string>[] { new Tuple<long, string>(01, "Test2") }, ref offset2), true, false));
+                        session.QueuePacket(SendFriendlistPacket.BuildPacket(session.id, new Tuple<long, string>[] { new Tuple<long, string>(01, "Test2") }, ref offset2));
                         break;
                     case 0x01CF:
-                        client.QueuePacket(BasePacket.CreatePacket(FriendStatusPacket.BuildPacket(session.id, null), true, false));
+                        session.QueuePacket(FriendStatusPacket.BuildPacket(session.id, null));
                         break;
                     /* SUPPORT DESK STUFF */
                     //Request for FAQ/Info List
                     case 0x01D0:
                         FaqListRequestPacket faqRequest = new FaqListRequestPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(FaqListResponsePacket.BuildPacket(session.id, new string[] { "Testing FAQ1", "Coded style!" }), true, false));
+                        session.QueuePacket(FaqListResponsePacket.BuildPacket(session.id, new string[] { "Testing FAQ1", "Coded style!" }));
                         break;
                     //Request for body of a faq/info selection
                     case 0x01D1:
                         FaqBodyRequestPacket faqBodyRequest = new FaqBodyRequestPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(FaqBodyResponsePacket.BuildPacket(session.id, "HERE IS A GIANT BODY. Nothing else to say!"), true, false));
+                        session.QueuePacket(FaqBodyResponsePacket.BuildPacket(session.id, "HERE IS A GIANT BODY. Nothing else to say!"));
                         break;
                     //Request issue list
                     case 0x01D2:
                         GMTicketIssuesRequestPacket issuesRequest = new GMTicketIssuesRequestPacket(subpacket.data);
-                        client.QueuePacket(BasePacket.CreatePacket(IssueListResponsePacket.BuildPacket(session.id, new string[] { "Test1", "Test2", "Test3", "Test4", "Test5" }), true, false));
+                        session.QueuePacket(IssueListResponsePacket.BuildPacket(session.id, new string[] { "Test1", "Test2", "Test3", "Test4", "Test5" }));
                         break;
                     //Request if GM ticket exists
                     case 0x01D3:
-                        client.QueuePacket(BasePacket.CreatePacket(StartGMTicketPacket.BuildPacket(session.id, false), true, false));
+                        session.QueuePacket(StartGMTicketPacket.BuildPacket(session.id, false));
                         break;
                     //Request for GM response message
                     case 0x01D4:
-                        client.QueuePacket(BasePacket.CreatePacket(GMTicketPacket.BuildPacket(session.id, "This is a GM Ticket Title", "This is a GM Ticket Body."), true, false));
+                        session.QueuePacket(GMTicketPacket.BuildPacket(session.id, "This is a GM Ticket Title", "This is a GM Ticket Body."));
                         break;
                     //GM Ticket Sent
                     case 0x01D5:
                         GMSupportTicketPacket gmTicket = new GMSupportTicketPacket(subpacket.data);
                         Program.Log.Info("Got GM Ticket: \n" + gmTicket.ticketTitle + "\n" + gmTicket.ticketBody);
-                        client.QueuePacket(BasePacket.CreatePacket(GMTicketSentResponsePacket.BuildPacket(session.id, true), true, false));
+                        session.QueuePacket(GMTicketSentResponsePacket.BuildPacket(session.id, true));
                         break;
                     //Request to end ticket
                     case 0x01D6:
-                        client.QueuePacket(BasePacket.CreatePacket(EndGMTicketPacket.BuildPacket(session.id), true, false));
+                        session.QueuePacket(EndGMTicketPacket.BuildPacket(session.id));
                         break;
                     default:
                         Program.Log.Debug("Unknown command 0x{0:X} received.", subpacket.gameMessage.opcode);

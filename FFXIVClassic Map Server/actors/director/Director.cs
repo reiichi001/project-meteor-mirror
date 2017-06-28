@@ -57,7 +57,7 @@ namespace FFXIVClassic_Map_Server.actors.director
             return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, actualLParams);
         }
 
-        public override BasePacket GetSpawnPackets(ushort spawnType = 1)
+        public override List<SubPacket> GetSpawnPackets(ushort spawnType = 1)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket(0));
@@ -68,14 +68,16 @@ namespace FFXIVClassic_Map_Server.actors.director
             subpackets.Add(CreateStatePacket());
             subpackets.Add(CreateIsZoneingPacket());
             subpackets.Add(CreateScriptBindPacket());
-            return BasePacket.CreatePacket(subpackets, true, false);
-        }        
+            return subpackets;
+        }
 
-        public override BasePacket GetInitPackets()
+        public override List<SubPacket> GetInitPackets()
         {
+            List<SubPacket> subpackets = new List<SubPacket>();
             SetActorPropetyPacket initProperties = new SetActorPropetyPacket("/_init");
             initProperties.AddTarget();
-            return BasePacket.CreatePacket(initProperties.BuildPacket(actorId), true, false);
+            subpackets.Add(initProperties.BuildPacket(actorId));
+            return subpackets;
         }
 
         public void OnTalkEvent(Player player, Npc npc)
@@ -108,7 +110,6 @@ namespace FFXIVClassic_Map_Server.actors.director
             {
                 foreach (Player p in GetPlayerMembers())
                 {
-                    GetSpawnPackets().DebugPrintPacket();
                     p.QueuePacket(GetSpawnPackets());
                     p.QueuePacket(GetInitPackets());
                 }

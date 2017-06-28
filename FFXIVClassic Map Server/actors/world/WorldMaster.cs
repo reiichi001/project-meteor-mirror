@@ -24,7 +24,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);
         }
 
-        public override BasePacket GetSpawnPackets()
+        public override List<SubPacket> GetSpawnPackets()
         {
             List<SubPacket> subpackets = new List<SubPacket>();
             subpackets.Add(CreateAddActorPacket(0));
@@ -34,7 +34,7 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateStatePacket());
             subpackets.Add(CreateIsZoneingPacket());
             subpackets.Add(CreateScriptBindPacket());
-            return BasePacket.CreatePacket(subpackets, true, false);
+            return subpackets;
         }
     }
 }
