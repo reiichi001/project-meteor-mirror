@@ -124,6 +124,13 @@ namespace FFXIVClassic_Map_Server.actors.director
             {
                 Npc aetheryteNode = zone.SpawnActor(1200040, String.Format("{0}:warpExit", guildleveOwner.actorName), guildleveOwner.positionX, guildleveOwner.positionY, guildleveOwner.positionZ);
                 contentGroup.AddMember(aetheryteNode);
+
+                foreach (Actor a in GetPlayerMembers())
+                {
+                    Player player = (Player)a;
+                    player.SendGameMessage(Server.GetWorldManager().GetActor(), 50029, 0x20);
+                    player.SendGameMessage(Server.GetWorldManager().GetActor(), 50032, 0x20);
+                }
             }
         }   
         
