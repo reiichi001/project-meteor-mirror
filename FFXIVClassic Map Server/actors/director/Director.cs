@@ -110,8 +110,8 @@ namespace FFXIVClassic_Map_Server.actors.director
             {
                 foreach (Player p in GetPlayerMembers())
                 {
-                    p.QueuePacket(GetSpawnPackets());
-                    p.QueuePacket(GetInitPackets());
+                    p.QueuePackets(GetSpawnPackets());
+                    p.QueuePackets(GetInitPackets());
                 }
             }
 

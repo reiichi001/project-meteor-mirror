@@ -512,7 +512,7 @@ namespace FFXIVClassic_Map_Server.Actors
             
             QueuePacket(SetMapPacket.BuildPacket(actorId, zone.regionId, zone.actorId));
 
-            QueuePacket(GetSpawnPackets(this, spawnType));            
+            QueuePackets(GetSpawnPackets(this, spawnType));            
             //GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
 
             #region Inventory & Equipment
@@ -558,8 +558,8 @@ namespace FFXIVClassic_Map_Server.Actors
             
             foreach (Director director in ownedDirectors)
             {
-                QueuePacket(director.GetSpawnPackets());
-                QueuePacket(director.GetInitPackets());
+                QueuePackets(director.GetSpawnPackets());
+                QueuePackets(director.GetInitPackets());
             }
 
             if (currentContentGroup != null)
@@ -594,11 +594,6 @@ namespace FFXIVClassic_Map_Server.Actors
             return actorId == otherActorId;
         }        
 
-        public void QueuePacket(List<SubPacket> packets)
-        {
-            playerSession.QueuePacket(packets);
-        }
-
         public void QueuePacket(SubPacket packet)
         {
             playerSession.QueuePacket(packet);
@@ -606,8 +601,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void QueuePackets(List<SubPacket> packets)
         {
-            foreach (SubPacket subpacket in packets)
-                playerSession.QueuePacket(subpacket);
+            playerSession.QueuePacket(packets);
         }
 
         public void SendPacket(string path)
@@ -1447,8 +1441,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendDirectorPackets(Director director)
         {
-            QueuePacket(director.GetSpawnPackets());
-            QueuePacket(director.GetInitPackets());        
+            QueuePackets(director.GetSpawnPackets());
+            QueuePackets(director.GetInitPackets());        
         }
 
         public void RemoveDirector(Director director)

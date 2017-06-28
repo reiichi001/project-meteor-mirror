@@ -81,7 +81,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             playerActor.rotation = rot;
             playerActor.moveState = moveState;
 
-            GetActor().zone.UpdateActorPosition(GetActor());
+            GetActor().GetZone().UpdateActorPosition(GetActor());
 
         }
         long lastMilis = 0;
@@ -108,7 +108,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                     if (npc.GetUniqueId().Equals("1") && milliseconds - lastMilis > 1000)
                     {
                         lastMilis = milliseconds;
-                        GetActor().QueuePacket(RemoveActorPacket.BuildPacket(actorInstanceList[i].actorId));
+                        QueuePacket(RemoveActorPacket.BuildPacket(actorInstanceList[i].actorId));
                         actorInstanceList.RemoveAt(i);
                         continue;
                     }
@@ -116,7 +116,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
                 if (!list.Contains(actorInstanceList[i]))
                 {
-                    GetActor().QueuePacket(RemoveActorPacket.BuildPacket(actorInstanceList[i].actorId));
+                    QueuePacket(RemoveActorPacket.BuildPacket(actorInstanceList[i].actorId));
                     actorInstanceList.RemoveAt(i);
                 }
                 
