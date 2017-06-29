@@ -59,7 +59,7 @@ namespace FFXIVClassic_Lobby_Server.packets
             binWriter.Dispose();
             memStream.Dispose();
 
-            return new SubPacket(OPCODE, 0xe0006868, 0xe0006868, data);
+            return new SubPacket(OPCODE, 0xe0006868, data);
         }
     }
 }

@@ -72,9 +72,9 @@ namespace FFXIVClassic.Common
             offset += header.subpacketSize;
         }
 
-        public SubPacket(ushort opcode, uint sourceId, uint targetId, byte[] data) : this(true, opcode, sourceId, targetId, data) { }
+        public SubPacket(ushort opcode, uint sourceId, byte[] data) : this(true, opcode, sourceId, data) { }
 
-        public SubPacket(bool isGameMessage, ushort opcode, uint sourceId, uint targetId, byte[] data)
+        public SubPacket(bool isGameMessage, ushort opcode, uint sourceId, byte[] data)
         {
             header = new SubPacketHeader();
 
@@ -89,7 +89,7 @@ namespace FFXIVClassic.Common
             }
 
             header.sourceId = sourceId;
-            header.targetId = targetId;
+            header.targetId = 0;
 
             if (isGameMessage)
                 header.type = 0x03;
@@ -115,6 +115,11 @@ namespace FFXIVClassic.Common
             header.sourceId = original.header.sourceId;
             header.targetId = newTargetId;
             data = original.data;
+        }
+
+        public void SetTargetId(uint target)
+        {
+            this.header.targetId = target;
         }
 
         public byte[] GetHeaderBytes()

@@ -65,7 +65,8 @@ namespace FFXIVClassic_Lobby_Server.packets
                     byte[] data = memStream.GetBuffer();
                     binWriter.Dispose();
                     memStream.Dispose();
-                    SubPacket subpacket = new SubPacket(OPCODE, 0xe0006868, 0xe0006868, data);
+                    SubPacket subpacket = new SubPacket(OPCODE, 0xe0006868, data);
+                    subpacket.SetTargetId(0xe0006868);
                     subPackets.Add(subpacket);
                     retainerCount = 0;
                 }
@@ -92,7 +93,8 @@ namespace FFXIVClassic_Lobby_Server.packets
                 byte[] data = memStream.GetBuffer();
                 binWriter.Dispose();
                 memStream.Dispose();
-                SubPacket subpacket = new SubPacket(OPCODE, 0xe0006868, 0xe0006868, data);
+                SubPacket subpacket = new SubPacket(OPCODE, 0xe0006868, data);
+                subpacket.SetTargetId(0xe0006868);
                 subPackets.Add(subpacket);
             }
 

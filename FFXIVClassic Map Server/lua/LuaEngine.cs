@@ -605,9 +605,8 @@ namespace FFXIVClassic_Map_Server.lua
             if (player == null)
                 return;
             List<SubPacket> SendError = new List<SubPacket>();
-            SendError.Add(EndEventPacket.BuildPacket(player.actorId, player.currentEventOwner, player.currentEventName));
             player.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", message);
-            player.playerSession.QueuePacket(BasePacket.CreatePacket(SendError, true, false));
+            player.QueuePacket(EndEventPacket.BuildPacket(player.actorId, player.currentEventOwner, player.currentEventName));
         }
         
     }

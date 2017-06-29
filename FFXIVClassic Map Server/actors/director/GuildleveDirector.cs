@@ -79,7 +79,7 @@ namespace FFXIVClassic_Map_Server.actors.director
             }
 
             guildleveWork.startTime = Utils.UnixTimeStampUTC();
-            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/start", this, actorId);
+            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/start", this);
             propertyBuilder.AddProperty("guildleveWork.startTime");
             SendPacketsToPlayers(propertyBuilder.Done());            
         }
@@ -114,7 +114,7 @@ namespace FFXIVClassic_Map_Server.actors.director
 
             guildleveWork.startTime = 0;
             guildleveWork.signal = -1;
-            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/signal", this, actorId);
+            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/signal", this);
             propertyBuilder.AddProperty("guildleveWork.signal");
             propertyBuilder.NewTarget("guildleveWork/start");
             propertyBuilder.AddProperty("guildleveWork.startTime");
@@ -160,7 +160,7 @@ namespace FFXIVClassic_Map_Server.actors.director
 
         public void SyncAllInfo()
         {
-            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/infoVariable", this, actorId);
+            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/infoVariable", this);
 
             if (guildleveWork.aimNum[0] != 0)
                 propertyBuilder.AddProperty("guildleveWork.aimNum[0]");
@@ -195,7 +195,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         public void UpdateAimNumNow(int index, sbyte value)
         {
             guildleveWork.aimNumNow[index] = value;
-            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/infoVariable", this, actorId);
+            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/infoVariable", this);
             propertyBuilder.AddProperty(String.Format("guildleveWork.aimNumNow[{0}]", index));
             SendPacketsToPlayers(propertyBuilder.Done());
         }
@@ -203,7 +203,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         public void UpdateUiState(int index, sbyte value)
         {
             guildleveWork.uiState[index] = value;
-            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/infoVariable", this, actorId);
+            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/infoVariable", this);
             propertyBuilder.AddProperty(String.Format("guildleveWork.uiState[{0}]", index));
             SendPacketsToPlayers(propertyBuilder.Done());
         }
@@ -213,7 +213,7 @@ namespace FFXIVClassic_Map_Server.actors.director
             guildleveWork.markerX[markerIndex] = x;
             guildleveWork.markerY[markerIndex] = y;
             guildleveWork.markerZ[markerIndex] = z;
-            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/marker", this, actorId);
+            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("guildleveWork/marker", this);
             propertyBuilder.AddProperty(String.Format("guildleveWork.markerX[{0}]", markerIndex));
             propertyBuilder.AddProperty(String.Format("guildleveWork.markerY[{0}]", markerIndex));
             propertyBuilder.AddProperty(String.Format("guildleveWork.markerZ[{0}]", markerIndex));

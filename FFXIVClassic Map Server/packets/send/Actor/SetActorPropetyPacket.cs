@@ -209,14 +209,14 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor
             currentTarget = newTarget;
         }
 
-        public SubPacket BuildPacket(uint playerActorID, uint actorID)
+        public SubPacket BuildPacket(uint sourceActorId)
         {
             binWriter.Seek(0, SeekOrigin.Begin);
             binWriter.Write((byte)runningByteTotal);
             
             CloseStreams();
 
-            SubPacket packet = new SubPacket(OPCODE, actorID, playerActorID, data);
+            SubPacket packet = new SubPacket(OPCODE, sourceActorId, data);
             return packet;
         }       
     

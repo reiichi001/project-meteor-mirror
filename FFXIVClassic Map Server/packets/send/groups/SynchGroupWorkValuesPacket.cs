@@ -201,7 +201,7 @@ namespace FFXIVClassic_Map_Server.packets.send.groups
 
             closeStreams();
 
-            SubPacket packet = new SubPacket(OPCODE, playerActorID, actorID, data);
+            SubPacket packet = new SubPacket(OPCODE, actorID, data);
             return packet;
         }
 

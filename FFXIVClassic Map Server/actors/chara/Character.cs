@@ -63,30 +63,30 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.statusShownTime[i] = 0xFFFFFFFF;
         }
 
-        public SubPacket CreateAppearancePacket(uint playerActorId)
+        public SubPacket CreateAppearancePacket()
         {
             SetActorAppearancePacket setappearance = new SetActorAppearancePacket(modelId, appearanceIds);
-            return setappearance.BuildPacket(actorId, playerActorId);
+            return setappearance.BuildPacket(actorId);
         }
 
-        public SubPacket CreateInitStatusPacket(uint playerActorId)
+        public SubPacket CreateInitStatusPacket()
         {
-            return (SetActorStatusAllPacket.BuildPacket(actorId, playerActorId, charaWork.status));                      
+            return (SetActorStatusAllPacket.BuildPacket(actorId, charaWork.status));                      
         }
 
-        public SubPacket CreateSetActorIconPacket(uint playerActorId)
+        public SubPacket CreateSetActorIconPacket()
         {
-            return SetActorIconPacket.BuildPacket(actorId, playerActorId, currentActorIcon);
+            return SetActorIconPacket.BuildPacket(actorId, currentActorIcon);
         }
 
-        public SubPacket CreateIdleAnimationPacket(uint playerActorId)
+        public SubPacket CreateIdleAnimationPacket()
         {
-            return SetActorSubStatPacket.BuildPacket(actorId, playerActorId, 0, 0, 0, 0, 0, 0, animationId);
+            return SetActorSubStatPacket.BuildPacket(actorId, 0, 0, 0, 0, 0, 0, animationId);
         }
 
         public void SetQuestGraphic(Player player, int graphicNum)
         {
-            player.QueuePacket(SetActorQuestGraphicPacket.BuildPacket(player.actorId, actorId, graphicNum));
+            player.QueuePacket(SetActorQuestGraphicPacket.BuildPacket(actorId, graphicNum));
         }
 
         public void SetCurrentContentGroup(ContentGroup group)
@@ -98,7 +98,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             currentContentGroup = group;
 
-            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this, actorId);
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this);
             propPacketUtil.AddProperty("charaWork.currentContentGroup");            
             zone.BroadcastPacketsAroundActor(this, propPacketUtil.Done());
 
@@ -109,10 +109,10 @@ namespace FFXIVClassic_Map_Server.Actors
             if (onlySelf)
             {
                 if (this is Player)
-                    ((Player)this).QueuePacket(PlayAnimationOnActorPacket.BuildPacket(actorId, actorId, animId));
+                    ((Player)this).QueuePacket(PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
             }
             else
-                zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, actorId, animId));
+                zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
         }
 
     }

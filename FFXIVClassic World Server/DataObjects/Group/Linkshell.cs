@@ -120,9 +120,9 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             }
 
             groupWork.setTarget("/_init");            
-            SubPacket test = groupWork.buildPacket(session.sessionId, session.sessionId);
+            SubPacket test = groupWork.buildPacket(session.sessionId);
             test.DebugPrintSubPacket();
-            session.clientConnection.QueuePacket(test, true, false);
+            session.clientConnection.QueuePacket(test);
         }
 
         public void ResendWorkValues()
@@ -148,8 +148,8 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
                     Session session = Server.GetServer().GetSession(members[i].charaId);
                     if (session != null)
                     {
-                        SubPacket test = groupWork.buildPacket(session.sessionId, session.sessionId);
-                        session.clientConnection.QueuePacket(test, true, false);
+                        SubPacket test = groupWork.buildPacket(session.sessionId);
+                        session.clientConnection.QueuePacket(test);
                     }
                 }
             }

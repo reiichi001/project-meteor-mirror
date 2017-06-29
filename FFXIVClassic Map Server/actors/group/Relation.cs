@@ -70,7 +70,7 @@ namespace FFXIVClassic_Map_Server.actors.group
 
             SubPacket test = groupWork.buildPacket(session.id, session.id);
             test.DebugPrintSubPacket();
-            session.QueuePacket(test, true, false);
+            session.QueuePacket(test);
         }
 
     }

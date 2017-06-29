@@ -41,7 +41,7 @@ namespace FFXIVClassic_World_Server.Packets.Send
             0xB8, 0x8D, 0xF0, 0x2B, 0x88, 0xAF, 0x5E, 0x26
              */
 
-            return new SubPacket(false, OPCODE, 0, 0, data);
+            return new SubPacket(false, OPCODE, 0, data);
         }
     }
 }

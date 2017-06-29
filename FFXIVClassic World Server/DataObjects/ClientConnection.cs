@@ -23,8 +23,11 @@ namespace FFXIVClassic_World_Server
             SendPacketQueue.Add(packet);
         }
 
-        public void QueuePacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)
+        public void QueuePacket(SubPacket subpacket)
         {
+            bool isAuthed = true;
+            bool isEncrypted = false;
+            subpacket.SetTargetId(owner.sessionId);
             SendPacketQueue.Add(BasePacket.CreatePacket(subpacket, isAuthed, isEncrypted));
         }
 
