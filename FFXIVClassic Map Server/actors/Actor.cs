@@ -152,7 +152,8 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 updateMs = 150;
             }
-            if (hasMoved && diffTime.Milliseconds >= updateMs)
+
+            if (hasMoved && ((this is Player ) || diffTime.Milliseconds >= updateMs))
             {
                 hasMoved = (this.positionUpdates != null && this.positionUpdates.Count > 0);
                 if (hasMoved)

@@ -44,7 +44,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             // todo: trigger listeners
 
             // todo: action queues
-            controller.Update(tick);
+            controller?.Update(tick);
         }
 
         public void CheckCompletedStates()

@@ -161,8 +161,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void UpdateActorPosition(Actor actor)
         {
-            this.hasMoved = true;
-
             int gridX = (int)actor.positionX / boundingGridSize;
             int gridY = (int)actor.positionZ / boundingGridSize;
 

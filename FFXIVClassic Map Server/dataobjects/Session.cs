@@ -68,6 +68,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
             if (isUpdatesLocked)
                 return;
 
+            if (playerActor.positionX == x && playerActor.positionY == y && playerActor.positionZ == z && playerActor.rotation == rot)
+                return;
+
             playerActor.oldPositionX = playerActor.positionX;
             playerActor.oldPositionY = playerActor.positionY;
             playerActor.oldPositionZ = playerActor.positionZ;
@@ -80,8 +83,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
             playerActor.moveState = moveState;
 
             GetActor().zone.UpdateActorPosition(GetActor());
-
+            playerActor.QueuePositionUpdate(new Vector3(x,y,z));
         }
+
         long lastMilis = 0;
         public void UpdateInstance(List<Actor> list)
         {
