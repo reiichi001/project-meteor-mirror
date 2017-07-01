@@ -136,7 +136,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 {
                     //Don't send for static characters (npcs)
                     // todo: this is retarded, need actual mob class
-                    if (actor is Character && !actor.hasMoved)
+                    if (actor is Character && ((Character)actor).isStatic)
                         continue;
 
                     var packet = actor.CreatePositionUpdatePacket(playerActor.actorId);
