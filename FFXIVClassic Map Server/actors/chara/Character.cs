@@ -64,12 +64,15 @@ namespace FFXIVClassic_Map_Server.Actors
         public DateTime lastAiUpdate;
 
         public AIContainer aiContainer;
+        public StatusEffects statusEffects;
 
         public Character(uint actorID) : base(actorID)
         {            
             //Init timer array to "notimer"
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
                 charaWork.statusShownTime[i] = 0xFFFFFFFF;
+
+            this.statusEffects = new StatusEffects(this);
         }
 
         public SubPacket CreateAppearancePacket(uint playerActorId)

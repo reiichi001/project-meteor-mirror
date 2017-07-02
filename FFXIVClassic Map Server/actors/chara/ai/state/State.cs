@@ -30,7 +30,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.interrupt = false;
         }
 
-        public virtual void Update(DateTime tick) { }
+        public virtual bool Update(DateTime tick) { return true; }
         public virtual void OnStart() {  }
         public virtual void OnInterrupt() { }
         public virtual void OnComplete() { isCompleted = true; }
@@ -52,6 +52,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         public bool IsCompleted()
         {
             return isCompleted;
+        }
+
+        public void ChangeTarget(Character target)
+        {
+            this.target = target;
         }
 
     }

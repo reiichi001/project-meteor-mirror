@@ -141,8 +141,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public Session playerSession;
 
-        public StatusEffects statusEffects;
-
         public Player(Session cp, uint actorID) : base(actorID)
         {
             playerSession = cp;
@@ -253,7 +251,6 @@ namespace FFXIVClassic_Map_Server.Actors
             lastPlayTimeUpdate = Utils.UnixTimeStampUTC();
 
             this.aiContainer = new AIContainer(this, new PlayerController(this), null, new TargetFind(this));
-            this.statusEffects = new StatusEffects(this);
         }
         
         public List<SubPacket> Create0x132Packets(uint playerActorId)

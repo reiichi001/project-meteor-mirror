@@ -320,40 +320,41 @@ namespace FFXIVClassic_Map_Server.lua
             return null;
         }
 
-        public void CallLuaFunction(Player player, Actor target, string funcName, bool optional, params object[] args)
+        public void CallLuaFunction(Actor actor, Actor target, string funcName, bool optional, params object[] args)
         {
+            bool isPlayer = actor is Player;
             //Need a seperate case for NPCs cause that child/parent thing.
-            if (target is Npc)
+            if (target is Npc && isPlayer)
             {
-                CallLuaFunctionNpc(player, (Npc)target, funcName, optional, args);
+                CallLuaFunctionNpc((Player)actor, (Npc)target, funcName, optional, args);
                 return;
             }
 
             object[] args2 = new object[args.Length + 2];
             Array.Copy(args, 0, args2, 2, args.Length);
-            args2[0] = player;
+            args2[0] = actor;
             args2[1] = target;
 
             string luaPath = GetScriptPath(target);
             LuaScript script = LoadScript(luaPath);
             if (script != null)
             {
-                if (!script.Globals.Get(funcName).IsNil())
+                if (!script.Globals.Get(funcName).IsNil() && isPlayer)
                 {
                     Coroutine coroutine = script.CreateCoroutine(script.Globals[funcName]).Coroutine;
                     DynValue value = coroutine.Resume(args2);
-                    ResolveResume(player, coroutine, value);
+                    ResolveResume((Player)actor, coroutine, value);
                 }
                 else
                 {
                     if (!optional)
-                        SendError(player, String.Format("Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
+                        SendError((Player)actor, String.Format("Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
                 }
             }
             else
             {
-                if (!(target is Area) && !optional)
-                    SendError(player, String.Format("Could not find script for actor {0}.", target.GetName()));
+                if (!(target is Area) && !optional && isPlayer)
+                    SendError((Player)actor, String.Format("Could not find script for actor {0}.", target.GetName()));
             }            
         }
 
@@ -372,16 +373,18 @@ namespace FFXIVClassic_Map_Server.lua
                 CallLuaFunction(player, target, "onEventStarted", false, LuaUtils.CreateLuaParamObjectList(lparams));
         }
 
-        private DynValue ResolveResume(Player player, Coroutine coroutine, DynValue value)
+        private DynValue ResolveResume(Actor actor, Coroutine coroutine, DynValue value)
         {
+            var isPlayer = actor is Player;
+
             if (value == null || value.IsVoid())
                 return value;
 
-            if (value.String != null && value.String.Equals("_WAIT_EVENT"))
+            if (isPlayer && value.String != null && value.String.Equals("_WAIT_EVENT"))
             {                
-                GetInstance().AddWaitEventCoroutine(player, coroutine);      
+                GetInstance().AddWaitEventCoroutine((Player)actor, coroutine);      
             }
-            else if (value.Tuple != null && value.Tuple.Length >= 1 && value.Tuple[0].String != null)
+            else if (isPlayer && value.Tuple != null && value.Tuple.Length >= 1 && value.Tuple[0].String != null)
             {
                 switch (value.Tuple[0].String)
                 {

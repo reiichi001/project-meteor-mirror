@@ -45,6 +45,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             // todo: action queues
             controller?.Update(tick);
+            State currState;
+            while (states.Count > 0 && (currState = states.Peek()).Update(tick))
+            {
+                if (currState  == GetCurrentState())
+                {
+
+                }
+            }
         }
 
         public void CheckCompletedStates()

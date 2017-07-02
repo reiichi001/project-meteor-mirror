@@ -16,7 +16,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         }
         public static int CalculateBaseDamage(Character attacker, Character defender)
         {
-            return 0;
+            // todo: actually calculate damage
+            return Program.Random.Next(10) * 10;
         }
     }
 }
