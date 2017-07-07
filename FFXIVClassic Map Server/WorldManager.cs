@@ -613,7 +613,7 @@ namespace FFXIVClassic_Map_Server
 
             //Send packets
             player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId));
-            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10));
+            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x2));
             player.SendZoneInPackets(this, spawnType);
             player.playerSession.ClearInstance();
             player.SendInstanceUpdate();

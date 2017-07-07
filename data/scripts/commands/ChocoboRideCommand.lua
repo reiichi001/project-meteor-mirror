@@ -14,12 +14,10 @@ function onEventStarted(player, actor, triggerName, isGoobbue)
 		
 		if (isGoobbue ~= true) then
 			player:ChangeMusic(83);
-			player:SendChocoboAppearance();
 			player:SendGameMessage(player, worldMaster, 26001, 0x20);
 			player:SetMountState(1);
 		else
 			player:ChangeMusic(98);
-			player:SendGoobbueAppearance();
 			player:SendGameMessage(player, worldMaster, 26019, 0x20);
 			player:SetMountState(2);
 		end

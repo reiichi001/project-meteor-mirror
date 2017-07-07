@@ -28,7 +28,6 @@ namespace FFXIVClassic_Map_Server.dataobjects
         {
             this.id = sessionId;
             playerActor = new Player(this, sessionId);
-            actorInstanceList.Add(playerActor);
         }
 
         public void QueuePacket(List<SubPacket> packets)

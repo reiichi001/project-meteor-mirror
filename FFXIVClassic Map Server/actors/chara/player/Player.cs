@@ -344,6 +344,11 @@ namespace FFXIVClassic_Map_Server.Actors
                 subpackets.Add(Database.GetAchievementsPacket(this));                
             }
 
+            if (mountState == 1)
+                subpackets.Add(SetCurrentMountChocoboPacket.BuildPacket(actorId, chocoboAppearance));
+            else if (mountState == 2)
+                subpackets.Add(SetCurrentMountGoobbuePacket.BuildPacket(actorId, 1));
+          
             return subpackets;
         }
 
@@ -621,13 +626,19 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void BroadcastPacket(SubPacket packet, bool sendToSelf)
         {
+            if (sendToSelf)
+            {
+                SubPacket clonedPacket = new SubPacket(packet, actorId);
+                QueuePacket(clonedPacket);
+            }
+
             foreach (Actor a in playerSession.actorInstanceList)
             {
                 if (a is Player)
                 {
                     Player p = (Player)a;
 
-                    if (p.Equals(this) && !sendToSelf)
+                    if (p.Equals(this))
                         continue;
 
                     SubPacket clonedPacket = new SubPacket(packet, a.actorId);
@@ -744,19 +755,18 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePacket(SetMusicPacket.BuildPacket(actorId, musicId, 1));
         }
 
-        public void SendChocoboAppearance()
+        public void SendMountAppearance()
         {
-            BroadcastPacket(SetCurrentMountChocoboPacket.BuildPacket(actorId, chocoboAppearance), true);
-        }
-
-        public void SendGoobbueAppearance()
-        {
-            BroadcastPacket(SetCurrentMountGoobbuePacket.BuildPacket(actorId, 1), true);
+            if (mountState == 1)
+                BroadcastPacket(SetCurrentMountChocoboPacket.BuildPacket(actorId, chocoboAppearance), true);
+            else if (mountState == 2)
+                BroadcastPacket(SetCurrentMountGoobbuePacket.BuildPacket(actorId, 1), true);
         }
 
         public void SetMountState(byte mountState)
         {
             this.mountState = mountState;
+            SendMountAppearance();
         }
 
         public byte GetMountState()
