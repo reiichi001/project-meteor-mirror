@@ -96,29 +96,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
             //Remove missing actors
             for (int i = 0; i < actorInstanceList.Count; i++)
             {
-                if (list.Contains(actorInstanceList[i]) && actorInstanceList[i] is Npc)
-                {
-                    Npc npc = (Npc)actorInstanceList[i];
-                    
-
-                       long milliseconds = DateTime.Now.Ticks / TimeSpan.TicksPerMillisecond;
-
-
-                    if (npc.GetUniqueId().Equals("1") && milliseconds - lastMilis > 1000)
-                    {
-                        lastMilis = milliseconds;
-                        QueuePacket(RemoveActorPacket.BuildPacket(actorInstanceList[i].actorId));
-                        actorInstanceList.RemoveAt(i);
-                        continue;
-                    }
-                }
-
                 if (!list.Contains(actorInstanceList[i]))
                 {
                     QueuePacket(RemoveActorPacket.BuildPacket(actorInstanceList[i].actorId));
                     actorInstanceList.RemoveAt(i);
-                }
-                
+                }                
             }
 
             //Add new actors or move
