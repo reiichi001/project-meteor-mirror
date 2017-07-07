@@ -131,20 +131,12 @@ namespace FFXIVClassic_Map_Server.Actors
             return AddActorPacket.BuildPacket(actorId, 8);
         }
 
-        int val = 0x0b00;
         // actorClassId, [], [], numBattleCommon, [battleCommon], numEventCommon, [eventCommon], args for either initForBattle/initForEvent
         public override SubPacket CreateScriptBindPacket(Player player)
         {
             List<LuaParam> lParams;
             
             lParams = LuaEngine.GetInstance().CallLuaFunctionForReturn(player, this, "init", false);
-
-            if (uniqueIdentifier.Equals("1"))
-            {
-                lParams[5].value = val;
-                val++;
-                player.SendMessage(0x20, "", String.Format("ID is now: 0x{0:X}", val));                
-            }
 
             if (lParams != null && lParams.Count >= 3 && lParams[2].typeID == 0 && (int)lParams[2].value == 0)
                 isStatic = true;
