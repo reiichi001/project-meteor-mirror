@@ -32,6 +32,11 @@ function main(thisDirector)
 	thisDirector:UpdateAimNumNow(0, 4);
 	
 	wait(2);
+	
 	thisDirector:EndGuildleve(true);
+	
+	wait(30);
+	player:SendGameMessage(GetWorldMaster(), 50033, 0x20);
+	thisDirector:EndDirector();	
 	
 end

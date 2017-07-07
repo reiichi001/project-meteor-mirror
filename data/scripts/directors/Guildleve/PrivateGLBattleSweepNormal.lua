@@ -29,4 +29,7 @@ function main(thisDirector)
 	wait(3);
 	thisDirector:UpdateAimNumNow(0, 3);
 	
+	wait(3);	
+	thisDirector:EndGuildleve(true);
+	
 end

@@ -20,7 +20,7 @@ function onEventStarted(player, npc, triggerName)
 	local currentGLDirector = player:GetGuildleveDirector();
 	local glData = currentGLDirector.guildleveData;
 
-	callClientFunction(player, "eventGuildleveReward", currentGLDirector.guildleveId, currentGLDirector.completionTime, 24, 24, 0, 0, 0, 0, 0, 0, 0, 4);
+	callClientFunction(player, "eventGuildleveReward", currentGLDirector.guildleveId, currentGLDirector.completionTime, 24, 24, 0, 0, 0, 0, 0, 0, 0, currentGLDirector.selectedDifficulty);
 	
 	local choice = callClientFunction(player, "eventTalkGuildleveWarp", glData.aetheryte, 0);
 	
