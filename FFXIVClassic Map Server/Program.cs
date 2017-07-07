@@ -27,7 +27,10 @@ namespace FFXIVClassic_Map_Server
 #endif
             bool startServer = true;
 
-            Program.Log.Info("---------FFXIV 1.0 Map Server---------");
+            Log.Info("==================================");
+            Log.Info("FFXIV Classic Map Server");
+            Log.Info("Version: 0.0.1");
+            Log.Info("==================================");
 
             //Load Config
             ConfigConstants.Load();
