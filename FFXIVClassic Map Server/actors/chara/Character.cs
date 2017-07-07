@@ -203,11 +203,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             // time elapsed since last ai update
 
-            if (aiContainer != null)
-            {
-                this.aiContainer.Update(tick);
-            }
-
+            this.aiContainer?.Update(tick);
+    
             /*
             var diffTime = (tick - lastAiUpdate);
 
@@ -369,7 +366,21 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             */
         }
-        
+        public virtual void Spawn(DateTime tick)
+        {
+
+        }
+
+        public virtual void Die(DateTime tick)
+        {
+
+        }
+
+        protected virtual void Despawn(DateTime tick)
+        {
+
+        }
+
     }
 
 }

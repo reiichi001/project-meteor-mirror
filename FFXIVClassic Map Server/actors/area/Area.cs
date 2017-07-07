@@ -427,7 +427,7 @@ namespace FFXIVClassic_Map_Server.Actors
             Npc npc;
 
             if(isMob)
-                npc = new Mob(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
+                npc = new BattleNpc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
             else
                 npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
 

@@ -6,6 +6,12 @@ using FFXIVClassic.Common;
 
 namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
 {
+    // see xtx_command
+    enum BattleActionX01PacketCommand : ushort
+    {
+        Disengage = 12002,
+        Attack = 22104,
+    }
     class BattleActionX01Packet
     {
         public const ushort OPCODE = 0x0139;

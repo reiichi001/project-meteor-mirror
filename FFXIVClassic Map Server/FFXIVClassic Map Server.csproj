@@ -88,7 +88,8 @@
     <Compile Include="actors\chara\ai\ActionQueue.cs" />
     <Compile Include="actors\chara\ai\AIContainer.cs" />
     <Compile Include="actors\chara\ai\controllers\Controller.cs" />
-    <Compile Include="actors\chara\ai\controllers\MobController.cs" />
+    <Compile Include="actors\chara\ai\controllers\BattleNpcController.cs" />
+    <Compile Include="actors\chara\ai\controllers\PetController.cs" />
     <Compile Include="actors\chara\ai\controllers\PlayerController.cs" />
     <Compile Include="actors\chara\ai\HateContainer.cs" />
     <Compile Include="actors\chara\ai\PathFind.cs" />
@@ -98,9 +99,10 @@
     <Compile Include="actors\chara\ai\TargetFind.cs" />
     <Compile Include="actors\chara\ai\utils\AttackUtils.cs" />
     <Compile Include="actors\chara\npc\ActorClass.cs" />
-    <Compile Include="actors\chara\npc\Mob.cs" />
+    <Compile Include="actors\chara\npc\BattleNpc.cs" />
     <Compile Include="actors\chara\npc\NpcWork.cs" />
     <Compile Include="actors\chara\AetheryteWork.cs" />
+    <Compile Include="actors\chara\npc\Pet.cs" />
     <Compile Include="actors\chara\player\Equipment.cs" />
     <Compile Include="actors\chara\player\Inventory.cs" />
     <Compile Include="actors\chara\Work.cs" />

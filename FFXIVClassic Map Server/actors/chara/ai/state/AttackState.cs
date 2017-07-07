@@ -48,7 +48,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnComplete()
         {
-            var damage = FFXIVClassic_Map_Server.actors.chara.ai.utils.AttackUtils.CalculateDamage(owner, target);
+            var damage = utils.AttackUtils.CalculateDamage(owner, target);
 
             lua.LuaEngine.GetInstance().CallLuaFunction(owner, target, "onAttack", false, damage);
 
@@ -73,29 +73,29 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                     // todo: actually check proc rate/random chance of whatever effect
                     effectId = list[0].GetEffectId();
                 }
-                this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, 0, 0, 0);
-                owner.zone.BroadcastPacketAroundActor(owner, errorPacket);
-                errorPacket = null;
+                // todo: which is actually the swing packet
+                //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, 0, 0);
+                //owner.zone.BroadcastPacketAroundActor(owner, errorPacket);
+                //errorPacket = null;
                 interrupt = true;
                 return;
             }
-            else if (target.zone != owner.zone)
-            {
-                interrupt = true;
-                return;
-            }
-            else if (owner.aiContainer.IsDead())
-            {
-                // todo: this really shouldnt ever hit since we'd be clearing states on death
-                interrupt = true;
-                return;
-            }
-            interrupt = CanAttack();
+
+            interrupt = !CanAttack();
         }
 
         private bool CanAttack()
         {
-            if (target.aiContainer.IsDead())
+            // todo: shouldnt need to check if owner is dead since all states would be cleared
+            if (owner.aiContainer.IsDead() || target.aiContainer.IsDead())
+            {
+                return false;
+            }
+            else if (target.zone != owner.zone)
+            {
+                return false;
+            }
+            else if (target is Player && ((Player)target).playerSession.isUpdatesLocked)
             {
                 return false;
             }

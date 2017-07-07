@@ -248,5 +248,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
 
         }
+
+        public void InternalDie(DateTime tick, uint timeToFadeout)
+        {
+
+        }
+
+        public void InternalRaise(Character target)
+        {
+            // todo: place at target
+            // ForceChangeState(new RaiseState(target));
+        }
     }
 }

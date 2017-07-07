@@ -643,9 +643,9 @@ namespace FFXIVClassic_Map_Server.Actors
             return currentSubState == SetActorStatePacket.SUB_STATE_PLAYER && this is Player ? ((Player)this) : null;
         }
 
-        public Mob GetAsMob()
+        public BattleNpc GetAsMob()
         {
-            return currentSubState == SetActorStatePacket.SUB_STATE_MONSTER && this is Mob ? ((Mob)this) : null;
+            return currentSubState == SetActorStatePacket.SUB_STATE_MONSTER && this is BattleNpc ? ((BattleNpc)this) : null;
         }
 
         public Npc GetAsNpc()
