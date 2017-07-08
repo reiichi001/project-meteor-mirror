@@ -32,7 +32,7 @@ namespace FFXIVClassic_Map_Server.packets.send.group
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, playerActorID, data);
         }
     }
 }

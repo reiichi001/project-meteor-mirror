@@ -21,13 +21,13 @@ namespace FFXIVClassic_Map_Server.lua
 {
     class LuaEngine
     {
-        const string FILEPATH_PLAYER = "./scripts/player.lua";
-        const string FILEPATH_ZONE = "./scripts/unique/{0}/zone.lua";
-        const string FILEPATH_CONTENT = "./scripts/content/{0}.lua";
-        const string FILEPATH_COMMANDS = "./scripts/commands/{0}.lua";
-        const string FILEPATH_DIRECTORS = "./scripts/directors/{0}.lua";
-        const string FILEPATH_NPCS = "./scripts/unique/{0}/{1}/{2}.lua";
-        const string FILEPATH_QUEST = "./scripts/quests/{0}/{1}.lua";
+        public const string FILEPATH_PLAYER = "./scripts/player.lua";
+        public const string FILEPATH_ZONE = "./scripts/unique/{0}/zone.lua";
+        public const string FILEPATH_CONTENT = "./scripts/content/{0}.lua";
+        public const string FILEPATH_COMMANDS = "./scripts/commands/{0}.lua";
+        public const string FILEPATH_DIRECTORS = "./scripts/directors/{0}.lua";
+        public const string FILEPATH_NPCS = "./scripts/unique/{0}/{1}/{2}.lua";
+        public const string FILEPATH_QUEST = "./scripts/quests/{0}/{1}.lua";
 
         private static LuaEngine mThisEngine;
         private Dictionary<Coroutine, ulong> mSleepingOnTime = new Dictionary<Coroutine, ulong>();
@@ -112,10 +112,18 @@ namespace FFXIVClassic_Map_Server.lua
         {
             if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
             {
-                Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];                
-                mSleepingOnPlayerEvent.Remove(player.actorId);               
-                DynValue value = coroutine.Resume(LuaUtils.CreateLuaParamObjectList(args));
-                ResolveResume(null, coroutine, value);
+                try
+                {
+                    Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];
+                    mSleepingOnPlayerEvent.Remove(player.actorId);
+                    DynValue value = coroutine.Resume(LuaUtils.CreateLuaParamObjectList(args));
+                    ResolveResume(null, coroutine, value);
+                }
+                catch (ScriptRuntimeException e)
+                {
+                    LuaEngine.SendError(player, String.Format("OnEventUpdated: {0}", e.DecoratedMessage));
+                    player.EndEvent();
+                }
             }
             else
                 player.EndEvent();
@@ -365,15 +373,23 @@ namespace FFXIVClassic_Map_Server.lua
             if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
             {
                 Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];                
-                mSleepingOnPlayerEvent.Remove(player.actorId);                
-                DynValue value = coroutine.Resume();
-                ResolveResume(null, coroutine, value);
+                mSleepingOnPlayerEvent.Remove(player.actorId);
+
+                try{
+                    DynValue value = coroutine.Resume();
+                    ResolveResume(null, coroutine, value);                  
+                }
+                catch (ScriptRuntimeException e)
+                {
+                    LuaEngine.SendError(player, String.Format("OnEventStarted: {0}", e.DecoratedMessage));
+                    player.EndEvent();
+                }                
             }
             else                
                 CallLuaFunction(player, target, "onEventStarted", false, LuaUtils.CreateLuaParamObjectList(lparams));
         }
 
-        private DynValue ResolveResume(Actor actor, Coroutine coroutine, DynValue value)
+        public DynValue ResolveResume(Actor actor, Coroutine coroutine, DynValue value)
         {
             var isPlayer = actor is Player;
 
@@ -579,22 +595,22 @@ namespace FFXIVClassic_Map_Server.lua
             script.Globals["GetStaticActor"] = (Func<string, Actor>)Server.GetStaticActors;
             script.Globals["GetStaticActorById"] = (Func<uint, Actor>)Server.GetStaticActors;
             script.Globals["GetWorldMaster"] = (Func<Actor>)Server.GetWorldManager().GetActor;
-            script.Globals["GetItemGamedata"] = (Func<uint, Item>)Server.GetItemGamedata;
+            script.Globals["GetItemGamedata"] = (Func<uint, ItemData>)Server.GetItemGamedata;
+            script.Globals["GetGuildleveGamedata"] = (Func<uint, GuildleveData>)Server.GetGuildleveGamedata;
             script.Globals["GetLuaInstance"] = (Func<LuaEngine>)LuaEngine.GetInstance;
 
             script.Options.DebugPrint = s => { Program.Log.Debug(s); };
             return script;
         }
 
-        private static void SendError(Player player, string message)
+        public static void SendError(Player player, string message)
         {
             message = "[LuaError] " + message;
             if (player == null)
                 return;
             List<SubPacket> SendError = new List<SubPacket>();
-            SendError.Add(EndEventPacket.BuildPacket(player.actorId, player.currentEventOwner, player.currentEventName));
             player.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", message);
-            player.playerSession.QueuePacket(BasePacket.CreatePacket(SendError, true, false));
+            player.QueuePacket(EndEventPacket.BuildPacket(player.actorId, player.currentEventOwner, player.currentEventName));
         }
         
     }

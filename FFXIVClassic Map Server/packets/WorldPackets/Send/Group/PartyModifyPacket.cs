@@ -24,7 +24,7 @@ namespace FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group
                     binWriter.Write(Encoding.ASCII.GetBytes(name), 0, Encoding.ASCII.GetByteCount(name) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(name));
                 }
             }
-            return new SubPacket(true, OPCODE, session.id, session.id, data);
+            return new SubPacket(true, OPCODE, session.id, data);
         }
 
         public static SubPacket BuildPacket(Session session, ushort command, uint actorId)
@@ -38,7 +38,7 @@ namespace FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group
                     binWriter.Write((UInt32)actorId);
                 }
             }
-            return new SubPacket(true, OPCODE, session.id, session.id, data);
+            return new SubPacket(true, OPCODE, session.id, data);
         }      
 
     }

@@ -29,7 +29,7 @@ namespace FFXIVClassic_World_Server.Packets.WorldPackets.Send
                 }
             }
 
-            return new SubPacket(true, OPCODE, 0, session.sessionId, data);
+            return new SubPacket(true, OPCODE, session.sessionId, data);
         }
     }
 }

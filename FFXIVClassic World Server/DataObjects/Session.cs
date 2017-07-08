@@ -38,34 +38,34 @@ namespace FFXIVClassic_World_Server.DataObjects
         {
             if (msgParams == null || msgParams.Length == 0)
             {
-                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, sessionId, actorId, 0x5FF80001, textId, log), true, false);
+                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, actorId, 0x5FF80001, textId, log));
             }
             else
-                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, sessionId, actorId, 0x5FF80001, textId, log, LuaUtils.CreateLuaParamList(msgParams)), true, false);
+                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, actorId, 0x5FF80001, textId, log, LuaUtils.CreateLuaParamList(msgParams)));
         }
        
         public void SendGameMessage( ushort textId, byte log, params object[] msgParams)
         {
             if (msgParams == null || msgParams.Length == 0)
-                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, sessionId, 0x5FF80001, textId, log), true, false);
+                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, 0x5FF80001, textId, log));
             else
-                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, sessionId, 0x5FF80001, textId, log, LuaUtils.CreateLuaParamList(msgParams)), true, false);
+                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, 0x5FF80001, textId, log, LuaUtils.CreateLuaParamList(msgParams)));
         }
 
         public void SendGameMessage( ushort textId, byte log, string customSender, params object[] msgParams)
         {
             if (msgParams == null || msgParams.Length == 0)
-                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, sessionId, 0x5FF80001, textId, customSender, log), true, false);
+                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, 0x5FF80001, textId, customSender, log));
             else
-                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, sessionId, 0x5FF80001, textId, customSender, log, LuaUtils.CreateLuaParamList(msgParams)), true, false);
+                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, 0x5FF80001, textId, customSender, log, LuaUtils.CreateLuaParamList(msgParams)));
         }
 
         public void SendGameMessage(ushort textId, byte log, uint displayId, params object[] msgParams)
         {
             if (msgParams == null || msgParams.Length == 0)
-                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, sessionId, 0x5FF80001, textId, displayId, log), true, false);
+                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, 0x5FF80001, textId, displayId, log));
             else
-                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, sessionId, 0x5FF80001, textId, displayId, log, LuaUtils.CreateLuaParamList(msgParams)), true, false);
+                clientConnection.QueuePacket(GameMessagePacket.BuildPacket(0x5FF80001, 0x5FF80001, textId, displayId, log, LuaUtils.CreateLuaParamList(msgParams)));
         }
 
 

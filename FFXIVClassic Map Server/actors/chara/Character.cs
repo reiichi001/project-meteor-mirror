@@ -75,33 +75,33 @@ namespace FFXIVClassic_Map_Server.Actors
             this.statusEffects = new StatusEffects(this);
         }
 
-        public SubPacket CreateAppearancePacket(uint playerActorId)
+        public SubPacket CreateAppearancePacket()
         {
             SetActorAppearancePacket setappearance = new SetActorAppearancePacket(modelId, appearanceIds);
-            return setappearance.BuildPacket(actorId, playerActorId);
+            return setappearance.BuildPacket(actorId);
         }
 
-        public SubPacket CreateInitStatusPacket(uint playerActorId)
+        public SubPacket CreateInitStatusPacket()
         {
-            return (SetActorStatusAllPacket.BuildPacket(actorId, playerActorId, charaWork.status));                      
+            return (SetActorStatusAllPacket.BuildPacket(actorId, charaWork.status));                      
         }
 
-        public SubPacket CreateSetActorIconPacket(uint playerActorId)
+        public SubPacket CreateSetActorIconPacket()
         {
-            return SetActorIconPacket.BuildPacket(actorId, playerActorId, currentActorIcon);
+            return SetActorIconPacket.BuildPacket(actorId, currentActorIcon);
         }
 
-        public SubPacket CreateIdleAnimationPacket(uint playerActorId)
+        public SubPacket CreateIdleAnimationPacket()
         {
-            return SetActorSubStatPacket.BuildPacket(actorId, playerActorId, 0, 0, 0, 0, 0, 0, animationId);
+            return SetActorSubStatPacket.BuildPacket(actorId, 0, 0, 0, 0, 0, 0, animationId);
         }
 
         public void SetQuestGraphic(Player player, int graphicNum)
         {
-            player.QueuePacket(SetActorQuestGraphicPacket.BuildPacket(player.actorId, actorId, graphicNum));
+            player.QueuePacket(SetActorQuestGraphicPacket.BuildPacket(actorId, graphicNum));
         }
 
-        public void SetCurrentContentGroup(ContentGroup group, Player player = null)
+        public void SetCurrentContentGroup(ContentGroup group)
         {
             if (group != null)
                 charaWork.currentContentGroup = group.GetTypeId();
@@ -110,17 +110,21 @@ namespace FFXIVClassic_Map_Server.Actors
 
             currentContentGroup = group;
 
-            if (player != null)
-            {
-                ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this, actorId);
-                propPacketUtil.AddProperty("charaWork.currentContentGroup");
-                player.QueuePackets(propPacketUtil.Done());
-            }
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this);
+            propPacketUtil.AddProperty("charaWork.currentContentGroup");            
+            zone.BroadcastPacketsAroundActor(this, propPacketUtil.Done());
+
         }     
    
-        public void PlayAnimation(uint animId)
+        public void PlayAnimation(uint animId, bool onlySelf = false)
         {            
-            zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, actorId, animId));
+            if (onlySelf)
+            {
+                if (this is Player)
+                    ((Player)this).QueuePacket(PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
+            }
+            else
+                zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
         }
 
         public void PathTo(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40, float polyRadius = 0.0f)
@@ -381,6 +385,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
         }
 
+        public bool IsDead()
+        {
+            return currentMainState == SetActorStatePacket.MAIN_STATE_DEAD || currentMainState == SetActorStatePacket.MAIN_STATE_DEAD2;
+        }
+
+        public bool IsAlive()
+        {
+            return !IsDead();
+        }
     }
 
 }

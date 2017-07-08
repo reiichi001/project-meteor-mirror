@@ -5,12 +5,12 @@ using System;
 
 namespace  FFXIVClassic_Map_Server.packets.send.actor
 {
-    class _0xD8Packet
+    class SetActorBGPropertiesPacket
     {
         public const ushort OPCODE = 0x00D8;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket BuildPacket(uint playerActorID, uint targetActorID, uint val1, uint val2)
+        public static SubPacket BuildPacket(uint sourceActorId, uint val1, uint val2)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -23,7 +23,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, targetActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
     }
 }

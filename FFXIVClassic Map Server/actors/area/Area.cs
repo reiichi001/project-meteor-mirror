@@ -84,24 +84,24 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public override SubPacket CreateScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket()
         {
             List<LuaParam> lParams;
             lParams = LuaUtils.CreateLuaParamList(classPath, false, true, zoneName, "/Area/Zone/ZoneDefault", -1, (byte)1, true, false, false, false, false, false, false, false);
-            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, "ZoneDefault", lParams);
+            return ActorInstantiatePacket.BuildPacket(actorId, actorName, "ZoneDefault", lParams);
         }
 
-        public override BasePacket GetSpawnPackets(uint playerActorId)
+        public override List<SubPacket> GetSpawnPackets()
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(CreateAddActorPacket(playerActorId, 0));            
-            subpackets.Add(CreateSpeedPacket(playerActorId));
-            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x1));
-            subpackets.Add(CreateNamePacket(playerActorId));
-            subpackets.Add(CreateStatePacket(playerActorId));
-            subpackets.Add(CreateIsZoneingPacket(playerActorId));
-            subpackets.Add(CreateScriptBindPacket(playerActorId));
-            return BasePacket.CreatePacket(subpackets, true, false);
+            subpackets.Add(CreateAddActorPacket(0));            
+            subpackets.Add(CreateSpeedPacket());
+            subpackets.Add(CreateSpawnPositonPacket(0x1));
+            subpackets.Add(CreateNamePacket());
+            subpackets.Add(CreateStatePacket());
+            subpackets.Add(CreateIsZoneingPacket());
+            subpackets.Add(CreateScriptBindPacket());
+            return subpackets;
         }
 
         #region Actor Management
@@ -368,6 +368,26 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        // todo: for zones override this to seach contentareas (assuming flag is passed)
+        public virtual List<Actor> GetAllActors()
+        {
+            lock (mActorList)
+            {
+                List<Actor> actorList = new List<Actor>(mActorList.Count);
+                foreach (var actor in mActorList.Values)
+                {
+                    actorList.Add(actor);
+                }
+                return actorList;
+            }
+        }
+
+        public void BroadcastPacketsAroundActor(Actor actor, List<SubPacket> packets)
+        {
+            foreach (SubPacket packet in packets)
+                BroadcastPacketAroundActor(actor, packet);
+        }
+
         public void BroadcastPacketAroundActor(Actor actor, SubPacket packet)
         {
             if (isIsolated)
@@ -466,6 +486,11 @@ namespace FFXIVClassic_Map_Server.Actors
             RemoveActorFromZone(FindActorInZoneByUniqueID(uniqueId));
         }
 
+        public void DespawnActor(Actor actor)
+        {
+            RemoveActorFromZone(actor);
+        }
+
         public Director GetWeatherDirector()
         {
             return mWeatherDirector;
@@ -477,7 +502,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (player != null && !zoneWide)
             {
-                player.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime), true, false));
+                player.QueuePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime));
             }
             if (zoneWide)
             {
@@ -488,23 +513,67 @@ namespace FFXIVClassic_Map_Server.Actors
                         if (actor.Value is Player)
                         {
                             player = ((Player)actor.Value);
-                            player.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime), true, false));
+                            player.QueuePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime));
                         }
                     }
                 }
             }
         }                
 
-        public Director CreateDirector(string path)
+        public Director CreateDirector(string path, params object[] args)
         {
             lock (directorLock)
             {
-                Director director = new Director(directorIdCount, this, path);
+                Director director = new Director(directorIdCount, this, path, args);
+                currentDirectors.Add(director.actorId, director);
+                directorIdCount++;
+                return director;
+            }
+        }
 
-                if (!director.IsCreated())
-                    return null;
+        public Director CreateGuildleveDirector(uint glid, byte difficulty, Player owner, params object[] args)
+        {
+            String directorScriptPath = "";
 
-                currentDirectors.Add(directorIdCount, director);
+            uint type = Server.GetGuildleveGamedata(glid).plateId;
+
+            if (glid == 10801 || glid == 12401 || glid == 11601)
+                directorScriptPath = "Guildleve/PrivateGLBattleTutorial";
+            else
+            {
+                switch (type)
+                {
+                    case 20021:
+                        directorScriptPath = "Guildleve/PrivateGLBattleSweepNormal";
+                        break;
+                    case 20022:
+                        directorScriptPath = "Guildleve/PrivateGLBattleChaseNormal";
+                        break;
+                    case 20023:
+                        directorScriptPath = "Guildleve/PrivateGLBattleOrbNormal";
+                        break;
+                    case 20024:
+                        directorScriptPath = "Guildleve/PrivateGLBattleHuntNormal";
+                        break;
+                    case 20025:
+                        directorScriptPath = "Guildleve/PrivateGLBattleGatherNormal";
+                        break;
+                    case 20026:
+                        directorScriptPath = "Guildleve/PrivateGLBattleRoundNormal";
+                        break;
+                    case 20027:
+                        directorScriptPath = "Guildleve/PrivateGLBattleSurviveNormal";
+                        break;
+                    case 20028:
+                        directorScriptPath = "Guildleve/PrivateGLBattleDetectNormal";
+                        break;                   
+                }
+            }
+
+            lock (directorLock)
+            {
+                GuildleveDirector director = new GuildleveDirector(directorIdCount, this, directorScriptPath, glid, difficulty, owner, args);
+                currentDirectors.Add(director.actorId, director);
                 directorIdCount++;
                 return director;
             }
@@ -516,7 +585,8 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 if (currentDirectors.ContainsKey(id))
                 {
-                    currentDirectors[id].RemoveChildren();
+                    if (!currentDirectors[id].IsDeleted())
+                        currentDirectors[id].EndDirector();
                     currentDirectors.Remove(id);
                 }
             }

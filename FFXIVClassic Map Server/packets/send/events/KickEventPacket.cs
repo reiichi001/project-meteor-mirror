@@ -13,7 +13,7 @@ namespace FFXIVClassic_Map_Server.packets.send.events
         public const ushort OPCODE = 0x012F;
         public const uint PACKET_SIZE = 0x90;
 
-        public static SubPacket BuildPacket(uint playerActorId, uint targetActorId, string conditionName, List<LuaParam> luaParams)
+        public static SubPacket BuildPacket(uint sourcePlayerActorId, uint targetEventActorId, string conditionName, List<LuaParam> luaParams)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -21,8 +21,8 @@ namespace FFXIVClassic_Map_Server.packets.send.events
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    binWriter.Write((UInt32)playerActorId);
-                    binWriter.Write((UInt32)targetActorId);
+                    binWriter.Write((UInt32)sourcePlayerActorId);
+                    binWriter.Write((UInt32)targetEventActorId);
 
                     int test = 0x75dc1705; //This will crash if set to 0 on pushCommand but not for mining which has to be 0????
                     
@@ -36,7 +36,7 @@ namespace FFXIVClassic_Map_Server.packets.send.events
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorId, playerActorId, data);
+            return new SubPacket(OPCODE, sourcePlayerActorId, data);
         }
     }
 

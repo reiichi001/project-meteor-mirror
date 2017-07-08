@@ -600,19 +600,24 @@ namespace FFXIVClassic_Map_Server
             player.positionZ = spawnZ;
             player.rotation = spawnRotation;
 
+            //Delete any GL directors
+            GuildleveDirector glDirector = player.GetGuildleveDirector();
+            if (glDirector != null)
+                player.RemoveDirector(glDirector);
+
             //Delete content if have
             if (player.currentContentGroup != null)
             {
                 player.currentContentGroup.RemoveMember(player.actorId);
-                player.SetCurrentContentGroup(null, player);
+                player.SetCurrentContentGroup(null);
 
                 if (oldZone is PrivateAreaContent)
                     ((PrivateAreaContent)oldZone).CheckDestroy();
             }                 
 
             //Send packets
-            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
-            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10), true, false);
+            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId));
+            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x2));
             player.SendZoneInPackets(this, spawnType);
             player.playerSession.ClearInstance();
             player.SendInstanceUpdate();
@@ -660,8 +665,8 @@ namespace FFXIVClassic_Map_Server
                 player.rotation = spawnRotation;
 
                 //Send packets
-                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10), true, false);
-                player.playerSession.QueuePacket(player.CreateSpawnTeleportPacket(player.actorId, spawnType), true, false);
+                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10));
+                player.playerSession.QueuePacket(player.CreateSpawnTeleportPacket(spawnType));
 
                 player.playerSession.LockUpdates(false);
                 player.SendInstanceUpdate();
@@ -704,8 +709,8 @@ namespace FFXIVClassic_Map_Server
             player.SendGameMessage(GetActor(), 34108, 0x20);
 
             //Send packets
-            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
-            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10), true, false);
+            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId));
+            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10));
             player.SendZoneInPackets(this, spawnType);
             player.playerSession.ClearInstance();
             player.SendInstanceUpdate();
@@ -739,8 +744,8 @@ namespace FFXIVClassic_Map_Server
             //Send packets            
             if (!isLogin)
             {
-                player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
-                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x2), true, false);
+                player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId));
+                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x2));
                 //player.SendZoneInPackets(this, spawnType);
             }
 
@@ -764,11 +769,6 @@ namespace FFXIVClassic_Map_Server
             //zone.clear();
             //LoadNPCs(zone.actorId);
 
-        }
-
-        public ContentGroup CreateContentGroup(Director director)
-        {
-            return CreateContentGroup(director, null);
         }
 
         public ContentGroup CreateContentGroup(Director director, params Actor[] actors)
@@ -799,6 +799,62 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public ContentGroup CreateContentGroup(Director director, List<Actor> actors)
+        {
+            if (director == null)
+                return null;
+
+            lock (groupLock)
+            {
+                uint[] initialMembers = null;
+
+                if (actors != null)
+                {
+                    initialMembers = new uint[actors.Count];
+                    for (int i = 0; i < actors.Count; i++)
+                        initialMembers[i] = actors[i].actorId;
+                }
+
+                groupIndexId = groupIndexId | 0x3000000000000000;
+
+                ContentGroup contentGroup = new ContentGroup(groupIndexId, director, initialMembers);
+                mContentGroups.Add(groupIndexId, contentGroup);
+                groupIndexId++;
+                if (initialMembers != null && initialMembers.Length != 0)
+                    contentGroup.SendAll();
+
+                return contentGroup;
+            }
+        }
+
+        public ContentGroup CreateGLContentGroup(Director director, List<Actor> actors)
+        {
+            if (director == null)
+                return null;
+
+            lock (groupLock)
+            {
+                uint[] initialMembers = null;
+
+                if (actors != null)
+                {
+                    initialMembers = new uint[actors.Count];
+                    for (int i = 0; i < actors.Count; i++)
+                        initialMembers[i] = actors[i].actorId;
+                }
+
+                groupIndexId = groupIndexId | 0x2000000000000000;
+
+                GLContentGroup contentGroup = new GLContentGroup(groupIndexId, director, initialMembers);
+                mContentGroups.Add(groupIndexId, contentGroup);
+                groupIndexId++;
+                if (initialMembers != null && initialMembers.Length != 0)
+                    contentGroup.SendAll();
+
+                return contentGroup;
+            }
+        }
+
         public void DeleteContentGroup(ulong groupId)
         {
             lock (groupLock)
@@ -806,7 +862,6 @@ namespace FFXIVClassic_Map_Server
                 if (mContentGroups.ContainsKey(groupId) && mContentGroups[groupId] is ContentGroup)
                 {
                     ContentGroup group = (ContentGroup)mContentGroups[groupId];
-                    group.SendDeletePackets();
                     mContentGroups.Remove(groupId);
                 }
             }
@@ -825,55 +880,55 @@ namespace FFXIVClassic_Map_Server
         public void RequestWorldLinkshellCreate(Player player, string name, ushort crest)
         {
             SubPacket packet = CreateLinkshellPacket.BuildPacket(player.playerSession, name, crest, player.actorId);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellCrestModify(Player player, string name, ushort crest)
         {
             SubPacket packet = ModifyLinkshellPacket.BuildPacket(player.playerSession, 1, name, null, crest, 0);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellDelete(Player player, string name)
         {
             SubPacket packet = DeleteLinkshellPacket.BuildPacket(player.playerSession, name);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellRankChange(Player player, string lsname, string memberName, byte newRank)
         {
             SubPacket packet = LinkshellRankChangePacket.BuildPacket(player.playerSession, memberName, lsname, newRank);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellInviteMember(Player player, string lsname, uint invitedActorId)
         {
             SubPacket packet = LinkshellInvitePacket.BuildPacket(player.playerSession, invitedActorId, lsname);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellCancelInvite(Player player)
         {
             SubPacket packet = LinkshellInviteCancelPacket.BuildPacket(player.playerSession);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellLeave(Player player, string lsname)
         {
             SubPacket packet = LinkshellLeavePacket.BuildPacket(player.playerSession, lsname, null, false);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellKick(Player player, string lsname, string kickedName)
         {
             SubPacket packet = LinkshellLeavePacket.BuildPacket(player.playerSession, lsname, kickedName, true);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         public void RequestWorldLinkshellChangeActive(Player player, string lsname)
         {
             SubPacket packet = LinkshellChangePacket.BuildPacket(player.playerSession, lsname);
-            Server.GetWorldConnection().QueuePacket(packet, true, false);
+            player.QueuePacket(packet);
         }
 
         private void RequestWorldServerZoneChange(Player player, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
