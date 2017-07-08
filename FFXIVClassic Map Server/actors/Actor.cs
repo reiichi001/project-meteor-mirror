@@ -180,7 +180,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 lastMoveUpdate = DateTime.Now;
                 return MoveActorToPositionPacket.BuildPacket(actorId, positionX, positionY, positionZ, rotation, moveState);
             }
-            return null;        }
+            return null;
+        }
 
         public SubPacket CreateStatePacket()
         {

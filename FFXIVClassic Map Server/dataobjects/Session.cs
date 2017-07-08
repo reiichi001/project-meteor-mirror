@@ -122,7 +122,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
                     if (actor is Character && ((Character)actor).isStatic)
                         continue;
 
-                    QueuePacket(actor.CreatePositionUpdatePacket());
+                    var packet = actor.CreatePositionUpdatePacket();
+                    if (packet != null)
+                        QueuePacket(packet);
                 }
                 else
                 {   
