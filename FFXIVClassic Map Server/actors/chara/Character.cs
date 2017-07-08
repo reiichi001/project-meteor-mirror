@@ -385,6 +385,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
         }
 
+        public bool IsDead()
+        {
+            return currentMainState == SetActorStatePacket.MAIN_STATE_DEAD || currentMainState == SetActorStatePacket.MAIN_STATE_DEAD2;
+        }
+
+        public bool IsAlive()
+        {
+            return !IsDead();
+        }
     }
 
 }

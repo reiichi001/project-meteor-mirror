@@ -150,7 +150,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return spawnPacket;
         }
 
-        public SubPacket CreatePositionUpdatePacket()
+        public SubPacket CreatePositionUpdatePacket(bool forceUpdate = false)
         {
             int updateMs = 300;
             var diffTime = (DateTime.Now - lastMoveUpdate);
@@ -160,7 +160,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 updateMs = 150;
             }
 
-            if (hasMoved && ((this is Player ) || diffTime.Milliseconds >= updateMs))
+            if (forceUpdate || (hasMoved && ((this is Player ) || diffTime.Milliseconds >= updateMs)))
             {
                 hasMoved = (this.positionUpdates != null && this.positionUpdates.Count > 0);
                 if (hasMoved)
