@@ -189,7 +189,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
                 if (session == null)
                     continue;
                 else                
-                    session.clientConnection.QueuePacket(leaderUpdate.buildPacket(session.sessionId, session.sessionId), true, false);                
+                    session.clientConnection.QueuePacket(leaderUpdate.buildPacket(session.sessionId));                
             }
         }
 
@@ -226,8 +226,8 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             groupWork.addProperty(this, "partyGroupWork._globalTemp.owner");
             groupWork.setTarget("/_init");
 
-            SubPacket test = groupWork.buildPacket(session.sessionId, session.sessionId);
-            session.clientConnection.QueuePacket(test, true, false);
+            SubPacket test = groupWork.buildPacket(session.sessionId);
+            session.clientConnection.QueuePacket(test);
             test.DebugPrintSubPacket();
         }        
 

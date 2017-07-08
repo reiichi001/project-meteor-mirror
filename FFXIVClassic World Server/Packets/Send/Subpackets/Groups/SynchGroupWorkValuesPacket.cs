@@ -195,14 +195,14 @@ namespace FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups
 
         }
 
-        public SubPacket buildPacket(uint playerActorID, uint actorID)
+        public SubPacket buildPacket(uint playerActorID)
         {
             binWriter.Seek(0x8, SeekOrigin.Begin);
             binWriter.Write((byte)runningByteTotal);
 
             closeStreams();
 
-            SubPacket packet = new SubPacket(OPCODE, playerActorID, actorID, data);
+            SubPacket packet = new SubPacket(OPCODE, playerActorID, data);
             return packet;
         }
 

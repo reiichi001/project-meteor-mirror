@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 6/19/2017 10:23:48 PM
+Date: 6/25/2017 10:44:22 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -3043,7 +3043,7 @@ INSERT INTO `gamedata_actor_class` VALUES ('1200036', '', '0', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1200037', '', '0', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1200038', '', '0', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1200039', '', '0', '0', null);
-INSERT INTO `gamedata_actor_class` VALUES ('1200040', '/Chara/Npc/Object/GuildleveWarpPoint', '4010016', '2', '{\r\n  \"talkEventConditions\": [\r\n    {\r\n      \"unknown1\": 4,\r\n      \"unknown2\": 0,\r\n      \"conditionName\": \"talkDefault\"\r\n    }\r\n  ],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 4,\r\n      \"unknown2\": 0,\r\n      \"conditionName\": \"pushCommand\"\r\n    },\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"pushWithCircleEventConditions\": [\r\n    {\r\n      \"radius\": \"5.0\",\r\n      \"outwards\": \"false\",\r\n      \"silent\": \"true\",\r\n      \"conditionName\": \"pushCommandIn\"\r\n    },\r\n    {\r\n      \"radius\": \"5.0\",\r\n      \"outwards\": \"true\",\r\n      \"silent\": \"true\",\r\n      \"conditionName\": \"pushCommandOut\"\r\n    }\r\n  ]\r\n}');
+INSERT INTO `gamedata_actor_class` VALUES ('1200040', '/Chara/Npc/Object/GuildleveWarpPoint', '4010016', '3', '{\r\n  \"talkEventConditions\": [\r\n    {\r\n      \"unknown1\": 4,\r\n      \"unknown2\": 0,\r\n      \"conditionName\": \"talkDefault\"\r\n    }\r\n  ],\r\n  \"noticeEventConditions\": [\r\n    {\r\n      \"unknown1\": 4,\r\n      \"unknown2\": 0,\r\n      \"conditionName\": \"pushCommand\"\r\n    },\r\n    {\r\n      \"unknown1\": 0,\r\n      \"unknown2\": 1,\r\n      \"conditionName\": \"noticeEvent\"\r\n    }\r\n  ],\r\n  \"pushWithCircleEventConditions\": [\r\n    {\r\n      \"radius\": \"5.0\",\r\n      \"outwards\": \"false\",\r\n      \"silent\": \"true\",\r\n      \"conditionName\": \"pushCommandIn\"\r\n    },\r\n    {\r\n      \"radius\": \"5.0\",\r\n      \"outwards\": \"true\",\r\n      \"silent\": \"true\",\r\n      \"conditionName\": \"pushCommandOut\"\r\n    }\r\n  ]\r\n}');
 INSERT INTO `gamedata_actor_class` VALUES ('1200041', '', '0', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1200042', '', '0', '0', null);
 INSERT INTO `gamedata_actor_class` VALUES ('1200043', '', '0', '0', null);

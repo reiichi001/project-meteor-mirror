@@ -62,7 +62,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
 
         public bool[] cutsceneFlags = new bool[2048];
 
-        public SubPacket BuildPacket(uint playerActorID, string sNpcName, short sNpcActorIdOffset, byte sNpcSkin, byte sNpcPersonality)
+        public SubPacket BuildPacket(uint sourceActorId, string sNpcName, short sNpcActorIdOffset, byte sNpcSkin, byte sNpcPersonality)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -91,7 +91,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
 
     }

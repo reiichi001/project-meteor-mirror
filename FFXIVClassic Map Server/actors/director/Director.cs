@@ -15,26 +15,32 @@ namespace FFXIVClassic_Map_Server.actors.director
     {
         private uint directorId;
         private string directorScriptPath;
-        private List<Actor> childrenOwners = new List<Actor>();
+        private List<Actor> members = new List<Actor>();
         private bool isCreated = false;
+        private bool isDeleted = false;
+        private bool isDeleting = false;
 
-        public Director(uint id, Area zone, string directorPath)
+        private Script directorScript;
+        private Coroutine currentCoroutine;
+
+        public Director(uint id, Area zone, string directorPath, params object[] args)
             : base((6 << 28 | zone.actorId << 19 | (uint)id))
         {
             directorId = id;
             this.zone = zone;
-            directorScriptPath = directorPath;            
-            DoActorInit(directorScriptPath);
-            GenerateActorName((int)id);
+            this.zoneId = zone.actorId;
+            directorScriptPath = directorPath;
+
+            LoadLuaScript();
 
             eventConditions = new EventList();
             eventConditions.noticeEventConditions = new List<EventList.NoticeEventCondition>();
             eventConditions.noticeEventConditions.Add(new EventList.NoticeEventCondition("noticeEvent",  0xE,0x0));
             eventConditions.noticeEventConditions.Add(new EventList.NoticeEventCondition("noticeRequest", 0x0, 0x1));
-            eventConditions.noticeEventConditions.Add(new EventList.NoticeEventCondition("reqForChild", 0x0, 0x1));
+            eventConditions.noticeEventConditions.Add(new EventList.NoticeEventCondition("reqForChild", 0x0, 0x1));            
         }       
 
-        public override SubPacket CreateScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket()
         {
             List<LuaParam> actualLParams = new List<LuaParam>();
             actualLParams.Insert(0, new LuaParam(2, classPath));
@@ -48,28 +54,30 @@ namespace FFXIVClassic_Map_Server.actors.director
             for (int i = 1; i < lparams.Count; i++)
                 actualLParams.Add(lparams[i]);
 
-            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, actualLParams);
+            return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, actualLParams);
         }
 
-        public override BasePacket GetSpawnPackets(uint playerActorId, ushort spawnType)
+        public override List<SubPacket> GetSpawnPackets(ushort spawnType = 1)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(CreateAddActorPacket(playerActorId, 0));
-            subpackets.AddRange(GetEventConditionPackets(playerActorId));
-            subpackets.Add(CreateSpeedPacket(playerActorId));
-            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0));
-            subpackets.Add(CreateNamePacket(playerActorId));
-            subpackets.Add(CreateStatePacket(playerActorId));
-            subpackets.Add(CreateIsZoneingPacket(playerActorId));
-            subpackets.Add(CreateScriptBindPacket(playerActorId));
-            return BasePacket.CreatePacket(subpackets, true, false);
-        }        
+            subpackets.Add(CreateAddActorPacket(0));
+            subpackets.AddRange(GetEventConditionPackets());
+            subpackets.Add(CreateSpeedPacket());
+            subpackets.Add(CreateSpawnPositonPacket(0));
+            subpackets.Add(CreateNamePacket());
+            subpackets.Add(CreateStatePacket());
+            subpackets.Add(CreateIsZoneingPacket());
+            subpackets.Add(CreateScriptBindPacket());
+            return subpackets;
+        }
 
-        public override BasePacket GetInitPackets(uint playerActorId)
+        public override List<SubPacket> GetInitPackets()
         {
+            List<SubPacket> subpackets = new List<SubPacket>();
             SetActorPropetyPacket initProperties = new SetActorPropetyPacket("/_init");
             initProperties.AddTarget();
-            return BasePacket.CreatePacket(initProperties.BuildPacket(playerActorId, actorId), true, false);
+            subpackets.Add(initProperties.BuildPacket(actorId));
+            return subpackets;
         }
 
         public void OnTalkEvent(Player player, Npc npc)
@@ -80,43 +88,91 @@ namespace FFXIVClassic_Map_Server.actors.director
         public void OnCommandEvent(Player player, Command command)
         {
             LuaEngine.GetInstance().CallLuaFunction(player, this, "onCommandEvent", false, command);
-        }        
+        }   
 
-        public void DoActorInit(string directorPath)
+        public void StartDirector(bool spawnImmediate, params object[] args)
         {
-            List<LuaParam> lparams = LuaEngine.GetInstance().CallLuaFunctionForReturn(null, this, "init", false);            
+            object[] args2 = new object[args.Length + 1];
+            args2[0] = this;
+            Array.Copy(args, 0, args2, 1, args.Length);
+
+            List<LuaParam> lparams = CallLuaScript("init", args2);
             
             if (lparams.Count >= 1 && lparams[0].value is string)
             {
                 classPath = (string)lparams[0].value;
                 className = classPath.Substring(classPath.LastIndexOf("/") + 1);
+                GenerateActorName((int)directorId);
                 isCreated = true;
             }
+
+            if (isCreated && spawnImmediate)
+            {
+                foreach (Player p in GetPlayerMembers())
+                {
+                    p.QueuePackets(GetSpawnPackets());
+                    p.QueuePackets(GetInitPackets());
+                }
+            }
+
+            if (this is GuildleveDirector)
+                ((GuildleveDirector)this).LoadGuildleve();
+
+            StartCoroutine("main", this);
         }
 
-        public void AddChild(Actor actor)
+        public void EndDirector()
         {
-            if (!childrenOwners.Contains(actor))
-                childrenOwners.Add(actor);
-        }
+            isDeleting = true;
 
-        public void RemoveChild(Actor actor)
-        {
-            if (childrenOwners.Contains(actor))
-                childrenOwners.Remove(actor);
-            if (childrenOwners.Count == 0)
-                Server.GetWorldManager().GetZone(zoneId).DeleteDirector(actorId);
-        }
+            if (this is GuildleveDirector)
+                ((GuildleveDirector)this).EndGuildleveDirector();
 
-        public void RemoveChildren()
-        {
-            childrenOwners.Clear();
+            List<Actor> players = GetPlayerMembers();
+            foreach (Actor player in players)
+                ((Player)player).RemoveDirector(this);
+            members.Clear();
+            isDeleted = true;
             Server.GetWorldManager().GetZone(zoneId).DeleteDirector(actorId);
+        }
+        
+        public void AddMember(Actor actor)
+        {
+            if (!members.Contains(actor))
+                members.Add(actor);
+        }
+
+        public void RemoveMember(Actor actor)
+        {
+            if (members.Contains(actor))
+                members.Remove(actor);
+            if (GetPlayerMembers().Count == 0 && !isDeleting)
+                EndDirector();
+        }
+
+        public List<Actor> GetMembers()
+        {
+            return members;
+        }
+
+        public List<Actor> GetPlayerMembers()
+        {
+            return members.FindAll(s => s is Player);
+        }
+
+        public List<Actor> GetNpcMembers()
+        {
+            return members.FindAll(s => s is Npc);
         }
 
         public bool IsCreated()
         {
             return isCreated;
+        }
+
+        public bool IsDeleted()
+        {
+            return isDeleted;
         }
 
         public void GenerateActorName(int actorNumber)
@@ -164,6 +220,46 @@ namespace FFXIVClassic_Map_Server.actors.director
         public string GetScriptPath()
         {
             return directorScriptPath;
+        }
+
+        private void LoadLuaScript()
+        {
+            string luaPath = String.Format(LuaEngine.FILEPATH_DIRECTORS, GetScriptPath());
+            directorScript = LuaEngine.LoadScript(luaPath);
+            if (directorScript == null)
+                Program.Log.Error("Could not find script for director {0}.", GetName());
+        }
+
+        private List<LuaParam> CallLuaScript(string funcName, params object[] args)
+        {
+            if (directorScript != null)
+            {
+                if (!directorScript.Globals.Get(funcName).IsNil())
+                {
+                    DynValue result = directorScript.Call(directorScript.Globals[funcName], args);
+                    List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
+                    return lparams;
+                }
+                else
+                    Program.Log.Error("Could not find script for director {0}.", GetName());
+            }
+            return null;
+        }
+
+        private List<LuaParam> StartCoroutine(string funcName, params object[] args)
+        {
+            if (directorScript != null)
+            {
+                if (!directorScript.Globals.Get(funcName).IsNil())
+                {
+                    currentCoroutine = directorScript.CreateCoroutine(directorScript.Globals[funcName]).Coroutine;
+                    DynValue value = currentCoroutine.Resume(args);
+                    LuaEngine.GetInstance().ResolveResume(null, currentCoroutine, value);
+                }
+                else
+                    Program.Log.Error("Could not find script for director {0}.", GetName());
+            }
+            return null;
         }
 
     }    

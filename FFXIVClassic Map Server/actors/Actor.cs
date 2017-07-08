@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using FFXIVClassic_Map_Server.actors.area;
 using System.Reflection;
 using System.ComponentModel;
+using FFXIVClassic_Map_Server.packets.send.actor.battle;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -94,56 +95,62 @@ namespace FFXIVClassic_Map_Server.Actors
             hasMoved = true;
         }
 
-        public SubPacket CreateAddActorPacket(uint playerActorId, byte val)
-        {
-            return AddActorPacket.BuildPacket(actorId, playerActorId, val);
+        public SubPacket CreateAddActorPacket(byte val)        {
+            return AddActorPacket.BuildPacket(actorId, val);
         }
 
-        public SubPacket CreateNamePacket(uint playerActorId)
+        public SubPacket CreateNamePacket()
         {
-            return SetActorNamePacket.BuildPacket(actorId, playerActorId, displayNameId, displayNameId == 0xFFFFFFFF | displayNameId == 0x0 ? customDisplayName : "");
+            return SetActorNamePacket.BuildPacket(actorId, displayNameId, displayNameId == 0xFFFFFFFF | displayNameId == 0x0 ? customDisplayName : "");
         }
 
-        public SubPacket CreateSpeedPacket(uint playerActorId)
+        public SubPacket CreateSpeedPacket()
         {
-            return SetActorSpeedPacket.BuildPacket(actorId, playerActorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2], moveSpeeds[3]);
+            return SetActorSpeedPacket.BuildPacket(actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2], moveSpeeds[3]);
         }
 
-        public SubPacket CreateSpawnPositonPacket(uint playerActorId, ushort spawnType)
+        public SubPacket CreateSpawnPositonPacket(ushort spawnType)
         {
+            return CreateSpawnPositonPacket(null, spawnType);
+        }
+
+        public SubPacket CreateSpawnPositonPacket(Player player, ushort spawnType)
+        {
+            //TODO: FIX THIS IF
+            uint playerActorId = player == null ? 0 : player.actorId; //Get Rid
             SubPacket spawnPacket;
             if (!spawnedFirstTime && playerActorId == actorId)
-                spawnPacket = SetActorPositionPacket.BuildPacket(actorId, playerActorId, 0, positionX, positionY, positionZ, rotation, 0x1, false);
+                spawnPacket = SetActorPositionPacket.BuildPacket(actorId, 0, positionX, positionY, positionZ, rotation, 0x1, false);
             else if (playerActorId == actorId)
-                spawnPacket = SetActorPositionPacket.BuildPacket(actorId, playerActorId, 0xFFFFFFFF, positionX, positionY, positionZ, rotation, spawnType, true);
+                spawnPacket = SetActorPositionPacket.BuildPacket(actorId, 0xFFFFFFFF, positionX, positionY, positionZ, rotation, spawnType, true);
             else
             {
                 if (this is Player)
-                    spawnPacket = SetActorPositionPacket.BuildPacket(actorId, playerActorId, 0, positionX, positionY, positionZ, rotation, spawnType, false);
+                    spawnPacket = SetActorPositionPacket.BuildPacket(actorId, 0, positionX, positionY, positionZ, rotation, spawnType, false);
                 else
-                    spawnPacket = SetActorPositionPacket.BuildPacket(actorId, playerActorId, actorId, positionX, positionY, positionZ, rotation, spawnType, false);
+                    spawnPacket = SetActorPositionPacket.BuildPacket(actorId, actorId, positionX, positionY, positionZ, rotation, spawnType, false);
             }
 
-            //return SetActorPositionPacket.BuildPacket(actorId, playerActorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
+            //return SetActorPositionPacket.BuildPacket(actorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
             spawnedFirstTime = true;
 
             return spawnPacket;
         }
 
-        public SubPacket CreateSpawnTeleportPacket(uint playerActorId, ushort spawnType)
+        public SubPacket CreateSpawnTeleportPacket(ushort spawnType)
         {
             SubPacket spawnPacket;
 
-            spawnPacket = SetActorPositionPacket.BuildPacket(actorId, playerActorId, 0xFFFFFFFF, positionX, positionY, positionZ, rotation, spawnType, false);
+            spawnPacket = SetActorPositionPacket.BuildPacket(actorId, 0xFFFFFFFF, positionX, positionY, positionZ, rotation, spawnType, false);
 
-            //return SetActorPositionPacket.BuildPacket(actorId, playerActorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
+            //return SetActorPositionPacket.BuildPacket(actorId, -211.895477f, 190.000000f, 29.651011f, 2.674819f, SetActorPositionPacket.SPAWNTYPE_PLAYERWAKE);
 
             //spawnPacket.DebugPrintSubPacket();
 
             return spawnPacket;
         }
 
-        public SubPacket CreatePositionUpdatePacket(uint playerActorId)
+        public SubPacket CreatePositionUpdatePacket()
         {
             int updateMs = 300;
             var diffTime = (DateTime.Now - lastMoveUpdate);
@@ -171,17 +178,16 @@ namespace FFXIVClassic_Map_Server.Actors
                     positionUpdates.RemoveAt(0);
                 }
                 lastMoveUpdate = DateTime.Now;
-                return MoveActorToPositionPacket.BuildPacket(actorId, playerActorId, positionX, positionY, positionZ, rotation, moveState);
+                return MoveActorToPositionPacket.BuildPacket(actorId, positionX, positionY, positionZ, rotation, moveState);
             }
-            return null;
-        }
+            return null;        }
 
-        public SubPacket CreateStatePacket(uint playerActorID)
+        public SubPacket CreateStatePacket()
         {
-            return SetActorStatePacket.BuildPacket(actorId, playerActorID, currentMainState, currentSubState);
+            return SetActorStatePacket.BuildPacket(actorId, currentMainState, currentSubState);
         }
 
-        public List<SubPacket> GetEventConditionPackets(uint playerActorId)
+        public List<SubPacket> GetEventConditionPackets()
         {
             List<SubPacket> subpackets = new List<SubPacket>();
 
@@ -192,126 +198,147 @@ namespace FFXIVClassic_Map_Server.Actors
             if (eventConditions.talkEventConditions != null)
             {
                 foreach (EventList.TalkEventCondition condition in eventConditions.talkEventConditions)
-                    subpackets.Add(SetTalkEventCondition.BuildPacket(playerActorId, actorId, condition));
+                    subpackets.Add(SetTalkEventCondition.BuildPacket(actorId, condition));
             }
 
             if (eventConditions.noticeEventConditions != null)
             {
                 foreach (EventList.NoticeEventCondition condition in eventConditions.noticeEventConditions)
-                    subpackets.Add(SetNoticeEventCondition.BuildPacket(playerActorId, actorId, condition));
+                    subpackets.Add(SetNoticeEventCondition.BuildPacket(actorId, condition));
             }
 
             if (eventConditions.emoteEventConditions != null)
             {
                 foreach (EventList.EmoteEventCondition condition in eventConditions.emoteEventConditions)
-                    subpackets.Add(SetEmoteEventCondition.BuildPacket(playerActorId, actorId, condition));
+                    subpackets.Add(SetEmoteEventCondition.BuildPacket(actorId, condition));
             }
 
             if (eventConditions.pushWithCircleEventConditions != null)
             {
                 foreach (EventList.PushCircleEventCondition condition in eventConditions.pushWithCircleEventConditions)
-                    subpackets.Add(SetPushEventConditionWithCircle.BuildPacket(playerActorId, actorId, condition));
+                    subpackets.Add(SetPushEventConditionWithCircle.BuildPacket(actorId, condition));
             }
 
             if (eventConditions.pushWithFanEventConditions != null)
             {
                 foreach (EventList.PushFanEventCondition condition in eventConditions.pushWithFanEventConditions)
-                    subpackets.Add(SetPushEventConditionWithFan.BuildPacket(playerActorId, actorId, condition));
+                    subpackets.Add(SetPushEventConditionWithFan.BuildPacket(actorId, condition));
             }
 
             if (eventConditions.pushWithBoxEventConditions != null)
             {
                 foreach (EventList.PushBoxEventCondition condition in eventConditions.pushWithBoxEventConditions)
-                    subpackets.Add(SetPushEventConditionWithTriggerBox.BuildPacket(playerActorId, actorId, condition));
+                    subpackets.Add(SetPushEventConditionWithTriggerBox.BuildPacket(actorId, condition));
             }
 
             return subpackets;
         }
 
-        public BasePacket GetSetEventStatusPackets(uint playerActorId)
+        public List<SubPacket> GetSetEventStatusPackets()
         {
             List<SubPacket> subpackets = new List<SubPacket>();
 
             //Return empty list
             if (eventConditions == null)
-                return BasePacket.CreatePacket(subpackets, true, false);
+                return subpackets;
 
             if (eventConditions.talkEventConditions != null)
             {
                 foreach (EventList.TalkEventCondition condition in eventConditions.talkEventConditions)
-                    subpackets.Add(SetEventStatus.BuildPacket(playerActorId, actorId, true, 1, condition.conditionName));
+                    subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 1, condition.conditionName));
             }
 
             if (eventConditions.noticeEventConditions != null)
             {
                 foreach (EventList.NoticeEventCondition condition in eventConditions.noticeEventConditions)
-                    subpackets.Add(SetEventStatus.BuildPacket(playerActorId, actorId, true, 1, condition.conditionName));
+                    subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 1, condition.conditionName));
             }
 
             if (eventConditions.emoteEventConditions != null)
             {
                 foreach (EventList.EmoteEventCondition condition in eventConditions.emoteEventConditions)
-                    subpackets.Add(SetEventStatus.BuildPacket(playerActorId, actorId, true, 3, condition.conditionName));
+                    subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 3, condition.conditionName));
             }
 
             if (eventConditions.pushWithCircleEventConditions != null)
             {
                 foreach (EventList.PushCircleEventCondition condition in eventConditions.pushWithCircleEventConditions)
-                    subpackets.Add(SetEventStatus.BuildPacket(playerActorId, actorId, true, 2, condition.conditionName));
+                    subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 2, condition.conditionName));
             }
 
             if (eventConditions.pushWithFanEventConditions != null)
             {
                 foreach (EventList.PushFanEventCondition condition in eventConditions.pushWithFanEventConditions)
-                    subpackets.Add(SetEventStatus.BuildPacket(playerActorId, actorId, true, 2, condition.conditionName));
+                    subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 2, condition.conditionName));
             }
 
             if (eventConditions.pushWithBoxEventConditions != null)
             {
                 foreach (EventList.PushBoxEventCondition condition in eventConditions.pushWithBoxEventConditions)
-                    subpackets.Add(SetEventStatus.BuildPacket(playerActorId, actorId, true, 2, condition.conditionName));
+                    subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 2, condition.conditionName));
             }
 
-            return BasePacket.CreatePacket(subpackets, true, false);
+            return subpackets;
         }
 
-        public SubPacket CreateIsZoneingPacket(uint playerActorId)
+        public SubPacket CreateIsZoneingPacket()
         {
-            return SetActorIsZoningPacket.BuildPacket(actorId, playerActorId, false);
+            return SetActorIsZoningPacket.BuildPacket(actorId, false);
         }
 
-        public virtual SubPacket CreateScriptBindPacket(uint playerActorId)
+        public virtual SubPacket CreateScriptBindPacket(Player player)
         {
-            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, classParams);
+            return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, classParams);
         }
 
-        public virtual BasePacket GetSpawnPackets(uint playerActorId)
+        public virtual SubPacket CreateScriptBindPacket()
         {
-            return GetSpawnPackets(playerActorId, 0x1);
+            return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, classParams);
         }
 
-        public virtual BasePacket GetSpawnPackets(uint playerActorId, ushort spawnType)
+        public virtual List<SubPacket> GetSpawnPackets(Player player, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(CreateAddActorPacket(playerActorId, 8));
-            subpackets.AddRange(GetEventConditionPackets(playerActorId));
-            subpackets.Add(CreateSpeedPacket(playerActorId));
-            subpackets.Add(CreateSpawnPositonPacket(playerActorId, spawnType));
-            subpackets.Add(CreateNamePacket(playerActorId));
-            subpackets.Add(CreateStatePacket(playerActorId));
-            subpackets.Add(CreateIsZoneingPacket(playerActorId));
-            subpackets.Add(CreateScriptBindPacket(playerActorId));
-            return BasePacket.CreatePacket(subpackets, true, false);
+            subpackets.Add(CreateAddActorPacket(8));
+            subpackets.AddRange(GetEventConditionPackets());
+            subpackets.Add(CreateSpeedPacket());
+            subpackets.Add(CreateSpawnPositonPacket(player, spawnType));
+            subpackets.Add(CreateNamePacket());
+            subpackets.Add(CreateStatePacket());
+            subpackets.Add(CreateIsZoneingPacket());
+            subpackets.Add(CreateScriptBindPacket(player));
+            return subpackets;
         }
 
-        public virtual BasePacket GetInitPackets(uint playerActorId)
+        public virtual List<SubPacket> GetSpawnPackets()
         {
+            return GetSpawnPackets(0x1);
+        }
+
+        public virtual List<SubPacket> GetSpawnPackets(ushort spawnType)
+        {
+            List<SubPacket> subpackets = new List<SubPacket>();
+            subpackets.Add(CreateAddActorPacket(8));
+            subpackets.AddRange(GetEventConditionPackets());
+            subpackets.Add(CreateSpeedPacket());
+            subpackets.Add(CreateSpawnPositonPacket(null, spawnType));
+            subpackets.Add(CreateNamePacket());
+            subpackets.Add(CreateStatePacket());
+            subpackets.Add(CreateIsZoneingPacket());
+            subpackets.Add(CreateScriptBindPacket());
+            return subpackets;
+        }
+
+        public virtual List<SubPacket> GetInitPackets()
+        {
+            List<SubPacket> packets = new List<SubPacket>();
             SetActorPropetyPacket initProperties = new SetActorPropetyPacket("/_init");
             initProperties.AddByte(0xE14B0CA8, 1);
             initProperties.AddByte(0x2138FD71, 1);
             initProperties.AddByte(0xFBFBCFB1, 1);
             initProperties.AddTarget();
-            return BasePacket.CreatePacket(initProperties.BuildPacket(playerActorId, actorId), true, false);
+            packets.Add(initProperties.BuildPacket(actorId));
+            return packets;
         }
 
         public override bool Equals(Object obj)
@@ -346,8 +373,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public void ChangeState(ushort newState)
         {
             currentMainState = newState;
-            SubPacket ChangeStatePacket = SetActorStatePacket.BuildPacket(actorId, actorId, newState, currentSubState);
-            SubPacket battleActionPacket = BattleAction1Packet.BuildPacket(actorId, actorId);
+            SubPacket ChangeStatePacket = SetActorStatePacket.BuildPacket(actorId, newState, currentSubState);       
+            SubPacket battleActionPacket = BattleActionX01Packet.BuildPacket(actorId, actorId, actorId, 0x72000062, 1, 0, 0x05209, 0, 0);
             zone.BroadcastPacketAroundActor(this, ChangeStatePacket);
             zone.BroadcastPacketAroundActor(this, battleActionPacket);
         }
@@ -355,7 +382,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void ChangeSpeed(int type, float value)
         {
             moveSpeeds[type] = value;
-            SubPacket ChangeSpeedPacket = SetActorSpeedPacket.BuildPacket(actorId, actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2], moveSpeeds[3]);
+            SubPacket ChangeSpeedPacket = SetActorSpeedPacket.BuildPacket(actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2], moveSpeeds[3]);
             zone.BroadcastPacketAroundActor(this, ChangeSpeedPacket);
         }
 
@@ -365,7 +392,7 @@ namespace FFXIVClassic_Map_Server.Actors
             moveSpeeds[1] = speedWalk;
             moveSpeeds[2] = speedRun;
             moveSpeeds[3] = speedActive;
-            SubPacket ChangeSpeedPacket = SetActorSpeedPacket.BuildPacket(actorId, actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2], moveSpeeds[3]);
+            SubPacket ChangeSpeedPacket = SetActorSpeedPacket.BuildPacket(actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2], moveSpeeds[3]);
             zone.BroadcastPacketAroundActor(this, ChangeSpeedPacket);
         }
 
@@ -475,8 +502,8 @@ namespace FFXIVClassic_Map_Server.Actors
                         SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(uiFunc);
                         changeProperty.AddProperty(this, name);
                         changeProperty.AddTarget();
-                        SubPacket subpacket = changeProperty.BuildPacket(player.actorId, player.actorId);
-                        player.playerSession.QueuePacket(subpacket, true, false);
+                        SubPacket subpacket = changeProperty.BuildPacket(player.actorId);
+                        player.playerSession.QueuePacket(subpacket);
                         subpacket.DebugPrintSubPacket();
                         return true;
                     }
@@ -493,8 +520,8 @@ namespace FFXIVClassic_Map_Server.Actors
                         SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(uiFunc);
                         changeProperty.AddProperty(this, name);
                         changeProperty.AddTarget();
-                        SubPacket subpacket = changeProperty.BuildPacket(player.actorId, player.actorId);
-                        player.playerSession.QueuePacket(subpacket, true, false);
+                        SubPacket subpacket = changeProperty.BuildPacket(player.actorId);
+                        player.playerSession.QueuePacket(subpacket);
                         subpacket.DebugPrintSubPacket();
                         return true;
                     }
@@ -529,7 +556,7 @@ namespace FFXIVClassic_Map_Server.Actors
             rotation = rot;
 
             // todo: handle zone?
-            zone.BroadcastPacketAroundActor(this, MoveActorToPositionPacket.BuildPacket(this.actorId, this.actorId, x, y, z, rot, moveState));
+            zone.BroadcastPacketAroundActor(this, MoveActorToPositionPacket.BuildPacket(actorId, x, y, z, rot, moveState));
         }
 
         public Area GetZone()

@@ -12,7 +12,7 @@ namespace FFXIVClassic_Map_Server.packets.send.recruitment
         public const ushort OPCODE = 0x01C8;
         public const uint PACKET_SIZE = 0x218;
 
-        public static SubPacket BuildPacket(uint playerActorID, RecruitmentDetails details)
+        public static SubPacket BuildPacket(uint sourceActorId, RecruitmentDetails details)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
             
@@ -22,7 +22,7 @@ namespace FFXIVClassic_Map_Server.packets.send.recruitment
                 {
                     if (details == null)
                     {
-                        return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+                        return new SubPacket(OPCODE, sourceActorId, data);
                     }
 
                     binWriter.Write((UInt32)details.purposeId);
@@ -48,7 +48,7 @@ namespace FFXIVClassic_Map_Server.packets.send.recruitment
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
     }
 }

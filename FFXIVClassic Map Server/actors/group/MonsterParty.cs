@@ -51,7 +51,7 @@ namespace FFXIVClassic_Map_Server.actors.group
             groupWork.setTarget("/_init");
 
             SubPacket test = groupWork.buildPacket(session.id, session.id);
-            session.QueuePacket(test, true, false);
+            session.QueuePacket(test);
         }
 
         public override uint GetTypeId()

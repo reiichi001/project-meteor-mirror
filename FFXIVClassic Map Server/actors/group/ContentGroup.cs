@@ -25,7 +25,13 @@ namespace FFXIVClassic_Map_Server.actors.group
             if (initialMembers != null)
             {
                 for (int i = 0; i < initialMembers.Length; i++)
+                {
+                    Session s = Server.GetServer().GetSession(initialMembers[i]);
+                    if (s != null)
+                        s.GetActor().SetCurrentContentGroup(this);
+
                     members.Add(initialMembers[i]);
+                }
             }
 
             this.director = director;
@@ -38,11 +44,10 @@ namespace FFXIVClassic_Map_Server.actors.group
                 return;
 
             members.Add(actor.actorId);
-            if (actor is Character)
-            {
-                ((Character)actor).SetCurrentContentGroup(this);
-                SendCurrentContentSync(actor);
-            }
+
+            if (actor is Character)            
+                ((Character)actor).SetCurrentContentGroup(this);          
+  
             SendGroupPacketsAll(members);
         }
         
@@ -79,7 +84,7 @@ namespace FFXIVClassic_Map_Server.actors.group
 
             SubPacket test = groupWork.buildPacket(session.id, session.id);
             test.DebugPrintSubPacket();
-            session.QueuePacket(test, true, false);
+            session.QueuePacket(test);
         }
 
         public override void SendGroupPackets(Session session)
@@ -87,41 +92,27 @@ namespace FFXIVClassic_Map_Server.actors.group
             ulong time = Utils.MilisUnixTimeStampUTC();
             List<GroupMember> members = BuildMemberList(session.id);
 
-            session.QueuePacket(GroupHeaderPacket.buildPacket(session.id, session.GetActor().zoneId, time, this), true, false);
-            session.QueuePacket(GroupMembersBeginPacket.buildPacket(session.id, session.GetActor().zoneId, time, this), true, false);
+            session.QueuePacket(GroupHeaderPacket.buildPacket(session.id, session.GetActor().zoneId, time, this));
+            session.QueuePacket(GroupMembersBeginPacket.buildPacket(session.id, session.GetActor().zoneId, time, this));
 
             int currentIndex = 0;
 
             while (true)
             {
                 if (GetMemberCount() - currentIndex >= 64)
-                    session.QueuePacket(ContentMembersX64Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex), true, false);
+                    session.QueuePacket(ContentMembersX64Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex));
                 else if (GetMemberCount() - currentIndex >= 32)
-                    session.QueuePacket(ContentMembersX32Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex), true, false);
+                    session.QueuePacket(ContentMembersX32Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex));
                 else if (GetMemberCount() - currentIndex >= 16)
-                    session.QueuePacket(ContentMembersX16Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex), true, false);
+                    session.QueuePacket(ContentMembersX16Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex));
                 else if (GetMemberCount() - currentIndex > 0)
-                    session.QueuePacket(ContentMembersX08Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex), true, false);
+                    session.QueuePacket(ContentMembersX08Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex));
                 else
                     break;
             }
 
-            session.QueuePacket(GroupMembersEndPacket.buildPacket(session.id, session.GetActor().zoneId, time, this), true, false);
+            session.QueuePacket(GroupMembersEndPacket.buildPacket(session.id, session.GetActor().zoneId, time, this));
 
-        }
-
-        public void SendCurrentContentSync(Actor currentContentChanged)
-        {
-            foreach (uint memberId in members)
-            {
-                Session session = Server.GetServer().GetSession(memberId);
-                if (session != null)
-                {
-                    ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", currentContentChanged, session.id);
-                    propPacketUtil.AddProperty("charaWork.currentContentGroup");
-                    session.GetActor().QueuePackets(propPacketUtil.Done());
-                }
-            }            
         }
 
         public override uint GetTypeId()
@@ -135,11 +126,22 @@ namespace FFXIVClassic_Map_Server.actors.group
             SendGroupPacketsAll(members);            
         }
 
-        public void DeleteAll()
+        public void DeleteGroup()
         {
             SendDeletePackets(members);
+            for (int i = 0; i < members.Count; i++)
+            {
+                Session s = Server.GetServer().GetSession(members[i]);
+                if (s != null)
+                    s.GetActor().SetCurrentContentGroup(null);
+                Actor a = director.GetZone().FindActorInArea(members[i]);
+                if (a is Npc)
+                    ((Npc)a).Despawn();
+                members.Remove(members[i]);
+                i--;
+            }
+            Server.GetWorldManager().DeleteContentGroup(groupIndex);
         }
-
 
         public void CheckDestroy()
         {
@@ -155,7 +157,7 @@ namespace FFXIVClassic_Map_Server.actors.group
             }
 
             if (!foundSession)
-                Server.GetWorldManager().DeleteContentGroup(groupIndex);
+                DeleteGroup();
         }
 
     }

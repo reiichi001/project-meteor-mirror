@@ -127,26 +127,17 @@ namespace FFXIVClassic_Map_Server.Actors
             GenerateActorName((int)actorNumber);
         }
 
-        public SubPacket CreateAddActorPacket(uint playerActorId)
+        public SubPacket CreateAddActorPacket()
         {
-            return AddActorPacket.BuildPacket(actorId, playerActorId, 8);
+            return AddActorPacket.BuildPacket(actorId, 8);
         }
 
-        int val = 0x0b00;
         // actorClassId, [], [], numBattleCommon, [battleCommon], numEventCommon, [eventCommon], args for either initForBattle/initForEvent
-        public override SubPacket CreateScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(Player player)
         {
             List<LuaParam> lParams;
-
-            Player player = Server.GetWorldManager().GetPCInWorld(playerActorId);
+            
             lParams = LuaEngine.GetInstance().CallLuaFunctionForReturn(player, this, "init", false);
-
-            if (uniqueIdentifier.Equals("1"))
-            {
-                lParams[5].value = val;
-                val++;
-                player.SendMessage(0x20, "", String.Format("ID is now: 0x{0:X}", val));                
-            }
 
             if (lParams != null && lParams.Count >= 3 && lParams[2].typeID == 0 && (int)lParams[2].value == 0)
                 isStatic = true;
@@ -162,8 +153,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 string classNameFake = "PopulaceStandard";
                 lParams = LuaUtils.CreateLuaParamList(classPathFake, false, false, false, false, false, 0xF47F6, false, false, 0, 0);
                 isStatic = true;
-                //ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams).DebugPrintSubPacket();
-                return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams);
+                //ActorInstantiatePacket.BuildPacket(actorId, actorName, classNameFake, lParams).DebugPrintSubPacket();
+                return ActorInstantiatePacket.BuildPacket(actorId, actorName, classNameFake, lParams);
             }
             else
             {
@@ -176,37 +167,37 @@ namespace FFXIVClassic_Map_Server.Actors
                 lParams.Insert(6, new LuaParam(0, (int)actorClassId));
             }
 
-            //ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams).DebugPrintSubPacket();
-            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
+            //ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams).DebugPrintSubPacket();
+            return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);
         }
-        
-        public override BasePacket GetSpawnPackets(uint playerActorId, ushort spawnType)
+
+        public override List<SubPacket> GetSpawnPackets(Player player, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(CreateAddActorPacket(playerActorId));
-            subpackets.AddRange(GetEventConditionPackets(playerActorId));
-            subpackets.Add(CreateSpeedPacket(playerActorId));            
-            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x0));
+            subpackets.Add(CreateAddActorPacket());
+            subpackets.AddRange(GetEventConditionPackets());
+            subpackets.Add(CreateSpeedPacket());            
+            subpackets.Add(CreateSpawnPositonPacket(0x0));
 
             if (isMapObj)            
-                subpackets.Add(_0xD8Packet.BuildPacket(actorId, playerActorId, instance, layout));                        
+                subpackets.Add(SetActorBGPropertiesPacket.BuildPacket(actorId, instance, layout));                        
             else
-                subpackets.Add(CreateAppearancePacket(playerActorId));
+                subpackets.Add(CreateAppearancePacket());
 
-            subpackets.Add(CreateNamePacket(playerActorId));
-            subpackets.Add(CreateStatePacket(playerActorId));
-            subpackets.Add(CreateIdleAnimationPacket(playerActorId));
-            subpackets.Add(CreateInitStatusPacket(playerActorId));
-            subpackets.Add(CreateSetActorIconPacket(playerActorId));
-            subpackets.Add(CreateIsZoneingPacket(playerActorId));           
-            subpackets.Add(CreateScriptBindPacket(playerActorId));            
+            subpackets.Add(CreateNamePacket());
+            subpackets.Add(CreateStatePacket());
+            subpackets.Add(CreateIdleAnimationPacket());
+            subpackets.Add(CreateInitStatusPacket());
+            subpackets.Add(CreateSetActorIconPacket());
+            subpackets.Add(CreateIsZoneingPacket());           
+            subpackets.Add(CreateScriptBindPacket(player));            
 
-            return BasePacket.CreatePacket(subpackets, true, false);
+            return subpackets;
         }
 
-        public override BasePacket GetInitPackets(uint playerActorId)
+        public override List<SubPacket> GetInitPackets()
         {
-            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this, playerActorId);
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this);
 
             //Potential
             propPacketUtil.AddProperty("charaWork.battleSave.potencial");
@@ -260,7 +251,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 propPacketUtil.AddProperty("npcWork.pushCommandPriority");
             }
 
-            return BasePacket.CreatePacket(propPacketUtil.Done(), true, false);
+            return propPacketUtil.Done();
         }
 
         public string GetUniqueId()
@@ -276,7 +267,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void ChangeNpcAppearance(uint id)
         {
             LoadNpcAppearance(id);
-            zone.BroadcastPacketAroundActor(this, CreateAppearancePacket(actorId));
+            zone.BroadcastPacketAroundActor(this, CreateAppearancePacket());
         }
 
         public void LoadNpcAppearance(uint id)
@@ -394,7 +385,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void PlayMapObjAnimation(Player player, string animationName)
         {
-            player.QueuePacket(PlayBGAnimation.BuildPacket(actorId, player.actorId, animationName));
+            player.QueuePacket(PlayBGAnimation.BuildPacket(actorId, animationName));
+        }
+
+        public void Despawn()
+        {
+            zone.DespawnActor(this);
         }
 
         public void Update(DateTime tick)

@@ -25,7 +25,7 @@ namespace FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group
                     binWriter.Write(Encoding.ASCII.GetBytes(linkshellName), 0, Encoding.ASCII.GetByteCount(linkshellName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(linkshellName));
                 }
             }
-            return new SubPacket(true, OPCODE, session.id, session.id, data);
+            return new SubPacket(true, OPCODE, session.id, data);
         }      
     }
 }

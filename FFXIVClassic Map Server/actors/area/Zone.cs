@@ -75,13 +75,13 @@ namespace FFXIVClassic_Map_Server.actors.area
                 return null;
         }
 
-        public override SubPacket CreateScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket()
         {
             bool isEntranceDesion = false;
 
             List<LuaParam> lParams;
             lParams = LuaUtils.CreateLuaParamList(classPath, false, true, zoneName, "", -1, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, true, isInstanceRaid, isEntranceDesion);
-            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);        
+            return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);        
         }
 
         public void AddSpawnLocation(SpawnLocation spawn)

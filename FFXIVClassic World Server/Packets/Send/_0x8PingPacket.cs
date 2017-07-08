@@ -27,7 +27,7 @@ namespace FFXIVClassic_World_Server.Packets.Send.Login
                 }
             }
 
-            return new SubPacket(false, OPCODE, 0, 0, data);
+            return new SubPacket(false, OPCODE, 0, data);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace FFXIVClassic_Map_Server
 {
     class CommandProcessor
     {
-        private static Dictionary<uint, Item> gamedataItems = Server.GetGamedataItems();
+        private static Dictionary<uint, ItemData> gamedataItems = Server.GetGamedataItems();
 
         const UInt32 ITEM_GIL = 1000001;
       
@@ -27,7 +27,7 @@ namespace FFXIVClassic_Map_Server
         private void SendMessage(Session session, String message)
         {
             if (session != null)
-                session.GetActor().QueuePacket(SendMessagePacket.BuildPacket(session.id, session.id, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", message));
+                session.GetActor().QueuePacket(SendMessagePacket.BuildPacket(session.id, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", message));
         }
 
         internal bool DoCommand(string input, Session session)

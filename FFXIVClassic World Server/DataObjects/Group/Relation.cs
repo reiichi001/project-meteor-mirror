@@ -66,9 +66,9 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             groupWork.addProperty(this, "work._globalTemp.variableCommand");
             groupWork.setTarget("/_init");
 
-            SubPacket test = groupWork.buildPacket(session.sessionId, session.sessionId);
+            SubPacket test = groupWork.buildPacket(session.sessionId);
             test.DebugPrintSubPacket();
-            session.clientConnection.QueuePacket(test, true, false);
+            session.clientConnection.QueuePacket(test);
         }
 
     }

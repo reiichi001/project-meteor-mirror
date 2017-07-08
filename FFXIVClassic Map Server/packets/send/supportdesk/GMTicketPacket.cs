@@ -26,7 +26,7 @@ namespace FFXIVClassic_Map_Server.packets.send.supportdesk
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, playerActorID, data);
         }
     }
 }
