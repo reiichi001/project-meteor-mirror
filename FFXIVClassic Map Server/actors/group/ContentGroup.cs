@@ -19,6 +19,7 @@ namespace FFXIVClassic_Map_Server.actors.group
         public ContentGroupWork contentGroupWork = new ContentGroupWork();
         private Director director;
         private List<uint> members = new List<uint>();
+        private bool isStarted = false;
 
         public ContentGroup(ulong groupIndex, Director director, uint[] initialMembers) : base(groupIndex)
         {
@@ -38,6 +39,12 @@ namespace FFXIVClassic_Map_Server.actors.group
             contentGroupWork._globalTemp.director = (ulong)director.actorId << 32;
         }
 
+        public void Start()
+        {
+            isStarted = true;
+            SendGroupPacketsAll(members);
+        }
+
         public void AddMember(Actor actor)
         {
             if (actor == null)
@@ -46,15 +53,17 @@ namespace FFXIVClassic_Map_Server.actors.group
             members.Add(actor.actorId);
 
             if (actor is Character)            
-                ((Character)actor).SetCurrentContentGroup(this);          
-  
-            SendGroupPacketsAll(members);
+                ((Character)actor).SetCurrentContentGroup(this);
+
+            if (isStarted)
+                SendGroupPacketsAll(members);
         }
         
         public void RemoveMember(uint memberId)
         {
             members.Remove(memberId);
-            SendGroupPacketsAll(members);
+            if (isStarted)
+                SendGroupPacketsAll(members);
             CheckDestroy();
         }
 

@@ -501,11 +501,11 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }                
 
-        public Director CreateDirector(string path, params object[] args)
+        public Director CreateDirector(string path, bool hasContentGroup, params object[] args)
         {
             lock (directorLock)
             {
-                Director director = new Director(directorIdCount, this, path, args);
+                Director director = new Director(directorIdCount, this, path, hasContentGroup, args);
                 currentDirectors.Add(director.actorId, director);
                 directorIdCount++;
                 return director;

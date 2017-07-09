@@ -59,27 +59,7 @@ function onEventStarted(player, actor, triggerName)
 	man0u0Quest:NextPhase(10);	
 	player:EndEvent();	
 	
-end
-
-function onUpdate()
-end
-
-function onTalkEvent(player, npc)
-
-end
-
-function onPushEvent(player, npc)
-end
-
-function onCommandEvent(player, command)
-
-	quest = GetStaticActor("Man0l0");
-	callClientFunction(player, "delegateEvent", player, quest, "processTtrBtl002", nil, nil, nil);	
-
-end
-
-function onEventUpdate(player, npc)
-end
-
-function onCommand(player, command)	
+	player:GetZone():ContentFinished();
+	GetWorldManager():DoZoneChange(player, 230, "PrivateAreaMasterPast", 1, 15, -826.868469, 6, 193.745865, -0.008368492);
+	
 end

@@ -21,11 +21,12 @@ function onBeginLogin(player)
 			
 	--For Opening. Set Director and reset position incase d/c
 	if	   (player:HasQuest(110001) == true) then
-		director = player:GetZone():CreateDirector("OpeningDirector");
+		director = player:GetZone():CreateDirector("OpeningDirector", false);		
 		player:AddDirector(director);
+		director:StartDirector(true);
 		player:SetLoginDirector(director);		
 		player:KickEvent(director, "noticeEvent", true);
-		
+				
 		player.positionX = 0.016;
 		player.positionY = 10.35;
 		player.positionZ = -36.91;
@@ -33,10 +34,11 @@ function onBeginLogin(player)
 		player:GetQuest(110001):ClearQuestData();
 		player:GetQuest(110001):ClearQuestFlags();
 	elseif (player:HasQuest(110005) == true) then 
-		director = player:GetZone():CreateDirector("OpeningDirector");
+		director = player:GetZone():CreateDirector("OpeningDirector", false);		
 		player:AddDirector(director);
-		player:SetLoginDirector(director);
-		player:KickEvent(director, "noticeEvent", "noticeEvent");
+		director:StartDirector(false);		
+		player:SetLoginDirector(director);		
+		player:KickEvent(director, "noticeEvent", true);
 		
 		player.positionX = 369.5434;
 		player.positionY = 4.21;
@@ -45,10 +47,11 @@ function onBeginLogin(player)
 		player:GetQuest(110005):ClearQuestData();
 		player:GetQuest(110005):ClearQuestFlags();
 	elseif (player:HasQuest(110009) == true) then
-		director = player:GetZone():CreateDirector("OpeningDirector");
-		player:AddDirector(director);
-		player:SetLoginDirector(director);
-		player:KickEvent(director, "noticeEvent", "noticeEvent");
+		--director = player:GetZone():CreateDirector("OpeningDirector", false);		
+		--player:AddDirector(director);
+		--director:StartDirector(false);		
+		--player:SetLoginDirector(director);		
+		--player:KickEvent(director, "noticeEvent", true);
 		
 		player.positionX = 5.364327;
 		player.positionY = 196.0;
@@ -61,8 +64,7 @@ function onBeginLogin(player)
 end
 
 function onLogin(player)
-	player:SendMessage(0x1D,"",">Callback \"onLogin\" for player script:Running.");
-	
+
 	if (player:GetPlayTime(false) == 0) then
 		player:SendMessage(0x1D,"",">PlayTime == 0, new player!");
 		
