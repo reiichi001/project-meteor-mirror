@@ -60,6 +60,5 @@ function onEventStarted(player, actor, triggerName)
 	player:EndEvent();	
 	
 	player:GetZone():ContentFinished();
-	GetWorldManager():DoZoneChange(player, 230, "PrivateAreaMasterPast", 1, 15, -826.868469, 6, 193.745865, -0.008368492);
-	
+	GetWorldManager():DoZoneChange(player, 175, "PrivateAreaMasterPast", 3, 15, -22.81, 196, 87.82, 2.98);
 end
