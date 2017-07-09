@@ -147,8 +147,10 @@ function equipItem(player, equipSlot, item)
 		
 		player:GetEquipment():Equip(equipSlot, item);		
 		
-		if 	   (equipSlot == EQUIPSLOT_MAINHAND and gItem:IsNailWeapon() == false and gItem:IsBowWeapon() == false) then graphicSlot = GRAPHICSLOT_MAINHAND;
+		if 	   (equipSlot == EQUIPSLOT_MAINHAND and gItem:IsNailWeapon() == false) then graphicSlot = GRAPHICSLOT_MAINHAND;
 		elseif (equipSlot == EQUIPSLOT_OFFHAND) then graphicSlot = GRAPHICSLOT_OFFHAND;
+		elseif (equipSlot == EQUIPSLOT_THROWINGWEAPON) then graphicSlot = GRAPHICSLOT_THROWING;
+		elseif (equipSlot == EQUIPSLOT_PACK) then graphicSlot = GRAPHICSLOT_PACK;
 		elseif (equipSlot == EQUIPSLOT_HEAD) then graphicSlot = GRAPHICSLOT_HEAD;
 		elseif (equipSlot == EQUIPSLOT_BODY) then graphicSlot = GRAPHICSLOT_BODY;
 		elseif (equipSlot == EQUIPSLOT_LEGS) then graphicSlot = GRAPHICSLOT_LEGS;
@@ -162,13 +164,9 @@ function equipItem(player, equipSlot, item)
 		--Graphic Slot was set, otherwise it's a special case
 		if (graphicSlot ~= nil) then
 			player:GraphicChange(graphicSlot, item);
-			if (graphicSlot == GRAPHICSLOT_MAINHAND) then player:GraphicChange(GRAPHICSLOT_OFFHAND, nil); end
 		elseif (gItem:IsNailWeapon()) then
 			player:GraphicChange(GRAPHICSLOT_MAINHAND, item);
 			player:GraphicChange(GRAPHICSLOT_OFFHAND, item);
-		elseif (gItem:IsBowWeapon()) then
-			player:GraphicChange(GRAPHICSLOT_MAINHAND, item);
-			--player:GraphicChange(GRAPHICSLOT_OFFHAND, item);
 		elseif (equipSlot == EQUIPSLOT_EARS) then
 			player:GraphicChange(GRAPHICSLOT_R_EAR, item);
 			player:GraphicChange(GRAPHICSLOT_L_EAR, item);
@@ -203,6 +201,8 @@ function unequipItem(player, equipSlot, item)
 		else
 			if 	   (equipSlot == EQUIPSLOT_MAINHAND) then player:GraphicChange(GRAPHICSLOT_MAINHAND, nil);
 			elseif (equipSlot == EQUIPSLOT_OFFHAND) then player:GraphicChange(GRAPHICSLOT_OFFHAND, nil);
+			elseif (equipSlot == EQUIPSLOT_THROWINGWEAPON) then player:GraphicChange(GRAPHICSLOT_THROWING, nil);
+			elseif (equipSlot == EQUIPSLOT_PACK) then player:GraphicChange(GRAPHICSLOT_PACK, nil);
 			elseif (equipSlot == EQUIPSLOT_HEAD) then player:GraphicChange(GRAPHICSLOT_HEAD, nil);
 			elseif (equipSlot == EQUIPSLOT_WAIST) then player:GraphicChange(GRAPHICSLOT_WAIST, nil);
 			elseif (equipSlot == EQUIPSLOT_EARS) then player:GraphicChange(GRAPHICSLOT_L_EAR, nil); player:GraphicChange(GRAPHICSLOT_R_EAR, nil);

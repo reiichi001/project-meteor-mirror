@@ -84,11 +84,12 @@ namespace FFXIVClassic_Map_Server
                                 SELECT
                                 *                                
                                 FROM gamedata_items
-                                LEFT JOIN gamedata_items_equipment  ON gamedata_items.catalogID = gamedata_items_equipment.catalogID
-                                LEFT JOIN gamedata_items_accessory  ON gamedata_items.catalogID = gamedata_items_accessory.catalogID
-                                LEFT JOIN gamedata_items_armor      ON gamedata_items.catalogID = gamedata_items_armor.catalogID
-                                LEFT JOIN gamedata_items_weapon     ON gamedata_items.catalogID = gamedata_items_weapon.catalogID
-                                LEFT JOIN gamedata_items_graphics   ON gamedata_items.catalogID = gamedata_items_graphics.catalogID
+                                LEFT JOIN gamedata_items_equipment        ON gamedata_items.catalogID = gamedata_items_equipment.catalogID
+                                LEFT JOIN gamedata_items_accessory        ON gamedata_items.catalogID = gamedata_items_accessory.catalogID
+                                LEFT JOIN gamedata_items_armor            ON gamedata_items.catalogID = gamedata_items_armor.catalogID
+                                LEFT JOIN gamedata_items_weapon           ON gamedata_items.catalogID = gamedata_items_weapon.catalogID
+                                LEFT JOIN gamedata_items_graphics         ON gamedata_items.catalogID = gamedata_items_graphics.catalogID                                
+                                LEFT JOIN gamedata_items_graphics_extra   ON gamedata_items.catalogID = gamedata_items_graphics_extra.catalogID
                                 ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);

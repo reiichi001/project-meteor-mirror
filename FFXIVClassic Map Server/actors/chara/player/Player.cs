@@ -1005,6 +1005,19 @@ namespace FFXIVClassic_Map_Server.Actors
 
                     appearanceIds[slot] = graphicId;
                 }
+
+                //Handle offhand
+                if (slot == MAINHAND && item is WeaponItem)
+                {
+                    WeaponItem wpItem = (WeaponItem)item;
+
+                    uint graphicId =
+                            (wpItem.graphicsOffhandWeaponId & 0x3FF) << 20 |
+                            (wpItem.graphicsOffhandEquipmentId & 0x3FF) << 10 |
+                            (wpItem.graphicsOffhandVariantId & 0x3FF);
+
+                    appearanceIds[SetActorAppearancePacket.OFFHAND] = graphicId;
+                }
             }
 
             Database.SavePlayerAppearance(this);
