@@ -88,6 +88,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.controller = controller;
         }
 
+        public Controller GetController()
+        {
+            return controller;
+        }
+
         public bool CanChangeState()
         {
             return states.Count == 0 || states.Peek().CanInterrupt();
