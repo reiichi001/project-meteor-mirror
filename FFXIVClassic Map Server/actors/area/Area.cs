@@ -368,6 +368,20 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        // todo: for zones override this to seach contentareas (assuming flag is passed)
+        public virtual List<Actor> GetAllActors()
+        {
+            lock (mActorList)
+            {
+                List<Actor> actorList = new List<Actor>(mActorList.Count);
+                foreach (var actor in mActorList.Values)
+                {
+                    actorList.Add(actor);
+                }
+                return actorList;
+            }
+        }
+
         public void BroadcastPacketsAroundActor(Actor actor, List<SubPacket> packets)
         {
             foreach (SubPacket packet in packets)

@@ -544,6 +544,11 @@ namespace FFXIVClassic_Map_Server.Actors
             return pos;
         }
 
+        public Vector3 GetPosAsVector3()
+        {
+            return new Vector3(positionX, positionY, positionZ);
+        }
+
         public void SetPos(float x, float y, float z, float rot = 0, uint zoneId = 0)
         {
             oldPositionX = positionX;
