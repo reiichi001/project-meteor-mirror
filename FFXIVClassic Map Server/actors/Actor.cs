@@ -151,37 +151,9 @@ namespace FFXIVClassic_Map_Server.Actors
             return spawnPacket;
         }
 
-        public SubPacket CreatePositionUpdatePacket(bool forceUpdate = false)
+        public SubPacket CreatePositionUpdatePacket(uint playerActorId)
         {
-            int updateMs = 300;
-            var diffTime = (DateTime.Now - lastMoveUpdate);
-
-            if (this.target != null)
-            {
-                updateMs = 150;
-            }
-
-            if (forceUpdate || (hasMoved && ((this is Player ) || diffTime.Milliseconds >= updateMs)))
-            {
-                hasMoved = (this.positionUpdates != null && this.positionUpdates.Count > 0);
-                if (hasMoved)
-                {
-                    var pos = positionUpdates[0];
-
-                    if (this is Character)
-                        ((Character)this).OnPath(pos);
-                    
-                    positionX = pos.X;
-                    positionY = pos.Y;
-                    positionZ = pos.Z;
-                    //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
-
-                    positionUpdates.RemoveAt(0);
-                }
-                lastMoveUpdate = DateTime.Now;
-                return MoveActorToPositionPacket.BuildPacket(actorId, playerActorId, positionX, positionY, positionZ, rotation, moveState);
-            }
-            return null;
+            return MoveActorToPositionPacket.BuildPacket(actorId, playerActorId, positionX, positionY, positionZ, rotation, moveState);
         }
 
         public SubPacket CreateStatePacket()

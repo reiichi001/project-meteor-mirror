@@ -388,7 +388,6 @@ namespace FFXIVClassic_Map_Server.Actors
             player.QueuePacket(PlayBGAnimation.BuildPacket(actorId, animationName));
         }
 
-
         public void Despawn()
         {
             zone.DespawnActor(this);

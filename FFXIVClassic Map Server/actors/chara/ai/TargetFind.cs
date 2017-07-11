@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.actors.chara.ai;
+using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 
 // port of dsp's ai code https://github.com/DarkstarProject/darkstar/blob/master/src/map/ai/
 
@@ -16,7 +18,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
     {
         None,
         /// <summary> Able to target <see cref="Player"/>s even if not in target's party </summary>
-        All,
+        HitAll,
         /// <summary> Able to target all <see cref="Player"/>s in target's party/alliance </summary>
         Alliance,
         /// <summary> Able to target any <see cref="Pet"/> in target's party/alliance </summary>
@@ -67,6 +69,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
     {
         private Character owner;
         private Character target;
+        private Character masterTarget; // if target is a pet, this is the owner
         private TargetFindCharacterType findType;
         private TargetFindFlags findFlags;
         private TargetFindAOEType aoeType;
@@ -93,6 +96,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.extents = 0.0f;
             this.angle = 0.0f;
             this.targets = new List<Character>();
+        }
+
+        public List<T> GetTargets<T>() where T : Character
+        {
+            return new List<T>(targets.OfType<T>());
+        }
+
+        public List<Character> GetTargets()
+        {
+            return targets;
         }
 
         /// <summary>
@@ -128,84 +141,103 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         /// <para> Call SetAOEType before calling this </para>
         /// Find targets within area set by <see cref="SetAOEType"/>
         /// </summary>
-        /// <param name="withPet">Include pets?</param>
-
-        public void FindWithinArea(Character target, TargetFindFlags flags, bool withPet)
+        public void FindWithinArea(Character target, TargetFindFlags flags)
         {
+            findFlags = flags;
             // todo: maybe we should keep a snapshot which is only updated on each tick for consistency
-
             // are we creating aoe circles around target or self
             if ((aoeType & TargetFindAOEType.Circle) != 0 && radiusType != TargetFindAOERadiusType.Self)
                 this.targetPosition = owner.GetPosAsVector3();
             else
-                this.targetPosition = new Vector3(target.positionX, target.positionY, target.positionZ);
+                this.targetPosition = target.GetPosAsVector3();
 
-            this.findFlags = flags;
-            if (aoeType == TargetFindAOEType.Box)
+            masterTarget = TryGetMasterTarget(target) ?? target;
+
+            // todo: should i set this yet or wait til checked if valid target
+            this.target = target;
+
+            // todo: this is stupid
+            bool withPet = (flags & TargetFindFlags.Pets) != 0 || masterTarget.allegiance != owner.allegiance;
+
+            if (IsPlayer(owner))
             {
-                FindWithinBox(withPet);
+                if (masterTarget is Player)
+                {
+                    findType = TargetFindCharacterType.PlayerToPlayer;
+
+                    // todo: handle player parties
+                    if (masterTarget.currentParty != null)
+                    {
+                        if ((findFlags & TargetFindFlags.Alliance) != 0)
+                            AddAllInAlliance(masterTarget, withPet);
+                        else
+                            AddAllInParty(masterTarget, withPet);
+                    }
+                    else
+                    {
+                        AddTarget(masterTarget, withPet);
+                    }
+                }
+                else
+                {
+                    findType = TargetFindCharacterType.PlayerToBattleNpc;
+                    AddAllBattleNpcs(masterTarget, false);
+                }
             }
-            else if (aoeType == TargetFindAOEType.Circle)
+            else
             {
-                FindWithinCircle(withPet);
+                // todo: this needs checking..
+                if (masterTarget is Player || owner.allegiance == CharacterTargetingAllegiance.Player)
+                    findType = TargetFindCharacterType.BattleNpcToPlayer;
+                else
+                    findType = TargetFindCharacterType.BattleNpcToBattleNpc;
+
+                // todo: configurable pet aoe buff
+                if (findType == TargetFindCharacterType.BattleNpcToBattleNpc && TryGetMasterTarget(target) != null)
+                    withPet = true;
+
+                // todo: does ffxiv have call for help flag?
+                //if ((findFlags & TargetFindFlags.HitAll) != 0)
+                //{
+                //    AddAllInZone(masterTarget, withPet);
+                //}
+
+                AddAllInAlliance(target, withPet);
+
+                if (findType == TargetFindCharacterType.BattleNpcToPlayer)
+                {
+                    if (owner.allegiance == CharacterTargetingAllegiance.Player)
+                        AddAllInZone(masterTarget, withPet);
+                    else
+                        AddAllInHateList();
+                }
             }
+            
         }
 
         /// <summary>
         /// Find targets within a box using owner's coordinates and target's coordinates as length
         /// with corners being `extents` yalms to either side of self and target
         /// </summary>
-        private void FindWithinBox(bool withPet)
+        private bool IsWithinBox(Character target, bool withPet)
         {
-            // todo: loop over party members
-            if ((findFlags & TargetFindFlags.All) != 0)
-            {
-                // if we have flag set to hit all characters in zone, do it
+            var myPos = owner.GetPosAsVector3();
+            var angle = Vector3.GetAngle(myPos, targetPosition);
 
-                // todo: make the distance check modifiable
-                var actors = (findFlags & TargetFindFlags.ZoneWide) != 0 ? owner.zone.GetAllActors() : owner.zone.GetActorsAroundActor(owner, 30);
-                var myPos = owner.GetPosAsVector3();
-                var angle = Vector3.GetAngle(myPos, targetPosition);
+            // todo: actually check this works..
+            var myCorner = myPos.NewHorizontalVector(angle, extents);
+            var myCorner2 = myPos.NewHorizontalVector(angle, -extents);
 
-                // todo: actually check this works..
-                var myCorner = myPos.NewHorizontalVector(angle, extents);
-                var myCorner2 = myPos.NewHorizontalVector(angle, -extents);
+            var targetCorner = targetPosition.NewHorizontalVector(angle, extents);
+            var targetCorner2 = targetPosition.NewHorizontalVector(angle, -extents);
 
-                var targetCorner = targetPosition.NewHorizontalVector(angle, extents);
-                var targetCorner2 = targetPosition.NewHorizontalVector(angle, -extents);
-
-                foreach (Character actor in actors)
-                {
-                    // dont wanna add static actors
-                    if (actor is Player || actor is BattleNpc)
-                    {
-                        if (actor.GetPosAsVector3().IsWithinBox(myCorner2, targetCorner))
-                        {
-                            if (CanTarget(actor))
-                                AddTarget(actor, withPet);
-                        }
-                    }
-                }
-            }
+            return target.GetPosAsVector3().IsWithinBox(targetCorner2, myCorner);
         }
 
-        /// <summary>
-        /// Find targets within circle area. <para/>
-        /// As the name implies, it only checks horizontal coords, not vertical - 
-        /// effectively creating cylinder with infinite height
-        /// </summary>
-        private void FindWithinCircle(bool withPet)
+        private bool IsWithinCone(Character target, bool withPet)
         {
-            var actors = (findFlags & TargetFindFlags.ZoneWide) != 0 ? owner.zone.GetAllActors() : owner.zone.GetActorsAroundActor(owner, 30);
-
-            foreach (Character target in actors)
-            {
-                if (target is Player || target is BattleNpc)
-                {
-                    if (target.GetPosAsVector3().IsWithinCircle(targetPosition, extents))
-                        AddTarget(target, withPet);
-                }
-            }
+            // todo:
+            return false;
         }
 
         private void AddTarget(Character target, bool withPet)
@@ -220,14 +252,61 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private void AddAllInParty(Character target, bool withPet)
         {
             // todo:
+            /*
+             * foreach (var actor in target.currentParty.GetMembers())
+             * {
+             *     AddTarget(actor, withPet);
+             * }
+             */
+            AddTarget(target, withPet);
         }
 
         private void AddAllInAlliance(Character target, bool withPet)
         {
             // todo:
+            /*
+             * foreach (var actor in target.currentParty.GetAllianceMembers())
+             * {
+             *     AddTarget(actor, withPet);
+             * }
+             */
+            AddTarget(target, withPet);
         }
 
-        public bool CanTarget(Character target)
+        private void AddAllBattleNpcs(Character target, bool withPet)
+        {
+            // 70 is client render distance so we'll go with that
+            var actors = (findFlags & TargetFindFlags.ZoneWide) != 0 ? owner.zone.GetAllActors<BattleNpc>() : owner.zone.GetActorsAroundActor<BattleNpc>(owner, 70);
+
+            // todo: should we look for Characters instead in case player is charmed by BattleNpc
+            foreach (BattleNpc actor in actors)
+            {
+                // todo:
+                AddTarget(actor, false);
+            }
+        }
+
+        private void AddAllInZone(Character target, bool withPet)
+        {
+            var actors = owner.zone.GetAllActors<Character>();
+            foreach (Character actor in actors)
+            {
+                AddTarget(actor, withPet);
+            }
+        }
+
+        private void AddAllInHateList()
+        {
+            if (!(owner is BattleNpc))
+                Program.Log.Error($"TargetFind.AddAllInHateList() owner [{owner.actorId}] {owner.customDisplayName} {owner.actorName} is not a BattleNpc");
+
+            foreach (var hateEntry in ((BattleNpc)owner).hateContainer.GetHateList())
+            {
+                AddTarget(hateEntry.Value.actor, false);
+            }
+        }
+
+        public bool CanTarget(Character target, bool withPet = false)
         {
             // already targeted, dont target again
             if (targets.Contains(target))
@@ -237,12 +316,55 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if ((findFlags & TargetFindFlags.Dead) == 0 && target.IsDead())
                 return false;
 
-            // cant target if player is zoning
-            if (target is Player && ((Player)target).playerSession.isUpdatesLocked)
+            bool targetingPlayer = target is Player;
+            
+            // cant target if zoning
+            if (target.isZoning || owner.isZoning || target.zone != owner.zone || targetingPlayer && ((Player)target).playerSession.isUpdatesLocked)
                 return false;
 
-            return true;
+            // hit everything within zone or within aoe region
+            if ((findFlags & TargetFindFlags.ZoneWide) != 0 || aoeType == TargetFindAOEType.Circle && target.GetPosAsVector3().IsWithinCircle(targetPosition, extents))
+                return true;
+
+            if (aoeType == TargetFindAOEType.Cone && IsWithinCone(target, withPet))
+                return true;
+
+            if (aoeType == TargetFindAOEType.Box && IsWithinBox(target, withPet))
+                return true;
+
+            return false;
         }
 
+        private bool IsPlayer(Character target)
+        {
+            if (target is Player)
+                return true;
+
+            // treat player owned pets as players too
+            return TryGetMasterTarget(target) is Player;
+        }
+
+        private Character TryGetMasterTarget(Character target)
+        {
+            // if character is a player owned pet, treat as a player
+            if (target.aiContainer != null)
+            {
+                var controller = target.aiContainer.GetController();
+                if (controller != null && controller is PetController)
+                    return ((PetController)controller).GetPetMaster();
+            }
+            return null;
+        }
+
+        private bool IsBattleNpcOwner(Character target)
+        {
+            // i know i copied this from dsp but what even
+            if (!(owner is Player) || target is Player)
+                return true;
+
+            // todo: check hate list
+
+            return false;
+        }
     }
 }

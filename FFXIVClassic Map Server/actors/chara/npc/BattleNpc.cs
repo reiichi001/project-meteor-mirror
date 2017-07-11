@@ -24,6 +24,7 @@ namespace FFXIVClassic_Map_Server.Actors
             this.aiContainer = new AIContainer(this, new BattleNpcController(this), new PathFind(this), new TargetFind(this));
             this.currentSubState = SetActorStatePacket.SUB_STATE_MONSTER;
             this.hateContainer = new HateContainer(this);
+            this.allegiance = CharacterTargetingAllegiance.BattleNpcs;
         }
     }
 }

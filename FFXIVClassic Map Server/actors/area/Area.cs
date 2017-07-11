@@ -104,6 +104,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return subpackets;
         }
 
+        // todo: handle instance areas in derived class? (see virtuals)
         #region Actor Management
 
         public void AddActorToZone(Actor actor)
@@ -204,12 +205,12 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public List<Actor> GetActorsAroundPoint(float x, float y, int checkDistance)
+        public virtual List<T> GetActorsAroundPoint<T>(float x, float y, int checkDistance) where T : Actor
         {
             checkDistance /= boundingGridSize;
 
-            int gridX = (int)x/boundingGridSize;
-            int gridY = (int)y/boundingGridSize;
+            int gridX = (int)x / boundingGridSize;
+            int gridY = (int)y / boundingGridSize;
 
             gridX += halfWidth;
             gridY += halfHeight;
@@ -224,7 +225,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (gridY >= numYBlocks)
                 gridY = numYBlocks - 1;
 
-            List<Actor> result = new List<Actor>();
+            List<T> result = new List<T>();
 
             lock (mActorBlock)
             {
@@ -232,7 +233,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     for (int gy = gridY - checkDistance; gy <= gridY + checkDistance; gy++)
                     {
-                        result.AddRange(mActorBlock[gx, gy]);
+                        result.AddRange(mActorBlock[gx, gy].OfType<T>());
                     }
                 }
             }
@@ -246,11 +247,20 @@ namespace FFXIVClassic_Map_Server.Actors
                         result.RemoveAt(i);
                 }
             }
-
             return result;
         }
 
-        public List<Actor> GetActorsAroundActor(Actor actor, int checkDistance)
+        public virtual List<Actor> GetActorsAroundPoint(float x, float y, int checkDistance)
+        {
+            return GetActorsAroundPoint<Actor>(x, y, checkDistance);
+        }
+
+        public virtual List<Actor> GetActorsAroundActor(Actor actor, int checkDistance)
+        {
+            return GetActorsAroundActor<Actor>(actor, checkDistance);
+        }
+
+        public virtual List<T> GetActorsAroundActor<T>(Actor actor, int checkDistance) where T : Actor
         {
             checkDistance /= boundingGridSize;
 
@@ -270,7 +280,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (gridY >= numYBlocks)
                 gridY = numYBlocks - 1;
 
-            List<Actor> result = new List<Actor>();
+            var result = new List<T>();
 
             lock (mActorBlock)
             {
@@ -278,10 +288,11 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     for (int gx = ((gridX - checkDistance) < 0 ? 0 : (gridX - checkDistance)); gx <= ((gridX + checkDistance) >= numXBlocks ? numXBlocks - 1 : (gridX + checkDistance)); gx++)
                     {
-                        result.AddRange(mActorBlock[gx, gy]);
+                        result.AddRange(mActorBlock[gx, gy].OfType<T>());
                     }
                 }
             }
+
             //Remove players if isolation zone
             if (isIsolated)
             {
@@ -327,13 +338,10 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             lock (mActorList)
             {
-                foreach (Actor a in mActorList.Values)
+                foreach (Player player in mActorList.Values.OfType<Player>())
                 {
-                    if (a is Player)
-                    {
-                        if (((Player)a).customDisplayName.ToLower().Equals(name.ToLower()))
-                            return (Player)a;
-                    }
+                    if (player.customDisplayName.ToLower().Equals(name.ToLower()))
+                        return player;
                 }
                 return null;
             }
@@ -369,6 +377,7 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         // todo: for zones override this to seach contentareas (assuming flag is passed)
+<<<<<<< HEAD
         public virtual List<Actor> GetAllActors()
         {
             lock (mActorList)
@@ -378,10 +387,27 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     actorList.Add(actor);
                 }
+=======
+        public virtual List<T> GetAllActors<T>() where T : Actor
+        {
+            lock (mActorList)
+            {
+                List<T> actorList = new List<T>(mActorList.Count);
+                actorList.AddRange(mActorList.Values.OfType<T>());
+>>>>>>> 84d5eee1fcc284d252b7953a70aebed60b195ee8
                 return actorList;
             }
         }
 
+<<<<<<< HEAD
+=======
+
+        public virtual List<Actor> GetAllActors()
+        {
+            return GetAllActors<Actor>();
+        }
+
+>>>>>>> 84d5eee1fcc284d252b7953a70aebed60b195ee8
         public void BroadcastPacketsAroundActor(Actor actor, List<SubPacket> packets)
         {
             foreach (SubPacket packet in packets)

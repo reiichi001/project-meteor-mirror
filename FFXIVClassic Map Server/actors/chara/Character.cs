@@ -10,7 +10,16 @@ using System;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
-    class Character:Actor
+    /// <summary> Which Character types am I friendly with </summary>
+    enum CharacterTargetingAllegiance
+    {
+        /// <summary> Friendly to Players </summary>
+        Player,
+        /// <summary> Friendly to BattleNpcs </summary>
+        BattleNpcs
+    }
+
+    class Character : Actor
     {
         public const int SIZE = 0;
         public const int COLORINFO = 1;
@@ -65,6 +74,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public AIContainer aiContainer;
         public StatusEffects statusEffects;
+
+        public CharacterTargetingAllegiance allegiance;
 
         public Character(uint actorID) : base(actorID)
         {            

@@ -243,6 +243,7 @@ namespace FFXIVClassic_Map_Server.Actors
             lastPlayTimeUpdate = Utils.UnixTimeStampUTC();
 
             this.aiContainer = new AIContainer(this, new PlayerController(this), null, new TargetFind(this));
+            allegiance = CharacterTargetingAllegiance.Player;
         }
         
         public List<SubPacket> Create0x132Packets()
@@ -284,6 +285,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
 
             ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams).DebugPrintSubPacket();
+
 
             return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);
         }
@@ -513,7 +515,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             QueuePacket(SetMapPacket.BuildPacket(actorId, zone.regionId, zone.actorId));
 
-            QueuePackets(GetSpawnPackets(this, spawnType));
+            QueuePackets(GetSpawnPackets(this, spawnType));            
             //GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
 
             #region Inventory & Equipment
@@ -524,7 +526,7 @@ namespace FFXIVClassic_Map_Server.Actors
             inventories[Inventory.BAZAAR].SendFullInventory();
             inventories[Inventory.MELDREQUEST].SendFullInventory();
             inventories[Inventory.LOOT].SendFullInventory();
-            equipment.SendFullEquipment(false);
+            equipment.SendFullEquipment(false);   
             playerSession.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
             #endregion
 
@@ -533,7 +535,7 @@ namespace FFXIVClassic_Map_Server.Actors
             List<SubPacket> areaMasterSpawn = zone.GetSpawnPackets();
             List<SubPacket> debugSpawn = world.GetDebugActor().GetSpawnPackets();
             List<SubPacket> worldMasterSpawn = world.GetActor().GetSpawnPackets();
-
+            
             playerSession.QueuePacket(areaMasterSpawn);
             playerSession.QueuePacket(debugSpawn);
             playerSession.QueuePacket(worldMasterSpawn);
@@ -552,7 +554,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             if (zone.GetWeatherDirector() != null)
-            { 
+            {
                 playerSession.QueuePacket(zone.GetWeatherDirector().GetSpawnPackets());
             }
 
@@ -1427,8 +1429,7 @@ namespace FFXIVClassic_Map_Server.Actors
         private void SendGuildleveMarkClientUpdate(int slot)
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("work/guildleve", this);
-            propPacketUtil.AddProperty(String.Format("work.guildleveDone[{0}]", slot));
-            propPacketUtil.AddProperty(String.Format("work.guildleveChecked[{0}]", slot));
+            propPacketUtil.AddProperty(String.Format("work.guildleveId[{0}]", slot));
             QueuePackets(propPacketUtil.Done());
         }
 
