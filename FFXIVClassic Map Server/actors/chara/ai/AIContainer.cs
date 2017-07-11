@@ -204,7 +204,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public void MobSkill(Character target, uint mobSkillId)
         {
             if (controller != null)
-                controller.MobSkill(target, mobSkillId);
+                controller.MonsterSkill(target, mobSkillId);
             else
                 InternalMobSkill(target, mobSkillId);
         }

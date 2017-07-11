@@ -125,6 +125,7 @@ namespace FFXIVClassic_Map_Server.Actors
             this.instance = instance;
 
             GenerateActorName((int)actorNumber);
+            this.aiContainer = new AIContainer(this, null, new PathFind(this), new TargetFind(null));
         }
 
         public SubPacket CreateAddActorPacket()
@@ -393,7 +394,7 @@ namespace FFXIVClassic_Map_Server.Actors
             zone.DespawnActor(this);
         }
 
-        public void Update(DateTime tick)
+        public override void Update(DateTime tick)
         {
             var deltaTime = (tick - aiContainer.GetLatestUpdate()).Milliseconds;
             LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, deltaTime);         

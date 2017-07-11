@@ -24,7 +24,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         public abstract bool Disengage();
         public abstract void Cast(Character target, uint spellId);
         public virtual void WeaponSkill(Character target, uint weaponSkillId) { }
-        public virtual void MobSkill(Character target, uint mobSkillId) { }
+        public virtual void MonsterSkill(Character target, uint mobSkillId) { }
         public abstract void Ability(Character target, uint abilityId);
         public abstract void RangedAttack(Character target);
         public virtual void Spawn() { }

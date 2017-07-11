@@ -9,6 +9,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 {
     class BattleNpcController : Controller
     {
+        private DateTime lastActionTime;
+        private DateTime lastSpellCastTime;
+        private DateTime lastSkillTime;
+        private DateTime lastSpecialSkillTime; // todo: i dont think monsters have "2hr" cooldowns like ffxi
+        private DateTime deaggroTime;
+        private DateTime neutralTime;
+        private DateTime waitTime;
+
+        private bool firstSpell = true;
+        private DateTime lastRoamScript; // todo: what even is this used as
+
         public BattleNpcController(Character owner)
         {
             this.owner = owner;
@@ -17,15 +28,35 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public override void Update(DateTime tick)
         {
-            // todo: handle aggro/deaggro and other shit here
-            ((BattleNpc)this.owner).statusEffects.Update(tick);
+            var battleNpc = this.owner as BattleNpc;
+
+            if (battleNpc != null)
+            {
+                // todo: handle aggro/deaggro and other shit here
+                if (battleNpc.aiContainer.IsEngaged())
+                {
+                    DoCombatTick(tick);
+                }
+                else if (!battleNpc.IsDead())
+                {
+                    DoRoamTick(tick);
+                }
+                battleNpc.Update(tick);
+            }
         }
 
         public override bool Engage(Character target)
         {
             // todo: check distance, last swing time, status effects
-            this.owner.aiContainer.InternalEngage(target);
-            return true;
+            var canEngage = this.owner.aiContainer.InternalEngage(target);
+            if (canEngage)
+            {
+                // reset casting
+                firstSpell = true;
+
+                // todo: adjust cooldowns with modifiers
+            }
+            return canEngage;
         }
 
         private bool TryEngage(Character target)
@@ -55,9 +86,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         }
 
-        public override void MobSkill(Character target, uint mobSkillId)
+        public override void MonsterSkill(Character target, uint mobSkillId)
         {
             
+        }
+
+        private void DoRoamTick(DateTime tick)
+        {
+
+        }
+
+        private void DoCombatTick(DateTime tick)
+        {
+
         }
     }
 }

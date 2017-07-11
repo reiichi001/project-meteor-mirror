@@ -129,6 +129,40 @@ namespace FFXIVClassic_Map_Server.lua
                 player.EndEvent();
         }
 
+        /// <summary> 
+        /// // todo: this is dumb, should probably make a function for each action with different default return values
+        /// or just make generic function and pass default value as first arg after functionName
+        /// </summary>
+        public static void CallLuaMonsterAction(Character actor, string functionName, params object[] args)
+        {
+            // todo: should we call this for players too?
+            if (actor is BattleNpc)
+            {
+                // todo: check this is correct
+                string path = $"./scripts/unique/{actor.zone.zoneName}/Monster/{actor.customDisplayName}.lua";
+
+                // dont wanna throw an error if file doesnt exist
+                if (File.Exists(path))
+                {
+                    var script = LoadGlobals();
+                    try
+                    {
+                        script.DoFile(path);
+                    }
+                    catch (Exception e)
+                    {
+                        Program.Log.Error($"LuaEngine.CallLuaMonsterAction [{functionName}] {e.Message}");
+                    }
+                    DynValue res = new DynValue();
+
+                    if (!script.Globals.Get(functionName).IsNil())
+                    {
+                        res = script.Call(script.Globals.Get(functionName));
+                    }
+                }
+            }
+        }
+
         private static string GetScriptPath(Actor target)
         {
             if (target is Player)
