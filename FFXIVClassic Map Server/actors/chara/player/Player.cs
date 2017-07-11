@@ -1431,6 +1431,7 @@ namespace FFXIVClassic_Map_Server.Actors
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("work/guildleve", this);
             propPacketUtil.AddProperty(String.Format("work.guildleveDone[{0}]", slot));
             propPacketUtil.AddProperty(String.Format("work.guildleveChecked[{0}]", slot));
+            QueuePackets(propPacketUtil.Done());
         }
 
         public void SetLoginDirector(Director director)
@@ -1555,7 +1556,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void EndEvent()
         {
             SubPacket p = EndEventPacket.BuildPacket(actorId, currentEventOwner, currentEventName);
-            //p.DebugPrintSubPacket();
+            p.DebugPrintSubPacket();
             QueuePacket(p);
 
             currentEventOwner = 0;

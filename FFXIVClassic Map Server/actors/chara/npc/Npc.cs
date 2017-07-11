@@ -393,7 +393,7 @@ namespace FFXIVClassic_Map_Server.Actors
             zone.DespawnActor(this);
         }
 
-        public void Update(double deltaTime)
+        public void Update(DateTime tick)
         {
             var deltaTime = (tick - aiContainer.GetLatestUpdate()).Milliseconds;
             LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, deltaTime);         
