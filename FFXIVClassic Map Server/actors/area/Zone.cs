@@ -138,11 +138,11 @@ namespace FFXIVClassic_Map_Server.actors.area
                 return mActorList[id];
         }
 
-        public PrivateAreaContent CreateContentArea(Player starterPlayer, string areaClassPath, string contentScript, string areaName, string directorName)
+        public PrivateAreaContent CreateContentArea(Player starterPlayer, string areaClassPath, string contentScript, string areaName, string directorName, params object[] args)
         {
             lock (contentAreasLock)
             {
-                Director director = CreateDirector(directorName);
+                Director director = CreateDirector(directorName, true, args);
 
                 if (director == null)
                     return null;

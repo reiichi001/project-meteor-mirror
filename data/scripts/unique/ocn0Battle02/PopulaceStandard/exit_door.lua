@@ -34,10 +34,11 @@ function onEventStarted(player, npc, triggerName)
 			return;
 		end
 		
-		director = contentArea:GetContentDirector();
+		director = contentArea:GetContentDirector();		
+		player:AddDirector(director);		
+		director:StartDirector(false);
 		
 		player:KickEvent(director, "noticeEvent", true);
-		player:AddDirector(director);
 		player:SetLoginDirector(director);		
 		
 		GetWorldManager():DoZoneChangeContent(player, contentArea, -5, 16.35, 6, 0.5, 16);		

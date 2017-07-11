@@ -7,7 +7,7 @@ function onEventStarted(player, npc, triggerName)
 		worldMaster = GetWorldMaster();
 		player:SendGameMessage(player, worldMaster, 34109, 0x20);
 	elseif (triggerName == "exit") then
-		GetWorldManager():DoPlayerMoveInZone(player, 6);
+		GetWorldManager():DoPlayerMoveInZone(player, 5.36433, 196, 133.656, -2.84938);
 	end
 	player:EndEvent();
 end

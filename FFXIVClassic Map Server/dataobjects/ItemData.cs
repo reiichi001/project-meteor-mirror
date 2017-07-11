@@ -467,6 +467,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
     class WeaponItem : EquipmentItem
     {
+        //extra graphics
+        public readonly uint graphicsOffhandWeaponId;
+        public readonly uint graphicsOffhandEquipmentId;
+        public readonly uint graphicsOffhandVariantId;
+
         //weapon sheet
         public readonly short attack;
         public readonly short magicAttack;
@@ -497,6 +502,13 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public WeaponItem(MySqlDataReader reader)
             : base(reader)
         {
+            if (!reader.IsDBNull(reader.GetOrdinal("offHandWeaponId")) && !reader.IsDBNull(reader.GetOrdinal("offHandEquipmentId")) && !reader.IsDBNull(reader.GetOrdinal("offHandVarientId")))
+            {
+                graphicsOffhandWeaponId = reader.GetUInt32("offHandWeaponId");
+                graphicsOffhandEquipmentId = reader.GetUInt32("offHandEquipmentId");
+                graphicsOffhandVariantId = reader.GetUInt32("offHandVarientId");
+            }
+
             attack = reader.GetInt16("attack");
             magicAttack = reader.GetInt16("magicAttack");
             craftProcessing = reader.GetInt16("craftProcessing");

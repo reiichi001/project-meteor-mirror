@@ -30,7 +30,7 @@ namespace FFXIVClassic_Map_Server.Actors
         protected string classPath;
 
         public int boundingGridSize = 50;
-        public int minX = -1000, minY = -1000, maxX = 1000, maxY = 1000;
+        public int minX = -5000, minY = -5000, maxX = 5000, maxY = 5000;
         protected int numXBlocks, numYBlocks;
         protected int halfWidth, halfHeight;
 
@@ -531,11 +531,11 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }                
 
-        public Director CreateDirector(string path, params object[] args)
+        public Director CreateDirector(string path, bool hasContentGroup, params object[] args)
         {
             lock (directorLock)
             {
-                Director director = new Director(directorIdCount, this, path, args);
+                Director director = new Director(directorIdCount, this, path, hasContentGroup, args);
                 currentDirectors.Add(director.actorId, director);
                 directorIdCount++;
                 return director;

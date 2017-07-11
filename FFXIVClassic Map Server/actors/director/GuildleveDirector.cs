@@ -18,7 +18,6 @@ namespace FFXIVClassic_Map_Server.actors.director
         public uint guildleveId;
         public Player guildleveOwner;        
         public byte selectedDifficulty;
-        public ContentGroup contentGroup;
 
         public GuildleveData guildleveData;
         public GuildleveWork guildleveWork = new GuildleveWork();
@@ -27,7 +26,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         public uint completionTime = 0;
 
         public GuildleveDirector(uint id, Area zone, string directorPath, uint guildleveId, byte selectedDifficulty, Player guildleveOwner, params object[] args)
-            : base(id, zone, directorPath, args)
+            : base(id, zone, directorPath, true, args)
         {
             this.guildleveId = guildleveId;
             this.selectedDifficulty = selectedDifficulty;
@@ -53,7 +52,7 @@ namespace FFXIVClassic_Map_Server.actors.director
 
         public void LoadGuildleve()
         {
-            contentGroup = Server.GetWorldManager().CreateGLContentGroup(this, GetMembers());
+            
         }
 
         public void StartGuildleve()
@@ -123,7 +122,7 @@ namespace FFXIVClassic_Map_Server.actors.director
             if (wasCompleted)
             {
                 Npc aetheryteNode = zone.SpawnActor(1200040, String.Format("{0}:warpExit", guildleveOwner.actorName), guildleveOwner.positionX, guildleveOwner.positionY, guildleveOwner.positionZ);
-                contentGroup.AddMember(aetheryteNode);
+                AddMember(aetheryteNode);
 
                 foreach (Actor a in GetPlayerMembers())
                 {
@@ -149,8 +148,7 @@ namespace FFXIVClassic_Map_Server.actors.director
 
         //Delete ContentGroup, change music back
         public void EndGuildleveDirector()
-        {
-            contentGroup.DeleteGroup();
+        {            
             foreach (Actor p in GetPlayerMembers())
             {
                 Player player = (Player)p;

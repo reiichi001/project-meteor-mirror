@@ -1,6 +1,7 @@
 ﻿
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.area;
+using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
@@ -16,6 +17,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         private uint directorId;
         private string directorScriptPath;
         private List<Actor> members = new List<Actor>();
+        protected ContentGroup contentGroup;
         private bool isCreated = false;
         private bool isDeleted = false;
         private bool isDeleting = false;
@@ -23,7 +25,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         private Script directorScript;
         private Coroutine currentCoroutine;
 
-        public Director(uint id, Area zone, string directorPath, params object[] args)
+        public Director(uint id, Area zone, string directorPath, bool hasContentGroup, params object[] args)
             : base((6 << 28 | zone.actorId << 19 | (uint)id))
         {
             directorId = id;
@@ -32,6 +34,9 @@ namespace FFXIVClassic_Map_Server.actors.director
             directorScriptPath = directorPath;
 
             LoadLuaScript();
+
+            if (hasContentGroup)
+                contentGroup = Server.GetWorldManager().CreateContentGroup(this, GetMembers());
 
             eventConditions = new EventList();
             eventConditions.noticeEventConditions = new List<EventList.NoticeEventCondition>();
@@ -108,6 +113,9 @@ namespace FFXIVClassic_Map_Server.actors.director
 
             if (isCreated && spawnImmediate)
             {
+                if (contentGroup != null)
+                    contentGroup.Start();
+
                 foreach (Player p in GetPlayerMembers())
                 {
                     p.QueuePackets(GetSpawnPackets());
@@ -116,14 +124,25 @@ namespace FFXIVClassic_Map_Server.actors.director
             }
 
             if (this is GuildleveDirector)
+            {               
                 ((GuildleveDirector)this).LoadGuildleve();
-
+            }
+            
             StartCoroutine("main", this);
+        }
+
+        public void StartContentGroup()
+        {
+            if (contentGroup != null)
+                contentGroup.Start();
         }
 
         public void EndDirector()
         {
             isDeleting = true;
+
+            if (contentGroup != null)
+                contentGroup.DeleteGroup();
 
             if (this is GuildleveDirector)
                 ((GuildleveDirector)this).EndGuildleveDirector();
@@ -139,13 +158,20 @@ namespace FFXIVClassic_Map_Server.actors.director
         public void AddMember(Actor actor)
         {
             if (!members.Contains(actor))
+            {
                 members.Add(actor);
+
+                if (contentGroup != null)
+                    contentGroup.AddMember(actor);
+            }
         }
 
         public void RemoveMember(Actor actor)
         {
             if (members.Contains(actor))
                 members.Remove(actor);
+            if (contentGroup != null)
+                contentGroup.RemoveMember(actor.actorId);
             if (GetPlayerMembers().Count == 0 && !isDeleting)
                 EndDirector();
         }
@@ -173,6 +199,16 @@ namespace FFXIVClassic_Map_Server.actors.director
         public bool IsDeleted()
         {
             return isDeleted;
+        }
+
+        public bool HasContentGroup()
+        {
+            return contentGroup != null;
+        }
+
+        public ContentGroup GetContentGroup()
+        {
+            return contentGroup;
         }
 
         public void GenerateActorName(int actorNumber)
@@ -261,6 +297,25 @@ namespace FFXIVClassic_Map_Server.actors.director
             }
             return null;
         }
+
+        public void OnEventStart(Player player, object[] args)
+        {
+            object[] args2 = new object[args.Length + (player == null ? 1 : 2)];
+            Array.Copy(args, 0, args2, (player == null ? 1 : 2), args.Length);
+            if (player != null)
+            {
+                args2[0] = player;
+                args2[1] = this;
+            }
+            else
+                args2[0] = this;
+
+            Coroutine coroutine = directorScript.CreateCoroutine(directorScript.Globals["onEventStarted"]).Coroutine;
+            DynValue value = coroutine.Resume(args2);
+            LuaEngine.GetInstance().ResolveResume(player, coroutine, value);
+        }
+
+
 
     }    
 }

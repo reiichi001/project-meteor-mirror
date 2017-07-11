@@ -144,7 +144,7 @@ function doLevequestInit(player, aetheryte)
 				player:PlayAnimation(getGLStartAnimationFromSheet(guildleveData.borderId, guildleveData.plateId, true));				
 				director = player:GetZone():CreateGuildleveDirector(glId, difficulty, player);
 				player:AddDirector(director);
-				director:StartDirector(true, glId)
+				director:StartDirector(true, glId);
 				
 			end
 		else

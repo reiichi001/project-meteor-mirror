@@ -27,16 +27,21 @@ function onEventStarted(player, npc, triggerName)
 
 					player:EndEvent();
 		
-					worldMaster = GetWorldMaster();
-					player:SendGameMessage(player, worldMaster, 34108, 0x20);	
-					player:SendGameMessage(player, worldMaster, 50011, 0x20);	
-
-					director = player:GetZone():CreateDirector("Quest/QuestDirectorMan0g001");
-					player:KickEvent(director, "noticeEvent", true);
-					player:AddDirector(director);
-					player:SetLoginDirector(director);
+					contentArea = player:GetZone():CreateContentArea(player, "/Area/PrivateArea/Content/PrivateAreaMasterSimpleContent", "man0g01", "SimpleContent30010", "Quest/QuestDirectorMan0g001");
+		
+					if (contentArea == nil) then
+						player:EndEvent();
+						return;
+					end
+		
+					director = contentArea:GetContentDirector();		
+					player:AddDirector(director);		
+					director:StartDirector(false);
 					
-					GetWorldManager():DoZoneChange(player, 166, "ContentSimpleContent30010", 1, 16, 362.4087, 4, -703.8168, 1.5419);
+					player:KickEvent(director, "noticeEvent", true);
+					player:SetLoginDirector(director);		
+					
+					GetWorldManager():DoZoneChangeContent(player, contentArea, 362.4087, 4, -703.8168, 1.5419, 16);
 					return;
 				else
 					callClientFunction(player, "delegateEvent", player, man0g0Quest, "processEvent000_1", nil, nil, nil);

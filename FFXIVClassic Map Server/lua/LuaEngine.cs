@@ -117,7 +117,7 @@ namespace FFXIVClassic_Map_Server.lua
                     Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];
                     mSleepingOnPlayerEvent.Remove(player.actorId);
                     DynValue value = coroutine.Resume(LuaUtils.CreateLuaParamObjectList(args));
-                    ResolveResume(null, coroutine, value);
+                    ResolveResume(player, coroutine, value);
                 }
                 catch (ScriptRuntimeException e)
                 {
@@ -419,8 +419,13 @@ namespace FFXIVClassic_Map_Server.lua
                     player.EndEvent();
                 }                
             }
-            else                
-                CallLuaFunction(player, target, "onEventStarted", false, LuaUtils.CreateLuaParamObjectList(lparams));
+            else
+            {
+                if (target is Director)                
+                    ((Director)target).OnEventStart(player, LuaUtils.CreateLuaParamObjectList(lparams));
+                else
+                    CallLuaFunction(player, target, "onEventStarted", false, LuaUtils.CreateLuaParamObjectList(lparams));
+            }                
         }
 
         public DynValue ResolveResume(Actor actor, Coroutine coroutine, DynValue value)
