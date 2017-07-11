@@ -251,6 +251,7 @@ namespace FFXIVClassic_Map_Server.Actors
             lastPlayTimeUpdate = Utils.UnixTimeStampUTC();
 
             this.aiContainer = new AIContainer(this, new PlayerController(this), null, new TargetFind(this));
+            allegiance = CharacterTargetingAllegiance.Player;
         }
         
         public List<SubPacket> Create0x132Packets()

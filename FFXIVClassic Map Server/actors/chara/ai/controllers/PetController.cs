@@ -62,6 +62,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         public void SetPetMaster(Character master)
         {
             petMaster = master;
+
+            if (master is Player)
+                owner.allegiance = CharacterTargetingAllegiance.Player;
+            else
+                owner.allegiance = CharacterTargetingAllegiance.BattleNpcs;
         }
     }
 }
