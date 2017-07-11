@@ -948,27 +948,9 @@ namespace FFXIVClassic_Map_Server
                                 player.timers[i] = reader.GetUInt32(i);
                         }
                     }
-                   
-                    //Load Hotbar
-                    query = @"
-                        SELECT 
-                        hotbarSlot,
-                        commandId,
-                        recastTime                
-                        FROM characters_hotbar WHERE characterId = @charId AND classId = @classId";
 
-                    cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@charId", player.actorId);
-                    cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {                        
-                        while (reader.Read())
-                        {
-                            int index = reader.GetUInt16(0);
-                            player.charaWork.command[index+32] = reader.GetUInt32(1);
-                            player.charaWork.parameterSave.commandSlot_recastTime[index] = reader.GetUInt32(2);
-                        }
-                    }
+                    //Load Hotbar
+                    LoadHotbar(player);
 
                     //Load Scenario Quests
                     query = @"
@@ -1206,6 +1188,143 @@ namespace FFXIVClassic_Map_Server
                 }
             }
 
+        }
+        public static void EquipAbility(Player player, ushort hotbarSlot, uint commandId, uint recastTime)
+        {
+            //2700083201 is where abilities start. 2700083200 is for unequipping abilities. Trying to put this in the hotbar will crash the game, need to put 0 instead
+            if (commandId > 2700083200)
+            {
+                using (MySqlConnection conn = new MySqlConnection(
+                    String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}",
+                    ConfigConstants.DATABASE_HOST,
+                    ConfigConstants.DATABASE_PORT,
+                    ConfigConstants.DATABASE_NAME,
+                    ConfigConstants.DATABASE_USERNAME,
+                    ConfigConstants.DATABASE_PASSWORD)))
+                {
+                    try
+                    {
+                        conn.Open();
+                        MySqlCommand cmd;
+                        string query = @"
+                                    INSERT INTO characters_hotbar                                    
+                                    (characterId, classId, hotbarSlot, commandId, recastTime)
+                                    VALUES
+                                    (@charId, @classId, @hotbarSlot, @commandId, @recastTime)
+                                    ON DUPLICATE KEY UPDATE commandId=@commandId, recastTime=@recastTime;
+                        ";
+
+                        cmd = new MySqlCommand(query, conn);
+                        cmd.Parameters.AddWithValue("@charId", player.actorId);
+                        cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
+                        cmd.Parameters.AddWithValue("@commandId", commandId);
+                        cmd.Parameters.AddWithValue("@hotbarSlot", hotbarSlot);
+                        cmd.Parameters.AddWithValue("@recastTime", recastTime);
+                        cmd.ExecuteNonQuery();
+                    }
+                    catch (MySqlException e)
+                    {
+                        Program.Log.Error(e.ToString());
+                    }
+                    finally
+                    {
+                        conn.Dispose();
+                    }
+                }
+            }
+        }
+
+        //Unequipping is done by sending an equip packet with 2700083200 as the ability and the hotbar slot of the action being unequipped
+        public static void UnequipAbility(Player player, ushort hotbarSlot)
+        {
+            using (MySqlConnection conn = new MySqlConnection(
+                    String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}",
+                    ConfigConstants.DATABASE_HOST,
+                    ConfigConstants.DATABASE_PORT,
+                    ConfigConstants.DATABASE_NAME,
+                    ConfigConstants.DATABASE_USERNAME,
+                    ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd;
+                    string query = "";
+
+                    //Drop
+                    List<Tuple<ushort, uint>> hotbarList = new List<Tuple<ushort, uint>>();
+                    query = @"
+                                DELETE FROM characters_hotbar
+                                WHERE characterId = @charId AND classId = @classId AND hotbarSlot = @hotbarSlot
+                        ";
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
+                    cmd.Parameters.AddWithValue("@hotbarSlot", hotbarSlot - 1);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+        }
+
+        public static void LoadHotbar(Player player)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    //Load Hotbar
+                    query = @"
+                        SELECT 
+                        hotbarSlot,
+                        commandId,
+                        recastTime                
+                        FROM characters_hotbar WHERE characterId = @charId AND classId = @classId
+                        ORDER BY hotbarSlot";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
+                    player.charaWork.commandBorder = 32;
+                    for (int i = player.charaWork.commandBorder; i < player.charaWork.commandCategory.Length; i++)
+                    {
+                        player.charaWork.command[i] = 0;
+                        player.charaWork.commandCategory[i] = 0;
+                        player.charaWork.parameterSave.commandSlot_recastTime[i - player.charaWork.commandBorder] = 0;
+                    }
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            int index = reader.GetUInt16(0);
+                            player.charaWork.command[index] = reader.GetUInt32(1);
+                            player.charaWork.commandCategory[index] = 1;
+                            player.charaWork.parameterSave.commandSlot_recastTime[index - player.charaWork.commandBorder] = reader.GetUInt32(2);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
         }
 
         public static List<InventoryItem> GetInventory(Player player, uint slotOffset, uint type)
