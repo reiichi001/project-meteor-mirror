@@ -1429,8 +1429,8 @@ namespace FFXIVClassic_Map_Server.Actors
         private void SendGuildleveMarkClientUpdate(int slot)
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("work/guildleve", this);
-            propPacketUtil.AddProperty(String.Format("work.guildleveId[{0}]", slot));
-            QueuePackets(propPacketUtil.Done());
+            propPacketUtil.AddProperty(String.Format("work.guildleveDone[{0}]", slot));
+            propPacketUtil.AddProperty(String.Format("work.guildleveChecked[{0}]", slot));
         }
 
         public void SetLoginDirector(Director director)
