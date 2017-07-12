@@ -95,7 +95,8 @@ namespace FFXIVClassic_Map_Server.Actors
             hasMoved = true;
         }
 
-        public SubPacket CreateAddActorPacket(byte val)        {
+        public SubPacket CreateAddActorPacket(byte val)
+        {
             return AddActorPacket.BuildPacket(actorId, val);
         }
 
@@ -160,7 +161,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 updateMs = 150;
             }
 
-            if (forceUpdate || (hasMoved && ((this is Player ) || diffTime.Milliseconds >= updateMs)))
+            if (forceUpdate || (hasMoved && ((this is Player) || diffTime.Milliseconds >= updateMs)))
             {
                 hasMoved = (this.positionUpdates != null && this.positionUpdates.Count > 0);
                 if (hasMoved)
@@ -169,7 +170,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
                     if (this is Character)
                         ((Character)this).OnPath(pos);
-                    
+
                     positionX = pos.X;
                     positionY = pos.Y;
                     positionZ = pos.Z;

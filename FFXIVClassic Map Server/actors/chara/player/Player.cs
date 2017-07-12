@@ -211,11 +211,7 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.command[12] = 0xA0F00000 | 22012;
             charaWork.command[13] = 0xA0F00000 | 22013;
             charaWork.command[14] = 0xA0F00000 | 29497;
-            charaWork.command[15] = 0xA0F00000 | 22015;
-
-            charaWork.command[32] = 0xA0F00000 | 27191;
-            charaWork.command[33] = 0xA0F00000 | 22302;
-            charaWork.command[34] = 0xA0F00000 | 28466;
+            charaWork.command[15] = 0xA0F00000 | 22015;            
 
             charaWork.commandAcquired[27150 - 26000] = true;
 
@@ -235,13 +231,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.commandCategory[0] = 1;
             charaWork.commandCategory[1] = 1;
-            charaWork.commandCategory[32] = 1;
-            charaWork.commandCategory[33] = 1;
-            charaWork.commandCategory[34] = 1;
 
             charaWork.parameterSave.commandSlot_compatibility[0] = true;
             charaWork.parameterSave.commandSlot_compatibility[1] = true;
-            charaWork.parameterSave.commandSlot_compatibility[32] = true;
 
             charaWork.commandBorder = 0x20;
 
@@ -293,6 +285,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 lParams = LuaUtils.CreateLuaParamList("/Chara/Player/Player_work", false, false, false, false, false, true);
 
             ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams).DebugPrintSubPacket();
+
 
             return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);
         }
@@ -519,7 +512,7 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePacket(_0x10Packet.BuildPacket(actorId, 0xFF));
             QueuePacket(SetMusicPacket.BuildPacket(actorId, zone.bgmDay, 0x01));
             QueuePacket(SetWeatherPacket.BuildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR, 1));
-            
+
             QueuePacket(SetMapPacket.BuildPacket(actorId, zone.regionId, zone.actorId));
 
             QueuePackets(GetSpawnPackets(this, spawnType));            
@@ -544,7 +537,7 @@ namespace FFXIVClassic_Map_Server.Actors
             List<SubPacket> worldMasterSpawn = world.GetActor().GetSpawnPackets();
             
             playerSession.QueuePacket(areaMasterSpawn);
-            playerSession.QueuePacket(debugSpawn);            
+            playerSession.QueuePacket(debugSpawn);
             playerSession.QueuePacket(worldMasterSpawn);
 
             //Inn Packets (Dream, Cutscenes, Armoire)
@@ -967,7 +960,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.parameterSave.state_mainSkill[0] = classId;
             charaWork.parameterSave.state_mainSkillLevel = charaWork.battleSave.skillLevel[classId-1];
-
+            Database.LoadHotbar(this);
             playerWork.restBonusExpRate = 0.0f;
 
             ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("charaWork/stateForAll", this);
@@ -976,6 +969,8 @@ namespace FFXIVClassic_Map_Server.Actors
             propertyBuilder.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
             propertyBuilder.NewTarget("playerWork/expBonus");
             propertyBuilder.AddProperty("playerWork.restBonusExpRate");
+
+            QueuePackets(GetUpdateHotbarPacket(actorId).Done());
 
             List<SubPacket> packets = propertyBuilder.Done();
 
@@ -1482,7 +1477,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 director.RemoveMember(this);
             }
         }
-
+        
         public GuildleveDirector GetGuildleveDirector()
         {
             foreach (Director d in ownedDirectors)
@@ -1681,11 +1676,160 @@ namespace FFXIVClassic_Map_Server.Actors
             currentParty = null;
         }
 
-        
-
         public void Update(double delta)
         {
             LuaEngine.GetInstance().CallLuaFunction(this, this, "OnUpdate", true, delta);
+        }
+
+        //Update all the hotbar slots past the commandborder. Commands before the commandborder only need to be sent on init since they never change
+        public ActorPropertyPacketUtil GetUpdateHotbarPacket(uint playerActorId)
+        {
+            List<ushort> slotsToUpdate = new List<ushort>();
+            for (ushort i = charaWork.commandBorder; i < charaWork.commandBorder + 30; i++)
+            {
+                slotsToUpdate.Add(i);
+            }
+
+            return GetUpdateHotbarPacket(playerActorId, slotsToUpdate);
+        }
+
+        //Update select hotbar slots.
+        public ActorPropertyPacketUtil GetUpdateHotbarPacket(uint playerActorId, List<ushort> slotsToUpdate)
+        {
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charawork/command", this);
+
+            propPacketUtil.AddProperty("charaWork.commandBorder");
+
+            foreach (ushort slot in slotsToUpdate)
+            {
+                propPacketUtil.AddProperty(String.Format("charaWork.command[{0}]", slot));
+                propPacketUtil.AddProperty(String.Format("charaWork.commandCategory[{0}]", slot));
+            }
+
+            for (int i = 0; i < charaWork.parameterSave.commandSlot_compatibility.Length; i++)
+            {
+                //charaWork.parameterSave.commandSlot_compatibility[i] = true;
+                // propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_compatibility[{0}]", i));
+            }
+
+            charaWork.parameterTemp.otherClassAbilityCount[0] = 3;
+            charaWork.parameterTemp.otherClassAbilityCount[1] = 5;
+            // charaWork.parameterTemp.giftCount[1] = 5;
+            propPacketUtil.AddProperty("charaWork.parameterTemp.otherClassAbilityCount[0]");
+            propPacketUtil.AddProperty("charaWork.parameterTemp.otherClassAbilityCount[1]");
+            propPacketUtil.AddProperty("charaWork.parameterTemp.giftCount[1]");
+
+            ActorPropertyPacketUtil recastPacketUtil = new ActorPropertyPacketUtil("charaWork/commandDetailForSelf", this);
+            for(int i = 0; i < charaWork.parameterSave.commandSlot_recastTime.Length; i++)
+            {
+                propPacketUtil.AddProperty(String.Format("charawork.parameterSave.commandSlot_recastTime[{0}]", i));
+                propPacketUtil.AddProperty(String.Format("charawork.parameterTemp.maxCommandRecastTime[{0}]", i));
+            }
+
+            QueuePackets(recastPacketUtil.Done());
+
+            return propPacketUtil;
+        }
+
+
+        public void EquipAbility(ushort hotbarSlot, uint commandId, uint recastTime)
+        {
+            //if (charaWork.commandAcquired[commandId])
+            {
+                uint trueCommandId = 0xA0F00000 | commandId;
+                ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder - 1);
+                ushort endOfHotbar = (ushort)(charaWork.commandBorder + 30);
+                List<ushort> slotsToUpdate = new List<ushort>();
+                if (trueCommandId != 2700083200)
+                {
+                    bool canEquip = true;
+                    bool isAlreadyEquipped = false;
+
+                    //If hotbar slot is 0, look for the first open slot
+                    if (hotbarSlot == 0)
+                    {
+                        trueHotbarSlot = findFirstCommandSlotById(0);
+                        int equippedSlot = findFirstCommandSlotById(trueCommandId);
+                        //We can only equip a command if there is an open hotbar slot and if the command was not found in the hotbar.
+                        canEquip = trueHotbarSlot < endOfHotbar && equippedSlot >= endOfHotbar;
+                        //If the command was found in the hotbar, mark it as already equipped
+                        isAlreadyEquipped = equippedSlot < endOfHotbar;
+                    }
+                    //If the slot the command is being moved to is occupied, move that command to the slot currently occupied by the command being placed.
+                    else if (charaWork.command[trueHotbarSlot] != trueCommandId)
+                    {
+                        ushort oldSlot = findFirstCommandSlotById(trueCommandId);
+                        //If the command was found, update the old slot, otherwise it will just be overwritten
+                        if (oldSlot < endOfHotbar)
+                        {
+                            Database.EquipAbility(this, oldSlot, charaWork.command[trueHotbarSlot], recastTime);
+                            charaWork.command[oldSlot] = charaWork.command[trueHotbarSlot];
+                            slotsToUpdate.Add(oldSlot);
+                        }
+                    }
+                    
+                    if (canEquip)
+                    {
+                        Actor a = Server.GetStaticActors(trueCommandId);
+                        Database.EquipAbility(this, trueHotbarSlot, trueCommandId, recastTime);
+                        charaWork.command[trueHotbarSlot] = trueCommandId;
+                        charaWork.commandCategory[trueHotbarSlot] = 1;
+                        slotsToUpdate.Add(trueHotbarSlot);
+
+                        //"[Command] set."
+                        SendGameMessage(Server.GetWorldManager().GetActor(), 30603, 0x20, 0, commandId);
+                    }
+                    else if (isAlreadyEquipped)
+                    {
+                        //"That action is already set to an action slot."
+                        SendGameMessage(Server.GetWorldManager().GetActor(), 30719, 0x20, 0);
+                    }
+                    else
+                    {
+                        //"You cannot set any more actions."
+                        SendGameMessage(Server.GetWorldManager().GetActor(), 30720, 0x20, 0);
+                    }
+                }
+                //Unequip command
+                else if (trueCommandId == 2700083200)
+                {
+                    //Need to get the commandId this way because when unequipping an ability the commandId is 0.
+                    commandId = charaWork.command[trueHotbarSlot] ^ 2700083200;                    
+                    SendGameMessage(Server.GetWorldManager().GetActor(), 30604, 0x20, 0, charaWork.command[trueHotbarSlot] ^ 2700083200);
+                    Database.UnequipAbility(this, trueHotbarSlot);
+                    charaWork.command[trueHotbarSlot] = 0;
+                    slotsToUpdate.Add(trueHotbarSlot);                   
+                    //"[Command] removed."
+                    SendGameMessage(Server.GetWorldManager().GetActor(), 30747, 0x20, 0);
+                    
+                }
+                ActorPropertyPacketUtil packet = GetUpdateHotbarPacket(actorId, slotsToUpdate);
+                QueuePackets(packet.Done());
+            }
+            //action not acquired
+            // else
+            {
+                //"You have not yet acquired that action."
+                //SendGameMessage(Server.GetWorldManager().GetActor(), 30742, 0x20, 0, 0);
+            }
+        }
+
+        //Finds the first hotbar slot with a given commandId.
+        //If the returned value is outside the hotbar, it indicates it wasn't found.
+        private ushort findFirstCommandSlotById(uint commandId)
+        {
+            ushort firstSlot = (ushort)(charaWork.commandBorder + 30);
+
+            for (ushort i = charaWork.commandBorder; i < charaWork.commandBorder + 30; i++)
+            {
+                if (charaWork.command[i] == commandId)
+                {
+                    firstSlot = i;
+                    break;
+                }
+            }
+
+            return firstSlot;
         }
 
     }

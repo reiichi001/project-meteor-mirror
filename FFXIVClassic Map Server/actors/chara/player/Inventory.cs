@@ -95,7 +95,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             ItemData gItem = Server.GetItemGamedata(itemId);
             List<ushort> slotsToUpdate = new List<ushort>();
             List<SubPacket> addItemPackets = new List<SubPacket>();
-
+            
             if (gItem == null)
             {
                 Program.Log.Error("Inventory.AddItem: unable to find item %u", itemId);
