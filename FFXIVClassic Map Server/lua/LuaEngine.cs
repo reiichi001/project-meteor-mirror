@@ -157,7 +157,7 @@ namespace FFXIVClassic_Map_Server.lua
 
                     if (!script.Globals.Get(functionName).IsNil())
                     {
-                        res = script.Call(script.Globals.Get(functionName));
+                        res = script.Call(script.Globals.Get(functionName), args);
                     }
                 }
             }

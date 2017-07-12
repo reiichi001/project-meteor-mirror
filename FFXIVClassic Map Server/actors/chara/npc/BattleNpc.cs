@@ -10,6 +10,7 @@ using FFXIVClassic_Map_Server.actors.chara;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.actors.chara.ai.state;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -48,6 +49,27 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             // todo:
             this.statusEffects.Update(tick);
+        }
+
+        ///<summary> // todo: create an action object? </summary>
+        public bool OnAttack(AttackState state)
+        {
+            return false;
+        }
+
+        public override void Spawn(DateTime tick)
+        {
+            base.Spawn(tick);
+        }
+
+        public override void Die(DateTime tick)
+        {
+            base.Die(tick);
+        }
+
+        public void OnRoam(DateTime tick)
+        {
+
         }
     }
 }
