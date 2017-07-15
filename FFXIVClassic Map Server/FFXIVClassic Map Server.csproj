@@ -95,7 +95,8 @@
     <Compile Include="actors\chara\ai\PathFind.cs" />
     <Compile Include="actors\chara\ai\state\AttackState.cs" />
     <Compile Include="actors\chara\ai\state\State.cs" />
-    <Compile Include="actors\chara\ai\StatusEffects.cs" />
+    <Compile Include="actors\chara\ai\StatusEffect.cs" />
+    <Compile Include="actors\chara\ai\StatusEffectContainer.cs" />
     <Compile Include="actors\chara\ai\TargetFind.cs" />
     <Compile Include="actors\chara\ai\utils\AttackUtils.cs" />
     <Compile Include="actors\chara\npc\ActorClass.cs" />

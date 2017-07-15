@@ -7,6 +7,7 @@ using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.utils;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using System;
+using System.Collections.Generic;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -73,7 +74,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public DateTime lastAiUpdate;
 
         public AIContainer aiContainer;
-        public StatusEffects statusEffects;
+        public StatusEffectContainer statusEffects;
 
         public CharacterTargetingAllegiance allegiance;
 
@@ -83,7 +84,7 @@ namespace FFXIVClassic_Map_Server.Actors
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
                 charaWork.statusShownTime[i] = 0xFFFFFFFF;
 
-            this.statusEffects = new StatusEffects(this);
+            this.statusEffects = new StatusEffectContainer(this);
         }
 
         public SubPacket CreateAppearancePacket()

@@ -23,11 +23,14 @@ DROP TABLE IF EXISTS `characters_statuseffect`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `characters_statuseffect` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `characterId` int(10) unsigned NOT NULL,
-  `statusId` tinyint(3) unsigned NOT NULL,
-  `expireTime` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`)
+  `statusId` smallint(5) unsigned NOT NULL,
+  `magnitude` bigint(20) unsigned NOT NULL,
+  `duration` int(10) unsigned NOT NULL,
+  `tick` int(10) unsigned NOT NULL,
+  `tier` tinyint(3) unsigned NOT NULL,
+  `extra` bigint(20) unsigned NOT NULL,
+  PRIMARY KEY (`characterId`, `statusId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

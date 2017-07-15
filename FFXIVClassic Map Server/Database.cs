@@ -10,6 +10,7 @@ using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.actors.chara.player;
+using FFXIVClassic_Map_Server.actors.chara.ai;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -877,7 +878,11 @@ namespace FFXIVClassic_Map_Server
                     query = @"
                         SELECT 
                         statusId,
-                        expireTime                     
+                        duration,
+                        magnitude,
+                        tick,
+                        tier,
+                        extra
                         FROM characters_statuseffect WHERE characterId = @charId";
 
                     cmd = new MySqlCommand(query, conn);
@@ -887,8 +892,28 @@ namespace FFXIVClassic_Map_Server
                         int count = 0;
                         while (reader.Read())
                         {
+                            var id = reader.GetUInt32(0);
+                            var duration = reader.GetUInt32(1);
+                            var magnitude = reader.GetUInt64(2);
+                            var tick = reader.GetUInt32(3);
+                            var tier = reader.GetByte(4);
+                            var extra = reader.GetUInt64(5);
+
                             player.charaWork.status[count] = reader.GetUInt16(0);
                             player.charaWork.statusShownTime[count] = reader.GetUInt32(1);
+
+                            var effect = Server.GetWorldManager().GetStatusEffect(id);
+                            if (effect != null)
+                            {
+                                effect.SetDurationMs(duration);
+                                effect.SetMagnitude(magnitude);
+                                effect.SetTickMs(tick);
+                                effect.SetTier(tier);
+                                effect.SetExtra(extra);
+
+                                // dont wanna send ton of messages on login (i assume retail doesnt)
+                                player.statusEffects.AddStatusEffect(effect, true);
+                            }
                         }
                     }
 
@@ -1733,6 +1758,46 @@ namespace FFXIVClassic_Map_Server
                     conn.Dispose();
                 }
             }
+        }
+
+        public static Dictionary<uint, StatusEffect> LoadGlobalStatusEffectList()
+        {
+            var effects = new Dictionary<uint, StatusEffect>();
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    var query = @"SELECT id, name, flags, overwrite FROM status_effects;";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var id = reader.GetUInt32(0);
+                            var name = reader.GetString(1);
+                            var flags = reader.GetUInt32(2);
+                            var overwrite = reader.GetUInt32(3);
+
+                            var effect = new StatusEffect(id, name, flags, overwrite);
+                            effects.Add(id, effect);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return effects;
         }
     }
 

@@ -1123,6 +1123,17 @@ namespace FFXIVClassic_Map_Server
                 return null;
         }        
 
+        public void LoadStatusEffects()
+        {
+            effectList = Database.LoadGlobalStatusEffectList();
+        }
+
+        public StatusEffect GetStatusEffect(uint id)
+        {
+            StatusEffect effect;
+
+            return effectList.TryGetValue(id, out effect) ? new StatusEffect(null, effect) : null;
+        }
     }
 
 }
