@@ -16,13 +16,13 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `status_effect`
+-- Table structure for table `status_effects`
 --
 
-DROP TABLE IF EXISTS `status_effect`;
+DROP TABLE IF EXISTS `status_effects`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `status_effect` (
+CREATE TABLE `status_effects` (
   `id` smallint(5) unsigned NOT NULL,
   `name` varchar(128) NOT NULL,
   `flags` int(10) unsigned NOT NULL,
@@ -32,12 +32,12 @@ CREATE TABLE `status_effect` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `status_effect`
+-- Dumping data for table `status_effects`
 --
 
-LOCK TABLES `status_effect` WRITE;
-/*!40000 ALTER TABLE `status_effect` DISABLE KEYS */;
-/*!40000 ALTER TABLE `status_effect` ENABLE KEYS */;
+LOCK TABLES `status_effects` WRITE;
+/*!40000 ALTER TABLE `status_effects` DISABLE KEYS */;
+/*!40000 ALTER TABLE `status_effects` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

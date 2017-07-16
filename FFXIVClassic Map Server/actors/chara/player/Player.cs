@@ -684,6 +684,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //Save Player
             Database.SavePlayerPlayTime(this);
             Database.SavePlayerPosition(this);
+            Database.SavePlayerStatusEffects(this);
         }
 
         public void CleanupAndSave(uint destinationZone, ushort spawnType, float destinationX, float destinationY, float destinationZ, float destinationRot)
@@ -706,7 +707,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
             //Save Player
             Database.SavePlayerPlayTime(this);
-            Database.SavePlayerPosition(this);            
+            Database.SavePlayerPosition(this);
+            this.statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnZoning, true);
+            Database.SavePlayerStatusEffects(this);
         }
 
         public Area GetZone()
@@ -721,13 +724,16 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void Logout()
         {
+            // todo: really this should be in CleanupAndSave but we might want logout/disconnect handled separately for some effects
             QueuePacket(LogoutPacket.BuildPacket(actorId));
+            statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnLogout);
             CleanupAndSave();
         }
 
         public void QuitGame()
         {
             QueuePacket(QuitPacket.BuildPacket(actorId));
+            statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnLogout);
             CleanupAndSave();
         }
 

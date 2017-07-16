@@ -16,11 +16,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
     {
         private Character owner;
         private readonly Dictionary<uint, StatusEffect> effects;
+        public static readonly int MAX_EFFECTS = 20;
 
         public StatusEffectContainer(Character owner)
         {
             this.owner = owner;
-            this.effects = new Dictionary<uint, StatusEffect>(20);
+            this.effects = new Dictionary<uint, StatusEffect>();
         }
 
         public void Update(DateTime tick)
@@ -54,9 +55,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                    (overwritable == (uint)StatusEffectOverwrite.GreaterOrEqualTo && (effect.GetDurationMs() == newEffect.GetDurationMs() || effect.GetMagnitude() == newEffect.GetMagnitude()));
             }
 
-            if (canOverwrite || effects.ContainsKey(effect.GetEffectId()))
+            if (canOverwrite || effect == null)
             {
-                if (!silent || (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
+                if (!silent || (effect?.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
                 {
                     // todo: send packet to client with effect added message
                 }
@@ -65,8 +66,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                     effects.Remove(effect.GetEffectId());
 
                 effects.Add(newEffect.GetEffectId(), newEffect);
+
+                // todo: this is retarded..
+                {
+                    var index = Array.IndexOf(effects.Values.ToArray(), newEffect);
+                    owner.charaWork.status[index] = effect.GetEffectIdForCharaWork();
+                    owner.charaWork.statusShownTime[index] = effect.GetDurationMs() / 1000;
+                    this.owner.zone.BroadcastPacketAroundActor(this.owner, SetActorStatusPacket.BuildPacket(this.owner.actorId, (ushort)index, (ushort)effect.GetEffectId()));
+                }
+                return true;
             }
-            return true;
+            return false;
         }
 
         public void RemoveStatusEffect(StatusEffect effect, bool silent = false)
@@ -76,10 +86,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 // send packet to client with effect remove message
                 if (!silent || (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
                 {
-                    // todo: send packet to client with effect added message
+                    // todo: send packet to client with effect removed message
                 }
 
-                // function onLose(actor, effec)
+                // todo: this is retarded..
+                {
+                    var index = Array.IndexOf(effects.Values.ToArray(), effect);
+                    owner.charaWork.status[index] = effect.GetEffectIdForCharaWork();
+                    this.owner.zone.BroadcastPacketAroundActor(this.owner, SetActorStatusPacket.BuildPacket(owner.actorId, (ushort)index, (ushort)0));
+                }
+                // function onLose(actor, effect
                 LuaEngine.CallLuaStatusEffectFunction(this.owner, effect, "onLose", this.owner, effect);
                 effects.Remove(effect.GetEffectId());
             }
@@ -157,6 +173,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public IEnumerable<StatusEffect> GetStatusEffects()
         {
             return effects.Values;
+        }
+
+        void SaveStatusEffectsToDatabase(StatusEffectFlags removeEffectFlags = StatusEffectFlags.None)
+        {
+            if (owner is Player)
+            {
+                Database.SavePlayerStatusEffects((Player)owner);
+            }
         }
     }
 }

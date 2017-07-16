@@ -134,32 +134,33 @@ namespace FFXIVClassic_Map_Server.lua
         /// // todo: this is dumb, should probably make a function for each action with different default return values
         /// or just make generic function and pass default value as first arg after functionName
         /// </summary>
-        public static void CallLuaMonsterAction(Character actor, string functionName, params object[] args)
+        public static void CallLuaBattleAction(Character actor, string functionName, params object[] args)
         {
+            string path = $"./scripts/unique/{actor.zone.zoneName}/Monster/{actor.customDisplayName}.lua";
+
             // todo: should we call this for players too?
-            if (actor is BattleNpc)
+            if (actor is Player)
             {
                 // todo: check this is correct
-                string path = $"./scripts/unique/{actor.zone.zoneName}/Monster/{actor.customDisplayName}.lua";
-
-                // dont wanna throw an error if file doesnt exist
-                if (File.Exists(path))
+                path = FILEPATH_PLAYER;
+            }
+            // dont wanna throw an error if file doesnt exist
+            if (File.Exists(path))
+            {
+                var script = LoadGlobals();
+                try
                 {
-                    var script = LoadGlobals();
-                    try
-                    {
-                        script.DoFile(path);
-                    }
-                    catch (Exception e)
-                    {
-                        Program.Log.Error($"LuaEngine.CallLuaMonsterAction [{functionName}] {e.Message}");
-                    }
-                    DynValue res = new DynValue();
+                    script.DoFile(path);
+                }
+                catch (Exception e)
+                {
+                    Program.Log.Error($"LuaEngine.CallLuaBattleAction [{functionName}] {e.Message}");
+                }
+                DynValue res = new DynValue();
 
-                    if (!script.Globals.Get(functionName).IsNil())
-                    {
-                        res = script.Call(script.Globals.Get(functionName), args);
-                    }
+                if (!script.Globals.Get(functionName).IsNil())
+                {
+                    res = script.Call(script.Globals.Get(functionName), args);
                 }
             }
         }
@@ -390,42 +391,41 @@ namespace FFXIVClassic_Map_Server.lua
             return null;
         }
 
-        public void CallLuaFunction(Actor actor, Actor target, string funcName, bool optional, params object[] args)
+        public void CallLuaFunction(Player player, Actor target, string funcName, bool optional, params object[] args)
         {
-            bool isPlayer = actor is Player;
             //Need a seperate case for NPCs cause that child/parent thing.
-            if (target is Npc && isPlayer)
+            if (target is Npc)
             {
-                CallLuaFunctionNpc((Player)actor, (Npc)target, funcName, optional, args);
+                CallLuaFunctionNpc(player, (Npc)target, funcName, optional, args);
                 return;
             }
 
             object[] args2 = new object[args.Length + 2];
             Array.Copy(args, 0, args2, 2, args.Length);
-            args2[0] = actor;
+            args2[0] = player;
             args2[1] = target;
 
             string luaPath = GetScriptPath(target);
             LuaScript script = LoadScript(luaPath);
             if (script != null)
             {
-                if (!script.Globals.Get(funcName).IsNil() && isPlayer)
+                if (!script.Globals.Get(funcName).IsNil())
                 {
                     Coroutine coroutine = script.CreateCoroutine(script.Globals[funcName]).Coroutine;
                     DynValue value = coroutine.Resume(args2);
-                    ResolveResume((Player)actor, coroutine, value);
+                    ResolveResume(player, coroutine, value);
                 }
                 else
                 {
                     if (!optional)
-                        SendError((Player)actor, String.Format("Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
+                        SendError(player, String.Format("Could not find function '{0}' for actor {1}.", funcName, target.GetName()));
                 }
             }
             else
             {
-                if (!(target is Area) && !optional && isPlayer)
-                    SendError((Player)actor, String.Format("Could not find script for actor {0}.", target.GetName()));
-            }            
+                if (!(target is Area) && !optional)
+                    SendError(player, String.Format("Could not find script for actor {0}.", target.GetName()));
+            }
         }
 
         public void EventStarted(Player player, Actor target, EventStartPacket eventStart)
@@ -456,18 +456,16 @@ namespace FFXIVClassic_Map_Server.lua
             }                
         }
 
-        public DynValue ResolveResume(Actor actor, Coroutine coroutine, DynValue value)
+        public DynValue ResolveResume(Player player, Coroutine coroutine, DynValue value)
         {
-            var isPlayer = actor is Player;
-
             if (value == null || value.IsVoid())
                 return value;
 
-            if (isPlayer && value.String != null && value.String.Equals("_WAIT_EVENT"))
+            if (player != null && value.String != null && value.String.Equals("_WAIT_EVENT"))
             {                
-                GetInstance().AddWaitEventCoroutine((Player)actor, coroutine);      
+                GetInstance().AddWaitEventCoroutine(player, coroutine);      
             }
-            else if (isPlayer && value.Tuple != null && value.Tuple.Length >= 1 && value.Tuple[0].String != null)
+            else if (player != null && value.Tuple != null && value.Tuple.Length >= 1 && value.Tuple[0].String != null)
             {
                 switch (value.Tuple[0].String)
                 {
@@ -619,12 +617,12 @@ namespace FFXIVClassic_Map_Server.lua
                     LuaParam.Insert(1, i - (playerNull ? 2 : 0));
 
                     // run the script                    
-                    script.Call(script.Globals["onTrigger"], LuaParam.ToArray());
+                    //script.Call(script.Globals["onTrigger"], LuaParam.ToArray());
 
                     // gm commands dont need to be coroutines?
-                    //Coroutine coroutine = script.CreateCoroutine(script.Globals["onTrigger"]).Coroutine;
-                    //DynValue value = coroutine.Resume(LuaParam.ToArray());
-                    //ResolveResume(player, coroutine, value);
+                    Coroutine coroutine = script.CreateCoroutine(script.Globals["onTrigger"]).Coroutine;
+                    DynValue value = coroutine.Resume(LuaParam.ToArray());
+                    LuaEngine.GetInstance().ResolveResume(player, coroutine, value);
                     return;
                 }
             }

@@ -1799,6 +1799,36 @@ namespace FFXIVClassic_Map_Server
             }
             return effects;
         }
+
+        public static void SavePlayerStatusEffects(Player player)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    // we'll run them all at once instead of one at a time
+                    string queries = "";
+                    foreach (var effect in player.statusEffects.GetStatusEffects())
+                    {
+                        var duration = effect.GetDurationMs() + effect.GetStartTime().Millisecond - Program.Tick.Millisecond;
+
+                        queries += Environment.NewLine + $"REPLACE INTO characters_statuseffect(characterId, statusId, magnitude, duration, tick, tier, extra) VALUES ({player.actorId}, {effect.GetEffectId()}, {effect.GetMagnitude()}, {duration}, {effect.GetTickMs()}, {effect.GetTier()}, {effect.GetExtra()});";
+                    }
+                    MySqlCommand cmd = new MySqlCommand(queries, conn);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
     }
 
 }

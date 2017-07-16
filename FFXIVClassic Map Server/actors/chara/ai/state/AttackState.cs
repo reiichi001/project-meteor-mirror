@@ -50,7 +50,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         {
             var damage = utils.AttackUtils.CalculateDamage(owner, target);
 
-            lua.LuaEngine.GetInstance().CallLuaFunction(owner, target, "onAttack", false, damage);
+            // onAttack(actor, target, damage)
+            lua.LuaEngine.CallLuaBattleAction(owner, "onAttack", false, owner, target, damage);
 
             //var packet = BattleAction1Packet.BuildPacket(owner.actorId, target.actorId);
 

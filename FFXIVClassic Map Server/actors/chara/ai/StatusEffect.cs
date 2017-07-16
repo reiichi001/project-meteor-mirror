@@ -1,5 +1,6 @@
 ﻿using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
+using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -440,6 +441,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return (uint)id;
         }
 
+        public ushort GetEffectIdForCharaWork()
+        {
+            return (ushort)(id - 200000);
+        }
+
+        public DateTime GetStartTime()
+        {
+            return startTime;
+        }
+
         public string GetName()
         {
             return name;
@@ -478,6 +489,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public byte GetOverwritable()
         {
             return (byte)overwrite;
+        }
+
+        public void SetStartTime(DateTime time)
+        {
+            this.startTime = time;
+            this.lastTick = time;
         }
 
         public void SetOwner(Character owner)
