@@ -18,7 +18,8 @@ namespace FFXIVClassic_Map_Server
         public static Logger Log;
         public static Server Server;
         public static Random Random;
-        public static DateTime Tick;
+        public static DateTime LastTick = DateTime.Now;
+        public static DateTime Tick = DateTime.Now;
 
         static void Main(string[] args)
         {

@@ -396,8 +396,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override void Update(DateTime tick)
         {
-            var deltaTime = (tick - aiContainer.GetLatestUpdate()).Milliseconds;
-            LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, deltaTime);         
+        
         }
 
         //A party member list packet came, set the party

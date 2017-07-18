@@ -166,9 +166,9 @@ namespace FFXIVClassic_Map_Server.actors.area
         public override void Update(DateTime tick)
         {
             // todo: again, this is retarded but debug stuff
-            var diffTime = tick - lastUpdate;
             base.Update(tick);
 
+            var diffTime = tick - lastUpdate;
             // arbitrary cap
             if (diffTime.Milliseconds >= 33)
             {

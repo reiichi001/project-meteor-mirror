@@ -40,7 +40,7 @@ namespace FFXIVClassic_Map_Server
 
         private Server mServer;
 
-        private const int MILIS_LOOPTIME = 10;
+        private const int MILIS_LOOPTIME = 333;
         private Timer mZoneTimer;
 
         //Content Groups
@@ -1017,6 +1017,7 @@ namespace FFXIVClassic_Map_Server
                 Program.Tick = DateTime.Now;
                 foreach (Zone zone in zoneList.Values)
                     zone.Update(Program.Tick);
+                Program.LastTick = Program.Tick;
             }            
         }
 
