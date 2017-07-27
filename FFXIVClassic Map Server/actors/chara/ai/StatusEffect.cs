@@ -353,6 +353,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         // todo: probably use get;set;
 
         private Character owner;
+        private Character source;
         private StatusEffectId id;
         private string name;        // name of this effect
         private DateTime startTime; // when was this effect added
@@ -362,8 +363,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private UInt64 magnitude;   // a value specified by scripter which is guaranteed to be used by all effects
         private byte tier;          // same effect with higher tier overwrites this
         private UInt64 extra;       // optional value
-        private StatusEffectFlags flags;              // death/erase/dispel etc
-        private StatusEffectOverwrite overwrite;      // how to handle adding an effect with same id (see StatusEfectOverwrite)
+        private StatusEffectFlags flags;         // death/erase/dispel etc
+        private StatusEffectOverwrite overwrite; // how to handle adding an effect with same id (see StatusEfectOverwrite)
+        private bool silent = false;             // do i send a message on losing effect 
 
         public StatusEffect(Character owner, uint id, UInt64 magnitude, uint tickMs, uint durationMs, byte tier = 0)
         {
@@ -436,6 +438,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return owner;
         }
 
+        public Character GetSource()
+        {
+            return source;
+        }
+
         public uint GetStatusEffectId()
         {
             return (uint)id;
@@ -491,6 +498,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return (byte)overwrite;
         }
 
+        public bool GetSilent()
+        {
+            return silent;
+        }
+
         public void SetStartTime(DateTime time)
         {
             this.startTime = time;
@@ -500,6 +512,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public void SetOwner(Character owner)
         {
             this.owner = owner;
+        }
+
+        public void SetSource(Character source)
+        {
+            this.source = source;
         }
 
         public void SetName(string name)
@@ -540,6 +557,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public void SetOverwritable(byte overwrite)
         {
             this.overwrite = (StatusEffectOverwrite)overwrite;
+        }
+
+        public void SetSilent(bool silent)
+        {
+            this.silent = silent;
         }
     }
 }

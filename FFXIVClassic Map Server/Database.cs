@@ -912,7 +912,7 @@ namespace FFXIVClassic_Map_Server
                                 effect.SetExtra(extra);
 
                                 // dont wanna send ton of messages on login (i assume retail doesnt)
-                                player.statusEffects.AddStatusEffect(effect, true);
+                                player.statusEffects.AddStatusEffect(effect, null, true);
                             }
                         }
                     }

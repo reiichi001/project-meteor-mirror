@@ -128,6 +128,18 @@ namespace FFXIVClassic_Map_Server.Actors
 
         }
 
+        public List<SubPacket> GetActorStatusPackets()
+        {
+            var propPacketUtil = new ActorPropertyPacketUtil("charaWork/status", this);
+            var i = 0;
+            foreach (var effect in statusEffects.GetStatusEffects())
+            {
+                propPacketUtil.AddProperty($"charaWork.statusShownTime[{i}]");
+                i++;
+            }
+            return propPacketUtil.Done();
+        }
+
         public void PlayAnimation(uint animId, bool onlySelf = false)
         {            
             if (onlySelf)

@@ -93,7 +93,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         private void DoRoamTick(DateTime tick)
         {
-
+            var battleNpc = owner as BattleNpc;
+            
+            if (battleNpc != null)
+            {
+                if (battleNpc.hateContainer.GetHateList().Count > 0)
+                {
+                    Engage(battleNpc.hateContainer.GetMostHatedTarget());
+                    return;
+                }
+                else if (battleNpc.currentLockedTarget != 0)
+                {
+                    
+                }
+            }
         }
 
         private void DoCombatTick(DateTime tick)

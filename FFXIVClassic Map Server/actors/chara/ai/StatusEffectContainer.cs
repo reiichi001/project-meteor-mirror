@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.actors.area;
@@ -43,7 +44,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             if (sendUpdate)
             {
-
+                owner.zone.BroadcastPacketsAroundActor(owner, owner.GetActorStatusPackets());
             }
 
             sendUpdate = false;
@@ -51,10 +52,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public bool AddStatusEffect(uint id, UInt64 magnitude, double tickMs, double durationMs, byte tier = 0)
         {
-            return AddStatusEffect(new StatusEffect(this.owner, id, magnitude, (uint)(tickMs * 1000), (uint)(durationMs * 1000), tier));
+            return AddStatusEffect(new StatusEffect(this.owner, id, magnitude, (uint)(tickMs * 1000), (uint)(durationMs * 1000), tier), owner);
         }
 
-        public bool AddStatusEffect(StatusEffect newEffect, bool silent = false)
+        public bool AddStatusEffect(StatusEffect newEffect, Character source, bool silent = false)
         {
             // todo: check flags/overwritable and add effect to list
             var effect = GetStatusEffectById(newEffect.GetStatusEffectId());
@@ -69,24 +70,31 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             if (canOverwrite || effect == null)
             {
-                if (!silent || (effect?.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
+                // send packet to client with effect added message
+                if (!silent || !effect.GetSilent() || (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
                 {
                     // todo: send packet to client with effect added message
+                    //foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
+                    //    player.QueuePacket(packets.send.actor.battle.BattleActionX01Packet.BuildPacket(player.actorId, effect.GetSource().actorId, owner.actorId, 0, effect.GetStatusEffectId(), 0, effect.GetStatusId(), 0, 0));
                 }
 
+                // wont send a message about losing effect here
                 if (canOverwrite)
                     effects.Remove(newEffect.GetStatusEffectId());
 
-                effects.Add(newEffect.GetStatusEffectId(), newEffect);
-
-                // todo: this is retarded..
+                if (effects.Count < MAX_EFFECTS)
                 {
-                    var index = Array.IndexOf(effects.Values.ToArray(), newEffect);
-                    owner.charaWork.status[index] = newEffect.GetStatusId();
-                    owner.charaWork.statusShownTime[index] = (uint)(DateTime.Now.AddMilliseconds(newEffect.GetDurationMs()) - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
-                    this.owner.zone.BroadcastPacketAroundActor(this.owner, SetActorStatusPacket.BuildPacket(this.owner.actorId, (ushort)index, (ushort)newEffect.GetStatusId()));
+                    effects.Add(newEffect.GetStatusEffectId(), newEffect);
+                    newEffect.SetSilent(silent);
+                    // todo: this is retarded..
+                    {
+                        var index = Array.IndexOf(effects.Values.ToArray(), newEffect);
+                        owner.charaWork.status[index] = newEffect.GetStatusId();
+                        owner.charaWork.statusShownTime[index] = Utils.UnixTimeStampUTC() + (newEffect.GetDurationMs() / 1000);
+                        this.owner.zone.BroadcastPacketAroundActor(this.owner, SetActorStatusPacket.BuildPacket(this.owner.actorId, (ushort)index, (ushort)newEffect.GetStatusId()));
+                    }
+                    sendUpdate = true;
                 }
-                sendUpdate = true;
                 return true;
             }
             return false;
@@ -97,9 +105,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (effects.ContainsKey(effect.GetStatusEffectId()))
             {
                 // send packet to client with effect remove message
-                if (!silent || (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
+                if (!silent || !effect.GetSilent() || (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
                 {
                     // todo: send packet to client with effect removed message
+                    //foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
+                    //    player.QueuePacket(packets.send.actor.battle.BattleActionX01Packet.BuildPacket(player.actorId, effect.GetSource().actorId, owner.actorId, 0, effect.GetStatusEffectId(), 0, effect.GetStatusId(), 0, 0));
                 }
 
                 // todo: this is retarded..
@@ -109,7 +119,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                     owner.charaWork.statusShownTime[index] = uint.MaxValue;
                     this.owner.zone.BroadcastPacketAroundActor(this.owner, SetActorStatusPacket.BuildPacket(owner.actorId, (ushort)index, (ushort)0));
                 }
-                // function onLose(actor, effect
+                // function onLose(actor, effect)
                 LuaEngine.CallLuaStatusEffectFunction(this.owner, effect, "onLose", this.owner, effect);
                 effects.Remove(effect.GetStatusEffectId());
                 sendUpdate = true;
@@ -132,8 +142,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             var newEffect = new StatusEffect(this.owner, effect);
             newEffect.SetOwner(this.owner);
-
-            return AddStatusEffect(newEffect) ? newEffect : null;
+            // todo: should source be copied too?
+            return AddStatusEffect(newEffect, effect.GetSource()) ? newEffect : null;
         }
 
         public bool RemoveStatusEffectsByFlags(uint flags, bool silent = false)

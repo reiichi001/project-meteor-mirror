@@ -17,11 +17,11 @@ namespace FFXIVClassic_Map_Server.Actors
     [Flags]
     enum AggroType
     {
-        None,
-        Sight,
-        Scent,
-        LowHp,
-        IgnoreLevelDifference
+        None = 0x00,
+        Sight = 0x01,
+        Scent = 0x02,
+        LowHp = 0x04,
+        IgnoreLevelDifference = 0x08
     }
 
     class BattleNpc : Npc
