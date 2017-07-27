@@ -492,7 +492,7 @@ namespace FFXIVClassic_Map_Server.lua
         {
             bool playerNull = player == null;
             if (playerNull && param.Length >= 2)
-                player = Server.GetWorldManager().GetPCInWorld(param[1] + " " + param[2]);
+                player = Server.GetWorldManager().GetPCInWorld(param[1].Contains("\"") ? param[1] : param[1] + " " + param[2]);
 
             // load from scripts/commands/gm/ directory
             var path = String.Format("./scripts/commands/gm/{0}.lua", cmd.ToLower());

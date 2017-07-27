@@ -43,6 +43,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public List<Vector3> positionUpdates = new List<Vector3>();
         public DateTime lastMoveUpdate;
+        protected DateTime lastUpdate;
         public Actor target;
 
         public bool hasMoved = false;
@@ -161,7 +162,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 updateMs = 150;
             }
 
-            if (forceUpdate || (hasMoved && ((this is Player) || diffTime.Milliseconds >= updateMs)))
+            if (forceUpdate || (hasMoved && ((this is Player) || diffTime.TotalMilliseconds >= updateMs)))
             {
                 hasMoved = (this.positionUpdates != null && this.positionUpdates.Count > 0);
                 if (hasMoved)

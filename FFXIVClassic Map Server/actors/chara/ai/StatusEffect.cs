@@ -414,7 +414,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public bool Update(DateTime tick)
         {
             // todo: maybe not tick if already reached duration?
-            if (tickMs != 0 && (lastTick - startTime).Milliseconds >= tickMs)
+            if (tickMs != 0 && (lastTick - startTime).TotalMilliseconds >= tickMs)
             {
                 // todo: call effect's onTick
                 // todo: maybe keep a global lua object instead of creating a new one each time we wanna call a script
@@ -422,7 +422,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 LuaEngine.CallLuaStatusEffectFunction(this.owner, this, "onTick", this.owner, this);
             }
             // todo: handle infinite duration effects?
-            if (durationMs != 0 && startTime.Millisecond + durationMs >= tick.Millisecond)
+            if (durationMs != 0 && (tick - startTime).TotalMilliseconds >= durationMs)
             {
                 // todo: call effect's onLose
                 // todo: broadcast effect lost packet
@@ -436,12 +436,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return owner;
         }
 
-        public uint GetEffectId()
+        public uint GetStatusEffectId()
         {
             return (uint)id;
         }
 
-        public ushort GetEffectIdForCharaWork()
+        public ushort GetStatusId()
         {
             return (ushort)(id - 200000);
         }

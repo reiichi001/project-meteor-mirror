@@ -28,8 +28,6 @@ namespace FFXIVClassic_Map_Server.actors.area
         public Int64 pathCalls;
         public Int64 pathCallTime;
 
-        protected DateTime lastUpdate;
-
         public Zone(uint id, string zoneName, ushort regionId, string classPath, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid, bool loadNavMesh = false)
             : base(id, zoneName, regionId, classPath, bgmDay, bgmNight, bgmBattle, isIsolated, isInn, canRideChocobo, canStealth, isInstanceRaid)
         {
@@ -170,16 +168,18 @@ namespace FFXIVClassic_Map_Server.actors.area
 
             var diffTime = tick - lastUpdate;
             // arbitrary cap
-            if (diffTime.Milliseconds >= 33)
+            if (diffTime.TotalMilliseconds >= 33)
             {
             }
             
-            if (diffTime.Seconds >= 10)
+            if (diffTime.TotalSeconds >= 10)
             {
                 if (this.pathCalls > 0)
                 {
                     Program.Log.Error("Number of pathfinding calls {0} average time {1}", pathCalls, pathCallTime / pathCalls);
                 }
+                // todo: this is stupid debug stuff that needs to fuck off
+                lastUpdate = tick;
             }
         }
 

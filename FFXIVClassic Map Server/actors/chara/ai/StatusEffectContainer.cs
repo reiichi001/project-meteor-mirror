@@ -17,7 +17,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private Character owner;
         private readonly Dictionary<uint, StatusEffect> effects;
         public static readonly int MAX_EFFECTS = 20;
-
+        private bool sendUpdate = false;
         public StatusEffectContainer(Character owner)
         {
             this.owner = owner;
@@ -40,19 +40,31 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 RemoveStatusEffect(effect);
             }
+
+            if (sendUpdate)
+            {
+
+            }
+
+            sendUpdate = false;
+        }
+
+        public bool AddStatusEffect(uint id, UInt64 magnitude, double tickMs, double durationMs, byte tier = 0)
+        {
+            return AddStatusEffect(new StatusEffect(this.owner, id, magnitude, (uint)(tickMs * 1000), (uint)(durationMs * 1000), tier));
         }
 
         public bool AddStatusEffect(StatusEffect newEffect, bool silent = false)
         {
             // todo: check flags/overwritable and add effect to list
-            var effect = GetStatusEffectById(newEffect.GetEffectId());
+            var effect = GetStatusEffectById(newEffect.GetStatusEffectId());
             bool canOverwrite = false;
             if (effect != null)
             {
                 var overwritable = effect.GetOverwritable();
                 canOverwrite = (overwritable == (uint)StatusEffectOverwrite.Always) ||
                    (overwritable == (uint)StatusEffectOverwrite.GreaterOnly && (effect.GetDurationMs() < newEffect.GetDurationMs() || effect.GetMagnitude() < newEffect.GetMagnitude())) ||
-                   (overwritable == (uint)StatusEffectOverwrite.GreaterOrEqualTo && (effect.GetDurationMs() == newEffect.GetDurationMs() || effect.GetMagnitude() == newEffect.GetMagnitude()));
+                   (overwritable == (uint)StatusEffectOverwrite.GreaterOrEqualTo && (effect.GetDurationMs() <= newEffect.GetDurationMs() || effect.GetMagnitude() <= newEffect.GetMagnitude()));
             }
 
             if (canOverwrite || effect == null)
@@ -63,17 +75,18 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 }
 
                 if (canOverwrite)
-                    effects.Remove(effect.GetEffectId());
+                    effects.Remove(newEffect.GetStatusEffectId());
 
-                effects.Add(newEffect.GetEffectId(), newEffect);
+                effects.Add(newEffect.GetStatusEffectId(), newEffect);
 
                 // todo: this is retarded..
                 {
                     var index = Array.IndexOf(effects.Values.ToArray(), newEffect);
-                    owner.charaWork.status[index] = effect.GetEffectIdForCharaWork();
-                    owner.charaWork.statusShownTime[index] = effect.GetDurationMs() / 1000;
-                    this.owner.zone.BroadcastPacketAroundActor(this.owner, SetActorStatusPacket.BuildPacket(this.owner.actorId, (ushort)index, (ushort)effect.GetEffectId()));
+                    owner.charaWork.status[index] = newEffect.GetStatusId();
+                    owner.charaWork.statusShownTime[index] = (uint)(DateTime.Now.AddMilliseconds(newEffect.GetDurationMs()) - new DateTime(1970, 1, 1, 0, 0, 0)).TotalSeconds;
+                    this.owner.zone.BroadcastPacketAroundActor(this.owner, SetActorStatusPacket.BuildPacket(this.owner.actorId, (ushort)index, (ushort)newEffect.GetStatusId()));
                 }
+                sendUpdate = true;
                 return true;
             }
             return false;
@@ -81,7 +94,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void RemoveStatusEffect(StatusEffect effect, bool silent = false)
         {
-            if (effects.ContainsKey(effect.GetEffectId()))
+            if (effects.ContainsKey(effect.GetStatusEffectId()))
             {
                 // send packet to client with effect remove message
                 if (!silent || (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
@@ -92,12 +105,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 // todo: this is retarded..
                 {
                     var index = Array.IndexOf(effects.Values.ToArray(), effect);
-                    owner.charaWork.status[index] = effect.GetEffectIdForCharaWork();
+                    owner.charaWork.status[index] = 0;
+                    owner.charaWork.statusShownTime[index] = uint.MaxValue;
                     this.owner.zone.BroadcastPacketAroundActor(this.owner, SetActorStatusPacket.BuildPacket(owner.actorId, (ushort)index, (ushort)0));
                 }
                 // function onLose(actor, effect
                 LuaEngine.CallLuaStatusEffectFunction(this.owner, effect, "onLose", this.owner, effect);
-                effects.Remove(effect.GetEffectId());
+                effects.Remove(effect.GetStatusEffectId());
+                sendUpdate = true;
             }
         }
 
@@ -105,7 +120,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             foreach (var effect in effects.Values)
             {
-                if (effect.GetEffectId() == effectId)
+                if (effect.GetStatusEffectId() == effectId)
                 {
                     RemoveStatusEffect(effect, silent);
                     break;
@@ -141,7 +156,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             StatusEffect effect;
 
-            if (effects.TryGetValue(id, out effect) && effect.GetEffectId() == id && (tier != 0xFF ? effect.GetTier() == tier : true))
+            if (effects.TryGetValue(id, out effect) && effect.GetStatusEffectId() == id && (tier != 0xFF ? effect.GetTier() == tier : true))
                 return effect;
 
             return null;
@@ -152,7 +167,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             var list = new List<StatusEffect>();
             foreach (var effect in effects.Values)
             {
-                if ((effect.GetFlags() & flag) > 0)
+                if ((effect.GetFlags() & flag) != 0)
                 {
                     list.Add(effect);
                 }
@@ -164,7 +179,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             foreach (var effect in effects.Values)
             {
-                if ((effect.GetFlags() & flag) > 0)
+                if ((effect.GetFlags() & flag) != 0)
                     return true;
             }
             return false;

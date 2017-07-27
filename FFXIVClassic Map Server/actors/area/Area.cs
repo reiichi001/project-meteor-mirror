@@ -617,7 +617,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 foreach (Actor a in mActorList.Values)
                     a.Update(tick);
 
-                var deltaTime = (tick - Program.LastTick).Milliseconds;
+                var deltaTime = (tick - Program.LastTick).TotalMilliseconds;
                 LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, deltaTime);
             }
         }

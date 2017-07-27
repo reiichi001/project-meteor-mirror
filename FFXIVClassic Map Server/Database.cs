@@ -1814,10 +1814,14 @@ namespace FFXIVClassic_Map_Server
                     {
                         var duration = effect.GetDurationMs() + effect.GetStartTime().Millisecond - Program.Tick.Millisecond;
 
-                        queries += Environment.NewLine + $"REPLACE INTO characters_statuseffect(characterId, statusId, magnitude, duration, tick, tier, extra) VALUES ({player.actorId}, {effect.GetEffectId()}, {effect.GetMagnitude()}, {duration}, {effect.GetTickMs()}, {effect.GetTier()}, {effect.GetExtra()});";
+                        queries += Environment.NewLine + $"REPLACE INTO characters_statuseffect(characterId, statusId, magnitude, duration, tick, tier, extra) VALUES ({player.actorId}, {effect.GetStatusEffectId()}, {effect.GetMagnitude()}, {duration}, {effect.GetTickMs()}, {effect.GetTier()}, {effect.GetExtra()});";
                     }
-                    MySqlCommand cmd = new MySqlCommand(queries, conn);
-                    cmd.ExecuteNonQuery();
+
+                    if (queries.Length > 0)
+                    {
+                        MySqlCommand cmd = new MySqlCommand(queries, conn);
+                        cmd.ExecuteNonQuery();
+                    }
                 }
                 catch (MySqlException e)
                 {

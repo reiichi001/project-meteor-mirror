@@ -1702,7 +1702,7 @@ namespace FFXIVClassic_Map_Server.Actors
         //Update select hotbar slots.
         public ActorPropertyPacketUtil GetUpdateHotbarPacket(uint playerActorId, List<ushort> slotsToUpdate)
         {
-            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charawork/command", this);
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/command", this);
 
             propPacketUtil.AddProperty("charaWork.commandBorder");
 
@@ -1797,7 +1797,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     }
                 }
                 //Unequip command
-                else if (trueCommandId == 2700083200)
+                else if (trueCommandId == 2700083200 && charaWork.command[trueHotbarSlot] != 0)
                 {
                     //Need to get the commandId this way because when unequipping an ability the commandId is 0.
                     commandId = charaWork.command[trueHotbarSlot] ^ 2700083200;                    

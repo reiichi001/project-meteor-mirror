@@ -33,7 +33,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             }
 
             // todo: check weapon delay/haste etc and use that
-            if ((tick - startTime).Milliseconds >= 0)
+            if ((tick - startTime).TotalMilliseconds >= 0)
             {
                 OnComplete();
                 return true;
@@ -72,7 +72,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 if (list.Count > 0)
                 {
                     // todo: actually check proc rate/random chance of whatever effect
-                    effectId = list[0].GetEffectId();
+                    effectId = list[0].GetStatusEffectId();
                 }
                 // todo: which is actually the swing packet
                 //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, 0, 0);

@@ -126,8 +126,8 @@ namespace FFXIVClassic_Map_Server.Actors
             propPacketUtil.AddProperty("charaWork.currentContentGroup");            
             zone.BroadcastPacketsAroundActor(this, propPacketUtil.Done());
 
-        }     
-   
+        }
+
         public void PlayAnimation(uint animId, bool onlySelf = false)
         {            
             if (onlySelf)
