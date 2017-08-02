@@ -8,20 +8,37 @@ using FFXIVClassic_Map_Server;
 using FFXIVClassic_Map_Server.utils;
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.area;
+using FFXIVClassic_Map_Server.packets.send.actor;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
+    // todo: path flags, check for obstacles etc
+    public enum PathFindFlags
+    {
+        None,
+        Scripted = 0x01,
+        IgnoreNav = 0x02,
+    }
     class PathFind
     {
         private Character owner;
+        private List<Vector3> path;
+        private bool canFollowPath;
+
+        private PathFindFlags pathFlags;
 
         public PathFind(Character owner)
         {
             this.owner = owner;
         }
 
+        public void PreparePath(Vector3 dest, float stepSize = 0.70f, int maxPath = 40, float polyRadius = 0.0f)
+        {
+            PreparePath(dest.X, dest.Y, dest.Z, stepSize, maxPath, polyRadius);
+        }
+
         // todo: is this class even needed?
-        public void PathTo(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40, float polyRadius = 0.0f)
+        public void PreparePath(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40, float polyRadius = 0.0f)
         {
             var pos = new Vector3(owner.positionX, owner.positionY, owner.positionZ);
             var dest = new Vector3(x, y, z);
@@ -29,7 +46,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
-            var path = NavmeshUtils.GetPath(zone, pos, dest, stepSize, maxPath, polyRadius);
+            if ((pathFlags & PathFindFlags.IgnoreNav) != 0)
+                path = new List<Vector3>(1) { new Vector3(x, y, z) };
+            else
+                path = NavmeshUtils.GetPath(zone, pos, dest, stepSize, maxPath, polyRadius);
 
             if (path != null)
             {
@@ -48,11 +68,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                     owner.positionZ = owner.oldPositionZ;
                 }
 
-                owner.positionUpdates = path;
-
-                owner.hasMoved = true;
-                owner.isAtSpawn = false;
-
                 sw.Stop();
                 zone.pathCalls++;
                 zone.pathCallTime += sw.ElapsedMilliseconds;
@@ -62,6 +77,71 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
                 Program.Log.Error("[{0}][{1}] Created {2} points in {3} milliseconds", owner.actorId, owner.actorName, path.Count, sw.ElapsedMilliseconds);
             }
+        }
+
+        public void PathInRange(Vector3 dest, float minRange, float maxRange)
+        {
+            PathInRange(dest.X, dest.Y, dest.Z, minRange, maxRange);
+        }
+
+        public void PathInRange(float x, float y, float z, float minRange, float maxRange = 5.0f)
+        {
+            var dest = owner.FindRandomPoint(x, y, z, minRange, maxRange);
+            PreparePath(dest.X, dest.Y, dest.Z);
+        }
+
+
+        public void SetPathFlags(PathFindFlags flags)
+        {
+            this.pathFlags = flags;
+        }
+
+        public bool IsFollowingPath()
+        {
+            return path.Count > 0;
+        }
+
+        public bool IsFollowingScriptedPath()
+        {
+            return (pathFlags & PathFindFlags.Scripted) != 0;
+        }
+
+        public void FollowPath()
+        {
+            if (path?.Count > 0)
+            {
+                var point = path[0];
+
+                owner.OnPath(point);
+                owner.QueuePositionUpdate(point);
+                path.Remove(point);
+
+                if (path.Count == 0)
+                    owner.LookAt(point.X, point.Y);
+            }
+        }
+
+        public void Clear()
+        {
+            // todo:
+            path?.Clear();
+            pathFlags = PathFindFlags.None;
+        }
+
+        private float GetSpeed()
+        {
+            float baseSpeed = owner.GetSpeed();
+
+            // todo: get actual speed crap
+            if (owner.currentSubState != SetActorStatePacket.SUB_STATE_NONE)
+            {
+                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER)
+                {
+                    owner.ChangeSpeed(0.0f, SetActorSpeedPacket.DEFAULT_WALK - 2.0f, SetActorSpeedPacket.DEFAULT_RUN - 2.0f, SetActorSpeedPacket.DEFAULT_ACTIVE - 2.0f);
+                }
+                // baseSpeed += ConfigConstants.SPEED_MOD;
+            }
+            return baseSpeed;
         }
     }
 }

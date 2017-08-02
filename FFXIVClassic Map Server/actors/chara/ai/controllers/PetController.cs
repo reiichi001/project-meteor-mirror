@@ -11,9 +11,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
     {
         private Character petMaster;
 
-        public PetController(Character owner)
+        public PetController(Character owner) :
+            base(owner)
         {
-            this.owner = owner;
             this.lastUpdate = Program.Tick;
         }
 
@@ -33,10 +33,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             return true;
         }
 
-        public override bool Disengage()
+        public override void Disengage()
         {
             // todo:
-            return true;
+            return;
         }
 
         public override void Cast(Character target, uint spellId)

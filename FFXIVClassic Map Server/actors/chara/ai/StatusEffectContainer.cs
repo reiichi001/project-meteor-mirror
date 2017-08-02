@@ -10,6 +10,7 @@ using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using System.Collections.ObjectModel;
+using FFXIVClassic_Map_Server.utils;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
@@ -19,6 +20,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private readonly Dictionary<uint, StatusEffect> effects;
         public static readonly int MAX_EFFECTS = 20;
         private bool sendUpdate = false;
+
         public StatusEffectContainer(Character owner)
         {
             this.owner = owner;
@@ -44,10 +46,30 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             if (sendUpdate)
             {
-                owner.zone.BroadcastPacketsAroundActor(owner, owner.GetActorStatusPackets());
-            }
+                var propPacketUtil = new ActorPropertyPacketUtil("charaWork.status", owner);
 
-            sendUpdate = false;
+                //Status Times
+                for (int i = 0; i < owner.charaWork.statusShownTime.Length; i++)
+                {
+                    if (owner.charaWork.status[i] != 0xFFFF && owner.charaWork.status[i] != 0)
+                        propPacketUtil.AddProperty(String.Format("charaWork.status[{0}]", i));
+
+                    if (owner.charaWork.statusShownTime[i] != 0xFFFFFFFF)
+                        propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
+                }
+                owner.zone.BroadcastPacketsAroundActor(owner, propPacketUtil.Done());
+                sendUpdate = false;
+            }
+        }
+
+        public bool HasStatusEffect(uint id)
+        {
+            return effects.ContainsKey(id);
+        }
+
+        public bool HasStatusEffect(StatusEffectId id)
+        {
+            return effects.ContainsKey((uint)id);
         }
 
         public bool AddStatusEffect(uint id, UInt64 magnitude, double tickMs, double durationMs, byte tier = 0)
@@ -74,8 +96,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 if (!silent || !effect.GetSilent() || (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
                 {
                     // todo: send packet to client with effect added message
-                    //foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
-                    //    player.QueuePacket(packets.send.actor.battle.BattleActionX01Packet.BuildPacket(player.actorId, effect.GetSource().actorId, owner.actorId, 0, effect.GetStatusEffectId(), 0, effect.GetStatusId(), 0, 0));
+                    foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
+                        player.QueuePacket(packets.send.actor.battle.BattleActionX01Packet.BuildPacket(player.actorId, newEffect.GetSource().actorId, owner.actorId, 0, newEffect.GetStatusEffectId(), 0, newEffect.GetStatusId(), 0, 0));
                 }
 
                 // wont send a message about losing effect here
@@ -93,6 +115,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                         owner.charaWork.statusShownTime[index] = Utils.UnixTimeStampUTC() + (newEffect.GetDurationMs() / 1000);
                         this.owner.zone.BroadcastPacketAroundActor(this.owner, SetActorStatusPacket.BuildPacket(this.owner.actorId, (ushort)index, (ushort)newEffect.GetStatusId()));
                     }
+                    owner.RecalculateHpMpTp();
                     sendUpdate = true;
                 }
                 return true;
@@ -122,6 +145,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 // function onLose(actor, effect)
                 LuaEngine.CallLuaStatusEffectFunction(this.owner, effect, "onLose", this.owner, effect);
                 effects.Remove(effect.GetStatusEffectId());
+                owner.RecalculateHpMpTp();
                 sendUpdate = true;
             }
         }
@@ -183,6 +207,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 }
             }
             return list;
+        }
+
+        // todo: why the fuck cant c# convert enums/
+        public bool HasStatusEffectsByFlag(StatusEffectFlags flags)
+        {
+            return HasStatusEffectsByFlag((uint)flags);
         }
 
         public bool HasStatusEffectsByFlag(uint flag)

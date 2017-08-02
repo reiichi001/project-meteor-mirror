@@ -611,10 +611,12 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             try
             {
-               // BasePacket packet = new BasePacket(path);
+                BasePacket packet = new BasePacket(path);
 
-                //packet.ReplaceActorID(actorId);
-                //QueuePacket(packet);
+                packet.ReplaceActorID(actorId);
+                var packets = packet.GetSubpackets();
+
+                QueuePackets(packets);
             }
             catch (Exception e)
             {
@@ -1687,6 +1689,64 @@ namespace FFXIVClassic_Map_Server.Actors
             LuaEngine.GetInstance().CallLuaFunction(this, this, "OnUpdate", true, delta);
         }
 
+        public override void Update(DateTime tick)
+        {
+            aiContainer.Update(tick);
+            statusEffects.Update(tick);
+        }
+
+        public override void PostUpdate(DateTime tick, List<SubPacket> packets = null)
+        {
+            base.PostUpdate(tick);
+        }
+
+        public override short GetHP()
+        {
+            return charaWork.parameterSave.hp[currentJob];
+        }
+
+        public override short GetMaxHP()
+        {
+            return charaWork.parameterSave.hpMax[currentJob];
+        }
+
+        public override byte GetHPP()
+        {
+            return (byte)(charaWork.parameterSave.hp[currentJob] / charaWork.parameterSave.hpMax[currentJob]);
+        }
+
+        public override void AddHP(short hp)
+        {
+            // todo: +/- hp and die
+            // todo: battlenpcs probably have way more hp?
+            var addHp = charaWork.parameterSave.hp[currentJob] + hp;
+            addHp = addHp.Clamp(short.MinValue, charaWork.parameterSave.hpMax[currentJob]);
+            charaWork.parameterSave.hp[currentJob] = (short)addHp;
+
+            if (charaWork.parameterSave.hp[0] < 1)
+                Die(Program.Tick);
+
+            updateFlags |= ActorUpdateFlags.HpTpMp;
+        }
+
+        public override void DelHP(short hp)
+        {
+            AddHP((short)-hp);
+        }
+
+        // todo: should this include stats too?
+        public override void RecalculateHpMpTp()
+        {
+            // todo: recalculate stats and crap
+            updateFlags |= ActorUpdateFlags.HpTpMp;
+        }
+
+        public override void Die(DateTime tick)
+        {
+            // todo: death timer
+            aiContainer.InternalDie(tick, 60);
+        }
+
         //Update all the hotbar slots past the commandborder. Commands before the commandborder only need to be sent on init since they never change
         public ActorPropertyPacketUtil GetUpdateHotbarPacket(uint playerActorId)
         {
@@ -1837,6 +1897,5 @@ namespace FFXIVClassic_Map_Server.Actors
 
             return firstSlot;
         }
-
     }
 }

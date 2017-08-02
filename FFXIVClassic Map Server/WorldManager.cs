@@ -36,7 +36,8 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<uint, ZoneEntrance> zoneEntranceList;
         private Dictionary<uint, ActorClass> actorClasses = new Dictionary<uint,ActorClass>();
         private Dictionary<ulong, Party> currentPlayerParties = new Dictionary<ulong, Party>(); //GroupId, Party object
-        private Dictionary<uint, StatusEffect> effectList = new Dictionary<uint, StatusEffect>(); // todo: load these in from a db table
+        private Dictionary<uint, StatusEffect> effectList = new Dictionary<uint, StatusEffect>();
+        private Dictionary<ushort, Ability> abilityList = new Dictionary<ushort, Ability>();
 
         private Server mServer;
 
@@ -586,7 +587,6 @@ namespace FFXIVClassic_Map_Server
             {
                 oldZone.RemoveActorFromZone(player);
             }
-
             newArea.AddActorToZone(player);
 
             //Update player actor's properties
@@ -762,13 +762,15 @@ namespace FFXIVClassic_Map_Server
 
         public void ReloadZone(uint zoneId)
         {
-            if (!zoneList.ContainsKey(zoneId))
-                return;
+            lock (zoneList)
+            {
+                if (!zoneList.ContainsKey(zoneId))
+                    return;
 
-            Zone zone = zoneList[zoneId];
-            //zone.clear();
-            //LoadNPCs(zone.actorId);
-
+                Zone zone = zoneList[zoneId];
+                //zone.clear();
+                //LoadNPCs(zone.actorId);
+            }
         }
 
         public ContentGroup CreateContentGroup(Director director, params Actor[] actors)
@@ -1038,40 +1040,53 @@ namespace FFXIVClassic_Map_Server
         }
 
         public Actor GetActorInWorld(uint charId)
-        {   
-            foreach (Zone zone in zoneList.Values)
+        {
+            lock (zoneList)
             {
-                Actor a = zone.FindActorInZone(charId);
-                if (a != null)
-                    return a;                
+                foreach (Zone zone in zoneList.Values)
+                {
+                    Actor a = zone.FindActorInZone(charId);
+                    if (a != null)
+                        return a;
+                }
             }
             return null;
         }
 
         public Actor GetActorInWorldByUniqueId(string uid)
         {
-            foreach (Zone zone in zoneList.Values)
+            lock (zoneList)
             {
-                Actor a = zone.FindActorInZoneByUniqueID(uid);
-                if (a != null)
-                    return a;
+                foreach (Zone zone in zoneList.Values)
+                {
+                    Actor a = zone.FindActorInZoneByUniqueID(uid);
+                    if (a != null)
+                        return a;
+                }
             }
             return null;
         }
 
         public Zone GetZone(uint zoneId)
         {
-            if (!zoneList.ContainsKey(zoneId))
-                return null;
-            return zoneList[zoneId];
+            lock (zoneList)
+            {
+                if (!zoneList.ContainsKey(zoneId))
+                    return null;
+
+                return zoneList[zoneId];
+            }
         }
 
         public PrivateArea GetPrivateArea(uint zoneId, string privateArea, uint privateAreaType)
         {
-            if (!zoneList.ContainsKey(zoneId))
-                return null;
+            lock (zoneList)
+            {
+                if (!zoneList.ContainsKey(zoneId))
+                    return null;
 
-            return zoneList[zoneId].GetPrivateArea(privateArea, privateAreaType);
+                return zoneList[zoneId].GetPrivateArea(privateArea, privateAreaType);
+            }
         }
 
         public WorldMaster GetActor()
@@ -1134,6 +1149,17 @@ namespace FFXIVClassic_Map_Server
             StatusEffect effect;
 
             return effectList.TryGetValue(id, out effect) ? new StatusEffect(null, effect) : null;
+        }
+
+        public void LoadAbilities()
+        {
+            abilityList = Database.LoadGlobalAbilityList();
+        }
+
+        public Ability GetAbility(ushort id)
+        {
+            Ability ability;
+            return abilityList.TryGetValue(id, out ability) ? ability.Clone() : null;
         }
     }
 

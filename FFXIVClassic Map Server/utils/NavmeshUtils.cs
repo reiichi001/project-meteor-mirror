@@ -16,10 +16,34 @@ namespace FFXIVClassic_Map_Server.utils
     {
 
         // navmesh
-        public static bool CanSee(float x1, float y1, float z1, float x2, float y2, float z2)
+        public static bool CanSee(actors.area.Zone zone, float x1, float y1, float z1, float x2, float y2, float z2)
         {
+            // todo: prolly shouldnt raycast
+            var navMesh = zone.tiledNavMesh;
+            if (navMesh != null)
+            {
+                var navMeshQuery = zone.navMeshQuery;
 
-            return false;
+                NavPoint startPt, endPt;
+                SharpNav.Pathfinding.Path path = new SharpNav.Pathfinding.Path();
+
+                RaycastHit hit = new RaycastHit();
+
+                SharpNav.Geometry.Vector3 c = new SharpNav.Geometry.Vector3(x1, y1, z1);
+                SharpNav.Geometry.Vector3 ep = new SharpNav.Geometry.Vector3(x2, y2, z2);
+
+                SharpNav.Geometry.Vector3 e = new SharpNav.Geometry.Vector3(5, 5, 5);
+                navMeshQuery.FindNearestPoly(ref c, ref e, out startPt);
+                navMeshQuery.FindNearestPoly(ref ep, ref e, out endPt);
+
+
+                if (navMeshQuery.Raycast(ref startPt, ref ep, RaycastOptions.None, out hit, path))
+                {
+                    return true;
+                }
+                return false;
+            }
+            return true;
         }
 
         public static SharpNav.TiledNavMesh LoadNavmesh(TiledNavMesh navmesh, string filePath)
@@ -61,7 +85,7 @@ namespace FFXIVClassic_Map_Server.utils
             // no point pathing if in range
             if (distanceSquared < 4 && Math.Abs(startVec.Y - endVec.Y) < 1.1f)
             {
-                return null;
+                return new List<Vector3>() { endVec };
             }
 
             var smoothPath = new List<Vector3>(pathSize) { };

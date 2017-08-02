@@ -34,7 +34,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         public virtual void OnStart() {  }
         public virtual void OnInterrupt() { }
         public virtual void OnComplete() { isCompleted = true; }
-
+        public virtual bool CanChangeState() { return false; }
         public virtual void TryInterrupt() { }
 
         public virtual void Cleanup() { }

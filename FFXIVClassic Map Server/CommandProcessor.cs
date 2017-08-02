@@ -32,7 +32,7 @@ namespace FFXIVClassic_Map_Server
 
         internal bool DoCommand(string input, Session session)
         {
-            if (!input.Any() || input.Equals(""))
+            if (!input.Any() || input.Equals("") || input.Length == 1)
                 return false;
 
             input.Trim();

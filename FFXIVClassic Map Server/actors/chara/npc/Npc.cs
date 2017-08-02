@@ -396,7 +396,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override void Update(DateTime tick)
         {
-        
+            // todo: can normal npcs have status effects?
+            aiContainer.Update(tick);
         }
 
         //A party member list packet came, set the party

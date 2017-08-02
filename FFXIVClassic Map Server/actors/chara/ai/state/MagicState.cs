@@ -9,33 +9,34 @@ using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
 namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 {
-    class AttackState : State
+    class MagicState : State
     {
-        private int damage = 0;
-        private bool tooFar = false;
-        private DateTime attackTime;
 
-        public AttackState(Character owner, Character target) :
+        private Ability spell;
+
+        public MagicState(Character owner, Character target, ushort spellId) :
             base(owner, target)
         {
-            owner.ChangeState(SetActorStatePacket.MAIN_STATE_ACTIVE);
-            owner.aiContainer.ChangeTarget(target);
             this.startTime = DateTime.Now;
-            attackTime = startTime;
-            owner.aiContainer.pathFind?.Clear();
-            // todo: should handle everything here instead of on next tick..
+            // todo: lookup spell from global table
+            this.spell = Server.GetWorldManager().GetAbility(spellId);
+
+            if (spell != null)
+            {
+                if (spell.CanPlayerUse(owner, target))
+                    OnStart();
+            }
         }
 
         public override void OnStart()
         {
             // todo: check within attack range
-            
+
             owner.LookAt(target);
         }
 
         public override bool Update(DateTime tick)
         {
-            /*
             TryInterrupt();
 
             if (interrupt)
@@ -43,32 +44,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 OnInterrupt();
                 return true;
             }
-            */
-            if (owner.target == null || target.IsDead())
+
+            // todo: check weapon delay/haste etc and use that
+            if ((tick - startTime).TotalMilliseconds >= 0)
             {
+                OnComplete();
                 return true;
-            }
-            if (IsAttackReady())
-            {
-                if (CanAttack())
-                {
-                    TryInterrupt();
-
-                    // todo: check weapon delay/haste etc and use that
-                    if (!interrupt)
-                    {
-                        OnComplete();
-                    }
-                    else
-                    {
-
-                    }
-                    SetInterrupted(false);
-                }
-                else
-                {
-                    // todo: handle interrupt/paralyze etc
-                }
             }
             return false;
         }
@@ -80,20 +61,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnComplete()
         {
-            damage = utils.AttackUtils.CalculateDamage(owner, target);
-
-            // onAttack(actor, target, damage)
-            utils.BattleUtils.DamageTarget(owner, target, damage);
-            lua.LuaEngine.CallLuaBattleAction(owner, "onAttack", false, owner, target, damage);
-
-            foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
-                player.QueuePacket(BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, target.actorId, 223001, 18, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0));
-            if (target is Player)
-                ((Player)target).SendPacket("139.bin");
-
-            target.AddHP((short)damage);
-            attackTime = attackTime.AddMilliseconds(owner.GetAttackDelayMs());
-           //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
+            //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
+            isCompleted = true;
         }
 
         public override void TryInterrupt()
@@ -119,11 +88,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             interrupt = !CanAttack();
         }
 
-        private bool IsAttackReady()
-        {
-            return Program.Tick >= attackTime;
-        }
-
         private bool CanAttack()
         {
             if (target == null)
@@ -141,20 +105,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             }
             else if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) >= 7.5f)
             {
-                //owner.aiContainer.GetpathFind?.PreparePath(target.positionX, target.positionY, target.positionZ, 2.5f, 4);
+                owner.aiContainer.pathFind?.PreparePath(target.positionX, target.positionY, target.positionZ, 2.5f, 4);
                 return false;
             }
-            return true;
-        }
-
-        public override void Cleanup()
-        {
-            if (owner.IsDead())
-                owner.Disengage();
-        }
-
-        public override bool CanChangeState()
-        {
             return true;
         }
     }

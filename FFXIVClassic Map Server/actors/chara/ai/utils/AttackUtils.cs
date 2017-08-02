@@ -14,6 +14,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 
             return dmg;
         }
+
         public static int CalculateBaseDamage(Character attacker, Character defender)
         {
             // todo: actually calculate damage

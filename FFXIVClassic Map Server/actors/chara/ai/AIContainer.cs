@@ -20,7 +20,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private Stack<State> states;
         private DateTime latestUpdate;
         private DateTime prevUpdate;
-        private PathFind pathFind;
+        public readonly PathFind pathFind;
         private TargetFind targetFind;
         private ActionQueue actionQueue;
 
@@ -43,16 +43,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             // todo: trigger listeners
 
-            // todo: action queues
-            controller?.Update(tick);
-            State currState;
-            while (states.Count > 0 && (currState = states.Peek()).Update(tick))
+            if (controller == null && pathFind != null)
             {
-                if (currState  == GetCurrentState())
-                {
+                pathFind.FollowPath();
+            }
 
+            // todo: action queues
+            if (controller != null && controller.canUpdate)
+                controller.Update(tick);
+
+            State top;
+            while (states.Count > 0 && (top = states.Peek()).Update(tick))
+            {
+                if (top == GetCurrentState())
+                {
+                    states.Pop().Cleanup();
                 }
             }
+            owner.PostUpdate(tick);
         }
 
         public void CheckCompletedStates()
@@ -91,6 +99,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public Controller GetController()
         {
             return controller;
+        }
+
+        public TargetFind GetTargetFind()
+        {
+            return targetFind;
+        }
+
+        public bool CanFollowPath()
+        {
+            return pathFind != null && (GetCurrentState() != null || GetCurrentState().CanChangeState());
         }
 
         public bool CanChangeState()
@@ -135,9 +153,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             }
         }
 
+        public bool IsCurrentState<T>() where T : State
+        {
+            return GetCurrentState() is T;
+        }
+
         public State GetCurrentState()
         {
-            return states.Peek() ?? null;
+            return states.Count > 0 ? states.Peek() : null;
         }
 
         public DateTime GetLatestUpdate()
@@ -145,10 +168,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return latestUpdate;
         }
 
+        public void Reset()
+        {
+            // todo: reset cooldowns and stuff here too?
+            targetFind?.Reset();
+            pathFind?.Clear();
+            ClearStates();
+            InternalDisengage();
+        }
+
         public bool IsSpawned()
         {
             // todo: set a flag when finished spawning
-            return true;
+            return !IsDead();
         }
 
         public bool IsEngaged()
@@ -211,7 +243,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void InternalChangeTarget(Character target)
         {
+            // todo: use invalid target id
+            // todo: this is retarded, call entity's changetarget function
+            owner.target = target;
+            owner.currentLockedTarget = target != null ? target.actorId : 0xC0000000;
+            owner.currentTarget = target != null ? target.actorId : 0xC0000000;
 
+            if (IsEngaged() || target == null)
+            {
+
+            }
+            else
+            {
+                Engage(target);
+            }
         }
 
         public bool InternalEngage(Character target)
@@ -236,7 +281,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void InternalDisengage()
         {
+            pathFind?.Clear();
+            GetTargetFind()?.Reset();
 
+            owner.updateFlags |= (ActorUpdateFlags.State | ActorUpdateFlags.HpTpMp);
+
+            // todo: use the update flags
+            owner.ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
+
+            ChangeTarget(null);
         }
 
         public void InternalCast(Character target, uint spellId)
@@ -256,7 +309,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void InternalDie(DateTime tick, uint timeToFadeout)
         {
-
+            ClearStates();
+            Disengage();
+            ForceChangeState(new DeathState(owner, tick, timeToFadeout));
         }
 
         public void InternalRaise(Character target)

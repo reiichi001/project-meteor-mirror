@@ -39,7 +39,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public void QueuePacket(SubPacket subPacket)
         {
             subPacket.SetTargetId(id);
-            Server.GetWorldConnection().QueuePacket(subPacket);
+            Server.GetWorldConnection()?.QueuePacket(subPacket);
         }
 
         public Player GetActor()
@@ -119,12 +119,12 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 {
                     //Don't send for static characters (npcs)
                     // todo: this is retarded, need actual mob class
-                    if (actor is Character && ((Character)actor).isStatic)
-                        continue;
+                    //if (actor is Character && ((Character)actor).isStatic)
+                    //    continue;
 
-                    var packet = actor.CreatePositionUpdatePacket();
-                    if (packet != null)
-                        QueuePacket(packet);
+                    //var packet = actor.CreatePositionUpdatePacket();
+                    //if (packet != null)
+                    //    QueuePacket(packet);
                 }
                 else
                 {   

@@ -491,9 +491,13 @@ namespace FFXIVClassic_Map_Server.lua
         public static void RunGMCommand(Player player, String cmd, string[] param, bool help = false)
         {
             bool playerNull = player == null;
-            if (playerNull && param.Length >= 2)
-                player = Server.GetWorldManager().GetPCInWorld(param[1].Contains("\"") ? param[1] : param[1] + " " + param[2]);
-
+            if (playerNull)
+            {
+                if (param.Length >= 2 && param[1].Contains("\""))
+                    player = Server.GetWorldManager().GetPCInWorld(param[1]);
+                else if (param.Length > 2)
+                    player = Server.GetWorldManager().GetPCInWorld(param[1] + param[2]);
+            }
             // load from scripts/commands/gm/ directory
             var path = String.Format("./scripts/commands/gm/{0}.lua", cmd.ToLower());
 

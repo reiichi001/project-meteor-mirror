@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
-    enum StatusEffectId
+    enum StatusEffectId : uint
     {
         RageofHalone = 221021,
 
@@ -324,7 +324,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
     }
 
     [Flags]
-    enum StatusEffectFlags
+    enum StatusEffectFlags : uint
     {
         None = 0x00,
         Silent = 0x01,             // dont display effect loss message
@@ -338,6 +338,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         LoseOnDamageTaken = 0x100, // effects removed when owner takes damage
 
         PreventAction = 0x200,     // effects which prevent actions such as sleep/paralyze/petrify
+        Stealth = 0x400,           // sneak/invis
     }
 
     enum StatusEffectOverwrite : byte
@@ -370,6 +371,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public StatusEffect(Character owner, uint id, UInt64 magnitude, uint tickMs, uint durationMs, byte tier = 0)
         {
             this.owner = owner;
+            this.source = owner;
             this.id = (StatusEffectId)id;
             this.magnitude = magnitude;
             this.tickMs = tickMs;
@@ -390,6 +392,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public StatusEffect(Character owner, StatusEffect effect)
         {
             this.owner = owner;
+            this.source = owner;
             this.id = effect.id;
             this.magnitude = effect.magnitude;
             this.tickMs = effect.tickMs;

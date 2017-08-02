@@ -12,16 +12,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         protected Character owner;
 
         protected DateTime lastUpdate;
-        protected bool canUpdate = true;
+        public bool canUpdate = true;
         protected bool autoAttackEnabled = true;
         protected bool castingEnabled = true;
         protected bool weaponSkillEnabled = true;
         protected PathFind pathFind;
         protected TargetFind targetFind;
 
+        public Controller(Character owner)
+        {
+            this.owner = owner;
+        }
+
         public abstract void Update(DateTime tick);
         public abstract bool Engage(Character target);
-        public abstract bool Disengage();
         public abstract void Cast(Character target, uint spellId);
         public virtual void WeaponSkill(Character target, uint weaponSkillId) { }
         public virtual void MonsterSkill(Character target, uint mobSkillId) { }
@@ -30,6 +34,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         public virtual void Spawn() { }
         public virtual void Despawn() { }
 
+
+        public virtual void Disengage()
+        {
+            owner.aiContainer.InternalDisengage();
+        }
 
         public virtual void ChangeTarget(Character target)
         {

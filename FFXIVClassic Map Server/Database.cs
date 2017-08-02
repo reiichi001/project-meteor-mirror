@@ -1833,6 +1833,66 @@ namespace FFXIVClassic_Map_Server
                 }
             }
         }
+
+        public static Dictionary<ushort, Ability> LoadGlobalAbilityList()
+        {
+            var abilities = new Dictionary<ushort, Ability>();
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    var query = ("SELECT id, name, classJob, level, requirements, validTarget, aoeTarget, aoeType, `range`, characterFind, statusDuration, " +
+                        "castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, positionBonus, procRequirement FROM abilities;");
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var id = reader.GetUInt16(0);
+                            var name = reader.GetString(1);
+                            var ability = new Ability(id, name);
+
+                            ability.job = reader.GetByte(2);
+                            ability.level = reader.GetByte(3);
+                            ability.requirements = (AbilityRequirements)reader.GetUInt16(4);
+                            ability.validTarget = (TargetFindFlags)reader.GetByte(5);
+                            ability.aoeTarget = (TargetFindAOETarget)reader.GetByte(6);
+                            ability.aoeType = (TargetFindAOEType)reader.GetByte(7);
+                            ability.range = reader.GetInt32(8);
+                            ability.characterFind = (TargetFindCharacterType)reader.GetByte(9);
+                            ability.statusDurationSeconds = reader.GetUInt32(10);
+                            ability.castTimeSeconds = reader.GetUInt32(11);
+                            ability.recastTimeSeconds = reader.GetUInt32(12);
+                            ability.mpCost = reader.GetUInt16(13);
+                            ability.tpCost = reader.GetUInt16(14);
+                            ability.animationType = reader.GetByte(15);
+                            ability.effectAnimation = reader.GetUInt16(16);
+                            ability.modelAnimation = reader.GetUInt16(17);
+                            ability.animationDurationSeconds = reader.GetUInt16(18);
+                            ability.positionBonus = (AbilityPositionBonus)reader.GetByte(19);
+                            ability.procRequirement = (AbilityProcRequirement)reader.GetByte(20);
+                            
+                            abilities.Add(id, ability);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return abilities;
+        }
+
     }
 
 }
