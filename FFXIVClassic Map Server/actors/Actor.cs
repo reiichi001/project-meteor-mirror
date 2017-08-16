@@ -404,9 +404,14 @@ namespace FFXIVClassic_Map_Server.Actors
                         // push latest for player
                         var pos = positionUpdates?[currentSubState == SetActorStatePacket.SUB_STATE_PLAYER ? positionUpdates.Count - 1 : 0];
 
+                        oldPositionX = positionX;
+                        oldPositionY = positionY;
+                        oldPositionZ = positionZ;
+
                         positionX = pos.X;
                         positionY = pos.Y;
                         positionZ = pos.Z;
+                        
                         //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
 
                         positionUpdates.RemoveAt(0);

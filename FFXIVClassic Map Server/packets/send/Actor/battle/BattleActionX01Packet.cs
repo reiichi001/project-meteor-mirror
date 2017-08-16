@@ -31,7 +31,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
                     binWriter.Seek(0x20, SeekOrigin.Begin);
                     binWriter.Write((UInt32)1); //Num actions (always 1 for this)
                     binWriter.Write((UInt16)commandId);
-                    binWriter.Write((UInt16)810); //?
+                    binWriter.Write((UInt16)0x810); //?
 
                     binWriter.Write((UInt32)targetActorId);
 

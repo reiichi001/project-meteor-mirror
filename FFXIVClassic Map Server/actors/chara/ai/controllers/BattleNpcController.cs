@@ -82,7 +82,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                     if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > 10)
                     {
                         owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
-                        owner.aiContainer.pathFind.PreparePath(target.positionX, target.positionY, target.positionZ);
+                        owner.aiContainer.pathFind.PathInRange(target.positionX, target.positionY, target.positionZ, 1.5f, owner.meleeRange);
                         ChangeTarget(target);
                         return false;
                     }
@@ -193,18 +193,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 return;
             }
 
-            var targetPos = owner.target.GetPosAsVector3();
+            var targetPos = new Vector3(owner.target.positionX, owner.target.positionY, owner.target.positionZ);
             var distance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, targetPos.X, targetPos.Y, targetPos.Z);
 
             if (distance > owner.meleeRange - 0.2f || owner.aiContainer.CanFollowPath())
             {
                 if (CanMoveForward(distance))
                 {
+                    owner.LookAt(targetPos.X, targetPos.Y);
                     if (!owner.aiContainer.pathFind.IsFollowingPath() && distance > 3)
                     {
                         // pathfind if too far otherwise jump to target
-                        owner.aiContainer.pathFind.SetPathFlags(distance > 3 ? PathFindFlags.None : PathFindFlags.IgnoreNav );
-                        owner.aiContainer.pathFind.PreparePath(targetPos, 0.7f, 5);
+                        owner.aiContainer.pathFind.SetPathFlags(distance > 5 ? PathFindFlags.None : PathFindFlags.IgnoreNav );
+                        owner.aiContainer.pathFind.PreparePath(targetPos, 0.5f, 5);
                     }
                     owner.aiContainer.pathFind.FollowPath();
                     if (!owner.aiContainer.pathFind.IsFollowingPath())
@@ -213,7 +214,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                         {
                             foreach (var battlenpc in owner.zone.GetActorsAroundActor<BattleNpc>(owner, 1))
                             {
-                                battlenpc.aiContainer.pathFind.PathInRange(targetPos, 1.5f, 1.5f);
+                                if (battlenpc == owner)
+                                    continue;
+                                float mobDistance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, battlenpc.positionX, battlenpc.positionY, battlenpc.positionZ);
+                                if (mobDistance < 0.3f && (battlenpc.updateFlags & ActorUpdateFlags.Position) == 0)
+                                    battlenpc.aiContainer.pathFind.PathInRange(targetPos, 1.5f, 1.5f);
                             }
                         }
                     }
@@ -277,7 +282,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             if (verticalDistance > 8)
                 return false;
 
-            var distance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ);
+            var distance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.oldPositionX, target.oldPositionY, target.oldPositionZ);
 
             bool detectSight = forceSight || (owner.aggroType & AggroType.Sight) != 0;
             bool hasSneak = false;

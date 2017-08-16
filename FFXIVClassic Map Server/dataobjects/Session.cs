@@ -72,14 +72,16 @@ namespace FFXIVClassic_Map_Server.dataobjects
             if (playerActor.positionX == x && playerActor.positionY == y && playerActor.positionZ == z && playerActor.rotation == rot)
                 return;
 
+            /*
             playerActor.oldPositionX = playerActor.positionX;
             playerActor.oldPositionY = playerActor.positionY;
             playerActor.oldPositionZ = playerActor.positionZ;
             playerActor.oldRotation = playerActor.rotation;
-
+            
             playerActor.positionX = x;
             playerActor.positionY = y;
             playerActor.positionZ = z;
+            */
             playerActor.rotation = rot;
             playerActor.moveState = moveState;
 

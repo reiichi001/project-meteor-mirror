@@ -379,6 +379,16 @@ namespace FFXIVClassic.Common
                 return value;
         }
 
+        public static float DistanceSquared(Vector3 lhs, Vector3 rhs)
+        {
+            return DistanceSquared(lhs.X, lhs.Y, lhs.Z, rhs.X, rhs.Y, rhs.Z);
+        }
+
+        public static float Distance(Vector3 lhs, Vector3 rhs)
+        {
+            return Distance(lhs.X, lhs.Y, lhs.Z, rhs.X, rhs.Y, rhs.Z);
+        }
+
         public static float Distance(float x, float y, float z, float x2, float y2, float z2)
         {
             if (x == x2 && y == y2 && z == z2)

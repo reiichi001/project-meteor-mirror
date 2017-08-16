@@ -43,7 +43,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 // todo: actual stat based range
                 if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > 10)
                 {
-                    owner.aiContainer.pathFind.PreparePath(target.positionX, target.positionY, target.positionZ);
+                    {
+                        // todo: out of range error
+                    }
                     ChangeTarget(target);
                     return false;
                 }

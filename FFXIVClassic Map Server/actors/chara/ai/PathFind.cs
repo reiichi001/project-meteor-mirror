@@ -10,6 +10,8 @@ using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.packets.send.actor;
 
+// port of https://github.com/DarkstarProject/darkstar/blob/master/src/map/ai/helpers/pathfind.h
+
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
     // todo: path flags, check for obstacles etc
@@ -24,6 +26,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private Character owner;
         private List<Vector3> path;
         private bool canFollowPath;
+        float distanceFromPoint;
 
         private PathFindFlags pathFlags;
 
@@ -87,6 +90,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public void PathInRange(float x, float y, float z, float minRange, float maxRange = 5.0f)
         {
             var dest = owner.FindRandomPoint(x, y, z, minRange, maxRange);
+            // todo: this is dumb..
+            distanceFromPoint = owner.meleeRange;
             PreparePath(dest.X, dest.Y, dest.Z);
         }
 
@@ -98,7 +103,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public bool IsFollowingPath()
         {
-            return path.Count > 0;
+            return path?.Count > 0;
         }
 
         public bool IsFollowingScriptedPath()
@@ -112,12 +117,53 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 var point = path[0];
 
-                owner.OnPath(point);
-                owner.QueuePositionUpdate(point);
-                path.Remove(point);
+                StepTo(point);
 
-                if (path.Count == 0)
-                    owner.LookAt(point.X, point.Y);
+                if (AtPoint(point))
+                {
+                    path.Remove(point);
+                    owner.OnPath(point);
+                }
+            }
+        }
+
+        public bool AtPoint(Vector3 point)
+        {
+            if (distanceFromPoint == 0)
+                return owner.positionX == point.X && owner.positionZ == point.Z;
+            else
+                return Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, point.X, point.Y, point.Z) <= (distanceFromPoint + 1.5f);
+        }
+
+        public void StepTo(Vector3 point, bool run = false)
+        {
+            float speed = GetSpeed();
+
+            float stepDistance = (speed / 10) / 2;
+            float distanceTo = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, point.X, point.Y, point.Z);
+
+            owner.LookAt(point.X, point.Y);
+
+            if (distanceTo <= distanceFromPoint + stepDistance + 1.5f)
+            {
+                if (distanceFromPoint == 0)
+                {
+                    owner.QueuePositionUpdate(point);
+                }
+                else
+                {
+                    float x = owner.positionX - (float)Math.Cos(owner.rotation + (float)(Math.PI / 2)) * (distanceTo - distanceFromPoint);
+                    float z = owner.positionZ + (float)Math.Sin(owner.rotation + (float)(Math.PI / 2)) * (distanceTo - distanceFromPoint);
+
+                    owner.QueuePositionUpdate(x, owner.positionY, z);
+                }
+            }
+            else
+            {
+                float x = owner.positionX - (float)Math.Cos(owner.rotation + (float)(Math.PI / 2)) * (distanceTo - distanceFromPoint);
+                float z = owner.positionZ + (float)Math.Sin(owner.rotation + (float)(Math.PI / 2)) * (distanceTo - distanceFromPoint);
+
+                owner.QueuePositionUpdate(x, owner.positionY, z);
             }
         }
 
@@ -126,6 +172,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             // todo:
             path?.Clear();
             pathFlags = PathFindFlags.None;
+            distanceFromPoint = 0.0f;
+
         }
 
         private float GetSpeed()
@@ -137,7 +185,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 if (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER)
                 {
-                    owner.ChangeSpeed(0.0f, SetActorSpeedPacket.DEFAULT_WALK - 2.0f, SetActorSpeedPacket.DEFAULT_RUN - 2.0f, SetActorSpeedPacket.DEFAULT_ACTIVE - 2.0f);
+                    //owner.ChangeSpeed(0.0f, SetActorSpeedPacket.DEFAULT_WALK - 2.0f, SetActorSpeedPacket.DEFAULT_RUN - 2.0f, SetActorSpeedPacket.DEFAULT_ACTIVE - 2.0f);
                 }
                 // baseSpeed += ConfigConstants.SPEED_MOD;
             }

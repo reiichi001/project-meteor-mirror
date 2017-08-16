@@ -87,12 +87,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             lua.LuaEngine.CallLuaBattleAction(owner, "onAttack", false, owner, target, damage);
 
             foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
-                player.QueuePacket(BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, target.actorId, 223001, 18, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0));
-            if (target is Player)
-                ((Player)target).SendPacket("139.bin");
+                player.QueuePacket(BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, target.actorId, 0, 537094006, 0, 27260, (ushort)damage, 0));
+            //if (target is Player)
+            //    ((Player)target).SendPacket("139.bin");
 
             target.AddHP((short)damage);
             attackTime = attackTime.AddMilliseconds(owner.GetAttackDelayMs());
+            owner.LookAt(target);
            //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
         }
 

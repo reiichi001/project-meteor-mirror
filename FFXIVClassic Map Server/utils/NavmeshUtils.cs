@@ -58,11 +58,16 @@ namespace FFXIVClassic_Map_Server.utils
             //return navmesh = new SharpNav.IO.Json.NavMeshJsonSerializer().Deserialize(filePath);
         }
 
+        public static List<Vector3> GetPath(actors.area.Zone zone, float x, float y, float z, float targetX, float targetY, float targetZ, float stepSize = 0.70f, int pathSize = 45, float polyRadius = 0.0f, bool skipToTarget = false)
+        {
+            return GetPath(zone, new Vector3(x, y, z), new Vector3(targetX, targetY, targetZ), stepSize, pathSize, polyRadius, skipToTarget);
+        }
+
         #region sharpnav stuff
         // Copyright (c) 2013-2016 Robert Rouhani <robert.rouhani@gmail.com> and other contributors (see CONTRIBUTORS file).
         // Licensed under the MIT License - https://raw.github.com/Robmaister/SharpNav/master/LICENSE
 
-        public static List<Vector3> GetPath(FFXIVClassic_Map_Server.actors.area.Zone zone, Vector3 startVec, Vector3 endVec, float stepSize = 0.70f, int pathSize = 45, float polyRadius = 0.0f, bool skipToTarget = false)
+        public static List<Vector3> GetPath(actors.area.Zone zone, Vector3 startVec, Vector3 endVec, float stepSize = 0.70f, int pathSize = 45, float polyRadius = 0.0f, bool skipToTarget = false)
         {
             var navMesh = zone.tiledNavMesh;
             var navMeshQuery = zone.navMeshQuery;
@@ -77,15 +82,6 @@ namespace FFXIVClassic_Map_Server.utils
             if (startVec.X == endVec.X && startVec.Y == endVec.Y && startVec.Z == endVec.Z && polyRadius == 0.0f)
             {
                 return null;
-            }
-
-            // we dont care about distance if picking random point
-            float distanceSquared = polyRadius == 0.0f ? FFXIVClassic.Common.Utils.DistanceSquared(startVec.X, startVec.Y, startVec.Z, endVec.X, endVec.Y, endVec.Z) : 100;
-            
-            // no point pathing if in range
-            if (distanceSquared < 4 && Math.Abs(startVec.Y - endVec.Y) < 1.1f)
-            {
-                return new List<Vector3>() { endVec };
             }
 
             var smoothPath = new List<Vector3>(pathSize) { };
