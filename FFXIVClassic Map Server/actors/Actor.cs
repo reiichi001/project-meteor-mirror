@@ -402,11 +402,12 @@ namespace FFXIVClassic_Map_Server.Actors
                     if (positionUpdates != null && positionUpdates.Count > 0)
                     {
                         // push latest for player
-                        var pos = positionUpdates?[currentSubState == SetActorStatePacket.SUB_STATE_PLAYER ? positionUpdates.Count - 1 : 0];
+                        var pos = positionUpdates[currentSubState == SetActorStatePacket.SUB_STATE_PLAYER ? positionUpdates.Count - 1 : 0];
 
                         oldPositionX = positionX;
                         oldPositionY = positionY;
                         oldPositionZ = positionZ;
+                        oldRotation = rotation;
 
                         positionX = pos.X;
                         positionY = pos.Y;
@@ -414,10 +415,10 @@ namespace FFXIVClassic_Map_Server.Actors
                         
                         //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
 
-                        positionUpdates.RemoveAt(0);
+                        positionUpdates.Remove(pos);
+                        lastMoveUpdate = DateTime.Now;
+                        packets.Add(CreatePositionUpdatePacket());
                     }
-                    lastMoveUpdate = DateTime.Now;
-                    packets.Add(CreatePositionUpdatePacket());
                 }
 
                 if ((updateFlags & ActorUpdateFlags.Speed) != 0)
@@ -651,7 +652,7 @@ namespace FFXIVClassic_Map_Server.Actors
             var dRot = Math.PI - rot2 + Math.PI / 2;
 
             // pending move, dont need to unset it
-            this.updateFlags = (rotation != (float)dRot) ? updateFlags |= ActorUpdateFlags.Position : updateFlags;
+            this.updateFlags |= ActorUpdateFlags.Position;
             rotation = (float)dRot;
         }
 

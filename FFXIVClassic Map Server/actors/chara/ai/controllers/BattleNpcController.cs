@@ -104,9 +104,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             var target = owner.target;
             base.Disengage();
             // todo:
-            lastActionTime = lastUpdate;
+            lastActionTime = lastUpdate.AddSeconds(5);
             owner.isMovingToSpawn = true;
-            neutralTime = lastUpdate;
+            neutralTime = lastActionTime;
             owner.hateContainer.ClearHate();
             owner.moveState = 1;
             lua.LuaEngine.CallLuaBattleAction(owner, "onDisengage", owner, target);
@@ -164,6 +164,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 waitTime = tick.AddSeconds(10);
                 owner.OnRoam(tick);
             }
+
+            if (owner.aiContainer.pathFind.IsFollowingPath())
+            {
+                owner.aiContainer.pathFind.FollowPath();
+            }
         }
 
         private void DoCombatTick(DateTime tick)
@@ -200,12 +205,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             {
                 if (CanMoveForward(distance))
                 {
-                    owner.LookAt(targetPos.X, targetPos.Y);
                     if (!owner.aiContainer.pathFind.IsFollowingPath() && distance > 3)
                     {
                         // pathfind if too far otherwise jump to target
                         owner.aiContainer.pathFind.SetPathFlags(distance > 5 ? PathFindFlags.None : PathFindFlags.IgnoreNav );
-                        owner.aiContainer.pathFind.PreparePath(targetPos, 0.5f, 5);
+                        owner.aiContainer.pathFind.PreparePath(targetPos, 1.2f, 5);
                     }
                     owner.aiContainer.pathFind.FollowPath();
                     if (!owner.aiContainer.pathFind.IsFollowingPath())
@@ -282,7 +286,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             if (verticalDistance > 8)
                 return false;
 
-            var distance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.oldPositionX, target.oldPositionY, target.oldPositionZ);
+            var distance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ);
 
             bool detectSight = forceSight || (owner.aggroType & AggroType.Sight) != 0;
             bool hasSneak = false;
@@ -301,7 +305,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 hasInvisible = hasSneak;
             }
 
-            if (detectSight && !hasInvisible && owner.IsFacing(target))
+            if (detectSight && !hasInvisible && isFacing)
                 return CanSeePoint(target.positionX, target.positionY, target.positionZ);
 
             if ((owner.aggroType & AggroType.LowHp) != 0 && target.GetHPP() < 75)

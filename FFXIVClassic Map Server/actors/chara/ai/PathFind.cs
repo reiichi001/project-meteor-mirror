@@ -35,13 +35,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.owner = owner;
         }
 
-        public void PreparePath(Vector3 dest, float stepSize = 0.70f, int maxPath = 40, float polyRadius = 0.0f)
+        public void PreparePath(Vector3 dest, float stepSize = 1.25f, int maxPath = 40, float polyRadius = 0.0f)
         {
             PreparePath(dest.X, dest.Y, dest.Z, stepSize, maxPath, polyRadius);
         }
 
         // todo: is this class even needed?
-        public void PreparePath(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40, float polyRadius = 0.0f)
+        public void PreparePath(float x, float y, float z, float stepSize = 1.25f, int maxPath = 40, float polyRadius = 0.0f)
         {
             var pos = new Vector3(owner.positionX, owner.positionY, owner.positionZ);
             var dest = new Vector3(x, y, z);
@@ -123,7 +123,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 {
                     path.Remove(point);
                     owner.OnPath(point);
+                    Program.Log.Error($"{owner.actorName} arrived at point {point.X} {point.Y} {point.Z}");
                 }
+
+                if (path.Count == 0 && owner.target != null)
+                    owner.LookAt(owner.target);
             }
         }
 
@@ -132,21 +136,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (distanceFromPoint == 0)
                 return owner.positionX == point.X && owner.positionZ == point.Z;
             else
-                return Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, point.X, point.Y, point.Z) <= (distanceFromPoint + 1.5f);
+                return Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, point.X, point.Y, point.Z) <= (distanceFromPoint + 4.5f);
         }
 
         public void StepTo(Vector3 point, bool run = false)
         {
             float speed = GetSpeed();
 
-            float stepDistance = (speed / 10) / 2;
+            float stepDistance = speed;
             float distanceTo = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, point.X, point.Y, point.Z);
 
             owner.LookAt(point.X, point.Y);
 
-            if (distanceTo <= distanceFromPoint + stepDistance + 1.5f)
+            if (distanceTo <= distanceFromPoint + stepDistance)
             {
-                if (distanceFromPoint == 0)
+                if (distanceFromPoint <= 1.5f)
                 {
                     owner.QueuePositionUpdate(point);
                 }

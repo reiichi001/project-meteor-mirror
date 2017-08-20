@@ -47,10 +47,10 @@ namespace FFXIVClassic_Map_Server
 
             split = split.ToArray(); // Ignore case on commands
 
-            var cmd = split[0];
-
-            if (cmd.Any())
+            if (split.Length > 0)
             {
+                var cmd = split[0];
+
                 // if client isnt null, take player to be the player actor
                 Player player = null;
                 if (session != null)

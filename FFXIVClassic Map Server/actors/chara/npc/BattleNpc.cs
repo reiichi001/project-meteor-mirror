@@ -116,8 +116,16 @@ namespace FFXIVClassic_Map_Server.Actors
             // leash back to spawn
             if (!IsCloseToSpawn())
             {
-                isMovingToSpawn = true;
-                aiContainer.Reset();
+                if (!isMovingToSpawn)
+                {
+                    aiContainer.Reset();
+                    isMovingToSpawn = true;
+                }
+                else
+                {
+                    if (target == null && !aiContainer.pathFind.IsFollowingPath())
+                        aiContainer.pathFind.PathInRange(spawnX, spawnY, spawnZ, 1.0f, 15.0f);
+                }
             }
             else
             {
@@ -135,9 +143,6 @@ namespace FFXIVClassic_Map_Server.Actors
                         hateContainer.AddBaseHate(player);
                 }
             }
-
-            if (target == null)
-                aiContainer.pathFind.PathInRange(spawnX, spawnY, spawnZ, 1.0f, 35.0f);
         }
 
         public uint GetDespawnTime()

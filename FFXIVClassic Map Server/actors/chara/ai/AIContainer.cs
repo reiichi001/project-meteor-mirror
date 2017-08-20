@@ -284,12 +284,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             pathFind?.Clear();
             GetTargetFind()?.Reset();
 
-            owner.updateFlags |= (ActorUpdateFlags.State | ActorUpdateFlags.HpTpMp);
+            owner.updateFlags |= ActorUpdateFlags.HpTpMp;
 
             // todo: use the update flags
             owner.ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
 
             ChangeTarget(null);
+            ClearStates();
         }
 
         public void InternalCast(Character target, uint spellId)
