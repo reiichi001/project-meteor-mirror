@@ -1844,7 +1844,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Open();
 
-                    var query = ("SELECT id, name, classJob, level, requirements, validTarget, aoeTarget, aoeType, `range`, characterFind, statusDuration, " +
+                    var query = ("SELECT `id`, name, classJob, lvl, requirements, validTarget, aoeTarget, aoeType, `range`, characterFind, statusDuration, " +
                         "castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, positionBonus, procRequirement FROM abilities;");
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
