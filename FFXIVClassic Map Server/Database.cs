@@ -1844,8 +1844,8 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Open();
 
-                    var query = ("SELECT `id`, name, classJob, lvl, requirements, validTarget, aoeTarget, aoeType, `range`, characterFind, statusDuration, " +
-                        "castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, positionBonus, procRequirement FROM abilities;");
+                    var query = ("SELECT `id`, name, classJob, lvl, requirements, validTarget, aoeType, numHits, positionBonus, procRequirement, `range`, buffDuration, debuffDuration, " +
+                        "castType, castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration FROM abilities;");
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -1860,22 +1860,23 @@ namespace FFXIVClassic_Map_Server
                             ability.job = reader.GetByte(2);
                             ability.level = reader.GetByte(3);
                             ability.requirements = (AbilityRequirements)reader.GetUInt16(4);
-                            ability.validTarget = (TargetFindFlags)reader.GetByte(5);
-                            ability.aoeTarget = (TargetFindAOETarget)reader.GetByte(6);
-                            ability.aoeType = (TargetFindAOEType)reader.GetByte(7);
-                            ability.range = reader.GetInt32(8);
-                            ability.characterFind = (TargetFindCharacterType)reader.GetByte(9);
-                            ability.statusDurationSeconds = reader.GetUInt32(10);
-                            ability.castTimeSeconds = reader.GetUInt32(11);
-                            ability.recastTimeSeconds = reader.GetUInt32(12);
-                            ability.mpCost = reader.GetUInt16(13);
-                            ability.tpCost = reader.GetUInt16(14);
-                            ability.animationType = reader.GetByte(15);
-                            ability.effectAnimation = reader.GetUInt16(16);
-                            ability.modelAnimation = reader.GetUInt16(17);
-                            ability.animationDurationSeconds = reader.GetUInt16(18);
-                            ability.positionBonus = (AbilityPositionBonus)reader.GetByte(19);
-                            ability.procRequirement = (AbilityProcRequirement)reader.GetByte(20);
+                            ability.validTarget = (ValidTarget)reader.GetByte(5);
+                            ability.aoeType = (TargetFindAOEType)reader.GetByte(6);
+                            ability.numHits = reader.GetByte(7);
+                            ability.positionBonus = (AbilityPositionBonus)reader.GetByte(8);
+                            ability.procRequirement = (AbilityProcRequirement)reader.GetByte(9);
+                            ability.range = reader.GetInt32(10);
+                            ability.debuffDurationSeconds = reader.GetUInt32(11);
+                            ability.buffDurationSeconds = reader.GetUInt32(12);
+                            ability.castType = reader.GetByte(13);
+                            ability.castTimeSeconds = reader.GetUInt32(14);
+                            ability.recastTimeSeconds = reader.GetUInt32(15);
+                            ability.mpCost = reader.GetUInt16(16);
+                            ability.tpCost = reader.GetUInt16(17);
+                            ability.animationType = reader.GetByte(18);
+                            ability.effectAnimation = reader.GetUInt16(19);
+                            ability.modelAnimation = reader.GetUInt16(20);
+                            ability.animationDurationSeconds = reader.GetUInt16(21);
                             
                             abilities.Add(id, ability);
                         }

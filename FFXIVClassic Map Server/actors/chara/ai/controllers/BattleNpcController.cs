@@ -209,7 +209,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                     {
                         // pathfind if too far otherwise jump to target
                         owner.aiContainer.pathFind.SetPathFlags(distance > 5 ? PathFindFlags.None : PathFindFlags.IgnoreNav );
-                        owner.aiContainer.pathFind.PreparePath(targetPos, 1.2f, 5);
+                        owner.aiContainer.pathFind.PreparePath(targetPos, 1.5f, 5);
                     }
                     owner.aiContainer.pathFind.FollowPath();
                     if (!owner.aiContainer.pathFind.IsFollowingPath())

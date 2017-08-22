@@ -47,12 +47,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public byte job;
         public byte level;
         public AbilityRequirements requirements;
-        public TargetFindFlags validTarget;
-        public TargetFindAOETarget aoeTarget;
+        public ValidTarget validTarget;
         public TargetFindAOEType aoeType;
+        public byte numHits;
+        public AbilityPositionBonus positionBonus;
+        public AbilityProcRequirement procRequirement;
         public int range;
-        public TargetFindCharacterType characterFind;
-        public uint statusDurationSeconds;
+        public uint debuffDurationSeconds;
+        public uint buffDurationSeconds;
+        public byte castType;
         public uint castTimeSeconds;
         public uint recastTimeSeconds;
         public ushort mpCost;
@@ -62,8 +65,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public ushort modelAnimation;
         public ushort animationDurationSeconds;
 
-        public AbilityPositionBonus positionBonus;
-        public AbilityProcRequirement procRequirement;
 
         public TargetFind targetFind;
 
@@ -93,7 +94,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             // todo: set box length..
             targetFind = new TargetFind(user);
-            targetFind.SetAOEType(aoeTarget, aoeType, aoeType == TargetFindAOEType.Box ? range / 2 : range, 40);
+            if (aoeType == TargetFindAOEType.Box)
+            {
+                // todo: read box width from sql
+                targetFind.SetAOEBox(validTarget, range, 3);
+            }
+            else
+            {
+                targetFind.SetAOEType(validTarget, aoeType, range, 40);
+            }
             return false;
         }
     }

@@ -21,6 +21,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                 }
                 ((BattleNpc)defender).hateContainer.UpdateHate(attacker, damage);
             }
+            defender.DelHP((short)damage);
         }
     }
 }
