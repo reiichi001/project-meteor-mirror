@@ -8,7 +8,7 @@ require ("global")
 
 function onEventStarted(player, equipAbilityWidget, triggername, slot, ability, unkown, arg1, arg2, arg3, arg4, arg5, arg6)
     if ability then
-        player:EquipAbility(slot, ability, 1);
+        player:EquipAbility(slot, ability);
     end
 	player:endEvent();	
 end

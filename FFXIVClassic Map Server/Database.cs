@@ -1286,7 +1286,7 @@ namespace FFXIVClassic_Map_Server
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
-                    cmd.Parameters.AddWithValue("@hotbarSlot", hotbarSlot - 1);
+                    cmd.Parameters.AddWithValue("@hotbarSlot", hotbarSlot);
                     cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
@@ -1336,8 +1336,15 @@ namespace FFXIVClassic_Map_Server
                         while (reader.Read())
                         {
                             int index = reader.GetUInt16(0);
-                            player.charaWork.command[index] = reader.GetUInt32(1);
+                            uint trueCommandId = reader.GetUInt32(1);
+                            player.charaWork.command[index] = trueCommandId;
                             player.charaWork.commandCategory[index] = 1;
+                            player.charaWork.parameterSave.commandSlot_recastTime[index - player.charaWork.commandBorder] = reader.GetUInt32(2);
+
+                            //Recast timer
+                            Ability ability = Server.GetWorldManager().GetAbility((ushort)(trueCommandId ^ 2700083200));
+                            player.charaWork.parameterTemp.maxCommandRecastTime[index - player.charaWork.commandBorder] = (ushort) (ability != null ? ability.recastTimeSeconds : 1);
+                            //Previous recast timer
                             player.charaWork.parameterSave.commandSlot_recastTime[index - player.charaWork.commandBorder] = reader.GetUInt32(2);
                         }
                     }

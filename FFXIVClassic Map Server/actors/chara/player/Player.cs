@@ -399,7 +399,15 @@ namespace FFXIVClassic_Map_Server.Actors
             for (int i = 0; i < charaWork.command.Length; i++)
             {
                 if (charaWork.command[i] != 0)
+                {
                     propPacketUtil.AddProperty(String.Format("charaWork.command[{0}]", i));
+                    //Recast Timers
+                    if(i >= charaWork.commandBorder)
+                    {
+                        propPacketUtil.AddProperty(String.Format("charaWork.parameterTemp.maxCommandRecastTime[{0}]", i - charaWork.commandBorder));
+                        propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i - charaWork.commandBorder));
+                    }
+                }
             }
          
             
@@ -968,7 +976,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.parameterSave.state_mainSkill[0] = classId;
             charaWork.parameterSave.state_mainSkillLevel = charaWork.battleSave.skillLevel[classId-1];
-            Database.LoadHotbar(this);
             playerWork.restBonusExpRate = 0.0f;
 
             ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("charaWork/stateForAll", this);
@@ -978,7 +985,18 @@ namespace FFXIVClassic_Map_Server.Actors
             propertyBuilder.NewTarget("playerWork/expBonus");
             propertyBuilder.AddProperty("playerWork.restBonusExpRate");
 
-            QueuePackets(GetUpdateHotbarPacket(actorId).Done());
+            Database.LoadHotbar(this);
+
+            var time = Utils.UnixTimeStampUTC();
+            for(int i = charaWork.commandBorder; i < charaWork.command.Length; i++)
+            {
+                if(charaWork.command[i] != 0)
+                {
+                    charaWork.parameterSave.commandSlot_recastTime[i - charaWork.commandBorder] = time + charaWork.parameterTemp.maxCommandRecastTime[i - charaWork.commandBorder];
+                }
+            }
+
+            UpdateHotbar();
 
             List<SubPacket> packets = propertyBuilder.Done();
 
@@ -1747,58 +1765,62 @@ namespace FFXIVClassic_Map_Server.Actors
             aiContainer.InternalDie(tick, 60);
         }
 
-        //Update all the hotbar slots past the commandborder. Commands before the commandborder only need to be sent on init since they never change
-        public ActorPropertyPacketUtil GetUpdateHotbarPacket(uint playerActorId)
+        //Update commands and recast timers for the entire hotbar
+        public void UpdateHotbar()
         {
             List<ushort> slotsToUpdate = new List<ushort>();
             for (ushort i = charaWork.commandBorder; i < charaWork.commandBorder + 30; i++)
             {
                 slotsToUpdate.Add(i);
             }
-
-            return GetUpdateHotbarPacket(playerActorId, slotsToUpdate);
+            UpdateHotbar(slotsToUpdate);
         }
 
-        //Update select hotbar slots.
-        public ActorPropertyPacketUtil GetUpdateHotbarPacket(uint playerActorId, List<ushort> slotsToUpdate)
+        //Updates the hotbar and recast timers for only certain hotbar slots
+        public void UpdateHotbar(List<ushort> slotsToUpdate)
+        {
+            UpdateHotbarCommands(slotsToUpdate);
+            UpdateRecastTimers(slotsToUpdate);
+        }
+
+        //Update command ids for the passed in hotbar slots
+        public void UpdateHotbarCommands(List<ushort> slotsToUpdate)
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/command", this);
-
-            propPacketUtil.AddProperty("charaWork.commandBorder");
-
+            ActorPropertyPacketUtil compatibiltyUtil = new ActorPropertyPacketUtil("charaWork/commandDetailForSelf", this);
             foreach (ushort slot in slotsToUpdate)
             {
                 propPacketUtil.AddProperty(String.Format("charaWork.command[{0}]", slot));
                 propPacketUtil.AddProperty(String.Format("charaWork.commandCategory[{0}]", slot));
             }
 
-            for (int i = 0; i < charaWork.parameterSave.commandSlot_compatibility.Length; i++)
+            //Enable or disable slots based on whether there is an ability in that slot
+            foreach (ushort slot in slotsToUpdate)
             {
-                //charaWork.parameterSave.commandSlot_compatibility[i] = true;
-                // propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_compatibility[{0}]", i));
+                charaWork.parameterSave.commandSlot_compatibility[slot - charaWork.commandBorder] = charaWork.command[slot] != 0;
+                compatibiltyUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_compatibility[{0}]", slot - charaWork.commandBorder));
             }
 
-            charaWork.parameterTemp.otherClassAbilityCount[0] = 3;
-            charaWork.parameterTemp.otherClassAbilityCount[1] = 5;
-            // charaWork.parameterTemp.giftCount[1] = 5;
-            propPacketUtil.AddProperty("charaWork.parameterTemp.otherClassAbilityCount[0]");
-            propPacketUtil.AddProperty("charaWork.parameterTemp.otherClassAbilityCount[1]");
-            propPacketUtil.AddProperty("charaWork.parameterTemp.giftCount[1]");
+            QueuePackets(propPacketUtil.Done());
+            QueuePackets(compatibiltyUtil.Done());
+        }
 
+        //Update recast timers for the passed in hotbar slots
+        public void UpdateRecastTimers(List<ushort> slotsToUpdate)
+        {
             ActorPropertyPacketUtil recastPacketUtil = new ActorPropertyPacketUtil("charaWork/commandDetailForSelf", this);
-            for(int i = 0; i < charaWork.parameterSave.commandSlot_recastTime.Length; i++)
+
+            foreach (ushort slot in slotsToUpdate)
             {
-                propPacketUtil.AddProperty(String.Format("charawork.parameterSave.commandSlot_recastTime[{0}]", i));
-                propPacketUtil.AddProperty(String.Format("charawork.parameterTemp.maxCommandRecastTime[{0}]", i));
+                recastPacketUtil.AddProperty(String.Format("charaWork.parameterTemp.maxCommandRecastTime[{0}]", slot - charaWork.commandBorder));
+                recastPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", slot - charaWork.commandBorder));
             }
 
             QueuePackets(recastPacketUtil.Done());
-
-            return propPacketUtil;
         }
 
 
-        public void EquipAbility(ushort hotbarSlot, uint commandId, uint recastTime)
+        public void EquipAbility(ushort hotbarSlot, ushort commandId)
         {
             //if (charaWork.commandAcquired[commandId])
             {
@@ -1814,8 +1836,8 @@ namespace FFXIVClassic_Map_Server.Actors
                     //If hotbar slot is 0, look for the first open slot
                     if (hotbarSlot == 0)
                     {
-                        trueHotbarSlot = findFirstCommandSlotById(0);
-                        int equippedSlot = findFirstCommandSlotById(trueCommandId);
+                        trueHotbarSlot = FindFirstCommandSlotById(0);
+                        ushort equippedSlot = FindFirstCommandSlotById(trueCommandId);
                         //We can only equip a command if there is an open hotbar slot and if the command was not found in the hotbar.
                         canEquip = trueHotbarSlot < endOfHotbar && equippedSlot >= endOfHotbar;
                         //If the command was found in the hotbar, mark it as already equipped
@@ -1824,32 +1846,47 @@ namespace FFXIVClassic_Map_Server.Actors
                     //If the slot the command is being moved to is occupied, move that command to the slot currently occupied by the command being placed.
                     else if (charaWork.command[trueHotbarSlot] != trueCommandId)
                     {
-                        ushort oldSlot = findFirstCommandSlotById(trueCommandId);
+                        //Search for where the ability we're equipping is already equipped
+                        ushort oldSlot = FindFirstCommandSlotById(trueCommandId);
+
                         //If the command was found, update the old slot, otherwise it will just be overwritten
                         if (oldSlot < endOfHotbar)
                         {
-                            Database.EquipAbility(this, oldSlot, charaWork.command[trueHotbarSlot], recastTime);
                             charaWork.command[oldSlot] = charaWork.command[trueHotbarSlot];
                             slotsToUpdate.Add(oldSlot);
+                            //Need to update the old slot's recast timer as well
+                            charaWork.parameterTemp.maxCommandRecastTime[oldSlot - charaWork.commandBorder] = charaWork.parameterTemp.maxCommandRecastTime[trueHotbarSlot - charaWork.commandBorder];
+                            //I don't know how the game handled moving abilities in terms of cooldowns. 
+                            //I'm assuming they just keep whatever their current cooldown was instead of being reset to their max but SE were dicks in 1.0 so who knows
+                            charaWork.parameterSave.commandSlot_recastTime[oldSlot - charaWork.commandBorder] = charaWork.parameterSave.commandSlot_recastTime[trueHotbarSlot - charaWork.commandBorder];
+                            Database.EquipAbility(this, oldSlot, charaWork.command[trueHotbarSlot], charaWork.parameterSave.commandSlot_recastTime[oldSlot - charaWork.commandBorder]);
                         }
                     }
-                    
+
                     if (canEquip)
                     {
-                        Actor a = Server.GetStaticActors(trueCommandId);
-                        Database.EquipAbility(this, trueHotbarSlot, trueCommandId, recastTime);
                         charaWork.command[trueHotbarSlot] = trueCommandId;
                         charaWork.commandCategory[trueHotbarSlot] = 1;
+
+                        //Set recast time
+                        ushort maxRecastTime = (ushort)Server.GetWorldManager().GetAbility(commandId).recastTimeSeconds;
+                        uint recastEnd = Utils.UnixTimeStampUTC() + maxRecastTime;
+                        charaWork.parameterTemp.maxCommandRecastTime[trueHotbarSlot - charaWork.commandBorder] = maxRecastTime;
+                        charaWork.parameterSave.commandSlot_recastTime[trueHotbarSlot - charaWork.commandBorder] = recastEnd;
                         slotsToUpdate.Add(trueHotbarSlot);
 
+                        Database.EquipAbility(this, trueHotbarSlot, trueCommandId, recastEnd);
+
                         //"[Command] set."
-                        SendGameMessage(Server.GetWorldManager().GetActor(), 30603, 0x20, 0, commandId);
+                        SendGameMessage(Server.GetWorldManager().GetActor(), 30603, 0x20, 0, (int)commandId);
                     }
+                    //Ability is already equipped
                     else if (isAlreadyEquipped)
                     {
                         //"That action is already set to an action slot."
                         SendGameMessage(Server.GetWorldManager().GetActor(), 30719, 0x20, 0);
                     }
+                    //Hotbar full
                     else
                     {
                         //"You cannot set any more actions."
@@ -1860,17 +1897,13 @@ namespace FFXIVClassic_Map_Server.Actors
                 else if (trueCommandId == 2700083200 && charaWork.command[trueHotbarSlot] != 0)
                 {
                     //Need to get the commandId this way because when unequipping an ability the commandId is 0.
-                    commandId = charaWork.command[trueHotbarSlot] ^ 2700083200;                    
                     SendGameMessage(Server.GetWorldManager().GetActor(), 30604, 0x20, 0, charaWork.command[trueHotbarSlot] ^ 2700083200);
                     Database.UnequipAbility(this, trueHotbarSlot);
                     charaWork.command[trueHotbarSlot] = 0;
-                    slotsToUpdate.Add(trueHotbarSlot);                   
-                    //"[Command] removed."
-                    SendGameMessage(Server.GetWorldManager().GetActor(), 30747, 0x20, 0);
+                    slotsToUpdate.Add(trueHotbarSlot);
                     
                 }
-                ActorPropertyPacketUtil packet = GetUpdateHotbarPacket(actorId, slotsToUpdate);
-                QueuePackets(packet.Done());
+                UpdateHotbar(slotsToUpdate);
             }
             //action not acquired
             // else
@@ -1882,7 +1915,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         //Finds the first hotbar slot with a given commandId.
         //If the returned value is outside the hotbar, it indicates it wasn't found.
-        private ushort findFirstCommandSlotById(uint commandId)
+        private ushort FindFirstCommandSlotById(uint commandId)
         {
             ushort firstSlot = (ushort)(charaWork.commandBorder + 30);
 
