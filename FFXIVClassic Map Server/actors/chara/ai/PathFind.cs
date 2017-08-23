@@ -131,8 +131,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             }
         }
 
-        public bool AtPoint(Vector3 point)
+        public bool AtPoint(Vector3 point = null)
         {
+            if (point == null && path != null && path.Count > 0)
+            {
+                point = path[path.Count - 1];
+            }
+
             if (distanceFromPoint == 0)
                 return owner.positionX == point.X && owner.positionZ == point.Z;
             else

@@ -310,6 +310,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void InternalDie(DateTime tick, uint timeToFadeout)
         {
+            if (true) return;
             ClearStates();
             Disengage();
             ForceChangeState(new DeathState(owner, tick, timeToFadeout));

@@ -34,7 +34,7 @@ namespace FFXIVClassic_Map_Server.Actors
         private uint despawnTime;
         private uint spawnDistance;
 
-        private float spawnX, spawnY, spawnZ;
+        public float spawnX, spawnY, spawnZ;
         public BattleNpc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot,
             ushort actorState, uint animationId, string customDisplayName)
             : base(actorNumber, actorClass, uniqueId, spawnedArea, posX, posY, posZ, rot, actorState, animationId, customDisplayName)  
@@ -85,6 +85,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[1]");
                 packets.AddRange(propPacketUtil.Done());
             }
+            base.PostUpdate(tick);
         }
 
         public override bool CanAttack()

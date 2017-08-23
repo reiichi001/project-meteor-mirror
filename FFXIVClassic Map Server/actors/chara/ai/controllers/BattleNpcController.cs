@@ -157,7 +157,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 {
                     if (tick >= lastActionTime)
                     {
-
+                        var battlenpc = owner as BattleNpc;
+                        owner.aiContainer.pathFind.PathInRange(battlenpc.spawnX, battlenpc.spawnY, battlenpc.spawnZ, 1.5f, 15.0f);
                     }
                 }
                 // todo:
@@ -208,7 +209,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                     if (!owner.aiContainer.pathFind.IsFollowingPath() && distance > 3)
                     {
                         // pathfind if too far otherwise jump to target
-                        owner.aiContainer.pathFind.SetPathFlags(distance > 5 ? PathFindFlags.None : PathFindFlags.IgnoreNav );
+                        owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
                         owner.aiContainer.pathFind.PreparePath(targetPos, 1.5f, 5);
                     }
                     owner.aiContainer.pathFind.FollowPath();
@@ -221,8 +222,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                                 if (battlenpc == owner)
                                     continue;
                                 float mobDistance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, battlenpc.positionX, battlenpc.positionY, battlenpc.positionZ);
-                                if (mobDistance < 0.3f && (battlenpc.updateFlags & ActorUpdateFlags.Position) == 0)
-                                    battlenpc.aiContainer.pathFind.PathInRange(targetPos, 1.5f, 1.5f);
+                                if (mobDistance < 0.25f && (battlenpc.updateFlags & ActorUpdateFlags.Position) == 0)
+                                    battlenpc.aiContainer.pathFind.PathInRange(targetPos, 1.3f, 1.8f);
                             }
                         }
                     }
@@ -278,6 +279,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public bool CanDetectTarget(Character target, bool forceSight = false)
         {
+            // todo: this should probably be changed to only allow detection at end of path?
+            if (owner.aiContainer.pathFind.IsFollowingScriptedPath() || owner.aiContainer.pathFind.IsFollowingPath() && !owner.aiContainer.pathFind.AtPoint())
+            {
+                return false;
+            }
+
             // todo: handle sight/scent/hp etc
             if (target.IsDead() || target.currentMainState == SetActorStatePacket.MAIN_STATE_MOUNTED)
                 return false;

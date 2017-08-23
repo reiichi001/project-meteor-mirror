@@ -97,7 +97,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 {
                     // todo: send packet to client with effect added message
                     foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
-                        player.QueuePacket(packets.send.actor.battle.BattleActionX01Packet.BuildPacket(player.actorId, newEffect.GetSource().actorId, owner.actorId, 0, newEffect.GetStatusEffectId(), 0, newEffect.GetStatusId(), 0, 0));
+                        player.QueuePacket(packets.send.actor.battle.BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, owner.actorId, 0, newEffect.GetStatusEffectId(), 0, newEffect.GetStatusId(), 0, 0));
                 }
 
                 // wont send a message about losing effect here

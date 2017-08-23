@@ -89,15 +89,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             {
                 foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
                 {
-                    var packet = BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, target.actorId, 0, 537094006, 0, 27260, (ushort)damage, 0);
+                    /*var packet = BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, owner.actorId, 0, 537094006, 0, 27260, (ushort)damage, 0);
                     player.QueuePacket(packet);
                     Program.Log.Error("asudyaisydaisydaioysdaisydaiosdyaiosuydaisydiaosydioasydaiusdyaisduy");
                     packet.DebugPrintSubPacket();
+                    */
                 }
-                if (target is Player)
-                    ((Player)target).SendPacket("139_attack");
+                //if (target is Player)
+                //    ((Player)target).SendPacket("139_attack");
             }
-            target.DelHP((short)damage);
+            //target.DelHP((short)damage);
             attackTime = attackTime.AddMilliseconds(owner.GetAttackDelayMs());
             owner.LookAt(target);
            //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);

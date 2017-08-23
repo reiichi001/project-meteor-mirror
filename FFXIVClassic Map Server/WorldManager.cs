@@ -41,7 +41,7 @@ namespace FFXIVClassic_Map_Server
 
         private Server mServer;
 
-        private const int MILIS_LOOPTIME = 333;
+        private const int MILIS_LOOPTIME = 250;
         private Timer mZoneTimer;
 
         //Content Groups
@@ -1156,10 +1156,10 @@ namespace FFXIVClassic_Map_Server
             abilityList = Database.LoadGlobalAbilityList();
         }
 
-        public Ability GetAbility(ushort id)
+        public Ability GetAbility(uint id)
         {
             Ability ability;
-            return abilityList.TryGetValue(id, out ability) ? ability.Clone() : null;
+            return abilityList.TryGetValue((ushort)id, out ability) ? ability.Clone() : null;
         }
     }
 
