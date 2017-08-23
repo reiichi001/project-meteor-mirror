@@ -113,51 +113,54 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 if (!mActorList.ContainsKey(actor.actorId))
                     mActorList.Add(actor.actorId, actor);
+
+
+                int gridX = (int)actor.positionX / boundingGridSize;
+                int gridY = (int)actor.positionZ / boundingGridSize;
+
+                gridX += halfWidth;
+                gridY += halfHeight;
+
+                //Boundries
+                if (gridX < 0)
+                    gridX = 0;
+                if (gridX >= numXBlocks)
+                    gridX = numXBlocks - 1;
+                if (gridY < 0)
+                    gridY = 0;
+                if (gridY >= numYBlocks)
+                    gridY = numYBlocks - 1;
+
+                lock (mActorBlock)
+                    mActorBlock[gridX, gridY].Add(actor);
             }
-
-            int gridX = (int)actor.positionX / boundingGridSize;
-            int gridY = (int)actor.positionZ / boundingGridSize;
-
-            gridX += halfWidth;
-            gridY += halfHeight;
-
-            //Boundries
-            if (gridX < 0)
-                gridX = 0;
-            if (gridX >= numXBlocks)
-                gridX = numXBlocks - 1;
-            if (gridY < 0)
-                gridY = 0;
-            if (gridY >= numYBlocks)
-                gridY = numYBlocks - 1;
-
-            lock (mActorBlock)
-                mActorBlock[gridX, gridY].Add(actor);
         }
 
         public void RemoveActorFromZone(Actor actor)
         {
             lock (mActorList)
+            {
                 mActorList.Remove(actor.actorId);
 
-            int gridX = (int)actor.positionX / boundingGridSize;
-            int gridY = (int)actor.positionZ / boundingGridSize;
+                int gridX = (int)actor.positionX / boundingGridSize;
+                int gridY = (int)actor.positionZ / boundingGridSize;
 
-            gridX += halfWidth;
-            gridY += halfHeight;
+                gridX += halfWidth;
+                gridY += halfHeight;
 
-            //Boundries
-            if (gridX < 0)
-                gridX = 0;
-            if (gridX >= numXBlocks)
-                gridX = numXBlocks - 1;
-            if (gridY < 0)
-                gridY = 0;
-            if (gridY >= numYBlocks)
-                gridY = numYBlocks - 1;
+                //Boundries
+                if (gridX < 0)
+                    gridX = 0;
+                if (gridX >= numXBlocks)
+                    gridX = numXBlocks - 1;
+                if (gridY < 0)
+                    gridY = 0;
+                if (gridY >= numYBlocks)
+                    gridY = numYBlocks - 1;
 
-            lock (mActorBlock)
-                mActorBlock[gridX, gridY].Remove(actor);
+                lock (mActorBlock)
+                    mActorBlock[gridX, gridY].Remove(actor);
+            }
         }
 
         public void UpdateActorPosition(Actor actor)
@@ -421,75 +424,84 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SpawnActor(SpawnLocation location)
         {
-            ActorClass actorClass = Server.GetWorldManager().GetActorClass(location.classId);
-            
-            if (actorClass == null)
-                return;
+            lock (mActorList)
+            {
+                ActorClass actorClass = Server.GetWorldManager().GetActorClass(location.classId);
 
-            uint zoneId;
+                if (actorClass == null)
+                    return;
 
-            if (this is PrivateArea)
-                zoneId = ((PrivateArea)this).GetParentZone().actorId;
-            else
-                zoneId = actorId;
+                uint zoneId;
 
-            Npc npc = new Npc(mActorList.Count + 1, actorClass, location.uniqueId, this, location.x, location.y, location.z, location.rot, location.state, location.animId, null);
+                if (this is PrivateArea)
+                    zoneId = ((PrivateArea)this).GetParentZone().actorId;
+                else
+                    zoneId = actorId;
+
+                Npc npc = new Npc(mActorList.Count + 1, actorClass, location.uniqueId, this, location.x, location.y, location.z, location.rot, location.state, location.animId, null);
 
 
-            npc.LoadEventConditions(actorClass.eventConditions);            
+                npc.LoadEventConditions(actorClass.eventConditions);
 
-            AddActorToZone(npc);                          
+                AddActorToZone(npc);
+            }
         }
 
         public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0, bool isMob = true)
         {
-            ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+            lock (mActorList)
+            {
+                ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
 
-            if (actorClass == null)
-                return null;
+                if (actorClass == null)
+                    return null;
 
-            uint zoneId;
+                uint zoneId;
 
-            if (this is PrivateArea)
-                zoneId = ((PrivateArea)this).GetParentZone().actorId;
-            else
-                zoneId = actorId;
+                if (this is PrivateArea)
+                    zoneId = ((PrivateArea)this).GetParentZone().actorId;
+                else
+                    zoneId = actorId;
 
-            Npc npc;
+                Npc npc;
 
-            if(isMob)
-                npc = new BattleNpc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
-            else
-                npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
+                if (isMob)
+                    npc = new BattleNpc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
+                else
+                    npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
 
-            npc.LoadEventConditions(actorClass.eventConditions);
+                npc.LoadEventConditions(actorClass.eventConditions);
 
-            AddActorToZone(npc);
+                AddActorToZone(npc);
 
-            return npc;
+                return npc;
+            }
         }
 
         public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, uint regionId, uint layoutId)
         {
-            ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+            lock (mActorList)
+            {
+                ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
 
-            if (actorClass == null)
-                return null;
+                if (actorClass == null)
+                    return null;
 
-            uint zoneId;
+                uint zoneId;
 
-            if (this is PrivateArea)
-                zoneId = ((PrivateArea)this).GetParentZone().actorId;
-            else
-                zoneId = actorId;
+                if (this is PrivateArea)
+                    zoneId = ((PrivateArea)this).GetParentZone().actorId;
+                else
+                    zoneId = actorId;
 
-            Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, 0, regionId, layoutId);
+                Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, 0, regionId, layoutId);
 
-            npc.LoadEventConditions(actorClass.eventConditions);
+                npc.LoadEventConditions(actorClass.eventConditions);
 
-            AddActorToZone(npc);
+                AddActorToZone(npc);
 
-            return npc;
+                return npc;
+            }
         }
 
         public void DespawnActor(string uniqueId)

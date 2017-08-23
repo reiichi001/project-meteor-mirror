@@ -119,21 +119,24 @@ namespace FFXIVClassic_Map_Server.actors.area
 
         public Actor FindActorInZone(uint id)
         {
-            if (!mActorList.ContainsKey(id))
+            lock (mActorList)
             {
-                foreach(Dictionary<uint, PrivateArea> paList in privateAreas.Values)
+                if (!mActorList.ContainsKey(id))
                 {
-                    foreach(PrivateArea pa in paList.Values)
+                    foreach (Dictionary<uint, PrivateArea> paList in privateAreas.Values)
                     {
-                        Actor actor = pa.FindActorInArea(id);
-                        if (actor != null)
-                            return actor;
+                        foreach (PrivateArea pa in paList.Values)
+                        {
+                            Actor actor = pa.FindActorInArea(id);
+                            if (actor != null)
+                                return actor;
+                        }
                     }
+                    return null;
                 }
-                return null;
+                else
+                    return mActorList[id];
             }
-            else
-                return mActorList[id];
         }
 
         public PrivateAreaContent CreateContentArea(Player starterPlayer, string areaClassPath, string contentScript, string areaName, string directorName, params object[] args)

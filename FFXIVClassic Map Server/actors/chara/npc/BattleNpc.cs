@@ -12,6 +12,7 @@ using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.actors.chara.ai.state;
+using FFXIVClassic_Map_Server.utils;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -65,6 +66,25 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             this.aiContainer.Update(tick);
             this.statusEffects.Update(tick);
+        }
+
+        public override void PostUpdate(DateTime tick, List<SubPacket> packets = null)
+        {
+            // todo: should probably add another flag for battleTemp since all this uses reflection
+            packets = new List<SubPacket>();
+            if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
+            {
+                var propPacketUtil = new ActorPropertyPacketUtil("charaWork.parameterSave", this);
+
+                propPacketUtil.AddProperty("charaWork.parameterSave.hp[0]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.hpMax[0]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[0]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
+
+                propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[0]");
+                propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[1]");
+                packets.AddRange(propPacketUtil.Done());
+            }
         }
 
         public override bool CanAttack()

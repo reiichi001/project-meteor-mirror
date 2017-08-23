@@ -40,17 +40,20 @@ namespace FFXIVClassic_Map_Server.actors.area
 
         public void CheckDestroy()
         {
-            if (isContentFinished)
+            lock (mActorList)
             {
-                bool noPlayersLeft = true;
-                foreach (Actor a in mActorList.Values)
+                if (isContentFinished)
                 {
-                    if (a is Player)
-                        noPlayersLeft = false;
+                    bool noPlayersLeft = true;
+                    foreach (Actor a in mActorList.Values)
+                    {
+                        if (a is Player)
+                            noPlayersLeft = false;
+                    }
+                    if (noPlayersLeft)
+                        GetParentZone().DeleteContentArea(this);
                 }
-                if (noPlayersLeft)
-                    GetParentZone().DeleteContentArea(this);
-            }                
+            }
         }
 
     }

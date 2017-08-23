@@ -86,6 +86,7 @@ INSERT INTO `abilities` VALUES (27146,'cover',16,30,0,0,0,1,0,0,5,0,15,0,0,60,0,
 INSERT INTO `abilities` VALUES (27147,'divine_veil',16,35,0,0,0,1,0,0,5,0,20,0,0,60,0,0,14,713,2,2);
 INSERT INTO `abilities` VALUES (27148,'hallowed_ground',16,50,0,0,0,1,0,0,5,0,0,0,0,900,0,0,14,709,2,2);
 INSERT INTO `abilities` VALUES (27149,'holy_succor',16,40,0,0,0,1,0,0,15,0,0,0,2,10,100,0,1,701,1,2);
+INSERT INTO `abilities` VALUES (27150,'fast_blade',3,1,1,32,0,1,1,0,5,0,0,0,0,10,0,1000,18,1023,1,2);
 INSERT INTO `abilities` VALUES (27151,'flat_blade',3,26,1,32,0,1,0,0,5,0,0,0,0,10,0,1500,18,1024,2,2);
 INSERT INTO `abilities` VALUES (27152,'savage_blade',3,10,1,32,0,1,0,0,5,0,0,0,0,30,0,1000,18,1025,1,2);
 INSERT INTO `abilities` VALUES (27153,'goring_blade',3,50,8,32,0,1,2,0,5,30,0,0,0,60,0,3000,18,1026,301,2);
@@ -210,4 +211,4 @@ commit;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-08-22 19:57:25
+-- Dump completed on 2017-08-23  3:05:29

@@ -1715,6 +1715,19 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override void PostUpdate(DateTime tick, List<SubPacket> packets = null)
         {
+            // todo: should probably add another flag for battleTemp since all this uses reflection
+            packets = new List<SubPacket>();
+            if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
+            {
+                var propPacketUtil = new ActorPropertyPacketUtil("charaWork.parameterSave", this);
+
+                propPacketUtil.AddProperty($"charaWork.parameterSave.hp[{currentJob}]");
+                propPacketUtil.AddProperty($"charaWork.parameterSave.hpMax[{currentJob}]");
+                propPacketUtil.AddProperty($"charaWork.parameterSave.state_mainSkill[{currentJob}]");
+
+                packets.AddRange(propPacketUtil.Done());
+            }
+
             base.PostUpdate(tick);
         }
 
@@ -1741,7 +1754,7 @@ namespace FFXIVClassic_Map_Server.Actors
             addHp = addHp.Clamp(short.MinValue, charaWork.parameterSave.hpMax[currentJob]);
             charaWork.parameterSave.hp[currentJob] = (short)addHp;
 
-            if (charaWork.parameterSave.hp[0] < 1)
+            if (charaWork.parameterSave.hp[currentJob] < 1)
                 Die(Program.Tick);
 
             updateFlags |= ActorUpdateFlags.HpTpMp;

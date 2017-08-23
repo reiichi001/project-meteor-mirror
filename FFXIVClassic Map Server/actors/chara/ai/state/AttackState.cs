@@ -97,7 +97,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 if (target is Player)
                     ((Player)target).SendPacket("139_attack");
             }
-            target.AddHP((short)damage);
+            target.DelHP((short)damage);
             attackTime = attackTime.AddMilliseconds(owner.GetAttackDelayMs());
             owner.LookAt(target);
            //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);

@@ -213,26 +213,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
                 {
                     var propPacketUtil = new ActorPropertyPacketUtil("charaWork.parameterSave", this);
-
-                    //Parameters
-
-                    propPacketUtil.AddProperty("charaWork.parameterSave.hp[0]");
-                    propPacketUtil.AddProperty("charaWork.parameterSave.hpMax[0]");
                     propPacketUtil.AddProperty("charaWork.parameterSave.mp");
                     propPacketUtil.AddProperty("charaWork.parameterSave.mpMax");
                     propPacketUtil.AddProperty("charaWork.parameterTemp.tp");
-                    propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[0]");
-                    propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
-
-                    //General Parameters
-                    for (int i = 3; i < charaWork.battleTemp.generalParameter.Length; i++)
-                    {
-                        if (charaWork.battleTemp.generalParameter[i] != 0)
-                            propPacketUtil.AddProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
-                    }
-
-                    propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[0]");
-                    propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[1]");
                     packets.AddRange(propPacketUtil.Done());
                 }
                 base.PostUpdate(tick, packets);
