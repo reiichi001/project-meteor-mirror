@@ -44,34 +44,36 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 return true;
             }
             */
-            if (owner.target == null || target.IsDead())
+            if (target == null || target.IsDead())
             {
-                return true;
+
             }
-
-            if (owner.target.actorId != owner.currentLockedTarget)
-                owner.aiContainer.ChangeTarget(Server.GetWorldManager().GetActorInWorld(owner.currentLockedTarget) as Character);
-
-            if (IsAttackReady())
+            else
             {
-                if (CanAttack())
-                {
-                    TryInterrupt();
+                if (owner.target != target || owner.target.actorId != owner.currentLockedTarget)
+                    owner.aiContainer.ChangeTarget(target = Server.GetWorldManager().GetActorInWorld(owner.currentLockedTarget) as Character);
 
-                    // todo: check weapon delay/haste etc and use that
-                    if (!interrupt)
+                if (IsAttackReady())
+                {
+                    if (CanAttack())
                     {
-                        OnComplete();
+                        TryInterrupt();
+
+                        // todo: check weapon delay/haste etc and use that
+                        if (!interrupt)
+                        {
+                            OnComplete();
+                        }
+                        else
+                        {
+
+                        }
+                        SetInterrupted(false);
                     }
                     else
                     {
-
+                        // todo: handle interrupt/paralyze etc
                     }
-                    SetInterrupted(false);
-                }
-                else
-                {
-                    // todo: handle interrupt/paralyze etc
                 }
             }
             return false;
