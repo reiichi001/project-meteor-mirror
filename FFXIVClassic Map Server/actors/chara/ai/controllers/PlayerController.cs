@@ -57,6 +57,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         public override void Disengage()
         {
             // todo:
+            base.Disengage();
             return;
         }
 

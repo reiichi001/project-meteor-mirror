@@ -44,15 +44,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 return true;
             }
             */
+            if (owner.target != target || owner.target?.actorId != owner.currentLockedTarget)
+                owner.aiContainer.ChangeTarget(target = Server.GetWorldManager().GetActorInWorld(owner.currentLockedTarget) as Character);
+
             if (target == null || target.IsDead())
             {
-
+                //if (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER)
+                //    target = ((BattleNpc)owner).hateContainer.GetMostHatedTarget();
             }
             else
             {
-                if (owner.target != target || owner.target.actorId != owner.currentLockedTarget)
-                    owner.aiContainer.ChangeTarget(target = Server.GetWorldManager().GetActorInWorld(owner.currentLockedTarget) as Character);
-
                 if (IsAttackReady())
                 {
                     if (CanAttack())

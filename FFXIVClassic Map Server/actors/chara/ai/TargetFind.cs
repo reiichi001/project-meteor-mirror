@@ -89,7 +89,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             this.target = null;
             this.findType = TargetFindCharacterType.None;
-            this.validTarget = ValidTarget.None;
+            this.validTarget = ValidTarget.Enemy;
             this.aoeType = TargetFindAOEType.None;
             this.targetPosition = null;
             this.extents = 0.0f;
@@ -325,13 +325,23 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if ((validTarget & ValidTarget.Corpse) == 0 && target.IsDead())
                 return false;
 
-            bool targetingPlayer = target is Player;
+            bool targetingPlayer = target.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER;
+
+            if ((validTarget & ValidTarget.Ally) != 0 && target.currentSubState != owner.currentSubState)
+                return false;
+
+            if ((validTarget & ValidTarget.Enemy) != 0 && target.currentSubState != (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER ?
+                SetActorStatePacket.SUB_STATE_PLAYER : SetActorStatePacket.SUB_STATE_MONSTER))
+                return false;
+
+            if ((validTarget & ValidTarget.NPC) != 0 && target.currentSubState != SetActorStatePacket.SUB_STATE_NONE)
+                return false;
 
             // todo: why is player always zoning?
             // cant target if zoning
             if (targetingPlayer && ((Player)target).playerSession.isUpdatesLocked)
             {
-                owner.Disengage();
+                owner.aiContainer.ChangeTarget(null);
                 return false;
             }
 

@@ -186,7 +186,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public bool IsEngaged()
         {
             // todo: check this is legit
-            return owner.currentMainState == SetActorStatePacket.MAIN_STATE_ACTIVE;
+            return owner.currentMainState == SetActorStatePacket.MAIN_STATE_ACTIVE && owner.target != null;
         }
 
         public bool IsDead()
