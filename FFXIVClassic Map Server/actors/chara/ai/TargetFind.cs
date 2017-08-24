@@ -326,10 +326,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 return false;
 
             bool targetingPlayer = target is Player;
-            
+
             // todo: why is player always zoning?
             // cant target if zoning
-            if (/*target.isZoning || owner.isZoning || */target.zone != owner.zone || targetingPlayer && ((Player)target).playerSession.isUpdatesLocked)
+            if (targetingPlayer && ((Player)target).playerSession.isUpdatesLocked)
+            {
+                owner.Disengage();
+                return false;
+            }
+
+            if (/*target.isZoning || owner.isZoning || */target.zone != owner.zone)
                 return false;
 
             if (validTarget == ValidTarget.Self && aoeType != TargetFindAOEType.None && owner != target)

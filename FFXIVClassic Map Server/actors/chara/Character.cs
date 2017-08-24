@@ -8,6 +8,8 @@ using FFXIVClassic_Map_Server.utils;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using System;
 using System.Collections.Generic;
+using FFXIVClassic_Map_Server.actors.chara;
+using FFXIVClassic_Map_Server.packets.send.actor.battle;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -81,6 +83,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public CharacterTargetingAllegiance allegiance;
 
         public Pet pet;
+
+        public Dictionary<Modifier, Int64> modifiers = new Dictionary<Modifier, long>(); 
 
         public Character(uint actorID) : base(actorID)
         {            
@@ -183,6 +187,21 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 PathTo(player.positionX, player.positionY, player.positionZ, stepSize, maxPath, radius);
             }
+        }
+
+        public Int64 GetMod(uint modifier)
+        {
+            Int64 res;
+            modifiers.TryGetValue((Modifier)modifier, out res);
+            return res;
+        }
+
+        public void SetMod(uint modifier, Int64 val)
+        {
+            if (modifiers.ContainsKey((Modifier)modifier))
+                modifiers[(Modifier)modifier] = val;
+            else
+                modifiers.Add((Modifier)modifier, val);
         }
 
         public virtual void OnPath(Vector3 point)
@@ -325,6 +344,9 @@ namespace FFXIVClassic_Map_Server.Actors
         // todo: should this include stats too?
         public virtual void RecalculateHpMpTp()
         {
+            // legit fuck c#
+            // todo: other shit too..
+            meleeRange = GetMod((uint)Modifier.AttackRange);
             // todo: recalculate stats and crap
             updateFlags |= ActorUpdateFlags.HpTpMp;
         }

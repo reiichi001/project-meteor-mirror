@@ -20,6 +20,7 @@ using FFXIVClassic_Map_Server.packets.send.group;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
+using FFXIVClassic_Map_Server.packets.send.actor.battle;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -1942,6 +1943,12 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             return firstSlot;
+        }
+
+        public void SendBattleActionX01Packet(uint anim, uint effect, uint text = 0x756D, uint command = 27260, uint param = 0x01, uint idek = 0x01)
+        {
+            var packet = BattleActionX01Packet.BuildPacket(actorId, actorId, actorId, (uint)anim, (uint)effect, (ushort)text, (ushort)command, (ushort)param, (byte)idek);
+            QueuePacket(packet);
         }
     }
 }

@@ -48,6 +48,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             {
                 return true;
             }
+
+            if (owner.target.actorId != owner.currentLockedTarget)
+                owner.aiContainer.ChangeTarget(Server.GetWorldManager().GetActorInWorld(owner.currentLockedTarget) as Character);
+
             if (IsAttackReady())
             {
                 if (CanAttack())
@@ -89,14 +93,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             {
                 foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
                 {
-                    /*var packet = BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, owner.actorId, 0, 537094006, 0, 27260, (ushort)damage, 0);
+                    var packet = BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
                     player.QueuePacket(packet);
-                    Program.Log.Error("asudyaisydaisydaioysdaisydaiosdyaiosuydaisydiaosydioasydaiusdyaisduy");
-                    packet.DebugPrintSubPacket();
-                    */
                 }
-                //if (target is Player)
-                //    ((Player)target).SendPacket("139_attack");
             }
             //target.DelHP((short)damage);
             attackTime = attackTime.AddMilliseconds(owner.GetAttackDelayMs());
@@ -147,7 +146,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             {
                 return false;
             }
-            else if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) >= 7.5f)
+            // todo: use a mod for melee range
+            else if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > owner.meleeRange)
             {
                 //owner.aiContainer.GetpathFind?.PreparePath(target.positionX, target.positionY, target.positionZ, 2.5f, 4);
                 return false;

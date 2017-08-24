@@ -103,6 +103,7 @@
     <Compile Include="actors\chara\ai\TargetFind.cs" />
     <Compile Include="actors\chara\ai\utils\AttackUtils.cs" />
     <Compile Include="actors\chara\ai\utils\BattleUtils.cs" />
+    <Compile Include="actors\chara\Modifier.cs" />
     <Compile Include="actors\chara\npc\ActorClass.cs" />
     <Compile Include="actors\chara\npc\BattleNpc.cs" />
     <Compile Include="actors\chara\npc\NpcWork.cs" />
