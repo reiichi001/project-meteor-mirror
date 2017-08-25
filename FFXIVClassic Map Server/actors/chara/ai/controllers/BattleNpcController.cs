@@ -82,7 +82,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                     if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > 10)
                     {
                         owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
-                        owner.aiContainer.pathFind.PathInRange(target.positionX, target.positionY, target.positionZ, 1.5f, owner.meleeRange);
+                        owner.aiContainer.pathFind.PathInRange(target.positionX, target.positionY, target.positionZ, 1.5f, owner.GetAttackRange());
                         ChangeTarget(target);
                         return false;
                     }
@@ -114,22 +114,22 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public override void Cast(Character target, uint spellId)
         {
-
+            // todo:
         }
 
         public override void Ability(Character target, uint abilityId)
         {
-
+            // todo:
         }
 
         public override void RangedAttack(Character target)
         {
-
+            // todo:
         }
 
         public override void MonsterSkill(Character target, uint mobSkillId)
         {
-            
+            // todo:
         }
 
         private void DoRoamTick(DateTime tick)
@@ -202,7 +202,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             var targetPos = new Vector3(owner.target.positionX, owner.target.positionY, owner.target.positionZ);
             var distance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, targetPos.X, targetPos.Y, targetPos.Z);
 
-            if (distance > owner.meleeRange - 0.2f || owner.aiContainer.CanFollowPath())
+            if (distance > owner.GetAttackRange() - 0.2f || owner.aiContainer.CanFollowPath())
             {
                 if (CanMoveForward(distance))
                 {

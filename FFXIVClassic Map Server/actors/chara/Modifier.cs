@@ -42,16 +42,14 @@ namespace FFXIVClassic_Map_Server.actors.chara
         ResistWater            = 31, // <3 u jorge
         AttackRange            = 32,
         Speed                  = 33,
-
+        AttackDelay            = 34,
         
-        /* fuck off
-        CRAFT_PROCESSING = 30,
-        CRAFT_MAGIC_PROCESSING = 31,
-        CRAFT_PROCESS_CONTROL = 32,
+        CraftProcessing        = 35,
+        CraftMagicProcessing   = 36,
+        CraftProcessControl    = 37,
 
-        HARVEST_POTENCY = 33,
-        HARVEST_LIMIT = 34,
-        HARVEST_RATE = 35,
-        */
+        HarvestPotency         = 38,
+        HarvestLimit           = 39,
+        HarvestRate            = 40
     }
 }

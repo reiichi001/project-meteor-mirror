@@ -1884,6 +1884,7 @@ namespace FFXIVClassic_Map_Server
                             ability.effectAnimation = reader.GetUInt16(19);
                             ability.modelAnimation = reader.GetUInt16(20);
                             ability.animationDurationSeconds = reader.GetUInt16(21);
+                            ability.battleAnimation = (uint)((ability.animationType << 24) | (ability.modelAnimation << 12) | (ability.effectAnimation));
                             
                             abilities.Add(id, ability);
                         }

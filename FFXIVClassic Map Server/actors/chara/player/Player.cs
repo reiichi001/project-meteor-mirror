@@ -26,14 +26,6 @@ namespace FFXIVClassic_Map_Server.Actors
 {
     class Player : Character
     {
-        public const int CLASSID_PUG = 2;
-        public const int CLASSID_GLA = 3;
-        public const int CLASSID_MRD = 4;
-        public const int CLASSID_ARC = 7;
-        public const int CLASSID_LNC = 8;
-        public const int CLASSID_THM = 22;
-        public const int CLASSID_CNJ = 23;
-
         public const int CLASSID_CRP = 29;
         public const int CLASSID_BSM = 30;
         public const int CLASSID_ARM = 31;
@@ -97,7 +89,6 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint destinationZone;
         public ushort destinationSpawnType;
         public uint[] timers = new uint[20];
-        public ushort currentJob;
         public uint currentTitle;
         public uint playTime;
         public uint lastPlayTimeUpdate;
@@ -1729,30 +1720,15 @@ namespace FFXIVClassic_Map_Server.Actors
                 packets.AddRange(propPacketUtil.Done());
             }
 
-            base.PostUpdate(tick);
+            base.PostUpdate(tick, packets);
         }
 
-        public override short GetHP()
-        {
-            return charaWork.parameterSave.hp[currentJob];
-        }
-
-        public override short GetMaxHP()
-        {
-            return charaWork.parameterSave.hpMax[currentJob];
-        }
-
-        public override byte GetHPP()
-        {
-            return (byte)(charaWork.parameterSave.hp[currentJob] / charaWork.parameterSave.hpMax[currentJob]);
-        }
-
-        public override void AddHP(short hp)
+        public override void AddHP(int hp)
         {
             // todo: +/- hp and die
-            // todo: battlenpcs probably have way more hp?
+            // todo: check hidden effects and shit
             var addHp = charaWork.parameterSave.hp[currentJob] + hp;
-            addHp = addHp.Clamp(short.MinValue, charaWork.parameterSave.hpMax[currentJob]);
+            addHp = addHp.Clamp(ushort.MinValue, charaWork.parameterSave.hpMax[currentJob]);
             charaWork.parameterSave.hp[currentJob] = (short)addHp;
 
             if (charaWork.parameterSave.hp[currentJob] < 1)
@@ -1761,17 +1737,6 @@ namespace FFXIVClassic_Map_Server.Actors
             updateFlags |= ActorUpdateFlags.HpTpMp;
         }
 
-        public override void DelHP(short hp)
-        {
-            AddHP((short)-hp);
-        }
-
-        // todo: should this include stats too?
-        public override void RecalculateHpMpTp()
-        {
-            // todo: recalculate stats and crap
-            updateFlags |= ActorUpdateFlags.HpTpMp;
-        }
 
         public override void Die(DateTime tick)
         {
@@ -1832,7 +1797,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
             QueuePackets(recastPacketUtil.Done());
         }
-
 
         public void EquipAbility(ushort hotbarSlot, ushort commandId)
         {
@@ -1947,7 +1911,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendBattleActionX01Packet(uint anim, uint effect, uint text = 0x756D, uint command = 27260, uint param = 0x01, uint idek = 0x01)
         {
-            var packet = BattleActionX01Packet.BuildPacket(actorId, actorId, actorId, (uint)anim, (uint)effect, (ushort)text, (ushort)command, (ushort)param, (byte)idek);
+            var packet = BattleActionX01Packet.BuildPacket(actorId, actorId, currentTarget != 0xC0000000 ? currentTarget : currentLockedTarget, (uint)anim, (uint)effect, (ushort)text, (ushort)command, (ushort)param, (byte)idek);
             QueuePacket(packet);
         }
     }

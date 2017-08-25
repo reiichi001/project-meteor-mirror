@@ -82,7 +82,7 @@ INSERT INTO `abilities` VALUES (27142,'rampart',3,2,3,1,0,1,0,2,5,0,60,0,0,120,0
 INSERT INTO `abilities` VALUES (27143,'tempered_will',3,42,8,1,0,1,0,0,5,0,20,0,0,180,0,0,14,515,2,2);
 INSERT INTO `abilities` VALUES (27144,'outmaneuver',3,34,8,1,0,1,0,0,5,0,30,0,0,90,0,0,14,512,21,2);
 INSERT INTO `abilities` VALUES (27145,'flash',3,14,3,32,0,1,0,0,5,0,0,0,0,30,0,0,14,696,2,2);
-INSERT INTO `abilities` VALUES (27146,'cover',16,30,0,0,0,1,0,0,5,0,15,0,0,60,0,0,14,1,2,2);
+INSERT INTO `abilities` VALUES (27146,'cover',16,30,0,0,0,1,0,0,5,0,15,0,0,60,0,0,14,725,2,2);
 INSERT INTO `abilities` VALUES (27147,'divine_veil',16,35,0,0,0,1,0,0,5,0,20,0,0,60,0,0,14,713,2,2);
 INSERT INTO `abilities` VALUES (27148,'hallowed_ground',16,50,0,0,0,1,0,0,5,0,0,0,0,900,0,0,14,709,2,2);
 INSERT INTO `abilities` VALUES (27149,'holy_succor',16,40,0,0,0,1,0,0,15,0,0,0,2,10,100,0,1,701,1,2);

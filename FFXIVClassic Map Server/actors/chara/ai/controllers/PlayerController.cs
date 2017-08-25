@@ -63,7 +63,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public override void Cast(Character target, uint spellId)
         {
-
+            owner.aiContainer.InternalCast(target, spellId);
         }
 
         public override void Ability(Character target, uint abilityId)

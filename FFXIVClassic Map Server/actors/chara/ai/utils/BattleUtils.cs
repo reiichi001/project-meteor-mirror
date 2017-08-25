@@ -23,5 +23,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             }
             defender.DelHP((short)damage);
         }
+
+        public static int CalculateSpellDamage(Character attacker, Character defender, Ability spell)
+        {
+            // todo: spell formulas and stuff (stoneskin, mods, stats, etc)
+            return 69;
+        }
     }
 }

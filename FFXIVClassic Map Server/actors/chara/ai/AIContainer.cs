@@ -295,12 +295,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void InternalCast(Character target, uint spellId)
         {
-
+            ChangeState(new MagicState(owner, target, (ushort)spellId));
         }
 
         public void InternalWeaponSkill(Character target, uint weaponSkillId)
         {
-
+            ChangeState(new WeaponSkillState(owner, target, (ushort)weaponSkillId));
         }
 
         public void InternalMobSkill(Character target, uint mobSkillId)
@@ -310,7 +310,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void InternalDie(DateTime tick, uint timeToFadeout)
         {
-            if (true) return;
             ClearStates();
             Disengage();
             ForceChangeState(new DeathState(owner, tick, timeToFadeout));

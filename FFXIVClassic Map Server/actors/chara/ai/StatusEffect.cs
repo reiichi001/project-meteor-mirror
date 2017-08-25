@@ -419,7 +419,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public bool Update(DateTime tick)
         {
             // todo: maybe not tick if already reached duration?
-            if (tickMs != 0 && (lastTick - startTime).TotalMilliseconds >= tickMs)
+            if (tickMs != 0 && (tick - lastTick).TotalMilliseconds >= tickMs)
             {
                 // todo: call effect's onTick
                 // todo: maybe keep a global lua object instead of creating a new one each time we wanna call a script
@@ -443,7 +443,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public Character GetSource()
         {
-            return source;
+            return source ?? owner;
         }
 
         public uint GetStatusEffectId()

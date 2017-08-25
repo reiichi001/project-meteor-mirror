@@ -28,7 +28,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
                 {
                     // todo: mark for zoning and remove after main loop
-                    owner.ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
+                    owner.Spawn(Program.Tick);
                     //Server.GetWorldManager().DoZoneChange(((Player)owner), 244, null, 0, 15, -160.048f, 0, -165.737f, 0.0f);
                 }
                 else

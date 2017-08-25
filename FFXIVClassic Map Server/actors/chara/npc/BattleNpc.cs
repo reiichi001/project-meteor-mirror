@@ -58,8 +58,9 @@ namespace FFXIVClassic_Map_Server.Actors
             aggroType = AggroType.Sight;
             this.moveState = 2;
             ResetMoveSpeeds();
-            this.meleeRange = 1.5f;
             despawnTime = 10;
+
+            CalculateBaseStats();
         }
 
         public override void Update(DateTime tick)
@@ -85,7 +86,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[1]");
                 packets.AddRange(propPacketUtil.Done());
             }
-            base.PostUpdate(tick);
+            base.PostUpdate(tick, packets);
         }
 
         public override bool CanAttack()

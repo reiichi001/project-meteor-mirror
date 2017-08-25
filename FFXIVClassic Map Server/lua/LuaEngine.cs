@@ -167,7 +167,8 @@ namespace FFXIVClassic_Map_Server.lua
 
         public static int CallLuaStatusEffectFunction(Character actor, StatusEffect effect, string functionName, params object[] args)
         {
-            string path = $"./scripts/effects/{effect.GetName()}.lua";
+            var name = ((StatusEffectId)effect.GetStatusEffectId()).ToString().ToLower();
+            string path = $"./scripts/effects/{name}.lua";
 
             if (File.Exists(path))
             {
@@ -186,7 +187,36 @@ namespace FFXIVClassic_Map_Server.lua
                 if (!script.Globals.Get(functionName).IsNil())
                 {
                     res = script.Call(script.Globals.Get(functionName), args);
-                    return (int)res.Number;
+                    if (res != null)
+                        return (int)res.Number;
+                }
+            }
+            return -1;
+        }
+
+        public static int CallLuaAbilityFunction(Character actor, Ability ability, string folder, string functionName, params object[] args)
+        {
+            string path = $"./scripts/{folder}/{ability.name}.lua";
+
+            if (File.Exists(path))
+            {
+                var script = LoadGlobals();
+
+                try
+                {
+                    script.DoFile(path);
+                }
+                catch (Exception e)
+                {
+                    Program.Log.Error($"LuaEngine.CallLuaSpellFunction [{functionName}] {e.Message}");
+                }
+                DynValue res = new DynValue();
+
+                if (!script.Globals.Get(functionName).IsNil())
+                {
+                    res = script.Call(script.Globals.Get(functionName), args);
+                    if (res != null)
+                        return (int)res.Number;
                 }
             }
             return -1;

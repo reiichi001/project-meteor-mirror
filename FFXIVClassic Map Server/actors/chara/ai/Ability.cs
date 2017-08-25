@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic_Map_Server.actors.chara.player;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
@@ -42,7 +43,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
     class Ability
     {
-        public ushort abilityId;
+        public ushort id;
         public string name;
         public byte job;
         public byte level;
@@ -65,14 +66,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public ushort modelAnimation;
         public ushort animationDurationSeconds;
 
+        public uint battleAnimation;
+        public ushort worldMasterTextId;
+        public uint param;
 
         public TargetFind targetFind;
 
         public Ability(ushort id, string name)
         {
-            this.abilityId = id;
+            this.id = id;
             this.name = name;
-            this.range = -1;
+            this.range = 0;
         }
 
         public Ability Clone()
@@ -90,10 +94,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return castTimeSeconds == 0;
         }
 
-        public bool CanPlayerUse(Character user, Character target)
+        public bool IsValidTarget(Character user, Character target)
         {
             // todo: set box length..
             targetFind = new TargetFind(user);
+            
             if (aoeType == TargetFindAOEType.Box)
             {
                 // todo: read box width from sql
@@ -103,7 +108,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 targetFind.SetAOEType(validTarget, aoeType, range, 40);
             }
-            return false;
+            return targetFind.CanTarget(target, true, true);
         }
     }
 }

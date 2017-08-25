@@ -91,7 +91,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             var dest = owner.FindRandomPoint(x, y, z, minRange, maxRange);
             // todo: this is dumb..
-            distanceFromPoint = owner.meleeRange;
+            distanceFromPoint = owner.GetAttackRange();
             PreparePath(dest.X, dest.Y, dest.Z);
         }
 
@@ -148,14 +148,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             float speed = GetSpeed();
 
-            float stepDistance = speed;
+            float stepDistance = speed / 3;
             float distanceTo = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, point.X, point.Y, point.Z);
 
             owner.LookAt(point.X, point.Y);
 
             if (distanceTo <= distanceFromPoint + stepDistance)
             {
-                if (distanceFromPoint <= 1.5f)
+                if (distanceFromPoint <= owner.GetAttackRange())
                 {
                     owner.QueuePositionUpdate(point);
                 }

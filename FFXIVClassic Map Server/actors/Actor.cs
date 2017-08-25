@@ -670,7 +670,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 return false;
             }
 
-            return IsFacing(target.positionX, target.positionY, angle);
+            return IsFacing(target.positionX, target.positionZ, angle);
         }
 
         public void QueuePositionUpdate(Vector3 pos)

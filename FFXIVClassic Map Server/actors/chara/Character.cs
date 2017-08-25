@@ -24,6 +24,14 @@ namespace FFXIVClassic_Map_Server.Actors
 
     class Character : Actor
     {
+        public const int CLASSID_PUG = 2;
+        public const int CLASSID_GLA = 3;
+        public const int CLASSID_MRD = 4;
+        public const int CLASSID_ARC = 7;
+        public const int CLASSID_LNC = 8;
+        public const int CLASSID_THM = 22;
+        public const int CLASSID_CNJ = 23;
+
         public const int SIZE = 0;
         public const int COLORINFO = 1;
         public const int FACEINFO = 2;
@@ -77,14 +85,16 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public AIContainer aiContainer;
         public StatusEffectContainer statusEffects;
-        public float meleeRange;
-        protected uint attackDelayMs;
 
         public CharacterTargetingAllegiance allegiance;
 
         public Pet pet;
 
-        public Dictionary<Modifier, Int64> modifiers = new Dictionary<Modifier, long>(); 
+        public Dictionary<Modifier, Int64> modifiers = new Dictionary<Modifier, long>();
+
+        protected ushort hpBase, hpMaxBase, mpBase, mpMaxBase, tpBase;
+        protected BattleTemp baseStats = new BattleTemp();
+        public ushort currentJob;
 
         public Character(uint actorID) : base(actorID)
         {            
@@ -95,9 +105,10 @@ namespace FFXIVClassic_Map_Server.Actors
             this.statusEffects = new StatusEffectContainer(this);
 
             // todo: move this somewhere more appropriate
-            attackDelayMs = 4200;
-            meleeRange = 2.5f;
             ResetMoveSpeeds();
+            // todo: base this on equip and shit
+            SetMod((uint)Modifier.AttackRange, 3);
+            SetMod((uint)Modifier.AttackDelay, 4200);
         }
 
         public SubPacket CreateAppearancePacket()
@@ -148,6 +159,7 @@ namespace FFXIVClassic_Map_Server.Actors
             foreach (var effect in statusEffects.GetStatusEffects())
             {
                 propPacketUtil.AddProperty($"charaWork.statusShownTime[{i}]");
+                propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
                 i++;
             }
             return propPacketUtil.Done();
@@ -192,8 +204,9 @@ namespace FFXIVClassic_Map_Server.Actors
         public Int64 GetMod(uint modifier)
         {
             Int64 res;
-            modifiers.TryGetValue((Modifier)modifier, out res);
-            return res;
+            if (modifiers.TryGetValue((Modifier)modifier, out res))
+                return res;
+            return 0;
         }
 
         public void SetMod(uint modifier, Int64 val)
@@ -253,7 +266,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public virtual uint GetAttackDelayMs()
         {
-            return attackDelayMs;
+            return (uint)GetMod((uint)Modifier.AttackDelay);
+        }
+
+        public virtual uint GetAttackRange()
+        {
+            return (uint)GetMod((uint)Modifier.AttackRange);
         }
 
         public bool Engage(uint targid = 0)
@@ -279,10 +297,23 @@ namespace FFXIVClassic_Map_Server.Actors
             return false;
         }
 
+        public void Cast(uint spellId)
+        {
+            aiContainer.Cast(Server.GetWorldManager().GetActorInWorld(currentTarget) as Character, spellId);
+        }
+
+        public void WeaponSkill(uint skillId)
+        {
+            aiContainer.WeaponSkill(Server.GetWorldManager().GetActorInWorld(currentTarget) as Character, skillId);
+        }
+
         public virtual void Spawn(DateTime tick)
         {
             // todo: reset hp/mp/tp etc here
-            RecalculateHpMpTp();
+            ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
+            charaWork.parameterSave.hp = charaWork.parameterSave.hpMax;
+            charaWork.parameterSave.mp = charaWork.parameterSave.mpMax;
+            RecalculateStats();
         }
 
         public virtual void Die(DateTime tick)
@@ -306,47 +337,105 @@ namespace FFXIVClassic_Map_Server.Actors
             return !IsDead();
         }
 
-        public virtual short GetHP()
+        public short GetHP()
         {
             // todo: 
-            return charaWork.parameterSave.hp[0];
+            return charaWork.parameterSave.hp[currentJob];
         }
 
-        public virtual short GetMaxHP()
+        public short GetMaxHP()
         {
-            return charaWork.parameterSave.hpMax[0];
+            return charaWork.parameterSave.hpMax[currentJob];
         }
 
-        public virtual byte GetHPP()
+        public short GetMP()
         {
-            return (byte)(charaWork.parameterSave.hp[0] / charaWork.parameterSave.hpMax[0]);
+            return charaWork.parameterSave.mp;
         }
 
-        public virtual void AddHP(short hp)
+        public ushort GetTP()
+        {
+            return tpBase;
+        }
+
+        public short GetMaxMP()
+        {
+            return charaWork.parameterSave.mpMax;
+        }
+
+        public byte GetMPP()
+        {
+            return (byte)((charaWork.parameterSave.mp / charaWork.parameterSave.mpMax) * 100);
+        }
+
+        public byte GetTPP()
+        {
+            return (byte)((tpBase / 3000) * 100);
+        }
+
+        public byte GetHPP()
+        {
+            return (byte)((charaWork.parameterSave.hp[0] / charaWork.parameterSave.hpMax[0]) * 100);
+        }
+
+        // todo: the following functions are virtuals since we want to check hidden item bonuses etc on player for certain conditions
+        public virtual void AddHP(int hp)
         {
             // todo: +/- hp and die
             // todo: battlenpcs probably have way more hp?
-            var addHp = charaWork.parameterSave.hp[0] + hp;
-            addHp = addHp.Clamp(short.MinValue, charaWork.parameterSave.hpMax[0]);
-            charaWork.parameterSave.hp[0] = (short)addHp;
+            var addHp = charaWork.parameterSave.hp[currentJob] + hp;
+            addHp = addHp.Clamp(ushort.MinValue, charaWork.parameterSave.hpMax[currentJob]);
+            charaWork.parameterSave.hp[currentJob] = (short)addHp;
 
-            if (charaWork.parameterSave.hp[0] < 1)
+            if (charaWork.parameterSave.hp[currentJob] < 1)
                 Die(Program.Tick);
 
             updateFlags |= ActorUpdateFlags.HpTpMp;
         }
 
-        public virtual void DelHP(short hp)
+        public void AddMP(int mp)
+        {
+            charaWork.parameterSave.mp = (short)(charaWork.parameterSave.mp + mp).Clamp(ushort.MinValue, charaWork.parameterSave.mpMax);
+
+            // todo: check hidden effects and shit
+
+            updateFlags |= ActorUpdateFlags.HpTpMp;
+        }
+
+        public void AddTP(int tp)
+        {
+            tpBase = (ushort)((tpBase + tp).Clamp(0, 3000));
+
+            updateFlags |= ActorUpdateFlags.HpTpMp;
+        }
+
+        public void DelHP(int hp)
         {
             AddHP((short)-hp);
         }
 
-        // todo: should this include stats too?
-        public virtual void RecalculateHpMpTp()
+        public void DelMP(int mp)
         {
-            // legit fuck c#
-            // todo: other shit too..
-            meleeRange = GetMod((uint)Modifier.AttackRange);
+            AddMP(-mp);
+        }
+
+        public void DelTP(int tp)
+        {
+            AddTP(-tp);
+        }
+
+        public void CalculateBaseStats()
+        {
+            // todo: apply mods and shit here, get race/level/job and shit
+            // baseStats.generalParameter[ASIDHOASID] =  
+        }
+        // todo: should this include stats too?
+        public void RecalculateStats()
+        {
+            if (GetMod((uint)Modifier.Hp) != 0)
+            {
+                
+            }
             // todo: recalculate stats and crap
             updateFlags |= ActorUpdateFlags.HpTpMp;
         }
@@ -354,7 +443,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public virtual float GetSpeed()
         {
             // todo: for battlenpc/player calculate speed
-            return moveSpeeds[2];
+            return moveSpeeds[2] + GetMod((uint)Modifier.Speed);
         }
     }
 

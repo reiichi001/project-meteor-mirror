@@ -100,7 +100,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                     player.QueuePacket(packet);
                 }
             }
-            //target.DelHP((short)damage);
+            target.DelHP((short)damage);
             attackTime = attackTime.AddMilliseconds(owner.GetAttackDelayMs());
             owner.LookAt(target);
            //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
@@ -150,9 +150,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 return false;
             }
             // todo: use a mod for melee range
-            else if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > owner.meleeRange)
+            else if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > owner.GetAttackRange())
             {
-                //owner.aiContainer.GetpathFind?.PreparePath(target.positionX, target.positionY, target.positionZ, 2.5f, 4);
+                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
+                {
+                    ((Player)owner).SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20);
+                }
                 return false;
             }
             return true;
