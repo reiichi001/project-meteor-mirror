@@ -233,6 +233,8 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.eventSave.bazaarTax = 5;
             charaWork.battleSave.potencial = 6.6f;
 
+            charaWork.battleSave.negotiationFlag[0] = true;
+
             charaWork.commandCategory[0] = 1;
             charaWork.commandCategory[1] = 1;
             charaWork.commandCategory[32] = 1;
@@ -400,6 +402,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //Commands
             propPacketUtil.AddProperty("charaWork.commandBorder");
 
+            propPacketUtil.AddProperty("charaWork.battleSave.negotiationFlag[0]");
 
             for (int i = 0; i < charaWork.command.Length; i++)
             {
