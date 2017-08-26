@@ -46,11 +46,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return null;
         }
 
-        public InventoryItem GetItemById(ulong itemId)
+        public InventoryItem GetItemByUniqueId(ulong uniqueItemId)
         {
             foreach (InventoryItem item in list)
             {
-                if (item.uniqueId == itemId)
+                if (item.uniqueId == uniqueItemId)
+                    return item;
+            }
+            return null;
+        }
+
+        public InventoryItem GetItemByCatelogId(ulong catelogId)
+        {
+            foreach (InventoryItem item in list)
+            {
+                if (item.itemId == catelogId)
                     return item;
             }
             return null;

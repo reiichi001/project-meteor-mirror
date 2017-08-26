@@ -1,5 +1,4 @@
 ﻿using FFXIVClassic.Common;
-
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.dataobjects;
@@ -7,6 +6,9 @@ using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.packets.send.events;
+using FFXIVClassic_Map_Server.packets.send.actor.events;
+using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.events;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.utils;
@@ -340,6 +342,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     subpackets.Add(SetHasGoobbuePacket.BuildPacket(actorId, hasGoobbue));
 
                 subpackets.Add(SetAchievementPointsPacket.BuildPacket(actorId, achievementPoints));
+
                 subpackets.Add(Database.GetLatestAchievements(this));
                 subpackets.Add(Database.GetAchievementsPacket(this));                
             }
@@ -543,6 +546,7 @@ namespace FFXIVClassic_Map_Server.Actors
             playerSession.QueuePacket(worldMasterSpawn);
 
             //Inn Packets (Dream, Cutscenes, Armoire)
+
             if (zone.isInn)
             {
                 SetCutsceneBookPacket cutsceneBookPacket = new SetCutsceneBookPacket();
@@ -569,7 +573,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (currentContentGroup != null)
                 currentContentGroup.SendGroupPackets(playerSession);
-
         }
 
         private void SendRemoveInventoryPackets(List<ushort> slots)
@@ -600,6 +603,7 @@ namespace FFXIVClassic_Map_Server.Actors
         }        
 
         public void QueuePacket(SubPacket packet)
+
         {
             playerSession.QueuePacket(packet);
         }
@@ -708,7 +712,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             //Save Player
             Database.SavePlayerPlayTime(this);
-            Database.SavePlayerPosition(this);            
+            Database.SavePlayerPosition(this);
         }
 
         public Area GetZone()
@@ -987,6 +991,7 @@ namespace FFXIVClassic_Map_Server.Actors
             else
             {
                 ItemData item = Server.GetItemGamedata(invItem.itemId);
+
                 if (item is EquipmentItem)
                 {
                     EquipmentItem eqItem = (EquipmentItem)item;
@@ -1021,7 +1026,6 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             Database.SavePlayerAppearance(this);
-
             BroadcastPacket(CreateAppearancePacket(), true);
         }
 
@@ -1031,6 +1035,14 @@ namespace FFXIVClassic_Map_Server.Actors
                 return inventories[type];
             else
                 return null;
+        }
+
+        public int GetCurrentGil()
+        {
+            if (GetInventory(Inventory.CURRENCY).HasItem(1000001))
+                return GetInventory(Inventory.CURRENCY).GetItemByCatelogId(1000001).quantity;
+            else
+                return 0;
         }
 
         public Actor GetActorInInstance(uint actorId)
@@ -1546,7 +1558,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void SendDataPacket(params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
-            SubPacket spacket = InfoRequestResponsePacket.BuildPacket(actorId, lParams);
+            SubPacket spacket = GenericDataPacket.BuildPacket(actorId, lParams);
             spacket.DebugPrintSubPacket();
             QueuePacket(spacket);
         }
@@ -1702,5 +1714,18 @@ namespace FFXIVClassic_Map_Server.Actors
             LuaEngine.GetInstance().CallLuaFunction(this, this, "OnUpdate", true, delta);
         }
 
+        public void IssueChocobo(byte appearanceId, string nameResponse)
+        {
+            Database.IssuePlayerChocobo(this, appearanceId, nameResponse);
+            hasChocobo = true;
+            chocoboAppearance = appearanceId;
+            chocoboName = nameResponse;
+        }
+
+        public void ChangeChocoboAppearance(byte appearanceId)
+        {
+            Database.ChangePlayerChocoboAppearance(this, appearanceId);
+            chocoboAppearance = appearanceId;
+        }
     }
 }

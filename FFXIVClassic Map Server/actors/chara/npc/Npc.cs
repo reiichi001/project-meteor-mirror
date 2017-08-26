@@ -52,8 +52,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             LoadNpcAppearance(actorClass.actorClassId);
 
-            this.classPath = actorClass.classPath;
-            className = classPath.Substring(classPath.LastIndexOf("/")+1);
+            className = actorClass.classPath.Substring(actorClass.classPath.LastIndexOf("/") + 1);
+            this.classPath = String.Format("{0}/{1}", actorClass.classPath.Substring(0, actorClass.classPath.LastIndexOf('/')).ToLower(), className);
 
             charaWork.battleSave.potencial = 1.0f;
 

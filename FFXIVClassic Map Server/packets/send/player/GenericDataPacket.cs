@@ -6,7 +6,7 @@ using FFXIVClassic.Common;
 
 namespace FFXIVClassic_Map_Server.packets.send.player
 {
-    class InfoRequestResponsePacket
+    class GenericDataPacket
     {
         public const ushort OPCODE = 0x0133;
         public const uint PACKET_SIZE = 0xE0;

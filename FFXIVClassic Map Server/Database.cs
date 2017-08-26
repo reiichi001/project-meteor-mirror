@@ -10,6 +10,7 @@ using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.actors.chara.player;
+using FFXIVClassic_Map_Server.packets.receive.supportdesk;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -29,10 +30,10 @@ namespace FFXIVClassic_Map_Server
                     cmd.Parameters.AddWithValue("@sessionId", sessionId);
                     using (MySqlDataReader Reader = cmd.ExecuteReader())
                     {
-                            while (Reader.Read())
-                            {
-                                id = Reader.GetUInt32("userId");
-                            }                        
+                        while (Reader.Read())
+                        {
+                            id = Reader.GetUInt32("userId");
+                        }
                     }
                 }
                 catch (MySqlException e)
@@ -42,10 +43,10 @@ namespace FFXIVClassic_Map_Server
                 finally
                 {
                     conn.Dispose();
-                }                
+                }
             }
             return id;
-        }             
+        }
 
         public static List<Npc> GetNpcList()
         {
@@ -122,7 +123,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Dispose();
                 }
-                
+
                 return gamedataItems;
             }
         }
@@ -262,7 +263,7 @@ namespace FFXIVClassic_Map_Server
 
         public static void SavePlayerPosition(Player player)
         {
-            string query;            
+            string query;
             MySqlCommand cmd;
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -284,7 +285,7 @@ namespace FFXIVClassic_Map_Server
                     currentPrivateAreaType = @privateAreaType
                     WHERE id = @charaId
                     ";
-                   
+
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charaId", player.actorId);
                     cmd.Parameters.AddWithValue("@x", player.positionX);
@@ -637,9 +638,9 @@ namespace FFXIVClassic_Map_Server
         }
 
         public static void LoadPlayerCharacter(Player player)
-        {            
+        {
             string query;
-            MySqlCommand cmd;            
+            MySqlCommand cmd;
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -724,7 +725,7 @@ namespace FFXIVClassic_Map_Server
                                 player.zone = Server.GetWorldManager().GetZone(player.zoneId);
                         }
                     }
-                  
+
                     //Get class levels
                     query = @"
                         SELECT 
@@ -757,7 +758,7 @@ namespace FFXIVClassic_Map_Server
                     {
                         if (reader.Read())
                         {
-                            player.charaWork.battleSave.skillLevel[Player.CLASSID_PUG-1] = reader.GetInt16("pug");
+                            player.charaWork.battleSave.skillLevel[Player.CLASSID_PUG - 1] = reader.GetInt16("pug");
                             player.charaWork.battleSave.skillLevel[Player.CLASSID_GLA - 1] = reader.GetInt16("gla");
                             player.charaWork.battleSave.skillLevel[Player.CLASSID_MRD - 1] = reader.GetInt16("mrd");
                             player.charaWork.battleSave.skillLevel[Player.CLASSID_ARC - 1] = reader.GetInt16("arc");
@@ -806,7 +807,7 @@ namespace FFXIVClassic_Map_Server
                             player.charaWork.parameterSave.state_mainSkillLevel = player.charaWork.battleSave.skillLevel[reader.GetByte(4) - 1];
                         }
                     }
-                    
+
                     //Load appearance
                     query = @"
                         SELECT 
@@ -949,7 +950,7 @@ namespace FFXIVClassic_Map_Server
                                 player.timers[i] = reader.GetUInt32(i);
                         }
                     }
-                   
+
                     //Load Hotbar
                     query = @"
                         SELECT 
@@ -962,11 +963,11 @@ namespace FFXIVClassic_Map_Server
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
                     using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {                        
+                    {
                         while (reader.Read())
                         {
                             int index = reader.GetUInt16(0);
-                            player.charaWork.command[index+32] = reader.GetUInt32(1);
+                            player.charaWork.command[index + 32] = reader.GetUInt32(1);
                             player.charaWork.parameterSave.commandSlot_recastTime[index] = reader.GetUInt32(2);
                         }
                     }
@@ -980,7 +981,7 @@ namespace FFXIVClassic_Map_Server
                         questFlags,
                         currentPhase
                         FROM characters_quest_scenario WHERE characterId = @charId";
-                   
+
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     using (MySqlDataReader reader = cmd.ExecuteReader())
@@ -1069,7 +1070,7 @@ namespace FFXIVClassic_Map_Server
                         {
                             int npcLSId = reader.GetUInt16(0);
                             player.playerWork.npcLinkshellChatCalling[npcLSId] = reader.GetBoolean(1);
-                            player.playerWork.npcLinkshellChatExtra[npcLSId] = reader.GetBoolean(2);                            
+                            player.playerWork.npcLinkshellChatExtra[npcLSId] = reader.GetBoolean(2);
                         }
                     }
 
@@ -1121,7 +1122,7 @@ namespace FFXIVClassic_Map_Server
                         {
                             ushort equipSlot = reader.GetUInt16(0);
                             ulong uniqueItemId = reader.GetUInt16(1);
-                            InventoryItem item = player.GetInventory(Inventory.NORMAL).GetItemById(uniqueItemId);
+                            InventoryItem item = player.GetInventory(Inventory.NORMAL).GetItemByUniqueId(uniqueItemId);
                             equipment[equipSlot] = item;
                         }
                     }
@@ -1244,7 +1245,7 @@ namespace FFXIVClassic_Map_Server
                     cmd.Parameters.AddWithValue("@type", type);
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {                        
+                    {
                         while (reader.Read())
                         {
                             uint uniqueId = reader.GetUInt32(0);
@@ -1291,7 +1292,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Open();
 
-                    
+
 
                     string query = @"
                                     INSERT INTO server_items                                    
@@ -1309,7 +1310,7 @@ namespace FFXIVClassic_Map_Server
                                     ";
 
                     MySqlCommand cmd2 = new MySqlCommand(query2, conn);
-                    
+
                     cmd.Parameters.AddWithValue("@itemId", itemId);
                     cmd.Parameters.AddWithValue("@quality", quality);
                     cmd.Parameters.AddWithValue("@itemType", itemType);
@@ -1345,12 +1346,12 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Open();
 
-                     string query = @"
+                    string query = @"
                                     UPDATE characters_inventory
                                     SET quantity = @quantity
                                     WHERE characterId = @charId AND slot = @slot AND inventoryType = @type;
                                     ";
-                    
+
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@quantity", quantity);
@@ -1390,7 +1391,7 @@ namespace FFXIVClassic_Map_Server
 
                                     DELETE FROM server_items
                                     WHERE id = @serverItemId;
-                                    ";                    
+                                    ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
@@ -1460,7 +1461,7 @@ namespace FFXIVClassic_Map_Server
                 try
                 {
                     conn.Open();
-                 
+
                     //Load Last 5 Completed
                     string query = @"
                                     SELECT 
@@ -1475,7 +1476,7 @@ namespace FFXIVClassic_Map_Server
                         int count = 0;
                         while (reader.Read())
                         {
-                            uint id = reader.GetUInt32(0);                           
+                            uint id = reader.GetUInt32(0);
                             latestAchievements[count++] = id;
                         }
                     }
@@ -1502,7 +1503,7 @@ namespace FFXIVClassic_Map_Server
                 try
                 {
                     conn.Open();
-                 
+
                     string query = @"
                                     SELECT packetOffsetId 
                                     FROM characters_achievements 
@@ -1514,7 +1515,7 @@ namespace FFXIVClassic_Map_Server
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
-                        {                            
+                        {
                             uint offset = reader.GetUInt32(0);
 
                             if (offset < 0 || offset >= cheevosPacket.achievementFlags.Length)
@@ -1522,7 +1523,7 @@ namespace FFXIVClassic_Map_Server
                                 Program.Log.Error("SQL Error; achievement flag offset id out of range: " + offset);
                                 continue;
                             }
-                            cheevosPacket.achievementFlags[offset] = true;                             
+                            cheevosPacket.achievementFlags[offset] = true;
                         }
                     }
                 }
@@ -1538,7 +1539,6 @@ namespace FFXIVClassic_Map_Server
 
             return cheevosPacket.BuildPacket(player.actorId);
         }
-
         public static bool CreateLinkshell(Player player, string lsName, ushort lsCrest)
         {
             bool success = false;
@@ -1559,7 +1559,7 @@ namespace FFXIVClassic_Map_Server
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@lsName", lsName);
                     cmd.Parameters.AddWithValue("@master", player.actorId);
-                    cmd.Parameters.AddWithValue("@crest", lsCrest);                    
+                    cmd.Parameters.AddWithValue("@crest", lsCrest);
 
                     cmd.ExecuteNonQuery();
                     success = true;
@@ -1615,6 +1615,315 @@ namespace FFXIVClassic_Map_Server
                 }
             }
         }
+
+        public static bool SaveSupportTicket(GMSupportTicketPacket gmTicket, string playerName)
+        {
+            string query;
+            MySqlCommand cmd;
+            bool wasError = false;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO supportdesk_tickets
+                    (name, title, body, langCode)
+                    VALUES
+                    (@name, @title, @body, @langCode)";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@name", playerName);
+                    cmd.Parameters.AddWithValue("@title", gmTicket.ticketTitle);
+                    cmd.Parameters.AddWithValue("@body", gmTicket.ticketBody);
+                    cmd.Parameters.AddWithValue("@langCode", gmTicket.langCode);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                    wasError = true;
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            return wasError;
+        }
+
+        public static bool isTicketOpen(string playerName)
+        {
+            bool isOpen = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT
+                                    isOpen
+                                    FROM supportdesk_tickets
+                                    WHERE name = @name
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Parameters.AddWithValue("@name", playerName);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            isOpen = reader.GetBoolean(0);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();                   
+                }
+            }
+
+            return isOpen;
+        }
+
+        public static void closeTicket(string playerName)
+        {
+            bool isOpen = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    UPDATE
+                                    supportdesk_tickets
+                                    SET isOpen = 0
+                                    WHERE name = @name
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@name", playerName);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static string[] getFAQNames(uint langCode = 1)
+        {
+            string[] faqs = null;
+            List<string> raw = new List<string>();
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT
+                                    title
+                                    FROM supportdesk_faqs
+                                    WHERE languageCode = @langCode
+                                    ORDER BY slot
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Parameters.AddWithValue("@langCode", langCode);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string label = reader.GetString(0);
+                            raw.Add(label);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                    faqs = raw.ToArray();
+                }
+            }
+            return faqs;
+        }
+
+        public static string getFAQBody(uint slot, uint langCode = 1)
+        {
+            string body = string.Empty;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT
+                                    body
+                                    FROM supportdesk_faqs
+                                    WHERE slot=@slot and languageCode=@langCode";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@slot", slot);
+                    cmd.Parameters.AddWithValue("@langCode", langCode);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            body = reader.GetString(0);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return body;
+        }
+
+        public static string[] getIssues(uint lanCode = 1)
+        {
+            string[] issues = null;
+            List<string> raw = new List<string>();
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT
+                                    title
+                                    FROM supportdesk_issues
+                                    ORDER BY slot";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            string label = reader.GetString(0);
+                            raw.Add(label);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                    issues = raw.ToArray();
+                }
+            }
+            return issues;
+        }
+
+        public static void IssuePlayerChocobo(Player player, byte appearanceId, string name)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO characters_chocobo
+                    (characterId, hasChocobo, chocoboAppearance, chocoboName)
+                    VALUES
+                    (@characterId, @hasChocobo, @chocoboAppearance, @chocoboName)
+                    ON DUPLICATE KEY UPDATE
+                    hasChocobo=@hasChocobo, chocoboAppearance=@chocoboAppearance, chocoboName=@chocoboName";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@characterId", player.actorId);
+                    cmd.Parameters.AddWithValue("@hasChocobo", 1);
+                    cmd.Parameters.AddWithValue("@chocoboAppearance", appearanceId);
+                    cmd.Parameters.AddWithValue("@chocoboName", name);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void ChangePlayerChocoboAppearance(Player player, byte appearanceId)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    UPDATE characters_chocobo
+                    SET
+                    chocoboAppearance=@chocoboAppearance
+                    WHERE
+                    characterId = @characterId";                    
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@characterId", player.actorId);
+                    cmd.Parameters.AddWithValue("@chocoboAppearance", appearanceId);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
     }
 
 }

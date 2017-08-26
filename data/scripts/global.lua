@@ -51,34 +51,30 @@ INVENTORY_KEYITEMS = 0x0064; --Max 0x500
 INVENTORY_EQUIPMENT = 0x00FE; --Max 0x23
 INVENTORY_EQUIPMENT_OTHERPLAYER = 0x00F9; --Max 0x23
 
--- NPC LS
-NPCLS_GONE     = 0;
-NPCLS_INACTIVE = 1;
-NPCLS_ACTIVE   = 2;
-NPCLS_ALERT    = 3;
+-- CHOCOBO APPEARANCE
+CHOCOBO_NORMAL = 0;
+
+CHOCOBO_LIMSA1 = 0x1;
+CHOCOBO_LIMSA2 = 0x2;
+CHOCOBO_LIMSA3 = 0x3;
+CHOCOBO_LIMSA4 = 0x4;
+
+CHOCOBO_GRIDANIA1 = 0x1F;
+CHOCOBO_GRIDANIA2 = 0x20;
+CHOCOBO_GRIDANIA3 = 0x21;
+CHOCOBO_GRIDANIA4 = 0x22;
+
+CHOCOBO_ULDAH1 = 0x3D;
+CHOCOBO_ULDAH2 = 0x3E;
+CHOCOBO_ULDAH3 = 0x3F;
+CHOCOBO_ULDAH4 = 0x40;
 
 --UTILS
 
-function kickEventContinue(player, actor, trigger, ...)
-	player:kickEvent(actor, trigger, ...);
-	return coroutine.yield("_WAIT_EVENT", player);
-end
-
 function callClientFunction(player, functionName, ...)
-	player:RunEventFunction(functionName, ...);	
-	return coroutine.yield("_WAIT_EVENT", player);	
-end
-
-function wait(seconds)
-	return coroutine.yield("_WAIT_TIME", seconds);
-end
-
-function waitForSignal(signal)
-	return coroutine.yield("_WAIT_SIGNAL", signal);
-end
-
-function sendSignal(signal)
-	GetLuaInstance():OnSignal(signal);
+	player:RunEventFunction(functionName, ...);
+	result = coroutine.yield();
+	return result;
 end
 
 function printf(s, ...)

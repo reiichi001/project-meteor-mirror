@@ -3,7 +3,12 @@ require("global");
 properties = {
     permissions = 0,
     parameters = "sss",
-    description = "adds <keyitem> to self or <target>.",
+    description = 
+[[
+Adds <keyitem> to player or <targetname>.
+!giveitem <keyitem> |
+!giveitem <keyitem> <target name> |
+]],
 }
 
 function onTrigger(player, argc, keyitem, name, lastName)
@@ -22,7 +27,7 @@ function onTrigger(player, argc, keyitem, name, lastName)
         qty = 1;
         location = INVENTORY_KEYITEMS;
         
-        local added = player:GetInventory(location):AddItem(keyitem, qty);
+        local added = player:GetInventory(location):AddItem(keyitem, qty, 1);
         local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
         local message = "unable to add keyitem";
         

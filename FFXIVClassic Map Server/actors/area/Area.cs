@@ -1,6 +1,5 @@
 ﻿using FFXIVClassic_Map_Server;
 using FFXIVClassic.Common;
-
 using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.dataobjects;
@@ -282,6 +281,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     }
                 }
             }
+
             //Remove players if isolation zone
             if (isIsolated)
             {
@@ -409,7 +409,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 zoneId = actorId;
 
             Npc npc = new Npc(mActorList.Count + 1, actorClass, location.uniqueId, this, location.x, location.y, location.z, location.rot, location.state, location.animId, null);
-
 
             npc.LoadEventConditions(actorClass.eventConditions);            
 

@@ -1116,7 +1116,5 @@ namespace FFXIVClassic_Map_Server
             else
                 return null;
         }        
-
     }
-
 }
