@@ -29,7 +29,7 @@ namespace FFXIVClassic_Map_Server
 
             Log.Info("==================================");
             Log.Info("FFXIV Classic Map Server");
-            Log.Info("Version: 0.0.1");
+            Log.Info("Version: 0.1");
             Log.Info("==================================");
 
             //Load Config

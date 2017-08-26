@@ -22,7 +22,7 @@ namespace FFXIVClassic_Lobby_Server
 #endif
             Log.Info("==================================");
             Log.Info("FFXIV Classic Lobby Server");
-            Log.Info("Version: 0.0.1");            
+            Log.Info("Version: 0.1");            
             Log.Info("==================================");
 
             bool startServer = true;

@@ -24,7 +24,7 @@ namespace FFXIVClassic_World_Server
 
             Log.Info("==================================");
             Log.Info("FFXIV Classic World Server");
-            Log.Info("Version: 0.0.1");            
+            Log.Info("Version: 0.1");            
             Log.Info("==================================");
 
 #if DEBUG
