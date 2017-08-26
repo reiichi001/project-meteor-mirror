@@ -8,6 +8,7 @@ using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.packets.send;
+using FFXIVClassic_Map_Server.utils;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 {
@@ -56,12 +57,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 // todo: check within attack range
                 startPos = owner.GetPosAsVector3();
                 owner.LookAt(target);
+                float[] baseCastDuration = { 1.0f, 0.25f };
 
-                foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
+                float spellSpeed = spell.castTimeSeconds;
+                List<SubPacket> packets = new List<SubPacket>();
+
+                // command casting duration
+                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
                 {
-                    // todo: this is retarded, prolly doesnt do what i think its gonna do
-                    //player.QueuePacket(BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, target != null ? target.actorId : 0xC0000000, spell.battleAnimation, spell.effectAnimation, 0, spell.id, 0, (byte)spell.castTimeSeconds));
+                    // todo: modify spellSpeed based on modifiers and stuff
+                    // ((Player)owner).SendStartCastBar(spell.id, Utils.UnixTimeStampUTC(DateTime.Now.AddSeconds(spellSpeed)));
+
                 }
+                // todo: change 
+
+                owner.zone.BroadcastPacketsAroundActor(owner, packets);
             }
         }
 
@@ -159,6 +169,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         private bool HasMoved()
         {
             return (Utils.DistanceSquared(owner.GetPosAsVector3(), startPos) > 4.0f);
+        }
+
+        public override void Cleanup()
+        {
+            // command casting duration
+            var packets = new List<SubPacket>();
+            if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
+            {
+                // ((Player)owner).SendStartCastBar(0, 0);
+            }
+            owner.zone.BroadcastPacketsAroundActor(owner, packets);
         }
     }
 }

@@ -18,9 +18,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         public AttackState(Character owner, Character target) :
             base(owner, target)
         {
+            this.canInterrupt = true;
+            this.startTime = DateTime.Now;
+
             owner.ChangeState(SetActorStatePacket.MAIN_STATE_ACTIVE);
             owner.aiContainer.ChangeTarget(target);
-            this.startTime = DateTime.Now;
             attackTime = startTime;
             owner.aiContainer.pathFind?.Clear();
             // todo: should handle everything here instead of on next tick..

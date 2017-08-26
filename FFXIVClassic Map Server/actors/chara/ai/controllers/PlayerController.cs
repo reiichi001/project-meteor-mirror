@@ -68,7 +68,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public override void Ability(Character target, uint abilityId)
         {
-
+            owner.aiContainer.InternalAbility(target, abilityId);
         }
 
         public override void RangedAttack(Character target)

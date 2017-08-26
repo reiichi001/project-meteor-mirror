@@ -98,7 +98,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public ushort currentJob;
 
         public Character(uint actorID) : base(actorID)
-        {            
+        {
             //Init timer array to "notimer"
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
                 charaWork.statusShownTime[i] = 0xFFFFFFFF;
@@ -109,7 +109,7 @@ namespace FFXIVClassic_Map_Server.Actors
             ResetMoveSpeeds();
             // todo: base this on equip and shit
             SetMod((uint)Modifier.AttackRange, 3);
-            SetMod((uint)Modifier.AttackDelay, (Program.Random.Next(30,60) * 100));
+            SetMod((uint)Modifier.AttackDelay, (Program.Random.Next(30, 60) * 100));
         }
 
         public SubPacket CreateAppearancePacket()
@@ -120,7 +120,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public SubPacket CreateInitStatusPacket()
         {
-            return (SetActorStatusAllPacket.BuildPacket(actorId, charaWork.status));                      
+            return (SetActorStatusAllPacket.BuildPacket(actorId, charaWork.status));
         }
 
         public SubPacket CreateSetActorIconPacket()
@@ -148,7 +148,7 @@ namespace FFXIVClassic_Map_Server.Actors
             currentContentGroup = group;
 
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this);
-            propPacketUtil.AddProperty("charaWork.currentContentGroup");            
+            propPacketUtil.AddProperty("charaWork.currentContentGroup");
             zone.BroadcastPacketsAroundActor(this, propPacketUtil.Done());
 
         }
@@ -167,7 +167,7 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         public void PlayAnimation(uint animId, bool onlySelf = false)
-        {            
+        {
             if (onlySelf)
             {
                 if (this is Player)
@@ -236,7 +236,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (updateFlags != ActorUpdateFlags.None)
             {
                 packets = packets ?? new List<SubPacket>();
-                
+
                 if ((updateFlags & ActorUpdateFlags.Appearance) != 0)
                 {
                     packets.Add(new SetActorAppearancePacket(modelId, appearanceIds).BuildPacket(actorId));
@@ -320,6 +320,11 @@ namespace FFXIVClassic_Map_Server.Actors
         public void Cast(uint spellId, uint targetId = 0)
         {
             aiContainer.Cast(Server.GetWorldManager().GetActorInWorld(targetId == 0 ? currentTarget : targetId) as Character, spellId);
+        }
+
+        public void Ability(uint abilityId, uint targetId = 0)
+        {
+            aiContainer.Ability(Server.GetWorldManager().GetActorInWorld(targetId == 0 ? currentTarget : targetId) as Character, abilityId);
         }
 
         public void WeaponSkill(uint skillId)

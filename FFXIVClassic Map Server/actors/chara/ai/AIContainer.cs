@@ -113,7 +113,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public bool CanChangeState()
         {
-            return states.Count == 0 || states.Peek().CanInterrupt();
+            return GetCurrentState() == null || states.Peek().CanInterrupt();
         }
 
         public void ChangeTarget(Character target)
@@ -217,6 +217,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 InternalDisengage();
         }
 
+        public void Ability(Character target, uint abilityId)
+        {
+            if (controller != null)
+                controller.Ability(target, abilityId);
+            else
+                InternalAbility(target, abilityId);
+        }
+
         public void Cast(Character target, uint spellId)
         {
             if (controller != null)
@@ -291,6 +299,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             ChangeTarget(null);
             ClearStates();
+        }
+
+        public void InternalAbility(Character target, uint abilityId)
+        {
+
         }
 
         public void InternalCast(Character target, uint spellId)

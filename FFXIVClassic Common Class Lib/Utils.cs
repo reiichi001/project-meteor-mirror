@@ -84,10 +84,10 @@ namespace FFXIVClassic.Common
             return sb.ToString().TrimEnd(Environment.NewLine.ToCharArray());
         }
 
-        public static uint UnixTimeStampUTC()
+        public static uint UnixTimeStampUTC(DateTime? time = null)
         {
             uint unixTimeStamp;
-            var currentTime = DateTime.Now;
+            var currentTime = time ?? DateTime.Now;
             var zuluTime = currentTime.ToUniversalTime();
             var unixEpoch = new DateTime(1970, 1, 1);
             unixTimeStamp = (uint)zuluTime.Subtract(unixEpoch).TotalSeconds;
@@ -95,10 +95,10 @@ namespace FFXIVClassic.Common
             return unixTimeStamp;
         }
 
-        public static ulong MilisUnixTimeStampUTC()
+        public static ulong MilisUnixTimeStampUTC(DateTime? time = null)
         {
             ulong unixTimeStamp;
-            var currentTime = DateTime.Now;
+            var currentTime = time ?? DateTime.Now;
             var zuluTime = currentTime.ToUniversalTime();
             var unixEpoch = new DateTime(1970, 1, 1);
             unixTimeStamp = (ulong)zuluTime.Subtract(unixEpoch).TotalMilliseconds;
