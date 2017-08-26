@@ -14,7 +14,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         protected Character target;
 
         protected bool canInterrupt;
-        protected bool interrupt;
+        protected bool interrupt = false;
 
         protected DateTime startTime;
 

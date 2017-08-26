@@ -30,8 +30,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 // todo: Azia can fix, check the recast time and send error
                 OnStart();
             }
-
-            if (interrupt || errorPacket != null)
+            else if (interrupt || errorPacket != null)
             {
                 if (owner is Player && errorPacket != null)
                     ((Player)owner).QueuePacket(errorPacket);
@@ -48,7 +47,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             if (returnCode != 0)
             {
                 interrupt = true;
-                errorPacket = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, owner.actorId, 0, 0, (ushort)returnCode, skill.id, 0, 1);
+                errorPacket = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, owner.actorId, 0, 0, (ushort)(returnCode == -1 ? 32558 : returnCode), skill.id, 0, 1);
             }
             else
             {
@@ -112,9 +111,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 action.amount = (ushort)lua.LuaEngine.CallLuaAbilityFunction(owner, skill, "skills", "onSkillFinish", owner, target, skill, action);
                 actions[i++] = action;
 
-                packets.Add(BattleActionX01Packet.BuildPacket(chara.actorId, owner.actorId, action.targetId, skill.battleAnimation, action.effectId, action.worldMasterTextId, skill.id, action.amount, action.param));
+                //packets.Add(BattleActionX01Packet.BuildPacket(chara.actorId, owner.actorId, action.targetId, skill.battleAnimation, action.effectId, action.worldMasterTextId, skill.id, action.amount, action.param));
             }
-            //packets.Add(BattleActionX10Packet.BuildPacket(player.actorId, owner.actorId, spell.battleAnimation, spell.id, actions));
+            packets.Add(BattleActionX10Packet.BuildPacket(owner.target.actorId, owner.actorId, skill.battleAnimation, skill.id, actions));
             owner.zone.BroadcastPacketsAroundActor(owner, packets);
         }
 

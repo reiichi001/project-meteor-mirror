@@ -354,7 +354,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 return false;
 
             // hit everything within zone or within aoe region
-            if (extents == 255.0f || aoeType == TargetFindAOEType.Circle && target.GetPosAsVector3().IsWithinCircle(targetPosition, extents))
+            if (extents == 255.0f || aoeType == TargetFindAOEType.Circle && target.GetPosAsVector3().IsWithinCircle(targetPosition ?? target.GetPosAsVector3(), extents))
                 return true;
 
             if (aoeType == TargetFindAOEType.Cone && IsWithinCone(target, withPet))

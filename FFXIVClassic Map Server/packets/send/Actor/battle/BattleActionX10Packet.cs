@@ -29,7 +29,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
                     binWriter.Write((UInt16)commandId);
                     binWriter.Write((UInt16)0x810); //?
 
-                    binWriter.Seek(0x20, SeekOrigin.Begin);
+                    //binWriter.Seek(0x20, SeekOrigin.Begin);
                     foreach (BattleAction action in actionList)
                         binWriter.Write((UInt32)action.targetId);
 
