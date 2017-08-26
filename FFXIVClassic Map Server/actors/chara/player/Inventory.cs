@@ -272,7 +272,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             owner.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
         }
 
-        public void RemoveItem(ulong itemDBId)
+        public void RemoveItemByUniqueId(ulong itemDBId)
         {
             ushort slot = 0;
             InventoryItem toDelete = null;
@@ -314,7 +314,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         }
 
-        public void RemoveItem(ushort slot)
+        public void RemoveItemAtSlot(ushort slot)
         {
             if (slot >= list.Count)
                 return;
