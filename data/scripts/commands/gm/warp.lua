@@ -5,9 +5,10 @@ properties = {
     parameters = "sssssss",
     description =
 [[
-<zone> |
-<zone> <x> <y> <z> |
-<zone> <x> <y> <z> <privateArea> <target name>.
+Warp player or <targetname> to a location from a list, or enter a zoneID with coordinates.
+!warp <spawn list> |
+!warp <zone> <x> <y> <z> |
+!warp <zone> <x> <y> <z> <privateArea> <targetname> |
 ]],
 }
 
@@ -47,6 +48,7 @@ function onTrigger(player, argc, p1, p2, p3, p4, privateArea, name, lastName)
             local z = tonumber(applyPositionOffset(p3, player_z)) or player_z;
             
             player:SendMessage(messageID, sender, string.format("setting coordinates X:%d Y:%d Z:%d within current zone (%d)", x, y, z, player_zone));
+
             worldManager:DoPlayerMoveInZone(player, x, y, z, player_rot, 0x00);
         else
             local zone = tonumber(applyPositionOffset(p1, player_zone)) or player_zone;
@@ -65,9 +67,10 @@ end;
 
 function applyPositionOffset(str, offset)
     local s = str;
-    print(s);
     if s:find("@") then
-        s = tonumber(s:sub(s:find("@") + 1, s:len())) + offset;
+        s = tonumber(s:sub(s:find("@") + 1, s:len()));
+        if s then s = s + offset end;
     end
+    print(s);
     return s;
 end;

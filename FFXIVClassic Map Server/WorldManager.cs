@@ -1139,7 +1139,6 @@ namespace FFXIVClassic_Map_Server
             else
                 return null;
         }        
-
         public void LoadStatusEffects()
         {
             effectList = Database.LoadGlobalStatusEffectList();
@@ -1163,5 +1162,4 @@ namespace FFXIVClassic_Map_Server
             return abilityList.TryGetValue((ushort)id, out ability) ? ability.Clone() : null;
         }
     }
-
 }

@@ -1,6 +1,5 @@
 ﻿using FFXIVClassic_Map_Server;
 using FFXIVClassic.Common;
-
 using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.dataobjects;

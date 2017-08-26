@@ -46,11 +46,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return null;
         }
 
-        public InventoryItem GetItemById(ulong itemId)
+        public InventoryItem GetItemByUniqueId(ulong uniqueItemId)
         {
             foreach (InventoryItem item in list)
             {
-                if (item.uniqueId == itemId)
+                if (item.uniqueId == uniqueItemId)
+                    return item;
+            }
+            return null;
+        }
+
+        public InventoryItem GetItemByCatelogId(ulong catelogId)
+        {
+            foreach (InventoryItem item in list)
+            {
+                if (item.itemId == catelogId)
                     return item;
             }
             return null;
@@ -262,7 +272,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             owner.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
         }
 
-        public void RemoveItem(ulong itemDBId)
+        public void RemoveItemByUniqueId(ulong itemDBId)
         {
             ushort slot = 0;
             InventoryItem toDelete = null;
@@ -304,7 +314,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         }
 
-        public void RemoveItem(ushort slot)
+        public void RemoveItemAtSlot(ushort slot)
         {
             if (slot >= list.Count)
                 return;

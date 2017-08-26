@@ -75,10 +75,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 zone.pathCalls++;
                 zone.pathCallTime += sw.ElapsedMilliseconds;
 
-                if (path.Count == 1)
-                    Program.Log.Info($"mypos: {owner.positionX} {owner.positionY} {owner.positionZ} | targetPos: {x} {y} {z} | step {stepSize} | maxPath {maxPath} | polyRadius {polyRadius}");
+                //if (path.Count == 1)
+                //    Program.Log.Info($"mypos: {owner.positionX} {owner.positionY} {owner.positionZ} | targetPos: {x} {y} {z} | step {stepSize} | maxPath {maxPath} | polyRadius {polyRadius}");
 
-                Program.Log.Error("[{0}][{1}] Created {2} points in {3} milliseconds", owner.actorId, owner.actorName, path.Count, sw.ElapsedMilliseconds);
+                //Program.Log.Error("[{0}][{1}] Created {2} points in {3} milliseconds", owner.actorId, owner.actorName, path.Count, sw.ElapsedMilliseconds);
             }
         }
 
@@ -123,7 +123,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 {
                     path.Remove(point);
                     owner.OnPath(point);
-                    Program.Log.Error($"{owner.actorName} arrived at point {point.X} {point.Y} {point.Z}");
+                    //Program.Log.Error($"{owner.actorName} arrived at point {point.X} {point.Y} {point.Z}");
                 }
 
                 if (path.Count == 0 && owner.target != null)

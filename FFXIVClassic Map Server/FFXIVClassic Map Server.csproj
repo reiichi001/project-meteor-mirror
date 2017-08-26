@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\Microsoft.Net.Compilers.2.0.0-beta3\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.0.0-beta3\build\Microsoft.Net.Compilers.props')" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="..\packages\Microsoft.Net.Compilers.2.0.0-beta3\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.2.0.0-beta3\build\Microsoft.Net.Compilers.props') AND '$(OS)' == 'Windows_NT'" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props') AND '$(OS)' == 'Windows_NT'" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
@@ -251,19 +251,19 @@
     <Compile Include="packets\send\groups\ContentMembersX64Packet.cs" />
     <Compile Include="packets\send\groups\GroupMembersX64Packet.cs" />
     <Compile Include="packets\send\groups\SynchGroupWorkValuesPacket.cs" />
-    <Compile Include="packets\send\player\InfoRequestResponsePacket.cs" />
+    <Compile Include="packets\send\player\GenericDataPacket.cs" />
     <Compile Include="packets\send\player\SendAchievementRatePacket.cs" />
     <Compile Include="packets\send\player\SetCurrentJobPacket.cs" />
     <Compile Include="packets\send\player\SetCurrentMountGoobbuePacket.cs" />
     <Compile Include="packets\send\player\SetCurrentMountChocoboPacket.cs" />
     <Compile Include="packets\send\player\SetGrandCompanyPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorNamePacket.cs" />
-    <Compile Include="packets\send\actor\SetActorPropetyPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorSpeedPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorStatePacket.cs" />
-    <Compile Include="packets\send\actor\SetActorTargetAnimatedPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorTargetPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorStatusAllPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorNamePacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorPropetyPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorSpeedPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorStatePacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorTargetAnimatedPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorTargetPacket.cs" />
+    <Compile Include="packets\send\Actor\SetActorStatusAllPacket.cs" />
     <Compile Include="packets\send\login\0x2Packet.cs" />
     <Compile Include="packets\send\actor\AddActorPacket.cs" />
     <Compile Include="packets\send\actor\MoveActorToPositionPacket.cs" />

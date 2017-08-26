@@ -1,7 +1,11 @@
 properties = {
     permissions = 0,
     parameters = "s",
-    description = "plays music <id> to player",
+    description =
+[[
+Plays music <id> to player.
+!music <id>
+]],
 }
 
 function onTrigger(player, argc, music)
