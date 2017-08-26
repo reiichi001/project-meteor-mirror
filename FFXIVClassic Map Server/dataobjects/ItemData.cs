@@ -50,6 +50,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
             isExclusive = reader.GetBoolean("isExclusive");
 
             durability = reader.GetInt32("durability");
+            sellPrice = reader.GetInt32("sellPrice");
+
             icon = reader.GetInt32("icon");
             kind = reader.GetInt32("kind");
             rarity = reader.GetInt32("rarity");
