@@ -20,7 +20,10 @@ namespace FFXIVClassic_Lobby_Server
             TextWriterTraceListener myWriter = new TextWriterTraceListener(System.Console.Out);
             Debug.Listeners.Add(myWriter);
 #endif
-            Program.Log.Info("--------FFXIV 1.0 Lobby Server--------");
+            Log.Info("==================================");
+            Log.Info("FFXIV Classic Lobby Server");
+            Log.Info("Version: 0.0.1");            
+            Log.Info("==================================");
 
             bool startServer = true;
 
