@@ -151,7 +151,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             float stepDistance = speed / 3;
             float distanceTo = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, point.X, point.Y, point.Z);
 
-            owner.LookAt(point.X, point.Y);
+            owner.LookAt(point);
 
             if (distanceTo <= distanceFromPoint + stepDistance)
             {

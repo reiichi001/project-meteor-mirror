@@ -41,7 +41,7 @@ namespace FFXIVClassic_Map_Server
 
         private Server mServer;
 
-        private const int MILIS_LOOPTIME = 250;
+        private const int MILIS_LOOPTIME = 333;
         private Timer mZoneTimer;
 
         //Content Groups
@@ -1012,7 +1012,8 @@ namespace FFXIVClassic_Map_Server
         }
         
         public void ZoneThreadLoop(Object state)
-        {          
+        {
+            // todo: fuck coroutines, seem to be causing it to hang
             // todo: spawn new thread for each zone on startup
             lock (zoneList)
             {

@@ -45,7 +45,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             }
             */
             if (owner.target != target || owner.target?.actorId != owner.currentLockedTarget)
-                owner.aiContainer.ChangeTarget(target = Server.GetWorldManager().GetActorInWorld(owner.currentLockedTarget) as Character);
+                owner.aiContainer.ChangeTarget(target = Server.GetWorldManager().GetActorInWorld(owner.currentLockedTarget == 0xC0000000 ? owner.currentTarget : owner.currentLockedTarget) as Character);
 
             if (target == null || target.IsDead())
             {
@@ -75,6 +75,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                     {
                         // todo: handle interrupt/paralyze etc
                     }
+                    attackTime = DateTime.Now.AddMilliseconds(owner.GetAttackDelayMs());
                 }
             }
             return false;
@@ -94,14 +95,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             lua.LuaEngine.CallLuaBattleAction(owner, "onAttack", false, owner, target, damage);
 
             {
-                foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
+                var actors = owner.zone.GetActorsAroundActor<Player>(owner, 50);
+                foreach (var player in actors)
                 {
                     var packet = BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
                     player.QueuePacket(packet);
                 }
             }
             target.DelHP((short)damage);
-            attackTime = attackTime.AddMilliseconds(owner.GetAttackDelayMs());
             owner.LookAt(target);
            //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
         }

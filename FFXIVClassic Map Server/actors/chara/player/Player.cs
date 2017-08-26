@@ -996,6 +996,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 BroadcastPacket(packet, true);
 
             Database.SavePlayerCurrentClass(this);
+            RecalculateStats();
         }
 
         public void GraphicChange(int slot, InventoryItem invItem)
@@ -1913,6 +1914,108 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             var packet = BattleActionX01Packet.BuildPacket(actorId, actorId, currentTarget != 0xC0000000 ? currentTarget : currentLockedTarget, (uint)anim, (uint)effect, (ushort)text, (ushort)command, (ushort)param, (byte)idek);
             QueuePacket(packet);
+        }
+
+        public override bool IsValidTarget(Character target, ValidTarget validTarget, ref SubPacket errorPacket)
+        {
+            if (target == null)
+            {
+                // Target does not exist.
+                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32511, 0x20);
+                return false;
+            }
+
+            // enemy only
+            if ((validTarget & ValidTarget.Enemy) != 0)
+            {
+                if (target.currentSubState == SetActorStatePacket.SUB_STATE_NONE)
+                {
+                    // That command cannot be performed on the current target.
+                    errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32547, 0x20);
+                    return false;
+                }
+
+                if (currentParty != null && target.currentParty == currentParty)
+                {
+                    // That command cannot be performed on a party member.
+                    errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32548, 0x20);
+                    return false;
+                }
+                // todo: pvp?
+                if (target.currentSubState == currentSubState)
+                {
+                    // That command cannot be performed on an ally.
+                    errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32549, 0x20);
+                    return false;
+                }
+            }
+
+            if ((validTarget & ValidTarget.Ally) != 0 && target.currentSubState != currentSubState)
+            {
+                // That command cannot be performed on the current target.
+                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32547, 0x20);
+                return false;
+            }
+
+            if ((validTarget & ValidTarget.NPC) != 0 && target.currentSubState == SetActorStatePacket.SUB_STATE_NONE)
+                return true;
+
+            // todo: why is player always zoning?
+            // cant target if zoning
+            if (target is Player && ((Player)target).playerSession.isUpdatesLocked)
+            {
+                // That command cannot be performed on the current target.
+                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32547, 0x20);
+                return false;
+            }
+
+            return true;
+        }
+
+        public override bool CanCast(Character target, Ability spell, ref SubPacket errorPacket)
+        {
+            // todo: move the ability specific stuff to ability.cs
+            if (target == null)
+            {
+                // Target does not exist.
+                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)spell.id);
+                return false;
+            }
+            if (Utils.Distance(positionX, positionY, positionZ, target.positionX, target.positionY, target.positionZ) > spell.range)
+            {
+                // The target is out of range.
+                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32539, 0x20, spell.id);
+                return false;
+            }
+            if (!IsValidTarget(target, spell.validTarget, ref errorPacket) || !spell.IsValidTarget(this, target, ref errorPacket))
+            {
+                // error packet is set in IsValidTarget
+                return false;
+            }
+            return true;
+        }
+
+        public override bool CanWeaponSkill(Character target, Ability skill, ref SubPacket errorPacket)
+        {
+            // todo: see worldmaster ids 32558~32557 for proper ko message and stuff
+            if (target == null)
+            {
+                // Target does not exist.
+                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)skill.id);
+                return false;
+            }
+            if (Utils.Distance(positionX, positionY, positionZ, target.positionX, target.positionY, target.positionZ) > skill.range)
+            {
+                // The target is out of range.
+                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32539, 0x20, (uint)skill.id);
+                return false;
+            }
+            if (!IsValidTarget(target, skill.validTarget, ref errorPacket) || !skill.IsValidTarget(this, target, ref errorPacket))
+            {
+                // error packet is set in IsValidTarget
+                return false;
+            }
+            return true;
         }
     }
 }

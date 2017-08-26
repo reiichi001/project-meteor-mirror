@@ -19,9 +19,9 @@ function onTrigger(player, argc, effectId, magnitude, tick, duration)
         player.DelHP(500);
         
         effectId = tonumber(effectId) or 223180;
-        magnitude = tonumber(magnitude) or 300;
+        magnitude = tonumber(magnitude) or 700;
         tick = tonumber(tick) or 3;
-        duration = tonumber(duration) or 60;
+        duration = tonumber(duration) or 360;
         
         while player.statusEffects.HasStatusEffect(effectId) do
             player.statusEffects.RemoveStatusEffect(effectId);

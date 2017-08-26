@@ -21,7 +21,7 @@ function onEventStarted(player, command, triggerName, arg1, arg2, arg3, arg4, ta
 		player:endEvent();
 		return;
 	end
-	
+
 	--Does the target exist
 	target = player:getZone():FindActorInArea(targetActor);
 	if (target == nil) then
@@ -30,7 +30,7 @@ function onEventStarted(player, command, triggerName, arg1, arg2, arg3, arg4, ta
 		return;
 	end
 	
-	player.Cast(command.actorId);
+	player.Cast(command.actorId, targetActor);
 	player:endEvent();	
 	
 end

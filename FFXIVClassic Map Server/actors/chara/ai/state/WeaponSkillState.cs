@@ -7,6 +7,8 @@ using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
+using FFXIVClassic_Map_Server.packets.send;
+
 namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 {
     class WeaponSkillState : State
@@ -22,37 +24,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.skill = Server.GetWorldManager().GetAbility(skillId);
             var returnCode = lua.LuaEngine.CallLuaAbilityFunction(owner, skill, "weaponskills", "onSkillPrepare", owner, target, skill);
 
-            if (skill != null && returnCode == 0)
+            // todo: check recast
+            if (owner.CanWeaponSkill(target, skill, ref errorPacket))
             {
                 // todo: Azia can fix, check the recast time and send error
-
-                if (!skill.IsValidTarget(owner, target))
-                {
-                    // todo: error message
-                    interrupt = true;
-                }
-                else if ((skill.tpCost = (ushort)Math.Ceiling((8000 + (owner.charaWork.parameterSave.state_mainSkillLevel - 70) * 500) * (skill.tpCost * 0.001))) > owner.GetTP())
-                {
-                    // todo: error message
-                    interrupt = true;
-                }
-                else if (skill.level > owner.charaWork.parameterSave.state_mainSkillLevel)
-                {
-                    // todo: error message
-                }
-                else if (false /*skill.requirements & */)
-                {
-                    // todo: error message
-                }
-                else
-                {
-                    OnStart();
-                }
+                OnStart();
             }
-            else
+
+            if (interrupt || errorPacket != null)
             {
-                if (owner is Player)
-                    ((Player)owner).SendGameMessage(Server.GetWorldManager().GetActor(), (ushort)(returnCode == -1 ? 32539 : returnCode), 0x20);
+                if (owner is Player && errorPacket != null)
+                    ((Player)owner).QueuePacket(errorPacket);
+
+                errorPacket = null;
                 interrupt = true;
             }
         }
@@ -112,24 +96,26 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             skill.targetFind.FindWithinArea(target, skill.validTarget);
             isCompleted = true;
 
+            var targets = skill.targetFind.GetTargets();
+            BattleAction[] actions = new BattleAction[targets.Count];
             List<SubPacket> packets = new List<SubPacket>();
-            foreach (var chara in skill.targetFind.GetTargets())
+
+            var i = 0;
+            foreach (var chara in targets)
             {
-                // todo: calculate shit, do shit
-                bool landed = true;
-                var amount = lua.LuaEngine.CallLuaAbilityFunction(owner, skill, "weaponskills", "onSkillFinish", owner, target, skill);
+                var action = new BattleAction();
+                action.effectId = 0;
+                action.param = 1;
+                action.unknown = 1;
+                action.targetId = chara.actorId;
+                action.worldMasterTextId = skill.worldMasterTextId;
+                action.amount = (ushort)lua.LuaEngine.CallLuaAbilityFunction(owner, skill, "skills", "onSkillFinish", owner, target, skill, action);
+                actions[i++] = action;
 
-                foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
-                {
-                    player.QueuePacket(BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, chara.actorId, skill.battleAnimation, skill.effectAnimation, skill.worldMasterTextId, skill.id, (ushort)skill.param, 1));
-                }
-
-                if (chara is BattleNpc)
-                {
-                    ((BattleNpc)chara).hateContainer.UpdateHate(owner, amount);
-                }
+                packets.Add(BattleActionX01Packet.BuildPacket(chara.actorId, owner.actorId, action.targetId, skill.battleAnimation, action.effectId, action.worldMasterTextId, skill.id, action.amount, action.param));
             }
-
+            //packets.Add(BattleActionX10Packet.BuildPacket(player.actorId, owner.actorId, spell.battleAnimation, spell.id, actions));
+            owner.zone.BroadcastPacketsAroundActor(owner, packets);
         }
 
         public override void TryInterrupt()
@@ -160,28 +146,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         private bool CanUse()
         {
-            if (target == null)
-            {
-                return false;
-            }
-            // todo: shouldnt need to check if owner is dead since all states would be cleared
-            if (owner.aiContainer.IsDead() || target.aiContainer.IsDead())
-            {
-                return false;
-            }
-            else if (!owner.aiContainer.GetTargetFind().CanTarget(target, false, true))
-            {
-                return false;
-            }
-            else if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > skill.range)
-            {
-                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
-                {
-                    ((Player)owner).SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20);
-                }
-                return false;
-            }
-            return true;
+            return owner.CanWeaponSkill(target, skill, ref errorPacket);
         }
     }
 }

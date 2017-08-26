@@ -10,6 +10,7 @@ using FFXIVClassic_Map_Server.actors.area;
 using System.Reflection;
 using System.ComponentModel;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
+using FFXIVClassic_Map_Server.packets.send;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -62,7 +63,6 @@ namespace FFXIVClassic_Map_Server.Actors
         protected DateTime lastUpdate;
         public Actor target;
 
-        public bool hasMoved = false;
         public bool isAtSpawn = true;
 
         public ActorUpdateFlags updateFlags;
@@ -416,7 +416,6 @@ namespace FFXIVClassic_Map_Server.Actors
                         //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
 
                         positionUpdates.Remove(pos);
-                        lastMoveUpdate = DateTime.Now;
                         packets.Add(CreatePositionUpdatePacket());
                     }
                 }
@@ -569,6 +568,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        #region positioning
         public List<float> GetPos()
         {
             List<float> pos = new List<float>();
@@ -614,12 +614,12 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         // todo: do this properly
-        public bool IsFacing(float x, float y)
+        public bool IsFacing(float x, float z)
         {
             var rot1 = this.rotation;
 
             var dX = this.positionX - x;
-            var dY = this.positionY - y;
+            var dY = this.positionZ - z;
 
             var rot2 = Math.Atan2(dY, dX);
 
@@ -632,7 +632,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (actor != null)
             {
-                LookAt(actor.positionX, actor.positionY);
+                LookAt(actor.positionX, actor.positionZ);
             }
             else
             {
@@ -640,12 +640,20 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public void LookAt(float x, float y)
+        public void LookAt(Vector3 pos)
+        {
+            if (pos != null)
+            {
+                LookAt(pos.X, pos.Z);
+            }
+        }
+
+        public void LookAt(float x, float z)
         {
             var rot1 = this.rotation;
 
             var dX = this.positionX - x;
-            var dY = this.positionY - y;
+            var dY = this.positionZ - z;
 
             var rot2 = Math.Atan2(dY, dX);
 
@@ -658,7 +666,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public bool IsFacing(float x, float z, float angle = 40.0f)
         {
-            return Vector3.GetAngle(positionX, positionZ, x, z) < angle;
+            angle = (float)(Math.PI * angle / 180);
+            return Vector3.GetAngle(positionX, positionZ, x, z) <= angle;
         }
 
         // todo: is this legit?
@@ -714,6 +723,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             return FindRandomPoint(positionX, positionY, positionZ, minRadius, maxRadius);
         }
+        #endregion
 
         public Player GetAsPlayer()
         {
@@ -738,6 +748,14 @@ namespace FFXIVClassic_Map_Server.Actors
         public Character GetAsCharacter()
         {
             return this is Character ? ((Character)this) : null;
+        }
+
+        public SubPacket CreateGameMessagePacket(Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
+        {
+            if (msgParams == null || msgParams.Length == 0)
+                return (GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, textIdOwner.actorId, textId, log));
+            else
+                return (GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, textIdOwner.actorId, textId, log, LuaUtils.CreateLuaParamList(msgParams)));
         }
     }
 }

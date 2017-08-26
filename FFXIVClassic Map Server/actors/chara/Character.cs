@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using FFXIVClassic_Map_Server.actors.chara;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
+using FFXIVClassic_Map_Server.packets.send;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -108,7 +109,7 @@ namespace FFXIVClassic_Map_Server.Actors
             ResetMoveSpeeds();
             // todo: base this on equip and shit
             SetMod((uint)Modifier.AttackRange, 3);
-            SetMod((uint)Modifier.AttackDelay, 4200);
+            SetMod((uint)Modifier.AttackDelay, (Program.Random.Next(30,60) * 100));
         }
 
         public SubPacket CreateAppearancePacket()
@@ -254,12 +255,27 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public virtual bool IsValidTarget(Character target, ValidTarget validTarget, ref SubPacket errorPacket)
+        {
+            return true;
+        }
+
         public virtual bool CanAttack()
+        {
+            return true;
+        }
+
+        public virtual bool CanCast(Character target, Ability spell, ref SubPacket errorPacket)
         {
             return false;
         }
 
-        public virtual bool CanCast()
+        public virtual bool CanWeaponSkill(Character target, Ability skill, ref SubPacket errorPacket)
+        {
+            return false;
+        }
+
+        public virtual bool CanUseAbility(Character target, Ability ability, ref SubPacket errorPacket)
         {
             return false;
         }
@@ -277,12 +293,16 @@ namespace FFXIVClassic_Map_Server.Actors
         public bool Engage(uint targid = 0)
         {
             // todo: attack the things
-            targid = targid == 0 ? currentTarget: targid;
+            if (targid == 0)
+            {
+                if (currentTarget != 0xC0000000)
+                    targid = currentTarget;
+                else if (currentLockedTarget != 0xC0000000)
+                    targid = currentLockedTarget;
+            }
             if (targid != 0)
             {
-                var targ = Server.GetWorldManager().GetActorInWorld(targid);
-                if (targ is Character)
-                    aiContainer.Engage((Character)targ);
+                aiContainer.Engage(Server.GetWorldManager().GetActorInWorld(targid) as Character);
             }
             return false;
         }
@@ -297,9 +317,9 @@ namespace FFXIVClassic_Map_Server.Actors
             return false;
         }
 
-        public void Cast(uint spellId)
+        public void Cast(uint spellId, uint targetId = 0)
         {
-            aiContainer.Cast(Server.GetWorldManager().GetActorInWorld(currentTarget) as Character, spellId);
+            aiContainer.Cast(Server.GetWorldManager().GetActorInWorld(targetId == 0 ? currentTarget : targetId) as Character, spellId);
         }
 
         public void WeaponSkill(uint skillId)

@@ -7,6 +7,8 @@ using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
+using FFXIVClassic_Map_Server.packets.send;
+
 namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 {
     class MagicState : State
@@ -24,39 +26,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.spell = Server.GetWorldManager().GetAbility(spellId);
             var returnCode = lua.LuaEngine.CallLuaAbilityFunction(owner, spell, "spells", "onSpellPrepare", owner, target, spell);
 
-            if (spell != null && returnCode == 0)
+            // todo: check recast
+            if (owner.CanCast(target, spell, ref errorPacket))
             {
-                // todo: hp/mp shit should be taken care of in scripts, not here
                 // todo: Azia can fix, check the recast time and send error
-
-                if (!spell.IsValidTarget(owner, target))
-                {
-                    // todo: error message
-                    interrupt = true;
-                }
-                else if ((spell.mpCost = (ushort)Math.Ceiling((8000 + (owner.charaWork.parameterSave.state_mainSkillLevel - 70) * 500) * (spell.mpCost * 0.001))) > owner.GetMP())
-                {
-                    // todo: error message
-                    interrupt = true;
-                }
-                else if (spell.level > owner.charaWork.parameterSave.state_mainSkillLevel)
-                {
-                    // todo: error message
-                }
-                else if (false /*spell.requirements & */)
-                {
-                    // todo: error message
-                }
-                else
-                {
-                    OnStart();
-                }
+                OnStart();
             }
-            else
+            
+            if (interrupt || errorPacket != null)
             {
-                // todo: fuckin retarded. enum log messages somewhere (prolly isnt even right param)
-                if (owner is Player)
-                ((Player)owner).SendGameMessage(Server.GetWorldManager().GetActor(), (ushort)(returnCode == -1 ? 32539 : returnCode), 0x20);
+                if (owner is Player && errorPacket != null)
+                    ((Player)owner).QueuePacket(errorPacket);
+
+                errorPacket = null;
                 interrupt = true;
             }
         }
@@ -79,7 +61,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
                 {
                     // todo: this is retarded, prolly doesnt do what i think its gonna do
-                    player.QueuePacket(BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, target != null ? target.actorId : 0xC0000000, spell.battleAnimation, spell.effectAnimation, 0, spell.id, 0, (byte)spell.castTimeSeconds));
+                    //player.QueuePacket(BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, target != null ? target.actorId : 0xC0000000, spell.battleAnimation, spell.effectAnimation, 0, spell.id, 0, (byte)spell.castTimeSeconds));
                 }
             }
         }
@@ -123,24 +105,25 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             spell.targetFind.FindWithinArea(target, spell.validTarget);
             isCompleted = true;
             
+            var targets = spell.targetFind.GetTargets();
+            BattleAction[] actions = new BattleAction[targets.Count];
             List<SubPacket> packets = new List<SubPacket>();
-            foreach (var chara in spell.targetFind.GetTargets())
+            var i = 0;
+            foreach (var chara in targets)
             {
-                // todo: calculate shit, do shit
-                bool landed = true;
-                var amount = lua.LuaEngine.CallLuaAbilityFunction(owner, spell, "spells", "onSpellFinish", owner, target, spell);
+                var action = new BattleAction();
+                action.effectId = spell.effectAnimation;
+                action.param = 1;
+                action.unknown = 1;
+                action.targetId = chara.actorId;
+                action.worldMasterTextId = spell.worldMasterTextId;
+                action.amount = (ushort)lua.LuaEngine.CallLuaAbilityFunction(owner, spell, "spells", "onSpellFinish", owner, chara, spell, action);
+                actions[i++] = action;
 
-                foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
-                {
-                    player.QueuePacket(BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, chara.actorId, spell.battleAnimation, spell.effectAnimation, spell.worldMasterTextId, spell.id, (ushort)spell.param, 1));
-                }
-                
-                if (chara is BattleNpc)
-                {
-                    ((BattleNpc)chara).hateContainer.UpdateHate(owner, amount);
-                }
+                packets.Add(BattleActionX01Packet.BuildPacket(chara.actorId, owner.actorId, action.targetId, spell.battleAnimation, action.effectId, action.worldMasterTextId, spell.id, action.amount, action.param));
             }
-
+            //packets.Add(BattleActionX10Packet.BuildPacket(player.actorId, owner.actorId, spell.battleAnimation, spell.id, actions));
+            owner.zone.BroadcastPacketsAroundActor(owner, packets);
         }
 
         public override void TryInterrupt()
@@ -165,41 +148,18 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 interrupt = true;
                 return;
             }
-
-            if (Utils.DistanceSquared(owner.GetPosAsVector3(), startPos) > 4.0f)
-            {
-                // todo: send interrupt packet
-                interrupt = true;
-                return;
-            }
             
             interrupt = !CanCast();
         }
 
         private bool CanCast()
         {
-            if (target == null)
-            {
-                return false;
-            }
-            // todo: shouldnt need to check if owner is dead since all states would be cleared
-            if (owner.aiContainer.IsDead() || target.aiContainer.IsDead())
-            {
-                return false;
-            }
-            else if (!owner.aiContainer.GetTargetFind().CanTarget(target, false, true))
-            {
-                return false;
-            }
-            else if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > spell.range)
-            {
-                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
-                {
-                    ((Player)owner).SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20);
-                }
-                return false;
-            }
-            return true;
+            return owner.CanCast(target, spell, ref errorPacket) && !HasMoved();
+        }
+
+        private bool HasMoved()
+        {
+            return (Utils.DistanceSquared(owner.GetPosAsVector3(), startPos) > 4.0f);
         }
     }
 }

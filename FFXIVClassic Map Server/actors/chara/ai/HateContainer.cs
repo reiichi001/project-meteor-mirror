@@ -45,11 +45,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void UpdateHate(Character target, int damage)
         {
-            if (HasHateForTarget(target))
-            {
-                //hateList[target].volatileEnmity += (uint)damage;
-                hateList[target].cumulativeEnmity += (uint)damage;
-            }
+            if (!HasHateForTarget(target))
+                AddBaseHate(target);
+
+            //hateList[target].volatileEnmity += (uint)damage;
+            hateList[target].cumulativeEnmity += (uint)damage;
         }
 
         public void ClearHate(Character target = null)

@@ -168,6 +168,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             // todo: this is stupid
             bool withPet = (flags & ValidTarget.Ally) != 0 || masterTarget.allegiance != owner.allegiance;
 
+            if (masterTarget != null)
+                targets.Add(masterTarget);
+
             if (IsPlayer(owner))
             {
                 if (masterTarget is Player)
@@ -284,8 +287,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         private void AddAllBattleNpcs(Character target, bool withPet)
         {
-            // 70 is client render distance so we'll go with that
-            var actors = owner.zone.GetActorsAroundActor<BattleNpc>(owner, (int)extents);
+            var actors = owner.zone.GetActorsAroundActor<BattleNpc>(owner, 50);
 
             // todo: should we look for Characters instead in case player is charmed by BattleNpc
             foreach (BattleNpc actor in actors)
@@ -360,6 +362,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             if (aoeType == TargetFindAOEType.Box && IsWithinBox(target, withPet))
                 return true;
+
+            if (aoeType == TargetFindAOEType.None && targets.Count != 0)
+                return false;
 
             return true;
         }

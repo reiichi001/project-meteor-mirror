@@ -217,13 +217,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                     {
                         if (owner.target.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
                         {
-                            foreach (var battlenpc in owner.zone.GetActorsAroundActor<BattleNpc>(owner, 1))
+                            foreach (var chara in owner.zone.GetActorsAroundActor<Character>(owner, 1))
                             {
-                                if (battlenpc == owner)
+                                if (chara == owner)
                                     continue;
-                                float mobDistance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, battlenpc.positionX, battlenpc.positionY, battlenpc.positionZ);
-                                if (mobDistance < 0.25f && (battlenpc.updateFlags & ActorUpdateFlags.Position) == 0)
-                                    battlenpc.aiContainer.pathFind.PathInRange(targetPos, 1.3f, 1.8f);
+
+                                float mobDistance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, chara.positionX, chara.positionY, chara.positionZ);
+                                if (mobDistance < 0.90f && (chara.updateFlags & ActorUpdateFlags.Position) == 0)
+                                {
+                                    owner.aiContainer.pathFind.PathInRange(targetPos, 1.3f, 1.8f);
+                                    break;
+                                }
                             }
                         }
                     }

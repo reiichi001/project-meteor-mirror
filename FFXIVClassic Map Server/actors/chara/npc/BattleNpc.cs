@@ -91,8 +91,36 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override bool CanAttack()
         {
-            
+            // todo:
             return true;
+        }
+
+        public override bool CanCast(Character target, Ability spell, ref SubPacket errorPacket)
+        {
+            // todo:
+            return false;
+        }
+
+        public override bool CanWeaponSkill(Character target, Ability skill, ref SubPacket errorPacket)
+        {
+            // todo:
+            return false;
+        }
+
+        public override bool CanUseAbility(Character target, Ability ability, ref SubPacket errorPacket)
+        {
+            // todo:
+            return false;
+        }
+
+        public uint GetDespawnTime()
+        {
+            return despawnTime;
+        }
+
+        public void SetDespawnTime(uint seconds)
+        {
+            despawnTime = seconds;
         }
 
         ///<summary> // todo: create an action object? </summary>
@@ -167,16 +195,6 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public uint GetDespawnTime()
-        {
-            return despawnTime;
-        }
-
-        public void SetDespawnTime(uint seconds)
-        {
-            despawnTime = seconds;
-        }
-        
         public bool IsCloseToSpawn()
         {
             return this.isAtSpawn = Utils.DistanceSquared(positionX, positionY, positionZ, spawnX, spawnY, spawnZ) <= 2500.0f;
