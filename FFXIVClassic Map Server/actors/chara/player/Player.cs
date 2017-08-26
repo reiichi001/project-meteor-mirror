@@ -613,10 +613,10 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             try
             {
-               // BasePacket packet = new BasePacket(path);
-
-                //packet.ReplaceActorID(actorId);
-                //QueuePacket(packet);
+                BasePacket packet = new BasePacket(path);
+                packet.ReplaceActorID(actorId);
+                foreach (SubPacket p in packet.GetSubpackets())
+                    playerSession.QueuePacket(p);
             }
             catch (Exception e)
             {
