@@ -1466,6 +1466,25 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePackets(propPacketUtil.Done());
         }
 
+        public void SendStartCastbar(uint commandId, uint endTime)
+        {
+            playerWork.castCommandClient = commandId;
+            playerWork.castEndClient = endTime;
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("playerWork/castState", this);
+            propPacketUtil.AddProperty("playerWork.castEndClient");
+            propPacketUtil.AddProperty("playerWork.castCommandClient");
+            QueuePackets(propPacketUtil.Done());
+        }
+
+        public void SendEndCastbar()
+        {
+            playerWork.castCommandClient = 0;
+            playerWork.castEndClient = 0;
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("playerWork/castState", this);
+            propPacketUtil.AddProperty("playerWork.castCommandClient");
+            QueuePackets(propPacketUtil.Done());
+        }
+
         public void SetLoginDirector(Director director)
         {
             if (ownedDirectors.Contains(director))

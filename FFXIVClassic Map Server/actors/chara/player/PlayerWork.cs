@@ -18,8 +18,8 @@
 
         public bool isContentsCommand;
 
-        public int castCommandClient;
-        public int castEndClient;
+        public uint castCommandClient;
+        public uint castEndClient;
 
         public int[] comboNextCommandId = new int[2];
         public float comboCostBonusRate;
