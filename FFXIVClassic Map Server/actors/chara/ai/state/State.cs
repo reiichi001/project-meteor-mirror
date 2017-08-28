@@ -59,5 +59,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.target = target;
         }
 
+        public Character GetTarget()
+        {
+            return target;
+        }
+
     }
 }

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.actors.chara.ai.utils;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
@@ -43,7 +44,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         Miss = 0x08
     }
 
-    class Ability
+    class BattleCommand
     {
         public ushort id;
         public string name;
@@ -70,20 +71,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public uint battleAnimation;
         public ushort worldMasterTextId;
-        public uint param;
+        public int aoeRange;
 
         public TargetFind targetFind;
 
-        public Ability(ushort id, string name)
+        public BattleCommand(ushort id, string name)
         {
             this.id = id;
             this.name = name;
             this.range = 0;
         }
 
-        public Ability Clone()
+        public BattleCommand Clone()
         {
-            return (Ability)MemberwiseClone();
+            return (BattleCommand)MemberwiseClone();
         }
 
         public bool IsSpell()
@@ -104,15 +105,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (aoeType == TargetFindAOEType.Box)
             {
                 // todo: read box width from sql
-                targetFind.SetAOEBox(validTarget, range, 3);
+                targetFind.SetAOEBox(validTarget, range, aoeRange);
             }
             else
             {
-                targetFind.SetAOEType(validTarget, aoeType, range, 40);
+                targetFind.SetAOEType(validTarget, aoeType, range, aoeRange);
             }
 
 
             /*
+            worldMasterTextId
             32512 cannot be performed on a KO'd target.
             32513	can only be performed on a KO'd target.
             32514	cannot be performed on yourself.
@@ -143,8 +145,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             }
 
             // todo: calculate cost based on modifiers also (probably in BattleUtils)
-
-            if (mpCost > 0 && (mpCost = CalculateCost((ushort)user.charaWork.parameterSave.state_mainSkillLevel)) > user.GetMP())
+            
+            if (BattleUtils.CalculateSpellCost(user, target, this) > user.GetMP())
             {
                 // todo: error message
                 errorPacket = user.CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32545, 0x20, (uint)id);
@@ -215,7 +217,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             else
                 cost = (ushort)(8000 + (level - 70) * 500);
 
-            return (ushort)Math.Ceiling((cost * ((mpCost == 0 ? tpCost : mpCost) * 0.001)));
+            if (mpCost != 0)
+                return (ushort)Math.Ceiling((cost * mpCost * 0.001));
+
+            return tpCost;
         }
     }
 }

@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using FFXIVClassic_Map_Server.actors.chara;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.packets.send;
+using FFXIVClassic_Map_Server.actors.chara.ai.state;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -177,6 +178,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
         }
 
+        #region ai stuff
         public void PathTo(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40, float polyRadius = 0.0f)
         {
             aiContainer?.pathFind?.PreparePath(x, y, z, stepSize, maxPath, polyRadius);
@@ -265,17 +267,17 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public virtual bool CanCast(Character target, Ability spell, ref SubPacket errorPacket)
+        public virtual bool CanCast(Character target, BattleCommand spell, ref SubPacket errorPacket)
         {
             return false;
         }
 
-        public virtual bool CanWeaponSkill(Character target, Ability skill, ref SubPacket errorPacket)
+        public virtual bool CanWeaponSkill(Character target, BattleCommand skill, ref SubPacket errorPacket)
         {
             return false;
         }
 
-        public virtual bool CanUseAbility(Character target, Ability ability, ref SubPacket errorPacket)
+        public virtual bool CanUseAbility(Character target, BattleCommand ability, ref SubPacket errorPacket)
         {
             return false;
         }
@@ -470,6 +472,27 @@ namespace FFXIVClassic_Map_Server.Actors
             // todo: for battlenpc/player calculate speed
             return moveSpeeds[2] + GetMod((uint)Modifier.Speed);
         }
+
+        public virtual void OnAttack(State state, BattleAction action)
+        {
+
+        }
+
+        public virtual void OnCast(State state, BattleAction action)
+        {
+
+        }
+
+        public virtual void OnWeaponSkill(State state, BattleAction action)
+        {
+
+        }
+
+        public virtual void OnAbility(State state, BattleAction action)
+        {
+
+        }
+        #endregion
     }
 
 }

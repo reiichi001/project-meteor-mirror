@@ -1,6 +1,7 @@
 ﻿using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -368,6 +369,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private StatusEffectOverwrite overwrite; // how to handle adding an effect with same id (see StatusEfectOverwrite)
         private bool silent = false;             // do i send a message on losing effect 
 
+        HitEffect animationEffect;
+
         public StatusEffect(Character owner, uint id, UInt64 magnitude, uint tickMs, uint durationMs, byte tier = 0)
         {
             this.owner = owner;
@@ -565,6 +568,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public void SetSilent(bool silent)
         {
             this.silent = silent;
+        }
+
+        public void SetAnimation(uint hitEffect)
+        {
+            animationEffect = (HitEffect)hitEffect;
+        }
+
+        public uint GetAnimation()
+        {
+            return (uint)animationEffect;
         }
     }
 }

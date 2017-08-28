@@ -37,7 +37,7 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<uint, ActorClass> actorClasses = new Dictionary<uint,ActorClass>();
         private Dictionary<ulong, Party> currentPlayerParties = new Dictionary<ulong, Party>(); //GroupId, Party object
         private Dictionary<uint, StatusEffect> effectList = new Dictionary<uint, StatusEffect>();
-        private Dictionary<ushort, Ability> abilityList = new Dictionary<ushort, Ability>();
+        private Dictionary<ushort, BattleCommand> abilityList = new Dictionary<ushort, BattleCommand>();
 
         private Server mServer;
 
@@ -1153,12 +1153,12 @@ namespace FFXIVClassic_Map_Server
 
         public void LoadAbilities()
         {
-            abilityList = Database.LoadGlobalAbilityList();
+            abilityList = Database.LoadGlobalBattleCommandList();
         }
 
-        public Ability GetAbility(uint id)
+        public BattleCommand GetAbility(uint id)
         {
-            Ability ability;
+            BattleCommand ability;
             return abilityList.TryGetValue((ushort)id, out ability) ? ability.Clone() : null;
         }
     }

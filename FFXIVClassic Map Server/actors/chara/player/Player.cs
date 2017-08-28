@@ -23,6 +23,8 @@ using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
+using FFXIVClassic_Map_Server.actors.chara.ai.utils;
+using FFXIVClassic_Map_Server.actors.chara.ai.state;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -2016,7 +2018,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public override bool CanCast(Character target, Ability spell, ref SubPacket errorPacket)
+        public override bool CanCast(Character target, BattleCommand spell, ref SubPacket errorPacket)
         {
             // todo: move the ability specific stuff to ability.cs
             if (target == null)
@@ -2039,7 +2041,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public override bool CanWeaponSkill(Character target, Ability skill, ref SubPacket errorPacket)
+        public override bool CanWeaponSkill(Character target, BattleCommand skill, ref SubPacket errorPacket)
         {
             // todo: see worldmaster ids 32558~32557 for proper ko message and stuff
             if (target == null)
@@ -2060,6 +2062,25 @@ namespace FFXIVClassic_Map_Server.Actors
                 return false;
             }
             return true;
+        }
+
+        public override void OnAttack(State state, BattleAction action)
+        {
+            // melee attack animation
+            uint battleAnimation = 0x19001000;
+
+            // todo: change animation based on equipped weapon
+            action.effectId |= (uint)HitEffect.HitVisual1; // melee
+
+            // todo: get hitrate and shit, handle protect effect and whatever
+            BattleUtils.TryAttack(this, state.GetTarget(), action);
+            action.amount = BattleUtils.CalculateAttackDamage(this, state.GetTarget(), action);
+            //var packet = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
+
+            zone.BroadcastPacketAroundActor(this, BattleActionX01Packet.BuildPacket(actorId, actorId, action.targetId, (uint)battleAnimation,
+                0x8000000 | action.effectId, (ushort)action.worldMasterTextId, (ushort)BattleActionX01PacketCommand.Attack, (ushort)action.amount, (byte)action.param)
+                );
+
         }
     }
 }

@@ -66,6 +66,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             owner.aiContainer.InternalCast(target, spellId);
         }
 
+        public override void WeaponSkill(Character target, uint weaponSkillId)
+        {
+            owner.aiContainer.InternalWeaponSkill(target, weaponSkillId);
+        }
+
         public override void Ability(Character target, uint abilityId)
         {
             owner.aiContainer.InternalAbility(target, abilityId);

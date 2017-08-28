@@ -309,11 +309,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private void AddAllInHateList()
         {
             if (!(owner is BattleNpc))
-                Program.Log.Error($"TargetFind.AddAllInHateList() owner [{owner.actorId}] {owner.customDisplayName} {owner.actorName} is not a BattleNpc");
-
-            foreach (var hateEntry in ((BattleNpc)owner).hateContainer.GetHateList())
             {
-                AddTarget(hateEntry.Value.actor, false);
+                Program.Log.Error($"TargetFind.AddAllInHateList() owner [{owner.actorId}] {owner.customDisplayName} {owner.actorName} is not a BattleNpc");
+            }
+            else
+            {
+                foreach (var hateEntry in ((BattleNpc)owner).hateContainer.GetHateList())
+                {
+                    AddTarget(hateEntry.Value.actor, false);
+                }
             }
         }
 

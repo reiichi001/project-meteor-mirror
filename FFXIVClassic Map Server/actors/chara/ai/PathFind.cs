@@ -137,6 +137,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 point = path[path.Count - 1];
             }
+            else
+            {
+                return true;
+            }
 
             if (distanceFromPoint == 0)
                 return owner.positionX == point.X && owner.positionZ == point.Z;

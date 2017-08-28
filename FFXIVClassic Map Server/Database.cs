@@ -1343,7 +1343,7 @@ namespace FFXIVClassic_Map_Server
                             player.charaWork.parameterSave.commandSlot_recastTime[index - player.charaWork.commandBorder] = reader.GetUInt32(2);
 
                             //Recast timer
-                            Ability ability = Server.GetWorldManager().GetAbility((ushort)(trueCommandId ^ 2700083200));
+                            BattleCommand ability = Server.GetWorldManager().GetAbility((ushort)(trueCommandId ^ 2700083200));
                             player.charaWork.parameterTemp.maxCommandRecastTime[index - player.charaWork.commandBorder] = (ushort) (ability != null ? ability.recastTimeSeconds : 1);
                             //Previous recast timer
                             player.charaWork.parameterSave.commandSlot_recastTime[index - player.charaWork.commandBorder] = reader.GetUInt32(2);
@@ -2149,9 +2149,9 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public static Dictionary<ushort, Ability> LoadGlobalAbilityList()
+        public static Dictionary<ushort, BattleCommand> LoadGlobalBattleCommandList()
         {
-            var abilities = new Dictionary<ushort, Ability>();
+            var battleCommands = new Dictionary<ushort, BattleCommand>();
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -2160,7 +2160,7 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
 
                     var query = ("SELECT `id`, name, classJob, lvl, requirements, validTarget, aoeType, numHits, positionBonus, procRequirement, `range`, buffDuration, debuffDuration, " +
-                        "castType, castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration FROM abilities;");
+                        "castType, castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, aoeRange FROM battle_commands;");
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -2168,33 +2168,34 @@ namespace FFXIVClassic_Map_Server
                     {
                         while (reader.Read())
                         {
-                            var id = reader.GetUInt16(0);
-                            var name = reader.GetString(1);
-                            var ability = new Ability(id, name);
+                            var id = reader.GetUInt16("id");
+                            var name = reader.GetString("name");
+                            var battleCommand = new BattleCommand(id, name);
 
-                            ability.job = reader.GetByte(2);
-                            ability.level = reader.GetByte(3);
-                            ability.requirements = (AbilityRequirements)reader.GetUInt16(4);
-                            ability.validTarget = (ValidTarget)reader.GetByte(5);
-                            ability.aoeType = (TargetFindAOEType)reader.GetByte(6);
-                            ability.numHits = reader.GetByte(7);
-                            ability.positionBonus = (AbilityPositionBonus)reader.GetByte(8);
-                            ability.procRequirement = (AbilityProcRequirement)reader.GetByte(9);
-                            ability.range = reader.GetInt32(10);
-                            ability.debuffDurationSeconds = reader.GetUInt32(11);
-                            ability.buffDurationSeconds = reader.GetUInt32(12);
-                            ability.castType = reader.GetByte(13);
-                            ability.castTimeSeconds = reader.GetUInt32(14);
-                            ability.recastTimeSeconds = reader.GetUInt32(15);
-                            ability.mpCost = reader.GetUInt16(16);
-                            ability.tpCost = reader.GetUInt16(17);
-                            ability.animationType = reader.GetByte(18);
-                            ability.effectAnimation = reader.GetUInt16(19);
-                            ability.modelAnimation = reader.GetUInt16(20);
-                            ability.animationDurationSeconds = reader.GetUInt16(21);
-                            ability.battleAnimation = (uint)((ability.animationType << 24) | (ability.modelAnimation << 12) | (ability.effectAnimation));
+                            battleCommand.job = reader.GetByte("classJob");
+                            battleCommand.level = reader.GetByte("lvl");
+                            battleCommand.requirements = (AbilityRequirements)reader.GetUInt16("requirements");
+                            battleCommand.validTarget = (ValidTarget)reader.GetByte("validTarget");
+                            battleCommand.aoeType = (TargetFindAOEType)reader.GetByte("aoeType");
+                            battleCommand.numHits = reader.GetByte("numHits");
+                            battleCommand.positionBonus = (AbilityPositionBonus)reader.GetByte("positionBonus");
+                            battleCommand.procRequirement = (AbilityProcRequirement)reader.GetByte("procRequirement");
+                            battleCommand.range = reader.GetInt32("range");
+                            battleCommand.debuffDurationSeconds = reader.GetUInt32("debuffDuration");
+                            battleCommand.buffDurationSeconds = reader.GetUInt32("buffDuration");
+                            battleCommand.castType = reader.GetByte("castType");
+                            battleCommand.castTimeSeconds = reader.GetUInt32("castTime");
+                            battleCommand.recastTimeSeconds = reader.GetUInt32("recastTime");
+                            battleCommand.mpCost = reader.GetUInt16("mpCost");
+                            battleCommand.tpCost = reader.GetUInt16("tpCost");
+                            battleCommand.animationType = reader.GetByte("animationType");
+                            battleCommand.effectAnimation = reader.GetUInt16("effectAnimation");
+                            battleCommand.modelAnimation = reader.GetUInt16("modelAnimation");
+                            battleCommand.animationDurationSeconds = reader.GetUInt16("animationDuration");
+                            battleCommand.aoeRange = reader.GetInt32("aoeRange");
+                            battleCommand.battleAnimation = (uint)((battleCommand.animationType << 24) | (battleCommand.modelAnimation << 12) | (battleCommand.effectAnimation));
                             
-                            abilities.Add(id, ability);
+                            battleCommands.Add(id, battleCommand);
                         }
                     }
                 }
@@ -2207,7 +2208,7 @@ namespace FFXIVClassic_Map_Server
                     conn.Dispose();
                 }
             }
-            return abilities;
+            return battleCommands;
         }
 
 

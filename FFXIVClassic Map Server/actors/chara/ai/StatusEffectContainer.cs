@@ -68,6 +68,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public bool AddStatusEffect(StatusEffect newEffect, Character source, bool silent = false)
         {
+            /*
+                worldMasterTextId
+                32001 [@2B([@IF($E4($EB(1),$EB(2)),you,[@IF($E9(7),[@SHEETEN(xtx/displayName,2,$E9(7),1,1)],$EB(2))])])] [@IF($E4($EB(1),$EB(2)),resist,resists)] the effect of [@SHEET(xtx/status,$E8(11),3)].
+                32002 [@SHEET(xtx/status,$E8(11),3)] fails to take effect.
+            */
             // todo: check flags/overwritable and add effect to list
             var effect = GetStatusEffectById(newEffect.GetStatusEffectId());
             bool canOverwrite = false;
@@ -85,8 +90,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 if (!silent || !effect.GetSilent() || (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
                 {
                     // todo: send packet to client with effect added message
-                    foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
-                        player.QueuePacket(packets.send.actor.battle.BattleActionX01Packet.BuildPacket(player.actorId, newEffect.GetSource().actorId, newEffect.GetOwner().actorId, 0x7678, 0, 0, newEffect.GetStatusId(), 0, 0));
                 }
 
                 // wont send a message about losing effect here
@@ -119,11 +122,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (effects.ContainsKey(effect.GetStatusEffectId()))
             {
                 // send packet to client with effect remove message
-                if (!silent || !effect.GetSilent() || (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
+                if (!silent && !effect.GetSilent() || (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
                 {
                     // todo: send packet to client with effect added message
-                    foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
-                        player.QueuePacket(packets.send.actor.battle.BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, owner.actorId, 0x7679, 0, 0, effect.GetStatusId(), 0, 0));
+                    
                 }
 
                 // todo: this is retarded..
@@ -147,7 +149,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 if (effect.GetStatusEffectId() == effectId)
                 {
-                    RemoveStatusEffect(effect, silent);
+                    RemoveStatusEffect(effect, effect.GetSilent() || silent);
                     break;
                 }
             }

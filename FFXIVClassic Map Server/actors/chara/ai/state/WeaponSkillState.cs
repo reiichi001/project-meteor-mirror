@@ -14,7 +14,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
     class WeaponSkillState : State
     {
 
-        private Ability skill;
+        private BattleCommand skill;
 
         public WeaponSkillState(Character owner, Character target, ushort skillId) :
             base(owner, target)
@@ -22,19 +22,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.startTime = DateTime.Now;
             // todo: lookup skill from global table
             this.skill = Server.GetWorldManager().GetAbility(skillId);
-            var returnCode = lua.LuaEngine.CallLuaAbilityFunction(owner, skill, "weaponskills", "onSkillPrepare", owner, target, skill);
+            var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillPrepare", owner, target, skill);
 
             // todo: check recast
-            if (owner.CanWeaponSkill(target, skill, ref errorPacket))
+            if (returnCode == 0 && owner.CanWeaponSkill(target, skill, ref errorPacket))
             {
                 // todo: Azia can fix, check the recast time and send error
                 OnStart();
             }
-            else if (interrupt || errorPacket != null)
+            else
             {
-                if (owner is Player && errorPacket != null)
-                    ((Player)owner).QueuePacket(errorPacket);
+                if (owner is Player)
+                {
+                    // "Your battle command fails to activate"
+                    if (errorPacket == null)
+                        errorPacket = owner.CreateGameMessagePacket(Server.GetWorldManager().GetActor(), (ushort)(returnCode == -1 ? 32410 : returnCode), 0x20, owner.actorId, owner.actorId, owner.actorId, owner.actorId);
 
+                    ((Player)owner).QueuePacket(errorPacket);
+                }
                 errorPacket = null;
                 interrupt = true;
             }
@@ -42,7 +47,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnStart()
         {
-            var returnCode = lua.LuaEngine.CallLuaAbilityFunction(owner, skill, "weaponskills", "onSkillStart", owner, target, skill);
+            var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillStart", owner, target, skill);
 
             if (returnCode != 0)
             {
@@ -96,25 +101,29 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             isCompleted = true;
 
             var targets = skill.targetFind.GetTargets();
+
             BattleAction[] actions = new BattleAction[targets.Count];
-            List<SubPacket> packets = new List<SubPacket>();
 
             var i = 0;
             foreach (var chara in targets)
             {
                 var action = new BattleAction();
-                action.effectId = 0;
+                action.effectId = (uint)HitEffect.Hit;
                 action.param = 1;
                 action.unknown = 1;
                 action.targetId = chara.actorId;
                 action.worldMasterTextId = skill.worldMasterTextId;
-                action.amount = (ushort)lua.LuaEngine.CallLuaAbilityFunction(owner, skill, "skills", "onSkillFinish", owner, target, skill, action);
+                // evasion, miss, dodge, etc to be handled in script, calling helpers from scripts/weaponskills.lua
+                action.amount = (ushort)lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillFinish", owner, target, skill, action);
                 actions[i++] = action;
 
                 //packets.Add(BattleActionX01Packet.BuildPacket(chara.actorId, owner.actorId, action.targetId, skill.battleAnimation, action.effectId, action.worldMasterTextId, skill.id, action.amount, action.param));
             }
-            packets.Add(BattleActionX10Packet.BuildPacket(owner.target.actorId, owner.actorId, skill.battleAnimation, skill.id, actions));
-            owner.zone.BroadcastPacketsAroundActor(owner, packets);
+
+            owner.zone.BroadcastPacketAroundActor(owner, 
+                skill.aoeType != TargetFindAOEType.None ? (BattleActionX10Packet.BuildPacket(owner.target.actorId, owner.actorId, skill.battleAnimation, skill.id, actions)) :
+                BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, skill.battleAnimation, actions[0].effectId, actions[0].worldMasterTextId, skill.id, actions[0].amount, actions[0].param)
+                );
         }
 
         public override void TryInterrupt()
@@ -146,6 +155,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         private bool CanUse()
         {
             return owner.CanWeaponSkill(target, skill, ref errorPacket);
+        }
+
+        public BattleCommand GetWeaponSkill()
+        {
+            return skill;
         }
     }
 }

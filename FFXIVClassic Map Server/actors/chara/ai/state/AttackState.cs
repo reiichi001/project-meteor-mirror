@@ -11,8 +11,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 {
     class AttackState : State
     {
-        private int damage = 0;
-        private bool tooFar = false;
         private DateTime attackTime;
 
         public AttackState(Character owner, Character target) :
@@ -31,8 +29,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         public override void OnStart()
         {
             // todo: check within attack range
-            
-            owner.LookAt(target);
         }
 
         public override bool Update(DateTime tick)
@@ -46,7 +42,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 return true;
             }
             */
-            if (owner.target != target || owner.target?.actorId != owner.currentLockedTarget)
+            if (target == null || owner.target != target || owner.target?.actorId != owner.currentLockedTarget)
                 owner.aiContainer.ChangeTarget(target = Server.GetWorldManager().GetActorInWorld(owner.currentLockedTarget == 0xC0000000 ? owner.currentTarget : owner.currentLockedTarget) as Character);
 
             if (target == null || target.IsDead())
@@ -90,22 +86,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnComplete()
         {
-            damage = utils.AttackUtils.CalculateDamage(owner, target);
+            // todo: possible underflow
+            BattleAction action = new BattleAction();
+            //var packet = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
 
-            // onAttack(actor, target, damage)
-            utils.BattleUtils.DamageTarget(owner, target, damage);
-            lua.LuaEngine.CallLuaBattleAction(owner, "onAttack", false, owner, target, damage);
-
-            {
-                var actors = owner.zone.GetActorsAroundActor<Player>(owner, 50);
-                foreach (var player in actors)
-                {
-                    var packet = BattleActionX01Packet.BuildPacket(player.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
-                    player.QueuePacket(packet);
-                }
-            }
-            target.DelHP((short)damage);
-            owner.LookAt(target);
+            action.targetId = target.actorId;
+            action.effectId = (uint)HitEffect.Hit;
+            action.worldMasterTextId = 0x765D;
+            action.param = 1; // todo: hit effect doesnt display without this?
+            owner.OnAttack(this, action);
            //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
         }
 

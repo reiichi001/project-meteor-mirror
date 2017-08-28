@@ -191,12 +191,16 @@ namespace FFXIVClassic_Map_Server.lua
                         return (int)res.Number;
                 }
             }
+            else
+            {
+                Program.Log.Error($"LuaEngine.CallLuaStatusEffectFunction [{effect.GetName()}] Unable to find script {path}");
+            }
             return -1;
         }
 
-        public static int CallLuaAbilityFunction(Character actor, Ability ability, string folder, string functionName, params object[] args)
+        public static int CallLuaBattleCommandFunction(Character actor, BattleCommand command, string folder, string functionName, params object[] args)
         {
-            string path = $"./scripts/{folder}/{ability.name}.lua";
+            string path = $"./scripts/commands/{folder}/{command.name}.lua";
 
             if (File.Exists(path))
             {
@@ -208,7 +212,7 @@ namespace FFXIVClassic_Map_Server.lua
                 }
                 catch (Exception e)
                 {
-                    Program.Log.Error($"LuaEngine.CallLuaSpellFunction [{functionName}] {e.Message}");
+                    Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction [{functionName}] {e.Message}");
                 }
                 DynValue res = new DynValue();
 
@@ -218,6 +222,10 @@ namespace FFXIVClassic_Map_Server.lua
                     if (res != null)
                         return (int)res.Number;
                 }
+            }
+            else
+            {
+                Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction [{command.name}] Unable to find script {path}");
             }
             return -1;
         }

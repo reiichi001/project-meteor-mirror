@@ -13,6 +13,8 @@ using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.actors.chara.ai.state;
 using FFXIVClassic_Map_Server.utils;
+using FFXIVClassic_Map_Server.packets.send.actor.battle;
+using FFXIVClassic_Map_Server.actors.chara.ai.utils;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -95,19 +97,19 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public override bool CanCast(Character target, Ability spell, ref SubPacket errorPacket)
+        public override bool CanCast(Character target, BattleCommand spell, ref SubPacket errorPacket)
         {
             // todo:
             return false;
         }
 
-        public override bool CanWeaponSkill(Character target, Ability skill, ref SubPacket errorPacket)
+        public override bool CanWeaponSkill(Character target, BattleCommand skill, ref SubPacket errorPacket)
         {
             // todo:
             return false;
         }
 
-        public override bool CanUseAbility(Character target, Ability ability, ref SubPacket errorPacket)
+        public override bool CanUseAbility(Character target, BattleCommand ability, ref SubPacket errorPacket)
         {
             // todo:
             return false;
@@ -183,7 +185,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             // dont bother checking for any in-range players if going back to spawn
-            if (!this.isMovingToSpawn && this.aggroType != AggroType.None)
+            if (!this.isMovingToSpawn && this.aiContainer.pathFind.AtPoint() && this.aggroType != AggroType.None)
             {
                 foreach (var player in zone.GetActorsAroundActor<Player>(this, 50))
                 {
@@ -198,6 +200,19 @@ namespace FFXIVClassic_Map_Server.Actors
         public bool IsCloseToSpawn()
         {
             return this.isAtSpawn = Utils.DistanceSquared(positionX, positionY, positionZ, spawnX, spawnY, spawnZ) <= 2500.0f;
+        }
+
+        public override void OnAttack(State state, BattleAction action)
+        {
+            // player melee animation
+            uint battleAnimation = 0x19001000;
+            // todo: get hitrate and shit, handle protect effect and whatever
+            BattleUtils.TryAttack(this, state.GetTarget(), action);
+
+            zone.BroadcastPacketAroundActor(this,
+                BattleActionX01Packet.BuildPacket(actorId, actorId, target.actorId, (uint)battleAnimation,
+                (uint)action.effectId, (ushort)action.worldMasterTextId, (ushort)BattleActionX01PacketCommand.Attack, (ushort)action.amount, (byte)action.param)
+                );
         }
     }
 }
