@@ -196,12 +196,12 @@ namespace FFXIVClassic_Map_Server.Actors
             while (true)
             {
                 if (actions.Length - currentIndex >= 18)
-                    BattleActionX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex);
+                    zone.BroadcastPacketAroundActor(this, BattleActionX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
                 else if (actions.Length - currentIndex > 1)
-                    BattleActionX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex);
+                    zone.BroadcastPacketAroundActor(this, BattleActionX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
                 else if (actions.Length - currentIndex == 1)
                 {
-                    BattleActionX01Packet.BuildPacket(actorId, animationId, commandId, actions[currentIndex]);
+                    zone.BroadcastPacketAroundActor(this, BattleActionX01Packet.BuildPacket(actorId, animationId, commandId, actions[currentIndex]));
                     currentIndex++;
                 }
                 else
@@ -217,12 +217,12 @@ namespace FFXIVClassic_Map_Server.Actors
             while (true)
             {
                 if (actions.Count - currentIndex >= 18)
-                    BattleActionX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex);
+                    zone.BroadcastPacketAroundActor(this, BattleActionX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
                 else if (actions.Count - currentIndex > 1)
-                    BattleActionX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex);
+                    zone.BroadcastPacketAroundActor(this, BattleActionX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
                 else if (actions.Count - currentIndex == 1)
                 {
-                    BattleActionX01Packet.BuildPacket(actorId, animationId, commandId, actions[currentIndex]);
+                    zone.BroadcastPacketAroundActor(this, BattleActionX01Packet.BuildPacket(actorId, animationId, commandId, actions[currentIndex]));
                     currentIndex++;
                 }
                 else

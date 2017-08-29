@@ -61,7 +61,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 {
                     // todo: modify spellSpeed based on modifiers and stuff
                     ((Player)owner).SendStartCastbar(spell.id, Utils.UnixTimeStampUTC(DateTime.Now.AddSeconds(spellSpeed)));
-                    owner.DoBattleAction(spell.id, spell.battleAnimation, new BattleAction(target.actorId, 30128, 1, 0, 1)); //You begin casting (6F000002: BLM, 6F000003: WHM)
+                    owner.DoBattleAction(spell.id, 0x6F000002, new BattleAction(target.actorId, 30128, 1, 0, 1)); //You begin casting (6F000002: BLM, 6F000003: WHM)
                 }
                 
             }
@@ -103,11 +103,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnComplete()
         {
-            if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
-            {
-                ((Player)owner).SendEndCastbar();
-            }
-
             spell.targetFind.FindWithinArea(target, spell.validTarget);
             isCompleted = true;
             
@@ -163,6 +158,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void Cleanup()
         {
+            if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
+            {
+                ((Player)owner).SendEndCastbar();
+            }
             // command casting duration
             //var packets = new List<SubPacket>();            
             //owner.zone.BroadcastPacketsAroundActor(owner, packets);
