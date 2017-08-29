@@ -55,18 +55,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 float[] baseCastDuration = { 1.0f, 0.25f };
 
                 float spellSpeed = spell.castTimeSeconds;
-                List<SubPacket> packets = new List<SubPacket>();
 
                 // command casting duration
                 if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
                 {
                     // todo: modify spellSpeed based on modifiers and stuff
-                    // ((Player)owner).SendStartCastBar(spell.id, Utils.UnixTimeStampUTC(DateTime.Now.AddSeconds(spellSpeed)));
-
+                    ((Player)owner).SendStartCastbar(spell.id, Utils.UnixTimeStampUTC(DateTime.Now.AddSeconds(spellSpeed)));
+                    owner.DoBattleAction(spell.id, spell.battleAnimation, new BattleAction(target.actorId, 30128, 1, 0, 1)); //You begin casting (6F000002: BLM, 6F000003: WHM)
                 }
-                // todo: change 
-
-                owner.zone.BroadcastPacketsAroundActor(owner, packets);
+                
             }
         }
 
@@ -106,6 +103,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnComplete()
         {
+            if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
+            {
+                ((Player)owner).SendEndCastbar();
+            }
+
             spell.targetFind.FindWithinArea(target, spell.validTarget);
             isCompleted = true;
             
@@ -115,14 +117,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             var i = 0;
             foreach (var chara in targets)
             {
-                var action = new BattleAction(target.actorId, spell.worldMasterTextId, spell.effectAnimation, 0, (byte) HitDirection.None, 1);                
+                var action = new BattleAction(target.actorId, spell.worldMasterTextId, spell.battleAnimation, 0, (byte) HitDirection.None, 1);                
                 action.amount = (ushort)lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onMagicFinish", owner, chara, spell, action);
-                actions[i++] = action;
-
-                //packets.Add(BattleActionX01Packet.BuildPacket(chara.actorId, owner.actorId, action.targetId, spell.battleAnimation, action.effectId, action.worldMasterTextId, spell.id, action.amount, action.param));
+                actions[i++] = action;                
             }
 
-            owner.DoBattleAction(spell.id, spell.effectAnimation, actions);
+            owner.DoBattleAction(spell.id, spell.battleAnimation, actions);
         }
 
         public override void TryInterrupt()
@@ -164,12 +164,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         public override void Cleanup()
         {
             // command casting duration
-            var packets = new List<SubPacket>();
-            if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
-            {
-                // ((Player)owner).SendStartCastBar(0, 0);
-            }
-            owner.zone.BroadcastPacketsAroundActor(owner, packets);
+            //var packets = new List<SubPacket>();            
+            //owner.zone.BroadcastPacketsAroundActor(owner, packets);
         }
 
         public BattleCommand GetSpell()

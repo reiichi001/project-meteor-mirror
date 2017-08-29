@@ -197,7 +197,7 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 if (actions.Length - currentIndex >= 18)
                     BattleActionX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex);
-                else if (actions.Length - currentIndex >= 1)
+                else if (actions.Length - currentIndex > 1)
                     BattleActionX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex);
                 else if (actions.Length - currentIndex == 1)
                 {
@@ -218,7 +218,7 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 if (actions.Count - currentIndex >= 18)
                     BattleActionX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex);
-                else if (actions.Count - currentIndex >= 1)
+                else if (actions.Count - currentIndex > 1)
                     BattleActionX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex);
                 else if (actions.Count - currentIndex == 1)
                 {

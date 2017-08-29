@@ -86,7 +86,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             return (BattleCommand)MemberwiseClone();
         }
-
+        
         public bool IsSpell()
         {
             return mpCost != 0 || castTimeSeconds != 0;
