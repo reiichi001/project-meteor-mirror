@@ -1259,6 +1259,8 @@ namespace FFXIVClassic_Map_Server
                     }
                 }
             }
+            else
+                UnequipAbility(player, hotbarSlot);
         }
 
         //Unequipping is done by sending an equip packet with 2700083200 as the ability and the hotbar slot of the action being unequipped

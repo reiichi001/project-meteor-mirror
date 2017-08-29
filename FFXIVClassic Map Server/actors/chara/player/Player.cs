@@ -975,6 +975,11 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.parameterSave.state_mainSkill[0] = classId;
             charaWork.parameterSave.state_mainSkillLevel = charaWork.battleSave.skillLevel[classId-1];
             playerWork.restBonusExpRate = 0.0f;
+            for(int i = charaWork.commandBorder; i < charaWork.command.Length; i++)
+            {
+                charaWork.command[i] = 0;
+                charaWork.commandCategory[i] = 0;
+            }
 
             ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("charaWork/stateForAll", this);
 
@@ -1847,95 +1852,89 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void EquipAbility(ushort hotbarSlot, ushort commandId)
         {
-            //if (charaWork.commandAcquired[commandId])
+            var ability = Server.GetWorldManager().GetBattleCommand(commandId);
+            uint trueCommandId = commandId | 0xA0F00000;
+            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder - 1);
+            ushort endOfHotbar = (ushort)(charaWork.commandBorder + 30);
+            List<ushort> slotsToUpdate = new List<ushort>();
+            bool canEquip = true;
+
+            //If the ability is already equipped we need this so we can move its recast timer to the new slot
+            uint oldRecast = 0;
+            //Check if the command is already on the hotbar
+            ushort oldSlot = FindFirstCommandSlotById(trueCommandId);
+            bool isAlreadyEquipped = oldSlot < endOfHotbar;
+
+            //New ability being added to the hotbar, set truehotbarslot to the first open slot. 
+            if (hotbarSlot == 0)
             {
-                uint trueCommandId = 0xA0F00000 | commandId;
-                ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder - 1);
-                ushort endOfHotbar = (ushort)(charaWork.commandBorder + 30);
-                List<ushort> slotsToUpdate = new List<ushort>();
-                if (trueCommandId != 2700083200)
-                {
-                    bool canEquip = true;
-                    bool isAlreadyEquipped = false;
-
-                    //If hotbar slot is 0, look for the first open slot
-                    if (hotbarSlot == 0)
-                    {
-                        trueHotbarSlot = FindFirstCommandSlotById(0);
-                        ushort equippedSlot = FindFirstCommandSlotById(trueCommandId);
-                        //We can only equip a command if there is an open hotbar slot and if the command was not found in the hotbar.
-                        canEquip = trueHotbarSlot < endOfHotbar && equippedSlot >= endOfHotbar;
-                        //If the command was found in the hotbar, mark it as already equipped
-                        isAlreadyEquipped = equippedSlot < endOfHotbar;
-                    }
-                    //If the slot the command is being moved to is occupied, move that command to the slot currently occupied by the command being placed.
-                    else if (charaWork.command[trueHotbarSlot] != trueCommandId)
-                    {
-                        //Search for where the ability we're equipping is already equipped
-                        ushort oldSlot = FindFirstCommandSlotById(trueCommandId);
-
-                        //If the command was found, update the old slot, otherwise it will just be overwritten
-                        if (oldSlot < endOfHotbar)
-                        {
-                            charaWork.command[oldSlot] = charaWork.command[trueHotbarSlot];
-                            slotsToUpdate.Add(oldSlot);
-                            //Need to update the old slot's recast timer as well
-                            charaWork.parameterTemp.maxCommandRecastTime[oldSlot - charaWork.commandBorder] = charaWork.parameterTemp.maxCommandRecastTime[trueHotbarSlot - charaWork.commandBorder];
-                            //I don't know how the game handled moving abilities in terms of cooldowns. 
-                            //I'm assuming they just keep whatever their current cooldown was instead of being reset to their max but SE were dicks in 1.0 so who knows
-                            charaWork.parameterSave.commandSlot_recastTime[oldSlot - charaWork.commandBorder] = charaWork.parameterSave.commandSlot_recastTime[trueHotbarSlot - charaWork.commandBorder];
-                            Database.EquipAbility(this, oldSlot, charaWork.command[trueHotbarSlot], charaWork.parameterSave.commandSlot_recastTime[oldSlot - charaWork.commandBorder]);
-                        }
-                    }
-
-                    if (canEquip)
-                    {
-                        charaWork.command[trueHotbarSlot] = trueCommandId;
-                        charaWork.commandCategory[trueHotbarSlot] = 1;
-
-                        //Set recast time
-                        ushort maxRecastTime = (ushort)Server.GetWorldManager().GetBattleCommand(commandId).recastTimeSeconds;
-                        uint recastEnd = Utils.UnixTimeStampUTC() + maxRecastTime;
-                        charaWork.parameterTemp.maxCommandRecastTime[trueHotbarSlot - charaWork.commandBorder] = maxRecastTime;
-                        charaWork.parameterSave.commandSlot_recastTime[trueHotbarSlot - charaWork.commandBorder] = recastEnd;
-                        slotsToUpdate.Add(trueHotbarSlot);
-
-                        Database.EquipAbility(this, trueHotbarSlot, trueCommandId, recastEnd);
-
-                        //"[Command] set."
-                        SendGameMessage(Server.GetWorldManager().GetActor(), 30603, 0x20, 0, (int)commandId);
-                    }
-                    //Ability is already equipped
-                    else if (isAlreadyEquipped)
-                    {
-                        //"That action is already set to an action slot."
-                        SendGameMessage(Server.GetWorldManager().GetActor(), 30719, 0x20, 0);
-                    }
-                    //Hotbar full
-                    else
-                    {
-                        //"You cannot set any more actions."
-                        SendGameMessage(Server.GetWorldManager().GetActor(), 30720, 0x20, 0);
-                    }
-                }
-                //Unequip command
-                else if (trueCommandId == 2700083200 && charaWork.command[trueHotbarSlot] != 0)
-                {
-                    //Need to get the commandId this way because when unequipping an ability the commandId is 0.
-                    SendGameMessage(Server.GetWorldManager().GetActor(), 30604, 0x20, 0, charaWork.command[trueHotbarSlot] ^ 2700083200);
-                    Database.UnequipAbility(this, trueHotbarSlot);
-                    charaWork.command[trueHotbarSlot] = 0;
-                    slotsToUpdate.Add(trueHotbarSlot);
-                    
-                }
-                UpdateHotbar(slotsToUpdate);
+                //If the ability is already equipped, we can't add it to the hotbar again.
+                if (isAlreadyEquipped)
+                    canEquip = false;
+                else
+                    trueHotbarSlot = FindFirstCommandSlotById(0);
             }
-            //action not acquired
-            // else
+            //If the slot we're moving an command to already has an command there, move that command to the new command's old slot. 
+            //Only need to do this if the new command is already equipped, otherwise we just write over the command there
+            else if (charaWork.command[trueHotbarSlot] != trueCommandId && isAlreadyEquipped)
             {
-                //"You have not yet acquired that action."
-                //SendGameMessage(Server.GetWorldManager().GetActor(), 30742, 0x20, 0, 0);
+                //Move the command to oldslot
+                charaWork.command[oldSlot] = charaWork.command[trueHotbarSlot];
+                //Move recast timers to old slot as well and store the old recast timer
+                oldRecast = charaWork.parameterSave.commandSlot_recastTime[oldSlot - charaWork.commandBorder];
+                charaWork.parameterTemp.maxCommandRecastTime[oldSlot - charaWork.commandBorder] = charaWork.parameterTemp.maxCommandRecastTime[trueHotbarSlot - charaWork.commandBorder];
+                charaWork.parameterSave.commandSlot_recastTime[oldSlot - charaWork.commandBorder] = charaWork.parameterSave.commandSlot_recastTime[trueHotbarSlot - charaWork.commandBorder];
+                //Save changes
+                Database.EquipAbility(this, (ushort)(oldSlot - charaWork.commandBorder), charaWork.command[oldSlot], charaWork.parameterSave.commandSlot_recastTime[oldSlot - charaWork.commandBorder]);
+                slotsToUpdate.Add(oldSlot);
             }
+
+            if (canEquip)
+            {
+                charaWork.command[trueHotbarSlot] = trueCommandId;
+                charaWork.commandCategory[trueHotbarSlot] = 1;
+
+                //Set recast time. If the ability was already equipped, then we use the previous recast timer instead of setting a new one
+                ushort maxRecastTime = (ushort)ability.recastTimeSeconds;
+                uint recastEnd = isAlreadyEquipped ? oldRecast : Utils.UnixTimeStampUTC() + maxRecastTime;
+                charaWork.parameterTemp.maxCommandRecastTime[trueHotbarSlot - charaWork.commandBorder] = maxRecastTime;
+                charaWork.parameterSave.commandSlot_recastTime[trueHotbarSlot - charaWork.commandBorder] = recastEnd;
+                slotsToUpdate.Add(trueHotbarSlot);
+
+                Database.EquipAbility(this, (ushort) (trueHotbarSlot - charaWork.commandBorder), trueCommandId, recastEnd);
+
+                //"[Command] set."
+                if (!isAlreadyEquipped)
+                    SendGameMessage(Server.GetWorldManager().GetActor(), 30603, 0x20, 0, commandId);
+            }
+            //Ability is already equipped
+            else if (isAlreadyEquipped)
+            {
+                //"That action is already set to an action slot."
+                SendGameMessage(Server.GetWorldManager().GetActor(), 30719, 0x20, 0);
+            }
+            //Hotbar full
+            else
+            {
+                //"You cannot set any more actions."
+                SendGameMessage(Server.GetWorldManager().GetActor(), 30720, 0x20, 0);
+            }
+
+            UpdateHotbar(slotsToUpdate);
+        }
+
+
+        public void UnequipAbility(ushort hotbarSlot)
+        {
+            List<ushort> slotsToUpdate = new List<ushort>();
+            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder - 1);
+            uint commandId = charaWork.command[trueHotbarSlot];
+            Database.UnequipAbility(this, (ushort)(trueHotbarSlot - charaWork.commandBorder));
+            charaWork.command[trueHotbarSlot] = 0;
+            slotsToUpdate.Add(trueHotbarSlot);
+            SendGameMessage(Server.GetWorldManager().GetActor(), 30604, 0x20, 0, commandId ^ 0xA0F00000);
+
+            UpdateHotbar(slotsToUpdate);
         }
 
         //Finds the first hotbar slot with a given commandId.
