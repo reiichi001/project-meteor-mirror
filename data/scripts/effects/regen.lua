@@ -13,7 +13,7 @@ function onTick(target, effect)
     sender = "regen";
 
     -- todo: actual regen effect thing
-    local ability = GetWorldManager().GetAbility(27346);
+    local ability = GetWorldManager().GetBattleCommand(27346);
     local anim = bit32.bxor(bit32.lshift(ability.animationType, 24), bit32.lshift(tonumber(1), 12) , 101); 
     local addHp = effect.GetMagnitude();
     

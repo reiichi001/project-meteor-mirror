@@ -1324,29 +1324,22 @@ namespace FFXIVClassic_Map_Server
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
-                    player.charaWork.commandBorder = 32;
-                    for (int i = player.charaWork.commandBorder; i < player.charaWork.commandCategory.Length; i++)
-                    {
-                        player.charaWork.command[i] = 0;
-                        player.charaWork.commandCategory[i] = 0;
-                        player.charaWork.parameterSave.commandSlot_recastTime[i - player.charaWork.commandBorder] = 0;
-                    }
+
+                    player.charaWork.commandBorder = 32;                 
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            int index = reader.GetUInt16(0);
-                            uint trueCommandId = reader.GetUInt32(1);
-                            player.charaWork.command[index] = trueCommandId;
-                            player.charaWork.commandCategory[index] = 1;
-                            player.charaWork.parameterSave.commandSlot_recastTime[index - player.charaWork.commandBorder] = reader.GetUInt32(2);
+                            int hotbarSlot = reader.GetUInt16("hotbarSlot");
+                            uint commandId = reader.GetUInt32("commandId");
+                            player.charaWork.command[hotbarSlot + player.charaWork.commandBorder] = commandId | 0xA0F00000;
+                            player.charaWork.commandCategory[hotbarSlot + player.charaWork.commandBorder] = 1;
+                            player.charaWork.parameterSave.commandSlot_recastTime[hotbarSlot] = reader.GetUInt32("recastTime");
 
                             //Recast timer
-                            BattleCommand ability = Server.GetWorldManager().GetBattleCommand((ushort)(trueCommandId ^ 2700083200));
-                            player.charaWork.parameterTemp.maxCommandRecastTime[index - player.charaWork.commandBorder] = (ushort) (ability != null ? ability.recastTimeSeconds : 1);
-                            //Previous recast timer
-                            player.charaWork.parameterSave.commandSlot_recastTime[index - player.charaWork.commandBorder] = reader.GetUInt32(2);
+                            BattleCommand ability = Server.GetWorldManager().GetBattleCommand((ushort)(commandId));
+                            player.charaWork.parameterTemp.maxCommandRecastTime[hotbarSlot] = (ushort) (ability != null ? ability.recastTimeSeconds : 1);                            
                         }
                     }
                 }

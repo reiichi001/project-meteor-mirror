@@ -110,7 +110,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
             owner.OnAttack(this, action, ref errorResult);
             // handle paralyze/intimidate/sleep/whatever in character thing
-            owner.DoBattleAction((ushort)BattleActionX01PacketCommand.Attack, 0x19001000, errorResult != null ? action : errorResult);            
+            owner.DoBattleAction((ushort)BattleActionX01PacketCommand.Attack, 0x19001000, errorResult == null ? action : errorResult);            
            
             //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
         }
