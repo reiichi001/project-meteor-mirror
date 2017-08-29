@@ -87,15 +87,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         public override void OnComplete()
         {
             // todo: possible underflow
-            BattleAction action = new BattleAction();
-            errorPacket = null;
+            BattleAction action = new BattleAction(target.actorId, 0x765D, (uint) HitEffect.Hit, 0, (byte) HitDirection.None);
+            errorResult = null;
 
             //var packet = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
-            action.animation = 0x19001000;
-            action.targetId = target.actorId;
-            action.effectId = (uint)HitEffect.Hit;
-            action.worldMasterTextId = 0x765D;
-            action.param = (byte)HitDirection.None; // HitDirection (auto attack shouldnt need this afaik)
+            
+            // HitDirection (auto attack shouldnt need this afaik)
 
             // todo: implement auto attack damage bonus in Character.OnAttack
             /*
@@ -111,14 +108,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
               * The above damage bonus also applies to “Shot” attacks by archers.
              */
 
-            owner.OnAttack(this, action, ref errorPacket);
+            owner.OnAttack(this, action, ref errorResult);
             // handle paralyze/intimidate/sleep/whatever in character thing
-            if (errorPacket == null)
-                owner.zone.BroadcastPacketAroundActor(owner, BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, action.targetId, action.animation,
-                0x8000000 | action.effectId, action.worldMasterTextId, (ushort)BattleActionX01PacketCommand.Attack, action.amount, action.param)
-                );
-            else
-                owner.zone.BroadcastPacketAroundActor(owner, errorPacket);
+            owner.DoBattleAction((ushort)BattleActionX01PacketCommand.Attack, 0x19001000, errorResult != null ? action : errorResult);            
+           
             //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
         }
 

@@ -1956,18 +1956,19 @@ namespace FFXIVClassic_Map_Server.Actors
             return firstSlot;
         }
 
+        /*
         public void SendBattleActionX01Packet(uint anim, uint effect, uint text = 0x756D, uint command = 27260, uint param = 0x01, uint idek = 0x01)
         {
             var packet = BattleActionX01Packet.BuildPacket(actorId, actorId, currentTarget != 0xC0000000 ? currentTarget : currentLockedTarget, (uint)anim, (uint)effect, (ushort)text, (ushort)command, (ushort)param, (byte)idek);
             QueuePacket(packet);
-        }
+        }*/
 
-        public override bool IsValidTarget(Character target, ValidTarget validTarget, ref SubPacket errorPacket)
+        public override bool IsValidTarget(Character target, ValidTarget validTarget)
         {
             if (target == null)
             {
                 // Target does not exist.
-                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32511, 0x20);
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32511, 0x20);
                 return false;
             }
 
@@ -1977,21 +1978,21 @@ namespace FFXIVClassic_Map_Server.Actors
                 if (target.currentSubState == SetActorStatePacket.SUB_STATE_NONE)
                 {
                     // That command cannot be performed on the current target.
-                    errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32547, 0x20);
+                    SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20);
                     return false;
                 }
 
                 if (currentParty != null && target.currentParty == currentParty)
                 {
                     // That command cannot be performed on a party member.
-                    errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32548, 0x20);
+                    SendGameMessage(Server.GetWorldManager().GetActor(), 32548, 0x20);
                     return false;
                 }
                 // todo: pvp?
                 if (target.currentSubState == currentSubState)
                 {
                     // That command cannot be performed on an ally.
-                    errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32549, 0x20);
+                    SendGameMessage(Server.GetWorldManager().GetActor(), 32549, 0x20);
                     return false;
                 }
             }
@@ -1999,7 +2000,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if ((validTarget & ValidTarget.Ally) != 0 && target.currentSubState != currentSubState)
             {
                 // That command cannot be performed on the current target.
-                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32547, 0x20);
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20);
                 return false;
             }
 
@@ -2011,29 +2012,29 @@ namespace FFXIVClassic_Map_Server.Actors
             if (target is Player && ((Player)target).playerSession.isUpdatesLocked)
             {
                 // That command cannot be performed on the current target.
-                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32547, 0x20);
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20);
                 return false;
             }
 
             return true;
         }
 
-        public override bool CanCast(Character target, BattleCommand spell, ref SubPacket errorPacket)
+        public override bool CanCast(Character target, BattleCommand spell)
         {
             // todo: move the ability specific stuff to ability.cs
             if (target == null)
             {
                 // Target does not exist.
-                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)spell.id);
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)spell.id);
                 return false;
             }
             if (Utils.Distance(positionX, positionY, positionZ, target.positionX, target.positionY, target.positionZ) > spell.range)
             {
                 // The target is out of range.
-                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32539, 0x20, spell.id);
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20, spell.id);
                 return false;
             }
-            if (!IsValidTarget(target, spell.validTarget, ref errorPacket) || !spell.IsValidTarget(this, target, ref errorPacket))
+            if (!IsValidTarget(target, spell.validTarget) || !spell.IsValidTarget(this, target))
             {
                 // error packet is set in IsValidTarget
                 return false;
@@ -2041,22 +2042,22 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public override bool CanWeaponSkill(Character target, BattleCommand skill, ref SubPacket errorPacket)
+        public override bool CanWeaponSkill(Character target, BattleCommand skill)
         {
             // todo: see worldmaster ids 32558~32557 for proper ko message and stuff
             if (target == null)
             {
                 // Target does not exist.
-                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)skill.id);
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)skill.id);
                 return false;
             }
             if (Utils.Distance(positionX, positionY, positionZ, target.positionX, target.positionY, target.positionZ) > skill.range)
             {
                 // The target is out of range.
-                errorPacket = CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32539, 0x20, (uint)skill.id);
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20, (uint)skill.id);
                 return false;
             }
-            if (!IsValidTarget(target, skill.validTarget, ref errorPacket) || !skill.IsValidTarget(this, target, ref errorPacket))
+            if (!IsValidTarget(target, skill.validTarget) || !skill.IsValidTarget(this, target))
             {
                 // error packet is set in IsValidTarget
                 return false;
@@ -2064,14 +2065,14 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public override void OnAttack(State state, BattleAction action, ref SubPacket errorPacket)
+        public override void OnAttack(State state, BattleAction action, ref BattleAction error)
         {
-            base.OnAttack(state, action, ref errorPacket);
+            base.OnAttack(state, action, ref error);
 
-            if (errorPacket == null)
+            if (error == null)
             {
                 // melee attack animation
-                action.animation = 0x19001000;
+                //action.animation = 0x19001000;
             }
             var target = state.GetTarget();
             //if (target is BattleNpc)

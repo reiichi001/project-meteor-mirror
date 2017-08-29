@@ -107,19 +107,19 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public override bool CanCast(Character target, BattleCommand spell, ref SubPacket errorPacket)
+        public override bool CanCast(Character target, BattleCommand spell)
         {
             // todo:
             return false;
         }
 
-        public override bool CanWeaponSkill(Character target, BattleCommand skill, ref SubPacket errorPacket)
+        public override bool CanWeaponSkill(Character target, BattleCommand skill)
         {
             // todo:
             return false;
         }
 
-        public override bool CanUseAbility(Character target, BattleCommand ability, ref SubPacket errorPacket)
+        public override bool CanUseAbility(Character target, BattleCommand ability)
         {
             // todo:
             return false;
@@ -204,9 +204,9 @@ namespace FFXIVClassic_Map_Server.Actors
             return this.isAtSpawn = Utils.DistanceSquared(positionX, positionY, positionZ, spawnX, spawnY, spawnZ) <= 2500.0f;
         }
 
-        public override void OnAttack(State state, BattleAction action, ref SubPacket errorPacket)
+        public override void OnAttack(State state, BattleAction action, ref BattleAction error)
         {
-            base.OnAttack(state, action, ref errorPacket);
+            base.OnAttack(state, action, ref error);
         }
     }
 }

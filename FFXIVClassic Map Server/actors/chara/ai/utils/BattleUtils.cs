@@ -13,7 +13,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 {
     static class BattleUtils
     {
-        public static bool TryAttack(Character attacker, Character defender, BattleAction action, ref SubPacket errorPacket)
+        public static bool TryAttack(Character attacker, Character defender, BattleAction action, ref BattleAction error)
         {
             // todo: get hit rate, hit count, set hit effect
             action.effectId |= (uint)(HitEffect.RecoilLv2 | HitEffect.Hit | HitEffect.HitVisual1);

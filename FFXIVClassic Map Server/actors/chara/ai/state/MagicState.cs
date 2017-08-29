@@ -28,22 +28,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onMagicPrepare", owner, target, spell);
 
             // todo: check recast
-            if (returnCode == 0 && owner.CanCast(target, spell, ref errorPacket))
+            if (returnCode == 0 && owner.CanCast(target, spell))
             {
                 // todo: Azia can fix, check the recast time and send error
                 OnStart();
             }
             else
-            {
-                if (owner is Player)
-                {
-                    // "Your battle command fails to activate"
-                    if (errorPacket == null)
-                        errorPacket = owner.CreateGameMessagePacket(Server.GetWorldManager().GetActor(), (ushort)(returnCode == -1 ? 32410 : returnCode), 0x20, owner.actorId);
-
-                    ((Player)owner).QueuePacket(errorPacket);
-                }
-                errorPacket = null;
+            {                
+                errorResult = null;
                 interrupt = true;
             }
         }
@@ -55,7 +47,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             if (returnCode != 0)
             {
                 interrupt = true;
-                errorPacket = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, owner.actorId, 0, 0, (ushort)(returnCode == -1 ? 32558 : returnCode), spell.id, 0, 1);
+                errorResult = new BattleAction(target.actorId, (ushort)(returnCode == -1 ? 32558 : returnCode), 0, 0, 0, 1);
             }
             else
             {
@@ -106,9 +98,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         public override void OnInterrupt()
         {
             // todo: send paralyzed/sleep message etc.
-            if (errorPacket != null)
+            if (errorResult != null)
             {
-                owner.zone.BroadcastPacketAroundActor(owner, errorPacket);
+                //owner.zone.BroadcastPacketAroundActor(owner, errorResult);
             }
         }
 
@@ -123,23 +115,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             var i = 0;
             foreach (var chara in targets)
             {
-                var action = new BattleAction();
-                action.effectId = spell.effectAnimation;
-                action.param = (byte)HitDirection.None; // HitDirection (magic shouldnt need this afaik)
-                action.unknown = 1;
-                action.targetId = chara.actorId;
-                action.worldMasterTextId = spell.worldMasterTextId;
-                action.animation = spell.battleAnimation;
+                var action = new BattleAction(target.actorId, spell.worldMasterTextId, spell.effectAnimation, 0, (byte) HitDirection.None, 1);                
                 action.amount = (ushort)lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onMagicFinish", owner, chara, spell, action);
                 actions[i++] = action;
 
                 //packets.Add(BattleActionX01Packet.BuildPacket(chara.actorId, owner.actorId, action.targetId, spell.battleAnimation, action.effectId, action.worldMasterTextId, spell.id, action.amount, action.param));
             }
-            owner.zone.BroadcastPacketAroundActor(owner,
-                           spell.aoeType != TargetFindAOEType.None ? (BattleActionX10Packet.BuildPacket(owner.actorId, owner.actorId, actions[0].animation, spell.id, actions)) :
-                           BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, spell.battleAnimation, actions[0].effectId, actions[0].worldMasterTextId, spell.id, actions[0].amount, actions[0].param)
-                           );
-            //owner.zone.BroadcastPacketsAroundActor(owner, packets);
+
+            owner.DoBattleAction(spell.id, spell.effectAnimation, actions);
         }
 
         public override void TryInterrupt()
@@ -170,7 +153,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         private bool CanCast()
         {
-            return owner.CanCast(target, spell, ref errorPacket) && !HasMoved();
+            return owner.CanCast(target, spell) && !HasMoved();
         }
 
         private bool HasMoved()

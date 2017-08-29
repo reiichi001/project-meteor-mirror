@@ -432,8 +432,10 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if ((updateFlags & ActorUpdateFlags.State) != 0)
                 {
-                    packets.Add(SetActorStatePacket.BuildPacket(actorId, currentMainState, currentSubState));
-                    packets.Add(BattleActionX01Packet.BuildPacket(actorId, actorId, actorId, 0x72000062, 1, 0, 0x05209, 0, 0));
+                    packets.Add(SetActorStatePacket.BuildPacket(actorId, currentMainState, currentSubState));               
+                    
+                    if (this is Character)     
+                        packets.Add(BattleActionX00Packet.BuildPacket(actorId, 0x72000062, 0));
                 }
                 updateFlags = ActorUpdateFlags.None;
                 zone.BroadcastPacketsAroundActor(this, packets);
@@ -709,14 +711,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return FindRandomPoint(positionX, positionY, positionZ, minRadius, maxRadius);
         }
         #endregion
-
-        public SubPacket CreateGameMessagePacket(Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
-        {
-            if (msgParams == null || msgParams.Length == 0)
-                return (GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, textIdOwner.actorId, textId, log));
-            else
-                return (GameMessagePacket.BuildPacket(Server.GetWorldManager().GetActor().actorId, textIdOwner.actorId, textId, log, LuaUtils.CreateLuaParamList(msgParams)));
-        }
+        
     }
 }
 

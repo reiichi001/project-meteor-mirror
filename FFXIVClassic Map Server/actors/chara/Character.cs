@@ -179,9 +179,35 @@ namespace FFXIVClassic_Map_Server.Actors
                 zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
         }
 
-        public void DoBattleAction(ushort commandId, uint animationId, uint target)
+        public void DoBattleAction(ushort commandId, uint animationId)
         {
-            zone.BroadcastPacketAroundActor(this, BattleActionX00Packet.BuildPacket(actorId, target, animationId, commandId));
+            zone.BroadcastPacketAroundActor(this, BattleActionX00Packet.BuildPacket(actorId, animationId, commandId));
+        }
+
+        public void DoBattleAction(ushort commandId, uint animationId, BattleAction action)
+        {
+            zone.BroadcastPacketAroundActor(this, BattleActionX01Packet.BuildPacket(actorId, animationId, commandId, action));
+        }
+
+        public void DoBattleAction(ushort commandId, uint animationId, BattleAction[] actions)
+        {
+            int currentIndex = 0;
+
+            while (true)
+            {
+                if (actions.Length - currentIndex >= 18)
+                    BattleActionX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex);
+                else if (actions.Length - currentIndex >= 1)
+                    BattleActionX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex);
+                else if (actions.Length - currentIndex == 1)
+                {
+                    BattleActionX01Packet.BuildPacket(actorId, animationId, commandId, actions[currentIndex]);
+                    currentIndex++;
+                }
+                else
+                    break;
+                animationId = 0; //If more than one packet is sent out, only send the animation once to avoid double playing.
+            }
         }
 
         public void DoBattleAction(ushort commandId, uint animationId, List<BattleAction> actions)
@@ -284,7 +310,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public virtual bool IsValidTarget(Character target, ValidTarget validTarget, ref SubPacket errorPacket)
+        public virtual bool IsValidTarget(Character target, ValidTarget validTarget)
         {
             return true;
         }
@@ -294,17 +320,17 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public virtual bool CanCast(Character target, BattleCommand spell, ref SubPacket errorPacket)
+        public virtual bool CanCast(Character target, BattleCommand spell)
         {
             return false;
         }
 
-        public virtual bool CanWeaponSkill(Character target, BattleCommand skill, ref SubPacket errorPacket)
+        public virtual bool CanWeaponSkill(Character target, BattleCommand skill)
         {
             return false;
         }
 
-        public virtual bool CanUseAbility(Character target, BattleCommand ability, ref SubPacket errorPacket)
+        public virtual bool CanUseAbility(Character target, BattleCommand ability)
         {
             return false;
         }
@@ -500,14 +526,14 @@ namespace FFXIVClassic_Map_Server.Actors
             return moveSpeeds[2] + GetMod((uint)Modifier.Speed);
         }
 
-        public virtual void OnAttack(State state, BattleAction action, ref SubPacket errorPacket)
+        public virtual void OnAttack(State state, BattleAction action, ref BattleAction error)
         {
             // todo: change animation based on equipped weapon
             action.effectId |= (uint)HitEffect.HitVisual1; // melee
 
             var target = state.GetTarget();
             // todo: get hitrate and shit, handle protect effect and whatever
-            if (BattleUtils.TryAttack(this, target, action, ref errorPacket))
+            if (BattleUtils.TryAttack(this, target, action, ref error))
             {
                 action.amount = BattleUtils.CalculateAttackDamage(this, target, action);
                 //var packet = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);

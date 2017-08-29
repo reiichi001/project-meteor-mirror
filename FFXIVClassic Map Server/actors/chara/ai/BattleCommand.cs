@@ -97,7 +97,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return castTimeSeconds == 0;
         }
 
-        public bool IsValidTarget(Character user, Character target, ref SubPacket errorPacket)
+        public bool IsValidTarget(Character user, Character target)
         {
             // todo: set box length..
             targetFind = new TargetFind(user);
@@ -129,18 +129,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if ((validTarget & (ValidTarget.Corpse | ValidTarget.CorpseOnly)) == 0 && target.IsDead())
             {
                 // cannot be perfomed on
-                errorPacket = user.CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32512, 0x20, (uint)id);
+                if (user is Player)
+                    ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32512, 0x20, (uint)id);
                 return false;
             }
             if (level > user.charaWork.parameterSave.state_mainSkillLevel)
             {
-                errorPacket = user.CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32527, 0x20, (uint)id);
+                if (user is Player)
+                    ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32527, 0x20, (uint)id);
                 return false;
             }
 
             if (tpCost > user.GetTP())
             {
-                errorPacket = user.CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32546, 0x20, (uint)id);
+                if (user is Player)
+                    ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32546, 0x20, (uint)id);
                 return false;
             }
 
@@ -149,7 +152,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (BattleUtils.CalculateSpellCost(user, target, this) > user.GetMP())
             {
                 // todo: error message
-                errorPacket = user.CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32545, 0x20, (uint)id);
+                if (user is Player)
+                    ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32545, 0x20, (uint)id);
                 return false;
             }
 
@@ -159,7 +163,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 if (false)
                 {
                     // Unable to execute [@SHEET(xtx/command,$E8(1),2)]. Conditions for use are not met.
-                    errorPacket = user.CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32556, 0x20, (uint)id);
+                    if (user is Player)
+                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32556, 0x20, (uint)id);
                     return false;
                 }
             }
@@ -169,7 +174,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 if (target != null && target.IsAlive())
                 {
-                    errorPacket = user.CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32513, 0x20, (uint)id);
+                    if (user is Player)
+                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32513, 0x20, (uint)id);
                     return false;
                 }
             }
@@ -180,7 +186,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                     target.currentSubState != (user.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER ?
                 SetActorStatePacket.SUB_STATE_PLAYER : SetActorStatePacket.SUB_STATE_MONSTER))
                 {
-                    errorPacket = user.CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32519, 0x20, (uint)id);
+                    if (user is Player)
+                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32519, 0x20, (uint)id);
                     return false;
                 }
             }
@@ -189,7 +196,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 if (target == null || target.currentSubState != user.currentSubState )
                 {
-                    errorPacket = user.CreateGameMessagePacket(Server.GetWorldManager().GetActor(), 32516, 0x20, (uint)id);
+                    if (user is Player)
+                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32516, 0x20, (uint)id);
                     return false;
                 }
             }

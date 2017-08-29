@@ -109,6 +109,16 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         /// <summary>
         /// this field is not actually part of the packet struct
         /// </summary>
-        public uint animation;
+        //public uint animation;
+
+        public BattleAction(uint targetId, ushort worldMasterTextId, uint effectId, ushort amount = 0, byte param = 0, byte unknown = 0)
+        {
+            this.targetId = targetId;            
+            this.worldMasterTextId = worldMasterTextId;
+            this.effectId = effectId;
+            this.amount = amount;
+            this.param = param;
+            this.unknown = unknown;        
+        }
     }
 }

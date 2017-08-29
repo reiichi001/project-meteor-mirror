@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.packets.send.actor.battle;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 {
@@ -18,7 +19,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         protected DateTime startTime;
 
-        protected SubPacket errorPacket;
+        protected BattleAction errorResult;
 
         protected bool isCompleted;
 
