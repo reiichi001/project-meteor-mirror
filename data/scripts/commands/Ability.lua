@@ -22,15 +22,7 @@ function onEventStarted(player, command, triggerName, arg1, arg2, arg3, arg4, ta
 		return;
 	end
 
-	--Does the target exist
-	target = player:getZone():FindActorInArea(targetActor);
-	if (target == nil) then
-		player:SendGameMessage(GetWorldMaster(), 30203, 0x20);
-		player:endEvent();
-		return;
-	end
-	
 	player.Ability(command.actorId, targetActor);
-	player:endEvent();	
+	player:endEvent();
 	
 end

@@ -76,17 +76,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 // todo: too far, path to player if mob, message if player
                 // owner.ResetMoveSpeeds();
                 owner.moveState = 2;
-                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER && owner.GetSpeed() != 0)
-                {
-                    // todo: actual stat based range
-                    if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > 10)
-                    {
-                        owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
-                        owner.aiContainer.pathFind.PathInRange(target.positionX, target.positionY, target.positionZ, 1.5f, owner.GetAttackRange());
-                        ChangeTarget(target);
-                        return false;
-                    }
-                }
                 lastActionTime = DateTime.Now;
                 // todo: adjust cooldowns with modifiers
             }
@@ -165,13 +154,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 // todo:
                 waitTime = tick.AddSeconds(10);
                 owner.OnRoam(tick);
-            }
 
-            if (tick >= lastRoamUpdate && !owner.aiContainer.pathFind.IsFollowingPath())
-            {
-                // will move on next tick
-                owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
-                owner.aiContainer.pathFind.PathInRange(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 20.0f);
+                if (!owner.aiContainer.pathFind.IsFollowingPath())
+                {
+                    // will move on next tick
+                    owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
+                    owner.aiContainer.pathFind.PathInRange(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 20.0f);
+                }
             }
 
 
@@ -181,10 +170,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 {
                     if (!owner.isMovingToSpawn && owner.aiContainer.pathFind.AtPoint() && owner.aggroType != AggroType.None)
                     {
-                        uint levelDifference = (uint)Math.Abs(owner.charaWork.parameterSave.state_mainSkillLevel - ((Player)player).charaWork.parameterSave.state_mainSkillLevel);
+                        uint levelDifference = (uint)Math.Abs(owner.charaWork.parameterSave.state_mainSkillLevel - player.charaWork.parameterSave.state_mainSkillLevel);
 
-                        if (levelDifference < 10 || (owner.aggroType & AggroType.IgnoreLevelDifference) != 0 && ((BattleNpcController)owner.aiContainer.GetController()).CanAggroTarget((Player)player))
-                            owner.hateContainer.AddBaseHate((Player)player);
+                        if (levelDifference <= 10 || (owner.aggroType & AggroType.IgnoreLevelDifference) != 0 && CanAggroTarget(player))
+                        {
+                            owner.hateContainer.AddBaseHate(player);
+                            break;
+                        }
                     }
                 }
             }
@@ -246,13 +238,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                                     continue;
 
                                 float mobDistance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, chara.positionX, chara.positionY, chara.positionZ);
-                                if (mobDistance < 0.70f && (chara.updateFlags & ActorUpdateFlags.Position) == 0)
+                                if (mobDistance < 0.50f && (chara.updateFlags & ActorUpdateFlags.Position) == 0)
                                 {
-                                    owner.aiContainer.pathFind.PathInRange(targetPos, 1.3f, 1.8f);
+                                    owner.aiContainer.pathFind.PathInRange(targetPos, 1.3f, chara.GetAttackRange());
                                     break;
                                 }
                             }
                         }
+                        FaceTarget();
                     }
                 }
             }
@@ -278,6 +271,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         {
             // todo: check spawn leash and stuff
             if (!owner.IsCloseToSpawn())
+            {
+                return false;
+            }
+            if (owner.GetSpeed() == 0)
             {
                 return false;
             }
@@ -339,10 +336,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 hasInvisible = hasSneak;
             }
 
-            if (detectSight && !hasInvisible && isFacing)
-                return CanSeePoint(target.positionX, target.positionY, target.positionZ);
 
             if ((owner.aggroType & AggroType.LowHp) != 0 && target.GetHPP() < 75)
+                return CanSeePoint(target.positionX, target.positionY, target.positionZ);
+
+            if (detectSight && !hasInvisible && isFacing)
                 return CanSeePoint(target.positionX, target.positionY, target.positionZ);
 
             return false;

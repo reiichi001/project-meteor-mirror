@@ -403,7 +403,6 @@ namespace FFXIVClassic_Map_Server.Actors
                     {
                         // push latest for player
                         var pos = positionUpdates[currentSubState == SetActorStatePacket.SUB_STATE_PLAYER ? positionUpdates.Count - 1 : 0];
-
                         oldPositionX = positionX;
                         oldPositionY = positionY;
                         oldPositionZ = positionZ;
@@ -412,7 +411,9 @@ namespace FFXIVClassic_Map_Server.Actors
                         positionX = pos.X;
                         positionY = pos.Y;
                         positionZ = pos.Z;
-                        
+
+                        zone.UpdateActorPosition(this);
+
                         //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
 
                         positionUpdates.Remove(pos);
@@ -433,10 +434,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 if ((updateFlags & ActorUpdateFlags.State) != 0)
                 {
                     packets.Add(SetActorStatePacket.BuildPacket(actorId, currentMainState, currentSubState));               
-                    
-                    if (this is Character)     
-                        packets.Add(BattleActionX00Packet.BuildPacket(actorId, 0x72000062, 0));
                 }
+
                 updateFlags = ActorUpdateFlags.None;
                 zone.BroadcastPacketsAroundActor(this, packets);
             }
@@ -654,7 +653,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public bool IsFacing(float x, float z, float angle = 40.0f)
         {
             angle = (float)(Math.PI * angle / 180);
-            return Vector3.GetAngle(positionX, positionZ, x, z) < angle;
+            return Math.Abs(Vector3.GetAngle(positionX, positionZ, x, z) - rotation) < angle;
         }
 
         // todo: is this legit?

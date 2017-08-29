@@ -18,18 +18,9 @@ function onEventStarted(player, command, triggerName, arg1, arg2, arg3, arg4, ta
 		return;
 	end
 	
-	--Does the target exist
-	target = player:getZone():FindActorInArea(targetActor);
-	if (target == nil) then
-		player:SendGameMessage(GetWorldMaster(), 30203, 0x20);
-		player:endEvent();
-		return;
-	end
-	
     if not player.aiContainer.IsEngaged() then
         player.Engage(targetActor);
     end;
     player.WeaponSkill(command.actorId, targetActor);
 	player:endEvent();
-	
-end
+end;

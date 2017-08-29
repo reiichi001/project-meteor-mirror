@@ -113,7 +113,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public bool CanChangeState()
         {
-            return GetCurrentState() == null || states.Peek().CanInterrupt();
+            return GetCurrentState() == null || states.Peek().CanChangeState();
         }
 
         public void ChangeTarget(Character target)
@@ -294,31 +294,40 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             owner.updateFlags |= ActorUpdateFlags.HpTpMp;
 
-            // todo: use the update flags
-            owner.ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
-
             ChangeTarget(null);
             ClearStates();
         }
 
         public void InternalAbility(Character target, uint abilityId)
         {
-
+            if (CanChangeState())
+            {
+                
+            }
         }
 
         public void InternalCast(Character target, uint spellId)
         {
-            ChangeState(new MagicState(owner, target, (ushort)spellId));
+            if (CanChangeState())
+            {
+                ChangeState(new MagicState(owner, target, (ushort)spellId));
+            }
         }
 
         public void InternalWeaponSkill(Character target, uint weaponSkillId)
         {
-            ChangeState(new WeaponSkillState(owner, target, (ushort)weaponSkillId));
+            if (CanChangeState())
+            {
+                ChangeState(new WeaponSkillState(owner, target, (ushort)weaponSkillId));
+            }
         }
 
         public void InternalMobSkill(Character target, uint mobSkillId)
         {
+            if (CanChangeState())
+            {
 
+            }
         }
 
         public void InternalDie(DateTime tick, uint timeToFadeout)

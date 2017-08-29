@@ -12,7 +12,7 @@ using FFXIVClassic_Map_Server.actors.chara.ai.utils;
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
 
-    public enum AbilityRequirements : ushort
+    public enum BattleCommandRequirements : ushort
     {
         None,
         DiscipleOfWar = 0x01,
@@ -27,7 +27,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         Conjury = 0x200
     }
 
-    public enum AbilityPositionBonus : byte
+    public enum BattleCommandPositionBonus : byte
     {
         None,
         Front = 0x01,
@@ -35,7 +35,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         Flank = 0x04
     }
 
-    public enum AbilityProcRequirement : byte
+    public enum BattleCommandProcRequirement : byte
     {
         None,
         Evade = 0x01,
@@ -50,12 +50,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public string name;
         public byte job;
         public byte level;
-        public AbilityRequirements requirements;
+        public BattleCommandRequirements requirements;
         public ValidTarget validTarget;
         public TargetFindAOEType aoeType;
         public byte numHits;
-        public AbilityPositionBonus positionBonus;
-        public AbilityProcRequirement procRequirement;
+        public BattleCommandPositionBonus positionBonus;
+        public BattleCommandProcRequirement procRequirement;
         public int range;
         public uint debuffDurationSeconds;
         public uint buffDurationSeconds;
@@ -158,7 +158,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             }
 
             // todo: check target requirements
-            if (requirements != AbilityRequirements.None)
+            if (requirements != BattleCommandRequirements.None)
             {
                 if (false)
                 {

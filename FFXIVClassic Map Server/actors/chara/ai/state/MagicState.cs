@@ -34,8 +34,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 OnStart();
             }
             else
-            {                
-                errorResult = null;
+            {
+                errorResult = new BattleAction(owner.actorId, 32553, 0);
                 interrupt = true;
             }
         }
@@ -47,7 +47,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             if (returnCode != 0)
             {
                 interrupt = true;
-                errorResult = new BattleAction(target.actorId, (ushort)(returnCode == -1 ? 32558 : returnCode), 0, 0, 0, 1);
+                errorResult = new BattleAction(target.actorId, (ushort)(returnCode == -1 ? 32553 : returnCode), 0, 0, 0, 1);
             }
             else
             {
@@ -63,7 +63,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                     ((Player)owner).SendStartCastbar(spell.id, Utils.UnixTimeStampUTC(DateTime.Now.AddSeconds(spellSpeed)));
                     owner.DoBattleAction(spell.id, 0x6F000002, new BattleAction(target.actorId, 30128, 1, 0, 1)); //You begin casting (6F000002: BLM, 6F000003: WHM)
                 }
-                
+
             }
         }
 
@@ -97,25 +97,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             // todo: send paralyzed/sleep message etc.
             if (errorResult != null)
             {
-                //owner.zone.BroadcastPacketAroundActor(owner, errorResult);
+                owner.DoBattleAction(spell.id, errorResult.animation, errorResult);
+                errorResult = null;
             }
-            owner.DoBattleAction(spell.id, 0x7F000002, new BattleAction(target.actorId, 0, 1, 0, 1));
         }
 
         public override void OnComplete()
         {
             spell.targetFind.FindWithinArea(target, spell.validTarget);
             isCompleted = true;
-            
+
             var targets = spell.targetFind.GetTargets();
             BattleAction[] actions = new BattleAction[targets.Count];
-            List<SubPacket> packets = new List<SubPacket>();
             var i = 0;
             foreach (var chara in targets)
             {
-                var action = new BattleAction(target.actorId, spell.worldMasterTextId, spell.battleAnimation, 0, (byte) HitDirection.None, 1);                
+                var action = new BattleAction(target.actorId, spell.worldMasterTextId, spell.battleAnimation, 0, (byte)HitDirection.None, 1);
                 action.amount = (ushort)lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onMagicFinish", owner, chara, spell, action);
-                actions[i++] = action;                
+                actions[i++] = action;
             }
 
             owner.DoBattleAction(spell.id, spell.battleAnimation, actions);
@@ -143,7 +142,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 interrupt = true;
                 return;
             }
-            
+
+            if (HasMoved())
+            {
+                errorResult = new BattleAction(owner.actorId, 30211, 0);
+                errorResult.animation = 0x7F000002;
+                interrupt = true;
+                return;
+            }
+
             interrupt = !CanCast();
         }
 
@@ -154,7 +161,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         private bool HasMoved()
         {
-            return (Utils.DistanceSquared(owner.GetPosAsVector3(), startPos) > 4.0f);
+            return (owner.GetPosAsVector3() != startPos);
         }
 
         public override void Cleanup()

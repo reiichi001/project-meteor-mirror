@@ -19,5 +19,4 @@ function onEventStarted(player, command, triggerName)
 	end		
 	player:endEvent();
 	sendSignal("playerActive");
-	
-end
+end;

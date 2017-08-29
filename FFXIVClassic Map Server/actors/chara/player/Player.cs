@@ -1971,6 +1971,13 @@ namespace FFXIVClassic_Map_Server.Actors
                 return false;
             }
 
+            if (target.isMovingToSpawn)
+            {
+                // That command cannot be performed on the current target.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20);
+                return false;
+            }
+
             // enemy only
             if ((validTarget & ValidTarget.Enemy) != 0)
             {
@@ -1980,7 +1987,6 @@ namespace FFXIVClassic_Map_Server.Actors
                     SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20);
                     return false;
                 }
-
                 if (currentParty != null && target.currentParty == currentParty)
                 {
                     // That command cannot be performed on a party member.
@@ -2030,7 +2036,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (Utils.Distance(positionX, positionY, positionZ, target.positionX, target.positionY, target.positionZ) > spell.range)
             {
                 // The target is out of range.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20, spell.id);
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20, (uint)spell.id);
                 return false;
             }
             if (!IsValidTarget(target, spell.validTarget) || !spell.IsValidTarget(this, target))

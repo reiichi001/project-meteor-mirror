@@ -2169,12 +2169,12 @@ namespace FFXIVClassic_Map_Server
 
                             battleCommand.job = reader.GetByte("classJob");
                             battleCommand.level = reader.GetByte("lvl");
-                            battleCommand.requirements = (AbilityRequirements)reader.GetUInt16("requirements");
+                            battleCommand.requirements = (BattleCommandRequirements)reader.GetUInt16("requirements");
                             battleCommand.validTarget = (ValidTarget)reader.GetByte("validTarget");
                             battleCommand.aoeType = (TargetFindAOEType)reader.GetByte("aoeType");
                             battleCommand.numHits = reader.GetByte("numHits");
-                            battleCommand.positionBonus = (AbilityPositionBonus)reader.GetByte("positionBonus");
-                            battleCommand.procRequirement = (AbilityProcRequirement)reader.GetByte("procRequirement");
+                            battleCommand.positionBonus = (BattleCommandPositionBonus)reader.GetByte("positionBonus");
+                            battleCommand.procRequirement = (BattleCommandProcRequirement)reader.GetByte("procRequirement");
                             battleCommand.range = reader.GetInt32("range");
                             battleCommand.debuffDurationSeconds = reader.GetUInt32("debuffDuration");
                             battleCommand.buffDurationSeconds = reader.GetUInt32("buffDuration");

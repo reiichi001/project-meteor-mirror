@@ -297,10 +297,16 @@ namespace FFXIVClassic_Map_Server.Actors
                     packets.Add(new SetActorAppearancePacket(modelId, appearanceIds).BuildPacket(actorId));
                 }
 
+                if ((updateFlags & ActorUpdateFlags.State) != 0)
+                {
+                    packets.Add(BattleActionX00Packet.BuildPacket(actorId, 0x72000062, 0));
+                }
+
                 // todo: should probably add another flag for battleTemp since all this uses reflection
                 if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
                 {
                     var propPacketUtil = new ActorPropertyPacketUtil("charaWork.parameterSave", this);
+                    
                     propPacketUtil.AddProperty("charaWork.parameterSave.mp");
                     propPacketUtil.AddProperty("charaWork.parameterSave.mpMax");
                     propPacketUtil.AddProperty("charaWork.parameterTemp.tp");

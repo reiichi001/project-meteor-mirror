@@ -83,7 +83,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             // todo: send paralyzed/sleep message etc.
             if (errorResult != null)
             {
-                owner.DoBattleAction(skill.id, 0, errorResult);
+                owner.DoBattleAction(skill.id, errorResult.animation, errorResult);
+                errorResult = null;
             }
         }
 

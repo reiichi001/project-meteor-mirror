@@ -51,9 +51,19 @@ namespace FFXIVClassic.Common
             return new Vector3(scalar * rhs.X, scalar * rhs.Y, scalar * rhs.Z);
         }
 
-        public static Vector3 operator /(Vector3 lhs, Vector3 rhs)
+        public static Vector3 operator /(Vector3 lhs, float scalar)
         {
-            return new Vector3(lhs.X - rhs.X, lhs.Y - rhs.Y, lhs.Z - rhs.Z);
+            return new Vector3(lhs.X / scalar, lhs.Y / scalar, lhs.Z / scalar);
+        }
+
+        public static bool operator !=(Vector3 lhs, Vector3 rhs)
+        {
+            return !(lhs?.X == rhs?.X && lhs?.Y == rhs?.Y && lhs?.Z == rhs?.Z);
+        }
+
+        public static bool operator ==(Vector3 lhs, Vector3 rhs)
+        {
+            return (lhs?.X == rhs?.X && lhs?.Y == rhs?.Y && lhs?.Z == rhs?.Z);
         }
 
         public float Length()
@@ -78,7 +88,8 @@ namespace FFXIVClassic.Common
 
         public static float GetAngle(float x, float z, float x2, float z2)
         {
-            return (float)(Math.Atan2((z2 - z), (x2 - x)));
+            var angle = (float)(Math.Atan((z2 - z) / (x2 - x)));
+            return (float)(x > x2 ? angle + Math.PI : angle);
         }
 
         public Vector3 NewHorizontalVector(float angle, float extents)

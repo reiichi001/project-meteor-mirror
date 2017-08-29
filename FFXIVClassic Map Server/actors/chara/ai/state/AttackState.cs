@@ -16,7 +16,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         public AttackState(Character owner, Character target) :
             base(owner, target)
         {
-            this.canInterrupt = true;
+            this.canInterrupt = false;
             this.startTime = DateTime.Now;
 
             owner.ChangeState(SetActorStatePacket.MAIN_STATE_ACTIVE);
@@ -43,12 +43,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             }
             */
             if (target == null || owner.target != target || owner.target?.actorId != owner.currentLockedTarget)
-                owner.aiContainer.ChangeTarget(target = Server.GetWorldManager().GetActorInWorld(owner.currentLockedTarget == 0xC0000000 ? owner.currentTarget : owner.currentLockedTarget) as Character);
+                owner.aiContainer.ChangeTarget(target = owner.zone.FindActorInArea(owner.currentLockedTarget == 0xC0000000 ? owner.currentTarget : owner.currentLockedTarget) as Character);
 
             if (target == null || target.IsDead())
             {
-                //if (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER)
-                //    target = ((BattleNpc)owner).hateContainer.GetMostHatedTarget();
+                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER)
+                    target = ((BattleNpc)owner).hateContainer.GetMostHatedTarget();
             }
             else
             {

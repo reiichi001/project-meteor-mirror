@@ -248,8 +248,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         private bool IsWithinCone(Character target, bool withPet)
         {
-            // todo:
-            return false;
+            // todo: make this actual cone
+            return owner.IsFacing(target, angle) && Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) < extents;
         }
 
         private void AddTarget(Character target, bool withPet)
