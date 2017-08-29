@@ -99,6 +99,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             {
                 //owner.zone.BroadcastPacketAroundActor(owner, errorResult);
             }
+            owner.DoBattleAction(spell.id, 0x7F000002, new BattleAction(target.actorId, 0, 1, 0, 1));
         }
 
         public override void OnComplete()
