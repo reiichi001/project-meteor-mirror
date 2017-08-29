@@ -178,6 +178,32 @@ namespace FFXIVClassic_Map_Server.Actors
                 zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
         }
 
+        public void DoBattleAction(ushort commandId, uint animationId, uint target)
+        {
+            zone.BroadcastPacketAroundActor(this, BattleActionX00Packet.BuildPacket(actorId, target, animationId, commandId));
+        }
+
+        public void DoBattleAction(ushort commandId, uint animationId, List<BattleAction> actions)
+        {
+            int currentIndex = 0;            
+
+            while (true)
+            {
+                if (actions.Count - currentIndex >= 18)
+                    BattleActionX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex);
+                else if (actions.Count - currentIndex >= 1)
+                    BattleActionX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex);
+                else if (actions.Count - currentIndex == 1)
+                {
+                    BattleActionX01Packet.BuildPacket(actorId, animationId, commandId, actions[currentIndex]);
+                    currentIndex++;
+                }
+                else
+                    break;
+                animationId = 0; //If more than one packet is sent out, only send the animation once to avoid double playing.
+            }            
+        }
+
         #region ai stuff
         public void PathTo(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40, float polyRadius = 0.0f)
         {

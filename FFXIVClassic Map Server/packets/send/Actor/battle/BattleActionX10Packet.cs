@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-using FFXIVClassic.Common;
+using System.Collections.Generic;
 
 namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
 {
@@ -11,7 +11,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         public const ushort OPCODE = 0x013A;
         public const uint PACKET_SIZE = 0xD8;
 
-        public static SubPacket BuildPacket(uint playerActorID, uint sourceActorId, uint animationId, ushort commandId, BattleAction[] actionList)
+        public static SubPacket BuildPacket(uint sourceActorId, uint animationId, ushort commandId, List<BattleAction> actionList, ref int currentIndex)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -25,7 +25,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
                     //Missing... last value is float, string in here as well?
 
                     binWriter.Seek(0x20, SeekOrigin.Begin);
-                    binWriter.Write((UInt32) actionList.Length); //Num actions (always 1 for this)
+                    binWriter.Write((UInt32)actionList.Count); //Num actions (always 1 for this)
                     binWriter.Write((UInt16)commandId);
                     binWriter.Write((UInt16)0x810); //?
 
