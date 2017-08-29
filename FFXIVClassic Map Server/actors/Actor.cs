@@ -613,21 +613,6 @@ namespace FFXIVClassic_Map_Server.Actors
             return zoneId;
         }
 
-        // todo: do this properly
-        public bool IsFacing(float x, float z)
-        {
-            var rot1 = this.rotation;
-
-            var dX = this.positionX - x;
-            var dY = this.positionZ - z;
-
-            var rot2 = Math.Atan2(dY, dX);
-
-            var dRot = Math.PI - rot2 + Math.PI / 2;
-
-            return rot1 == (float)dRot;
-        }
-
         public void LookAt(Actor actor)
         {
             if (actor != null)
@@ -667,7 +652,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public bool IsFacing(float x, float z, float angle = 40.0f)
         {
             angle = (float)(Math.PI * angle / 180);
-            return Vector3.GetAngle(positionX, positionZ, x, z) <= angle;
+            return Vector3.GetAngle(positionX, positionZ, x, z) < angle;
         }
 
         // todo: is this legit?
@@ -724,31 +709,6 @@ namespace FFXIVClassic_Map_Server.Actors
             return FindRandomPoint(positionX, positionY, positionZ, minRadius, maxRadius);
         }
         #endregion
-
-        public Player GetAsPlayer()
-        {
-            return currentSubState == SetActorStatePacket.SUB_STATE_PLAYER && this is Player ? ((Player)this) : null;
-        }
-
-        public BattleNpc GetAsMob()
-        {
-            return currentSubState == SetActorStatePacket.SUB_STATE_MONSTER && this is BattleNpc ? ((BattleNpc)this) : null;
-        }
-
-        public Npc GetAsNpc()
-        {
-            return currentSubState != SetActorStatePacket.SUB_STATE_PLAYER && this is Npc ? ((Npc)this) : null;
-        }
-
-        public Actor GetAsActor()
-        {
-            return this is Actor ? ((Actor)this) : null;
-        }
-
-        public Character GetAsCharacter()
-        {
-            return this is Character ? ((Character)this) : null;
-        }
 
         public SubPacket CreateGameMessagePacket(Actor textIdOwner, ushort textId, byte log, params object[] msgParams)
         {

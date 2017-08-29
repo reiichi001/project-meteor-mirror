@@ -12,6 +12,7 @@ using FFXIVClassic_Map_Server.actors.chara;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.actors.chara.ai.state;
+using FFXIVClassic_Map_Server.actors.chara.ai.utils;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -473,22 +474,33 @@ namespace FFXIVClassic_Map_Server.Actors
             return moveSpeeds[2] + GetMod((uint)Modifier.Speed);
         }
 
-        public virtual void OnAttack(State state, BattleAction action)
+        public virtual void OnAttack(State state, BattleAction action, ref SubPacket errorPacket)
+        {
+            // todo: change animation based on equipped weapon
+            action.effectId |= (uint)HitEffect.HitVisual1; // melee
+
+            var target = state.GetTarget();
+            // todo: get hitrate and shit, handle protect effect and whatever
+            if (BattleUtils.TryAttack(this, target, action, ref errorPacket))
+            {
+                action.amount = BattleUtils.CalculateAttackDamage(this, target, action);
+                //var packet = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
+            }
+
+            target.DelHP(action.amount);
+        }
+
+        public virtual void OnCast(State state, BattleAction action, ref SubPacket errorPacket)
         {
 
         }
 
-        public virtual void OnCast(State state, BattleAction action)
+        public virtual void OnWeaponSkill(State state, BattleAction action, ref SubPacket errorPacket)
         {
 
         }
 
-        public virtual void OnWeaponSkill(State state, BattleAction action)
-        {
-
-        }
-
-        public virtual void OnAbility(State state, BattleAction action)
+        public virtual void OnAbility(State state, BattleAction action, ref SubPacket errorPacket)
         {
 
         }

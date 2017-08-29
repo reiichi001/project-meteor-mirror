@@ -16,28 +16,28 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `status_effects`
+-- Table structure for table `server_statuseffects`
 --
 
-DROP TABLE IF EXISTS `status_effects`;
+DROP TABLE IF EXISTS `server_statuseffects`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `status_effects` (
+CREATE TABLE `server_statuseffects` (
   `id` smallint(5) unsigned NOT NULL,
   `name` varchar(128) NOT NULL,
   `flags` int(10) unsigned NOT NULL,
-  `overwrite` int(10) unsigned NOT NULL,
+  `overwrite` tinyint(3) unsigned NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `status_effects`
+-- Dumping data for table `server_statuseffects`
 --
 
-LOCK TABLES `status_effects` WRITE;
-/*!40000 ALTER TABLE `status_effects` DISABLE KEYS */;
-/*!40000 ALTER TABLE `status_effects` ENABLE KEYS */;
+LOCK TABLES `server_statuseffects` WRITE;
+/*!40000 ALTER TABLE `server_statuseffects` DISABLE KEYS */;
+/*!40000 ALTER TABLE `server_statuseffects` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

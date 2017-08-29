@@ -36,8 +36,8 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<uint, ZoneEntrance> zoneEntranceList;
         private Dictionary<uint, ActorClass> actorClasses = new Dictionary<uint,ActorClass>();
         private Dictionary<ulong, Party> currentPlayerParties = new Dictionary<ulong, Party>(); //GroupId, Party object
-        private Dictionary<uint, StatusEffect> effectList = new Dictionary<uint, StatusEffect>();
-        private Dictionary<ushort, BattleCommand> abilityList = new Dictionary<ushort, BattleCommand>();
+        private Dictionary<uint, StatusEffect> statusEffectList = new Dictionary<uint, StatusEffect>();
+        private Dictionary<ushort, BattleCommand> battleCommandList = new Dictionary<ushort, BattleCommand>();
 
         private Server mServer;
 
@@ -1141,25 +1141,25 @@ namespace FFXIVClassic_Map_Server
         }        
         public void LoadStatusEffects()
         {
-            effectList = Database.LoadGlobalStatusEffectList();
+            statusEffectList = Database.LoadGlobalStatusEffectList();
         }
 
         public StatusEffect GetStatusEffect(uint id)
         {
-            StatusEffect effect;
+            StatusEffect statusEffect;
 
-            return effectList.TryGetValue(id, out effect) ? new StatusEffect(null, effect) : null;
+            return statusEffectList.TryGetValue(id, out statusEffect) ? new StatusEffect(null, statusEffect) : null;
         }
 
-        public void LoadAbilities()
+        public void LoadBattleCommands()
         {
-            abilityList = Database.LoadGlobalBattleCommandList();
+            battleCommandList = Database.LoadGlobalBattleCommandList();
         }
 
-        public BattleCommand GetAbility(uint id)
+        public BattleCommand GetBattleCommand(uint id)
         {
-            BattleCommand ability;
-            return abilityList.TryGetValue((ushort)id, out ability) ? ability.Clone() : null;
+            BattleCommand battleCommand;
+            return battleCommandList.TryGetValue((ushort)id, out battleCommand) ? battleCommand.Clone() : null;
         }
     }
 }

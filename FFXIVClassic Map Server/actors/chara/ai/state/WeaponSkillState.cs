@@ -21,7 +21,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         {
             this.startTime = DateTime.Now;
             // todo: lookup skill from global table
-            this.skill = Server.GetWorldManager().GetAbility(skillId);
+            this.skill = Server.GetWorldManager().GetBattleCommand(skillId);
             var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillPrepare", owner, target, skill);
 
             // todo: check recast
@@ -109,10 +109,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             {
                 var action = new BattleAction();
                 action.effectId = (uint)HitEffect.Hit;
-                action.param = 1;
+                action.param = 1; // HitDirection
                 action.unknown = 1;
                 action.targetId = chara.actorId;
                 action.worldMasterTextId = skill.worldMasterTextId;
+                action.animation = skill.battleAnimation;
                 // evasion, miss, dodge, etc to be handled in script, calling helpers from scripts/weaponskills.lua
                 action.amount = (ushort)lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillFinish", owner, target, skill, action);
                 actions[i++] = action;
@@ -121,7 +122,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             }
 
             owner.zone.BroadcastPacketAroundActor(owner, 
-                skill.aoeType != TargetFindAOEType.None ? (BattleActionX10Packet.BuildPacket(owner.target.actorId, owner.actorId, skill.battleAnimation, skill.id, actions)) :
+                skill.aoeType != TargetFindAOEType.None ? (BattleActionX10Packet.BuildPacket(owner.target.actorId, owner.actorId, actions[0].animation, skill.id, actions)) :
                 BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, skill.battleAnimation, actions[0].effectId, actions[0].worldMasterTextId, skill.id, actions[0].amount, actions[0].param)
                 );
         }

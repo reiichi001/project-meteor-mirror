@@ -126,7 +126,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void ChangeState(State state)
         {
-            if (GetCurrentState() != null)
+            if (CanChangeState())
             {
                 if (states.Count <= 10)
                 {

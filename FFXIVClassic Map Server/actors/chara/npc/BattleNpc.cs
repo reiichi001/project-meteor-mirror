@@ -65,6 +65,16 @@ namespace FFXIVClassic_Map_Server.Actors
             CalculateBaseStats();
         }
 
+        public uint GetAggroType()
+        {
+            return (uint)aggroType;
+        }
+        
+        public void SetAggroType(uint aggroType)
+        {
+            this.aggroType = (AggroType)aggroType;
+        }
+
         public override void Update(DateTime tick)
         {
             this.aiContainer.Update(tick);
@@ -137,6 +147,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             this.isMovingToSpawn = false;
             this.ResetMoveSpeeds();
+            this.hateContainer.ClearHate();
             this.ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
         }
 
@@ -145,11 +156,14 @@ namespace FFXIVClassic_Map_Server.Actors
             if (IsAlive())
             {
                 aiContainer.InternalDie(tick, despawnTime);
+                aiContainer.pathFind.Clear();
 
                 this.ResetMoveSpeeds();
                 this.positionX = oldPositionX;
                 this.positionY = oldPositionY;
                 this.positionZ = oldPositionZ;
+                
+                
                 this.isAtSpawn = true;
             }
             else
@@ -176,24 +190,12 @@ namespace FFXIVClassic_Map_Server.Actors
                 else
                 {
                     if (target == null && !aiContainer.pathFind.IsFollowingPath())
-                        aiContainer.pathFind.PathInRange(spawnX, spawnY, spawnZ, 1.0f, 15.0f);
+                        aiContainer.pathFind.PathInRange(spawnX, spawnY, spawnZ, 1.5f, 15.0f);
                 }
             }
             else
             {
                 this.isMovingToSpawn = false;
-            }
-
-            // dont bother checking for any in-range players if going back to spawn
-            if (!this.isMovingToSpawn && this.aiContainer.pathFind.AtPoint() && this.aggroType != AggroType.None)
-            {
-                foreach (var player in zone.GetActorsAroundActor<Player>(this, 50))
-                {
-                    uint levelDifference = (uint)Math.Abs(this.charaWork.parameterSave.state_mainSkillLevel - player.charaWork.parameterSave.state_mainSkillLevel);
-
-                    if (levelDifference < 10 && ((BattleNpcController)aiContainer.GetController()).CanAggroTarget(player))
-                        hateContainer.AddBaseHate(player);
-                }
             }
         }
 
@@ -202,17 +204,9 @@ namespace FFXIVClassic_Map_Server.Actors
             return this.isAtSpawn = Utils.DistanceSquared(positionX, positionY, positionZ, spawnX, spawnY, spawnZ) <= 2500.0f;
         }
 
-        public override void OnAttack(State state, BattleAction action)
+        public override void OnAttack(State state, BattleAction action, ref SubPacket errorPacket)
         {
-            // player melee animation
-            uint battleAnimation = 0x19001000;
-            // todo: get hitrate and shit, handle protect effect and whatever
-            BattleUtils.TryAttack(this, state.GetTarget(), action);
-
-            zone.BroadcastPacketAroundActor(this,
-                BattleActionX01Packet.BuildPacket(actorId, actorId, target.actorId, (uint)battleAnimation,
-                (uint)action.effectId, (ushort)action.worldMasterTextId, (ushort)BattleActionX01PacketCommand.Attack, (ushort)action.amount, (byte)action.param)
-                );
+            base.OnAttack(state, action, ref errorPacket);
         }
     }
 }
