@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.actors.director;
+using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 
 namespace FFXIVClassic_Map_Server.Actors
 {

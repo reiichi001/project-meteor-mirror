@@ -1343,7 +1343,7 @@ namespace FFXIVClassic_Map_Server
                             player.charaWork.parameterSave.commandSlot_recastTime[index - player.charaWork.commandBorder] = reader.GetUInt32(2);
 
                             //Recast timer
-                            BattleCommand ability = Server.GetWorldManager().GetAbility((ushort)(trueCommandId ^ 2700083200));
+                            BattleCommand ability = Server.GetWorldManager().GetBattleCommand((ushort)(trueCommandId ^ 2700083200));
                             player.charaWork.parameterTemp.maxCommandRecastTime[index - player.charaWork.commandBorder] = (ushort) (ability != null ? ability.recastTimeSeconds : 1);
                             //Previous recast timer
                             player.charaWork.parameterSave.commandSlot_recastTime[index - player.charaWork.commandBorder] = reader.GetUInt32(2);
@@ -2085,7 +2085,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Open();
 
-                    var query = @"SELECT id, name, flags, overwrite FROM status_effects;";
+                    var query = @"SELECT id, name, flags, overwrite FROM server_statuseffects;";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -2093,10 +2093,10 @@ namespace FFXIVClassic_Map_Server
                     {
                         while (reader.Read())
                         {
-                            var id = reader.GetUInt32(0);
-                            var name = reader.GetString(1);
-                            var flags = reader.GetUInt32(2);
-                            var overwrite = reader.GetUInt32(3);
+                            var id = reader.GetUInt32("id");
+                            var name = reader.GetString("name");
+                            var flags = reader.GetUInt32("flags");
+                            var overwrite = reader.GetByte("overwrite");
 
                             var effect = new StatusEffect(id, name, flags, overwrite);
                             effects.Add(id, effect);
@@ -2160,7 +2160,7 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
 
                     var query = ("SELECT `id`, name, classJob, lvl, requirements, validTarget, aoeType, numHits, positionBonus, procRequirement, `range`, buffDuration, debuffDuration, " +
-                        "castType, castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, aoeRange FROM battle_commands;");
+                        "castType, castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, aoeRange FROM server_battle_commands;");
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 

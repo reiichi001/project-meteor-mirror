@@ -139,6 +139,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             }
             else
             {
+                distanceFromPoint = 0;
                 return true;
             }
 

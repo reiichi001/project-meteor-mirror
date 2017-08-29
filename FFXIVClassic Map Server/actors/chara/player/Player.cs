@@ -1894,7 +1894,7 @@ namespace FFXIVClassic_Map_Server.Actors
                         charaWork.commandCategory[trueHotbarSlot] = 1;
 
                         //Set recast time
-                        ushort maxRecastTime = (ushort)Server.GetWorldManager().GetAbility(commandId).recastTimeSeconds;
+                        ushort maxRecastTime = (ushort)Server.GetWorldManager().GetBattleCommand(commandId).recastTimeSeconds;
                         uint recastEnd = Utils.UnixTimeStampUTC() + maxRecastTime;
                         charaWork.parameterTemp.maxCommandRecastTime[trueHotbarSlot - charaWork.commandBorder] = maxRecastTime;
                         charaWork.parameterSave.commandSlot_recastTime[trueHotbarSlot - charaWork.commandBorder] = recastEnd;
@@ -2064,23 +2064,20 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public override void OnAttack(State state, BattleAction action)
+        public override void OnAttack(State state, BattleAction action, ref SubPacket errorPacket)
         {
-            // melee attack animation
-            uint battleAnimation = 0x19001000;
+            base.OnAttack(state, action, ref errorPacket);
 
-            // todo: change animation based on equipped weapon
-            action.effectId |= (uint)HitEffect.HitVisual1; // melee
-
-            // todo: get hitrate and shit, handle protect effect and whatever
-            BattleUtils.TryAttack(this, state.GetTarget(), action);
-            action.amount = BattleUtils.CalculateAttackDamage(this, state.GetTarget(), action);
-            //var packet = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
-
-            zone.BroadcastPacketAroundActor(this, BattleActionX01Packet.BuildPacket(actorId, actorId, action.targetId, (uint)battleAnimation,
-                0x8000000 | action.effectId, (ushort)action.worldMasterTextId, (ushort)BattleActionX01PacketCommand.Attack, (ushort)action.amount, (byte)action.param)
-                );
-
+            if (errorPacket == null)
+            {
+                // melee attack animation
+                action.animation = 0x19001000;
+            }
+            var target = state.GetTarget();
+            //if (target is BattleNpc)
+            {
+                ((BattleNpc)target).hateContainer.UpdateHate(this, action.amount);
+            }
         }
     }
 }

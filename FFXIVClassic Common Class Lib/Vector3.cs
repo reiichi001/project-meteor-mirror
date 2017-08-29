@@ -78,8 +78,7 @@ namespace FFXIVClassic.Common
 
         public static float GetAngle(float x, float z, float x2, float z2)
         {
-            var angle = (float)(Math.Atan((z2 - z) / (x2 - x)) * - Math.PI);
-            return x > x2 ? angle + (float)Math.PI : angle;
+            return (float)(Math.Atan2((z2 - z), (x2 - x)));
         }
 
         public Vector3 NewHorizontalVector(float angle, float extents)

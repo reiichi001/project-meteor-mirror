@@ -7,16 +7,17 @@ using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
+using FFXIVClassic.Common;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 {
     static class BattleUtils
     {
-        public static void TryAttack(Character attacker, Character defender, BattleAction action)
+        public static bool TryAttack(Character attacker, Character defender, BattleAction action, ref SubPacket errorPacket)
         {
             // todo: get hit rate, hit count, set hit effect
             action.effectId |= (uint)(HitEffect.RecoilLv2 | HitEffect.Hit | HitEffect.HitVisual1);
-            
+            return true;
         }
 
         public static ushort CalculateAttackDamage(Character attacker, Character defender, BattleAction action)
@@ -37,6 +38,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                 if (action != null)
                     action.effectId |= (uint)HitEffect.Stoneskin;
             }
+            return damage;
+        }
+
+        public static ushort GetCriticalHitDamage(Character attacker, Character defender, BattleAction action)
+        {
+            ushort damage = action.amount;
+
+            // todo:
+            // 
+            // action.effectId |= (uint)HitEffect.Critical;
+            //
             return damage;
         }
 

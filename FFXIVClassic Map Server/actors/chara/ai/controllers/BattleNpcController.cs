@@ -22,7 +22,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         private DateTime waitTime;
 
         private bool firstSpell = true;
-        private DateTime lastRoamScript; // todo: what even is this used as
+        private DateTime lastRoamUpdate;
 
         private new BattleNpc owner;
         public BattleNpcController(BattleNpc owner) :
@@ -76,7 +76,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 // todo: too far, path to player if mob, message if player
                 // owner.ResetMoveSpeeds();
                 owner.moveState = 2;
-                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER && owner.moveSpeeds[1] != 0)
+                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER && owner.GetSpeed() != 0)
                 {
                     // todo: actual stat based range
                     if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > 10)
@@ -106,6 +106,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             // todo:
             lastActionTime = lastUpdate.AddSeconds(5);
             owner.isMovingToSpawn = true;
+            owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
+            owner.aiContainer.pathFind.PreparePath(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 10);
             neutralTime = lastActionTime;
             owner.hateContainer.ClearHate();
             owner.moveState = 1;
@@ -147,7 +149,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             if (tick >= waitTime)
             {
                 // todo: aggro cooldown
-                neutralTime = tick.AddSeconds(5);
+                neutralTime = tick.AddSeconds(3);
                 if (owner.aiContainer.pathFind.IsFollowingPath())
                 {
                     owner.aiContainer.pathFind.FollowPath();
@@ -157,13 +159,34 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 {
                     if (tick >= lastActionTime)
                     {
-                        var battlenpc = owner as BattleNpc;
-                        owner.aiContainer.pathFind.PathInRange(battlenpc.spawnX, battlenpc.spawnY, battlenpc.spawnZ, 1.5f, 15.0f);
+                        
                     }
                 }
                 // todo:
                 waitTime = tick.AddSeconds(10);
                 owner.OnRoam(tick);
+            }
+
+            if (tick >= lastRoamUpdate && !owner.aiContainer.pathFind.IsFollowingPath())
+            {
+                // will move on next tick
+                owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
+                owner.aiContainer.pathFind.PathInRange(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 20.0f);
+            }
+
+
+            if (tick >= neutralTime)
+            {
+                foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
+                {
+                    if (!owner.isMovingToSpawn && owner.aiContainer.pathFind.AtPoint() && owner.aggroType != AggroType.None)
+                    {
+                        uint levelDifference = (uint)Math.Abs(owner.charaWork.parameterSave.state_mainSkillLevel - ((Player)player).charaWork.parameterSave.state_mainSkillLevel);
+
+                        if (levelDifference < 10 || (owner.aggroType & AggroType.IgnoreLevelDifference) != 0 && ((BattleNpcController)owner.aiContainer.GetController()).CanAggroTarget((Player)player))
+                            owner.hateContainer.AddBaseHate((Player)player);
+                    }
+                }
             }
 
             if (owner.aiContainer.pathFind.IsFollowingPath())
@@ -223,7 +246,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                                     continue;
 
                                 float mobDistance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, chara.positionX, chara.positionY, chara.positionZ);
-                                if (mobDistance < 0.90f && (chara.updateFlags & ActorUpdateFlags.Position) == 0)
+                                if (mobDistance < 0.70f && (chara.updateFlags & ActorUpdateFlags.Position) == 0)
                                 {
                                     owner.aiContainer.pathFind.PathInRange(targetPos, 1.3f, 1.8f);
                                     break;

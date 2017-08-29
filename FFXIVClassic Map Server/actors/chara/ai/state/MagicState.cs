@@ -24,7 +24,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.startPos = owner.GetPosAsVector3();
             this.startTime = DateTime.Now;
             // todo: lookup spell from global table
-            this.spell = Server.GetWorldManager().GetAbility(spellId);
+            this.spell = Server.GetWorldManager().GetBattleCommand(spellId);
             var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onMagicPrepare", owner, target, spell);
 
             // todo: check recast
@@ -125,20 +125,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             {
                 var action = new BattleAction();
                 action.effectId = spell.effectAnimation;
-                action.param = 1;
+                action.param = (byte)HitDirection.None; // HitDirection (magic shouldnt need this afaik)
                 action.unknown = 1;
                 action.targetId = chara.actorId;
                 action.worldMasterTextId = spell.worldMasterTextId;
+                action.animation = spell.battleAnimation;
                 action.amount = (ushort)lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onMagicFinish", owner, chara, spell, action);
                 actions[i++] = action;
 
                 //packets.Add(BattleActionX01Packet.BuildPacket(chara.actorId, owner.actorId, action.targetId, spell.battleAnimation, action.effectId, action.worldMasterTextId, spell.id, action.amount, action.param));
             }
             owner.zone.BroadcastPacketAroundActor(owner,
-                           spell.aoeType != TargetFindAOEType.None ? (BattleActionX10Packet.BuildPacket(owner.target.actorId, owner.actorId, spell.battleAnimation, spell.id, actions)) :
+                           spell.aoeType != TargetFindAOEType.None ? (BattleActionX10Packet.BuildPacket(owner.actorId, owner.actorId, actions[0].animation, spell.id, actions)) :
                            BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, spell.battleAnimation, actions[0].effectId, actions[0].worldMasterTextId, spell.id, actions[0].amount, actions[0].param)
                            );
-            owner.zone.BroadcastPacketsAroundActor(owner, packets);
+            //owner.zone.BroadcastPacketsAroundActor(owner, packets);
         }
 
         public override void TryInterrupt()
