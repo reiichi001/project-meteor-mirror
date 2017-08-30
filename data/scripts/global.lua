@@ -71,10 +71,27 @@ CHOCOBO_ULDAH4 = 0x40;
 
 --UTILS
 
+function kickEventContinue(player, actor, trigger, ...)
+	player:kickEvent(actor, trigger, ...);
+	return coroutine.yield("_WAIT_EVENT", player);
+end
+
 function callClientFunction(player, functionName, ...)
-	player:RunEventFunction(functionName, ...);
-	result = coroutine.yield();
+	player:RunEventFunction(functionName, ...);	
+	result = coroutine.yield("_WAIT_EVENT", player);
 	return result;
+end
+
+function wait(seconds)
+	return coroutine.yield("_WAIT_TIME", seconds);
+end
+
+function waitForSignal(signal)
+	return coroutine.yield("_WAIT_SIGNAL", signal);
+end
+
+function sendSignal(signal)
+	GetLuaInstance():OnSignal(signal);
 end
 
 function printf(s, ...)
