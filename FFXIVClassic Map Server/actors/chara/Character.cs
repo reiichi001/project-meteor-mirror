@@ -179,6 +179,12 @@ namespace FFXIVClassic_Map_Server.Actors
                 zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
         }
 
+        public void SendChant(int left, int right)
+        {
+            SetActorSubStatPacket.BuildPacket(actorId, 0, left, right, 0, 0, 0, 0).DebugPrintSubPacket();
+            zone.BroadcastPacketAroundActor(this, SetActorSubStatPacket.BuildPacket(actorId, 0, left, right, 0, 0, 0, 0));
+        }
+
         public void DoBattleAction(ushort commandId, uint animationId)
         {
             zone.BroadcastPacketAroundActor(this, BattleActionX00Packet.BuildPacket(actorId, animationId, commandId));

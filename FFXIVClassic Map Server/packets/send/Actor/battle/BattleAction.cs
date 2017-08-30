@@ -114,7 +114,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         /// </summary>
         public uint animation;
 
-        public BattleAction(uint targetId, ushort worldMasterTextId, uint effectId, ushort amount = 0, byte param = 0, byte unknown = 0)
+        public BattleAction(uint targetId, ushort worldMasterTextId, uint effectId, ushort amount = 0, byte param = 0, byte unknown = 1)
         {
             this.targetId = targetId;            
             this.worldMasterTextId = worldMasterTextId;

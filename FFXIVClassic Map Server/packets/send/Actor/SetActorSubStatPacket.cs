@@ -30,9 +30,9 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
                    binWriter.Write((byte)breakage);
-                   binWriter.Write((byte)(((leftChant & 0xF) << 8) | (rightChant & 0xF)));
+                   binWriter.Write((byte)(((leftChant & 0xF) << 4) | (rightChant & 0xF)));
                    binWriter.Write((byte)(guard & 0xF));
-                   binWriter.Write((byte)((wasteStat & 0xF) << 8));
+                   binWriter.Write((byte)((wasteStat & 0xF) << 4));
                    binWriter.Write((byte)(statMode & 0xF));
                    binWriter.Write((byte)0);
                    binWriter.Write((UInt16)(idleAnimationId&0xFFFF));

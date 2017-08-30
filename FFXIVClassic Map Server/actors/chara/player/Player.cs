@@ -1732,12 +1732,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 Server.GetWorldManager().NoMembersInParty((Party)currentParty);
             currentParty = null;
         }
-
-        public void Update(double delta)
-        {
-            LuaEngine.GetInstance().CallLuaFunction(this, this, "OnUpdate", true, delta);
-        }
-
+        
         public void IssueChocobo(byte appearanceId, string nameResponse)
         {
             Database.IssuePlayerChocobo(this, appearanceId, nameResponse);
@@ -1751,6 +1746,7 @@ namespace FFXIVClassic_Map_Server.Actors
             Database.ChangePlayerChocoboAppearance(this, appearanceId);
             chocoboAppearance = appearanceId;
         }
+
         public override void Update(DateTime tick)
         {
             aiContainer.Update(tick);
