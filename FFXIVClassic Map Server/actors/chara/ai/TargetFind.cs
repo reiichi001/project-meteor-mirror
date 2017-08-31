@@ -7,6 +7,7 @@ using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
+using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.packets.send.actor;
 
 // port of dsp's ai code https://github.com/DarkstarProject/darkstar/blob/master/src/map/ai/
@@ -48,9 +49,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
     enum TargetFindAOEType : byte
     {
         None,
-        /// <summary> Really a cylinder, uses extents parameter in SetAOEType </summary>
+        /// <summary> Really a cylinder, uses maxDistance parameter in SetAOEType </summary>
         Circle,
-        /// <summary> Create a cone with angle in radians </summary>
+        /// <summary> Create a cone with param in radians </summary>
         Cone,
         /// <summary> Box using self/target coords and </summary>
         Box
@@ -69,14 +70,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
     class TargetFind
     {
         private Character owner;
-        private Character target;
         private Character masterTarget; // if target is a pet, this is the owner
         private TargetFindCharacterType findType;
         private ValidTarget validTarget;
+        private TargetFindAOETarget aoeTarget;
         private TargetFindAOEType aoeType;
         private Vector3 targetPosition;
-        private float extents;
-        private float angle;
+        private float maxDistance;
+        private float param;
         private List<Character> targets;
 
         public TargetFind(Character owner)
@@ -87,13 +88,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void Reset()
         {
-            this.target = null;
             this.findType = TargetFindCharacterType.None;
             this.validTarget = ValidTarget.Enemy;
             this.aoeType = TargetFindAOEType.None;
+            this.aoeTarget = TargetFindAOETarget.Target;
             this.targetPosition = null;
-            this.extents = 0.0f;
-            this.angle = 0.0f;
+            this.maxDistance = 0.0f;
+            this.param = 0.0f;
             this.targets = new List<Character>();
         }
 
@@ -110,28 +111,29 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         /// <summary>
         /// Call this before <see cref="FindWithinArea"/> <para/>
         /// </summary>
-        /// <param name="extents">
+        /// <param name="maxDistance">
         /// <see cref="TargetFindAOEType.Circle"/> - radius of circle <para/>
         /// <see cref="TargetFindAOEType.Cone"/> - height of cone <para/>
         /// <see cref="TargetFindAOEType.Box"/> - width of box / 2 (todo: set box length not just between user and target)
         /// </param>
-        /// <param name="angle"> Angle in radians of cone </param>
-        public void SetAOEType(ValidTarget validTarget, TargetFindAOEType aoeType, float extents = -1.0f, float angle = -1.0f)
+        /// <param name="param"> param in degrees of cone (todo: probably use radians and forget converting at runtime) </param>
+        public void SetAOEType(ValidTarget validTarget, TargetFindAOEType aoeType, TargetFindAOETarget aoeTarget, float maxDistance = -1.0f, float param = -1.0f)
         {
             this.validTarget = validTarget;
             this.aoeType = aoeType;
-            this.extents = extents != -1.0f ? extents : 0.0f;
-            this.angle = angle != -1.0f ? angle : 0.0f;
+            this.maxDistance = maxDistance != -1.0f ? maxDistance : 0.0f;
+            this.param = param != -1.0f ? param : 0.0f;
         }
 
-        public void SetAOEBox(ValidTarget validTarget, float length, float width)
+        public void SetAOEBox(ValidTarget validTarget, TargetFindAOETarget aoeTarget, float length, float width)
         {
             this.validTarget = validTarget;
             this.aoeType = TargetFindAOEType.Box;
+            this.aoeTarget = aoeTarget;
             float x = owner.positionX - (float)Math.Cos(owner.rotation + (float)(Math.PI / 2)) * (length);
             float z = owner.positionZ + (float)Math.Sin(owner.rotation + (float)(Math.PI / 2)) * (length);
             this.targetPosition = new Vector3(x, owner.positionY, z);
-            this.extents = width;
+            this.maxDistance = width;
         }
 
         /// <summary>
@@ -140,7 +142,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public void FindTarget(Character target, ValidTarget flags)
         {
             validTarget = flags;
-            this.target = null;
             // todo: maybe this should only be set if successfully added?
             this.targetPosition = target.GetPosAsVector3();
             AddTarget(target, false);
@@ -150,20 +151,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         /// <para> Call SetAOEType before calling this </para>
         /// Find targets within area set by <see cref="SetAOEType"/>
         /// </summary>
-        public void FindWithinArea(Character target, ValidTarget flags)
+        public void FindWithinArea(Character target, ValidTarget flags, TargetFindAOETarget aoeTarget)
         {
             validTarget = flags;
             // todo: maybe we should keep a snapshot which is only updated on each tick for consistency
             // are we creating aoe circles around target or self
-            if ((aoeType & TargetFindAOEType.Circle) != 0 && validTarget != ValidTarget.Self)
+            if (aoeTarget == TargetFindAOETarget.Self)
                 this.targetPosition = owner.GetPosAsVector3();
             else
                 this.targetPosition = target.GetPosAsVector3();
 
             masterTarget = TryGetMasterTarget(target) ?? target;
-
-            // todo: should i set this yet or wait til checked if valid target
-            this.target = target;
 
             // todo: this is stupid
             bool withPet = (flags & ValidTarget.Ally) != 0 || masterTarget.allegiance != owner.allegiance;
@@ -180,7 +178,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                     // todo: handle player parties
                     if (masterTarget.currentParty != null)
                     {
-                        if ((validTarget & ValidTarget.Ally) != 0)
+                        if ((validTarget & (ValidTarget.Ally | ValidTarget.PartyMember)) != 0)
                             AddAllInAlliance(masterTarget, withPet);
                         else
                             AddAllInParty(masterTarget, withPet);
@@ -229,19 +227,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         /// <summary>
         /// Find targets within a box using owner's coordinates and target's coordinates as length
-        /// with corners being `extents` yalms to either side of self and target
+        /// with corners being `maxDistance` yalms to either side of self and target
         /// </summary>
         private bool IsWithinBox(Character target, bool withPet)
         {
+            if (aoeTarget == TargetFindAOETarget.Self)
+                targetPosition = owner.GetPosAsVector3();
+            else
+                targetPosition = target.GetPosAsVector3();
+
             var myPos = owner.GetPosAsVector3();
             var angle = Vector3.GetAngle(myPos, targetPosition);
 
             // todo: actually check this works..
-            var myCorner = myPos.NewHorizontalVector(angle, extents);
-            var myCorner2 = myPos.NewHorizontalVector(angle, -extents);
+            var myCorner = myPos.NewHorizontalVector(angle, maxDistance);
+            var myCorner2 = myPos.NewHorizontalVector(angle, -maxDistance);
 
-            var targetCorner = targetPosition.NewHorizontalVector(angle, extents);
-            var targetCorner2 = targetPosition.NewHorizontalVector(angle, -extents);
+            var targetCorner = targetPosition.NewHorizontalVector(angle, maxDistance);
+            var targetCorner2 = targetPosition.NewHorizontalVector(angle, -maxDistance);
 
             return target.GetPosAsVector3().IsWithinBox(targetCorner2, myCorner);
         }
@@ -249,7 +252,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private bool IsWithinCone(Character target, bool withPet)
         {
             // todo: make this actual cone
-            return owner.IsFacing(target, angle) && Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) < extents;
+            return owner.IsFacing(target, param) && Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) < maxDistance;
         }
 
         private void AddTarget(Character target, bool withPet)
@@ -264,25 +267,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private void AddAllInParty(Character target, bool withPet)
         {
             // todo:
-            /*
-             * foreach (var actor in target.currentParty.GetMembers())
-             * {
-             *     AddTarget(actor, withPet);
-             * }
-             */
-            AddTarget(target, withPet);
+            var party = target.currentParty as Party;
+            if (party != null)
+            {
+                foreach (var actorId in party.members)
+                {
+                    AddTarget(owner.zone.FindActorInArea(actorId) as Character, withPet);
+                }
+            }
         }
 
         private void AddAllInAlliance(Character target, bool withPet)
         {
             // todo:
-            /*
-             * foreach (var actor in target.currentParty.GetAllianceMembers())
-             * {
-             *     AddTarget(actor, withPet);
-             * }
-             */
-            AddTarget(target, withPet);
+            AddAllInParty(target, withPet);
         }
 
         private void AddAllBattleNpcs(Character target, bool withPet)
@@ -321,7 +319,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             }
         }
 
-        public bool CanTarget(Character target, bool withPet = false, bool retarget = false)
+        public bool CanTarget(Character target, bool withPet = false, bool retarget = false, bool ignoreAOE = false)
         {
             // already targeted, dont target again
             if (target == null || !retarget && targets.Contains(target))
@@ -331,21 +329,18 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if ((validTarget & ValidTarget.Corpse) == 0 && target.IsDead())
                 return false;
 
-            bool targetingPlayer = target.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER;
-
-            if ((validTarget & ValidTarget.Ally) != 0 && target.currentSubState != owner.currentSubState)
+            if ((validTarget & ValidTarget.Ally) != 0 && target.allegiance != owner.allegiance)
                 return false;
 
-            if ((validTarget & ValidTarget.Enemy) != 0 && target.currentSubState != (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER ?
-                SetActorStatePacket.SUB_STATE_PLAYER : SetActorStatePacket.SUB_STATE_MONSTER))
+            if ((validTarget & ValidTarget.Enemy) != 0 && target.allegiance == owner.allegiance)
                 return false;
 
-            if ((validTarget & ValidTarget.NPC) != 0 && target.currentSubState != SetActorStatePacket.SUB_STATE_NONE)
+            if ((validTarget & ValidTarget.NPC) != 0 && target.isStatic)
                 return false;
 
             // todo: why is player always zoning?
             // cant target if zoning
-            if (targetingPlayer && ((Player)target).playerSession.isUpdatesLocked)
+            if (target is Player && ((Player)target).playerSession.isUpdatesLocked)
             {
                 owner.aiContainer.ChangeTarget(null);
                 return false;
@@ -354,23 +349,34 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (/*target.isZoning || owner.isZoning || */target.zone != owner.zone)
                 return false;
 
-            if (validTarget == ValidTarget.Self && aoeType != TargetFindAOEType.None && owner != target)
+            if (validTarget == ValidTarget.Self && aoeType == TargetFindAOEType.None && owner != target)
                 return false;
 
-            // hit everything within zone or within aoe region
-            if (extents == 255.0f || aoeType == TargetFindAOEType.Circle && target.GetPosAsVector3().IsWithinCircle(targetPosition ?? target.GetPosAsVector3(), extents))
-                return true;
+            // this is fuckin retarded, think of a better way l8r
+            if (!ignoreAOE)
+            {
+                // hit everything within zone or within aoe region
+                if (maxDistance == -1.0f || aoeType == TargetFindAOEType.Circle && !IsWithinCircle(target, maxDistance))
+                    return false;
 
-            if (aoeType == TargetFindAOEType.Cone && IsWithinCone(target, withPet))
-                return true;
+                if (aoeType == TargetFindAOEType.Cone && !IsWithinCone(target, withPet))
+                    return false;
 
-            if (aoeType == TargetFindAOEType.Box && IsWithinBox(target, withPet))
-                return true;
+                if (aoeType == TargetFindAOEType.Box && !IsWithinBox(target, withPet))
+                    return false;
 
-            if (aoeType == TargetFindAOEType.None && targets.Count != 0)
-                return false;
-
+                if (aoeType == TargetFindAOEType.None && targets.Count != 0)
+                    return false;
+            }
             return true;
+        }
+
+        private bool IsWithinCircle(Character target, float maxDistance)
+        {
+            if (this.targetPosition == null)
+                this.targetPosition = aoeTarget == TargetFindAOETarget.Self ? owner.GetPosAsVector3() : masterTarget.GetPosAsVector3();
+
+            return target.GetPosAsVector3().IsWithinCircle(targetPosition, param);
         }
 
         private bool IsPlayer(Character target)
@@ -397,11 +403,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private bool IsBattleNpcOwner(Character target)
         {
             // i know i copied this from dsp but what even
-            if (owner.currentSubState != SetActorStatePacket.SUB_STATE_PLAYER || target.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
+            if (!(owner is Player) || target is Player)
                 return true;
 
             // todo: check hate list
-            if (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER && ((BattleNpc)owner).hateContainer.GetMostHatedTarget() != target)
+            if (owner is BattleNpc && ((BattleNpc)owner).hateContainer.GetMostHatedTarget() != target)
             {
                 return false;
             }
@@ -410,7 +416,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public Character GetValidTarget(Character target, ValidTarget findFlags)
         {
-            if (target == null || target.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER && ((Player)target).playerSession.isUpdatesLocked)
+            if (target == null || target is Player && ((Player)target).playerSession.isUpdatesLocked)
                 return null;
 
             if ((findFlags & ValidTarget.Ally) != 0)

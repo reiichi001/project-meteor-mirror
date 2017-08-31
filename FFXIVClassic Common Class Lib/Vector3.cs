@@ -88,6 +88,9 @@ namespace FFXIVClassic.Common
 
         public static float GetAngle(float x, float z, float x2, float z2)
         {
+            if (x == x2)
+                return 0.0f;
+
             var angle = (float)(Math.Atan((z2 - z) / (x2 - x)));
             return (float)(x > x2 ? angle + Math.PI : angle);
         }
@@ -104,6 +107,9 @@ namespace FFXIVClassic.Common
 
         public bool IsWithinCircle(Vector3 centre, float radius)
         {
+            if (this.X == centre.X && this.Z == centre.Z)
+                return true;
+
             float diffX = centre.X - this.X;
             float diffZ = centre.Z - this.Z;
 

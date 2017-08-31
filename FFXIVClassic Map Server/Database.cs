@@ -2154,8 +2154,8 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Open();
 
-                    var query = ("SELECT `id`, name, classJob, lvl, requirements, validTarget, aoeType, numHits, positionBonus, procRequirement, `range`, buffDuration, debuffDuration, " +
-                        "castType, castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, aoeRange FROM server_battle_commands;");
+                    var query = ("SELECT `id`, name, classJob, lvl, requirements, validTarget, aoeType, aoeRange, aoeTarget, numHits, positionBonus, procRequirement, `range`, buffDuration, debuffDuration, " +
+                        "castType, castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, battleAnimation FROM server_battle_commands;");
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -2188,7 +2188,9 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.modelAnimation = reader.GetUInt16("modelAnimation");
                             battleCommand.animationDurationSeconds = reader.GetUInt16("animationDuration");
                             battleCommand.aoeRange = reader.GetInt32("aoeRange");
-                            battleCommand.battleAnimation = (uint)((battleCommand.animationType << 24) | (battleCommand.modelAnimation << 12) | (battleCommand.effectAnimation));
+                            battleCommand.aoeTarget = (TargetFindAOETarget)reader.GetByte("aoeTarget");
+
+                            battleCommand.battleAnimation = reader.GetUInt32("battleAnimation");
                             
                             battleCommands.Add(id, battleCommand);
                         }

@@ -86,7 +86,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             playerActor.rotation = rot;
             playerActor.moveState = moveState;
 
-            GetActor().GetZone().UpdateActorPosition(GetActor());
+            //GetActor().GetZone().UpdateActorPosition(GetActor());
             playerActor.QueuePositionUpdate(new Vector3(x,y,z));
         }
 

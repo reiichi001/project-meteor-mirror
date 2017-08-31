@@ -11,19 +11,35 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 {
     class PlayerController : Controller
     {
-        public PlayerController(Character owner) :
+        private new Player owner;
+        public PlayerController(Player owner) :
             base(owner)
         {
+            this.owner = owner;
             this.lastUpdate = DateTime.Now;
         }
 
         public override void Update(DateTime tick)
         {
             // todo: handle player stuff on tick
+            if (owner.newMainState != owner.currentMainState)
+            {
+                //owner.updateFlags = ActorUpdateFlags.Combat;
+                if (owner.newMainState == SetActorStatePacket.MAIN_STATE_ACTIVE)
+                {
+                    owner.Engage();
+                }
+                else
+                {
+                    owner.Disengage();
+                }
+                owner.currentMainState = (ushort)owner.newMainState;
+            }
         }
 
         public override void ChangeTarget(Character target)
         {
+            owner.target = target;
             base.ChangeTarget(target);
         }
 
@@ -32,21 +48,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             var canEngage = this.owner.aiContainer.InternalEngage(target);
             if (canEngage)
             {
-                // todo: find a better place to put this?
-                if (owner.GetState() != SetActorStatePacket.MAIN_STATE_ACTIVE)
-                    owner.ChangeState(SetActorStatePacket.MAIN_STATE_ACTIVE);
-
-
                 // todo: check speed/is able to move
                 // todo: too far, path to player if mob, message if player
-
-                // todo: actual stat based range
-                if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > 10)
+                if (owner.statusEffects.HasStatusEffect(StatusEffectId.Sleep))
                 {
-                    {
-                        // todo: out of range error
-                    }
-                    ChangeTarget(target);
+                    // That command cannot be performed.
+                    owner.SendGameMessage(Server.GetWorldManager().GetActor(), 32553, 0x20);
                     return false;
                 }
                 // todo: adjust cooldowns with modifiers

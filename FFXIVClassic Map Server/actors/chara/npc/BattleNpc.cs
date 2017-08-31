@@ -36,7 +36,7 @@ namespace FFXIVClassic_Map_Server.Actors
         private uint despawnTime;
         private uint spawnDistance;
 
-        public float spawnX, spawnY, spawnZ;
+
         public BattleNpc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot,
             ushort actorState, uint animationId, string customDisplayName)
             : base(actorNumber, actorClass, uniqueId, spawnedArea, posX, posY, posZ, rot, actorState, animationId, customDisplayName)  
@@ -174,6 +174,13 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public override void Despawn(DateTime tick)
+        {
+            aiContainer.ClearStates();
+            // todo: probably didnt need to make a new state...
+            aiContainer.ForceChangeState(new DespawnState(this, null, 0));
+        }
+
         public void OnRoam(DateTime tick)
         {
             // todo: move this to battlenpccontroller..
@@ -207,6 +214,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public override void OnAttack(State state, BattleAction action, ref BattleAction error)
         {
             base.OnAttack(state, action, ref error);
+            // todo: move this somewhere else prolly and change based on model/appearance (so maybe in Character.cs instead)
+            action.animation = 0x11001000; // (temporary) wolf anim
         }
     }
 }

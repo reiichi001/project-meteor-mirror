@@ -67,6 +67,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public bool isStatic = false;
 
         public bool isMovingToSpawn = false;
+        public bool isAutoAttackEnabled = true;
 
         public uint modelId;
         public uint[] appearanceIds = new uint[28];
@@ -98,6 +99,8 @@ namespace FFXIVClassic_Map_Server.Actors
         protected ushort hpBase, hpMaxBase, mpBase, mpMaxBase, tpBase;
         protected BattleTemp baseStats = new BattleTemp();
         public ushort currentJob;
+        public ushort newMainState;
+        public float spawnX, spawnY, spawnZ;
 
         public Character(uint actorID) : base(actorID)
         {
@@ -112,6 +115,10 @@ namespace FFXIVClassic_Map_Server.Actors
             // todo: base this on equip and shit
             SetMod((uint)Modifier.AttackRange, 3);
             SetMod((uint)Modifier.AttackDelay, (Program.Random.Next(30, 60) * 100));
+
+            spawnX = positionX;
+            spawnY = positionY;
+            spawnZ = positionZ;
         }
 
         public SubPacket CreateAppearancePacket()
@@ -305,7 +312,13 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if ((updateFlags & ActorUpdateFlags.State) != 0)
                 {
+                    packets.Add(SetActorStatePacket.BuildPacket(actorId, currentMainState, currentSubState));
                     packets.Add(BattleActionX00Packet.BuildPacket(actorId, 0x72000062, 0));
+                    packets.Add(BattleActionX01Packet.BuildPacket(actorId, 0x7C000062, 21001, new BattleAction(actorId, 0, 1)));
+
+                    // this is silly, but looks like state change goes full retard unless theyre sent in order
+                    updateFlags &= ~ActorUpdateFlags.State;
+                    //DoBattleAction(21001, 0x7C000062, new BattleAction(this.actorId, 0, 1, 0, 0, 1)); //Attack Mode
                 }
 
                 // todo: should probably add another flag for battleTemp since all this uses reflection
@@ -357,26 +370,37 @@ namespace FFXIVClassic_Map_Server.Actors
             return (uint)GetMod((uint)Modifier.AttackRange);
         }
 
-        public bool Engage(uint targid = 0)
+        public virtual bool Engage(uint targid = 0, ushort newMainState = 0xFFFF)
         {
             // todo: attack the things
-            if (targid == 0)
+            if (newMainState != 0xFFFF)
             {
-                if (currentTarget != 0xC0000000)
-                    targid = currentTarget;
-                else if (currentLockedTarget != 0xC0000000)
-                    targid = currentLockedTarget;
+                this.newMainState = newMainState;
             }
-            if (targid != 0)
+            else if (aiContainer.CanChangeState())
             {
-                aiContainer.Engage(Server.GetWorldManager().GetActorInWorld(targid) as Character);
+                if (targid == 0)
+                {
+                    if (currentTarget != 0xC0000000)
+                        targid = currentTarget;
+                    else if (currentLockedTarget != 0xC0000000)
+                        targid = currentLockedTarget;
+                }
+                //if (targid != 0)
+                {
+                    aiContainer.Engage(zone.FindActorInArea<Character>(targid));
+                }
             }
             return false;
         }
 
-        public bool Disengage()
+        public virtual bool Disengage(ushort newMainState = 0xFFFF)
         {
-            if (aiContainer != null)
+            if (newMainState != 0xFFFF)
+            {
+                this.newMainState = newMainState;
+            }
+            else
             {
                 aiContainer.Disengage();
                 return true;
@@ -384,19 +408,22 @@ namespace FFXIVClassic_Map_Server.Actors
             return false;
         }
 
-        public void Cast(uint spellId, uint targetId = 0)
+        public virtual void Cast(uint spellId, uint targetId = 0)
         {
-            aiContainer.Cast(Server.GetWorldManager().GetActorInWorld(targetId == 0 ? currentTarget : targetId) as Character, spellId);
+            if (aiContainer.CanChangeState())
+                aiContainer.Cast(zone.FindActorInArea<Character>(targetId == 0 ? currentTarget : targetId), spellId);
         }
 
-        public void Ability(uint abilityId, uint targetId = 0)
+        public virtual void Ability(uint abilityId, uint targetId = 0)
         {
-            aiContainer.Ability(Server.GetWorldManager().GetActorInWorld(targetId == 0 ? currentTarget : targetId) as Character, abilityId);
+            if (aiContainer.CanChangeState())
+                aiContainer.Ability(zone.FindActorInArea<Character>(targetId == 0 ? currentTarget : targetId), abilityId);
         }
 
-        public void WeaponSkill(uint skillId)
+        public virtual void WeaponSkill(uint skillId, uint targetId = 0)
         {
-            aiContainer.WeaponSkill(Server.GetWorldManager().GetActorInWorld(currentTarget) as Character, skillId);
+            if (aiContainer.CanChangeState())
+                aiContainer.WeaponSkill(zone.FindActorInArea<Character>(targetId == 0 ? currentTarget : targetId), skillId);
         }
 
         public virtual void Spawn(DateTime tick)
@@ -414,9 +441,9 @@ namespace FFXIVClassic_Map_Server.Actors
             aiContainer.InternalDie(tick, 10);
         }
 
-        protected virtual void Despawn(DateTime tick)
+        public virtual void Despawn(DateTime tick)
         {
-
+            
         }
 
         public bool IsDead()
@@ -551,20 +578,23 @@ namespace FFXIVClassic_Map_Server.Actors
                 //var packet = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
             }
 
+            // todo: call onAttack/onDamageTaken
             target.DelHP(action.amount);
         }
 
-        public virtual void OnCast(State state, BattleAction action, ref SubPacket errorPacket)
+        public virtual void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
         {
-
+            var spell = ((MagicState)state).GetSpell();
+            this.DelMP(spell.mpCost); // mpCost can be set in script e.g. if caster has something for free spells
         }
 
-        public virtual void OnWeaponSkill(State state, BattleAction action, ref SubPacket errorPacket)
+        public virtual void OnWeaponSkill(State state, BattleAction[] actions, ref BattleAction[] errors)
         {
-
+            var skill = ((WeaponSkillState)state).GetWeaponSkill();
+            this.DelTP(skill.tpCost);
         }
 
-        public virtual void OnAbility(State state, BattleAction action, ref SubPacket errorPacket)
+        public virtual void OnAbility(State state, BattleAction[] actions, ref BattleAction[] errors)
         {
 
         }

@@ -23,6 +23,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public readonly PathFind pathFind;
         private TargetFind targetFind;
         private ActionQueue actionQueue;
+        private DateTime lastActionTime;
 
         public AIContainer(Character actor, Controller controller, PathFind pathFind, TargetFind targetFind)
         {
@@ -34,6 +35,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             latestUpdate = DateTime.Now;
             prevUpdate = latestUpdate;
             actionQueue = new ActionQueue(owner);
+        }
+
+        public void UpdateLastActionTime()
+        {
+            lastActionTime = DateTime.Now;
+        }
+
+        public DateTime GetLastActionTime()
+        {
+            return lastActionTime;
         }
 
         public void Update(DateTime tick)
@@ -186,13 +197,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public bool IsEngaged()
         {
             // todo: check this is legit
-            return owner.currentMainState == SetActorStatePacket.MAIN_STATE_ACTIVE && owner.target != null;
+            return owner.currentMainState == SetActorStatePacket.MAIN_STATE_ACTIVE;
         }
 
         public bool IsDead()
         {
             return owner.currentMainState == SetActorStatePacket.MAIN_STATE_DEAD ||
-                owner.currentMainState == SetActorStatePacket.MAIN_STATE_DEAD2;
+                owner.currentMainState == SetActorStatePacket.MAIN_STATE_DEAD2 || owner.GetHP() == 0;
         }
 
         public bool IsRoaming()
@@ -253,10 +264,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             // todo: use invalid target id
             // todo: this is retarded, call entity's changetarget function
-            owner.target = target;
-            owner.currentLockedTarget = target != null ? target.actorId : 0xC0000000;
-            owner.currentTarget = target != null ? target.actorId : 0xC0000000;
-
             if (IsEngaged() || target == null)
             {
 
@@ -293,8 +300,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             GetTargetFind()?.Reset();
 
             owner.updateFlags |= ActorUpdateFlags.HpTpMp;
-
             ChangeTarget(null);
+            owner.ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
             ClearStates();
         }
 

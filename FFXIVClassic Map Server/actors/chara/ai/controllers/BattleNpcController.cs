@@ -23,6 +23,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         private bool firstSpell = true;
         private DateTime lastRoamUpdate;
+        private DateTime battleStartTime;
 
         private new BattleNpc owner;
         public BattleNpcController(BattleNpc owner) :
@@ -65,6 +66,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             var canEngage = this.owner.aiContainer.InternalEngage(target);
             if (canEngage)
             {
+                //owner.ChangeState(SetActorStatePacket.MAIN_STATE_ACTIVE);
+
                 // reset casting
                 firstSpell = true;
                 // todo: find a better place to put this?
@@ -77,6 +80,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 // owner.ResetMoveSpeeds();
                 owner.moveState = 2;
                 lastActionTime = DateTime.Now;
+                battleStartTime = lastActionTime;
                 // todo: adjust cooldowns with modifiers
             }
             return canEngage;
@@ -100,7 +104,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             neutralTime = lastActionTime;
             owner.hateContainer.ClearHate();
             owner.moveState = 1;
-            lua.LuaEngine.CallLuaBattleAction(owner, "onDisengage", owner, target);
+            lua.LuaEngine.CallLuaBattleAction(owner, "onDisengage", owner, target, Utils.UnixTimeStampUTC(battleStartTime));
         }
 
         public override void Cast(Character target, uint spellId)
@@ -199,6 +203,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             }
 
             Move();
+            lua.LuaEngine.CallLuaBattleAction(owner, "onCombatTick", owner, owner.target, Utils.UnixTimeStampUTC());
         }
 
         private void Move()
@@ -230,7 +235,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                     owner.aiContainer.pathFind.FollowPath();
                     if (!owner.aiContainer.pathFind.IsFollowingPath())
                     {
-                        if (owner.target.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
+                        if (owner.target is Player)
                         {
                             foreach (var chara in owner.zone.GetActorsAroundActor<Character>(owner, 1))
                             {
@@ -354,6 +359,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         private void HandleHate()
         {
             ChangeTarget(owner.hateContainer.GetMostHatedTarget());
+        }
+
+        public override void ChangeTarget(Character target)
+        {
+            owner.target = target;
+            owner.currentLockedTarget = target != null ? target.actorId : 0xC0000000;
+            owner.currentTarget = target != null ? target.actorId : 0xC0000000;
+            base.ChangeTarget(target);
         }
     }
 }

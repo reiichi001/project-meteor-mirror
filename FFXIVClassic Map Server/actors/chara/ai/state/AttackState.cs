@@ -20,7 +20,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.startTime = DateTime.Now;
 
             owner.ChangeState(SetActorStatePacket.MAIN_STATE_ACTIVE);
-            owner.aiContainer.ChangeTarget(target);
+            ChangeTarget(target);
             attackTime = startTime;
             owner.aiContainer.pathFind?.Clear();
             // todo: should handle everything here instead of on next tick..
@@ -42,12 +42,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 return true;
             }
             */
-            if (target == null || owner.target != target || owner.target?.actorId != owner.currentLockedTarget)
-                owner.aiContainer.ChangeTarget(target = owner.zone.FindActorInArea(owner.currentLockedTarget == 0xC0000000 ? owner.currentTarget : owner.currentLockedTarget) as Character);
+
+            if ((target == null || owner.target != target || owner.target?.actorId != owner.currentLockedTarget) && owner.isAutoAttackEnabled)
+                owner.aiContainer.ChangeTarget(target = owner.zone.FindActorInArea<Character>(owner.currentLockedTarget));
 
             if (target == null || target.IsDead())
             {
-                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER)
+                if (owner is BattleNpc)
                     target = ((BattleNpc)owner).hateContainer.GetMostHatedTarget();
             }
             else
@@ -110,7 +111,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
             owner.OnAttack(this, action, ref errorResult);
             // handle paralyze/intimidate/sleep/whatever in character thing
-            owner.DoBattleAction((ushort)BattleActionX01PacketCommand.Attack, 0x19001000, errorResult == null ? action : errorResult);            
+            owner.DoBattleAction((ushort)BattleActionX01PacketCommand.Attack, action.animation, errorResult == null ? action : errorResult);            
            
             //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
         }
@@ -140,11 +141,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         private bool IsAttackReady()
         {
-            return Program.Tick >= attackTime;
+            // todo: this enforced delay should really be changed if it's not retail..
+            return Program.Tick >= attackTime && Program.Tick >= owner.aiContainer.GetLastActionTime().AddSeconds(1);
         }
 
         private bool CanAttack()
         {
+            if (!owner.isAutoAttackEnabled)
+            {
+                return false;
+            }
+
             if (target == null)
             {
                 return false;
@@ -162,7 +169,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             // todo: use a mod for melee range
             else if (Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) > owner.GetAttackRange())
             {
-                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
+                if (owner is Player)
                 {
                     ((Player)owner).SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20);
                 }

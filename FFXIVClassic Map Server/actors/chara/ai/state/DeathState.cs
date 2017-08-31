@@ -15,6 +15,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             : base(owner, null)
         {
             owner.ChangeState(SetActorStatePacket.MAIN_STATE_DEAD);
+            owner.Disengage();
             canInterrupt = false;
             startTime = tick;
             despawnTime = startTime.AddSeconds(timeToFadeOut);
@@ -25,7 +26,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             // todo: handle raise etc
             if (tick >= despawnTime)
             {
-                owner.Spawn(Program.Tick);
+                if (owner is BattleNpc)
+                {
+                    owner.Despawn(tick);
+                }
+                else
+                {
+                    // todo: queue a warp for the player
+                }
                 return true;
             }
             return false;
