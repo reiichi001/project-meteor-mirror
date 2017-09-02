@@ -1757,13 +1757,23 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             // todo: should probably add another flag for battleTemp since all this uses reflection
             packets = new List<SubPacket>();
+
+            // we only want the latest update for the player
+            if ((updateFlags & ActorUpdateFlags.Position) != 0)
+            {
+                if (positionUpdates.Count > 1)
+                    positionUpdates.RemoveRange(1, positionUpdates.Count - 1);
+            }
+
             if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
             {
                 var propPacketUtil = new ActorPropertyPacketUtil("charaWork.parameterSave", this);
 
-                propPacketUtil.AddProperty($"charaWork.parameterSave.hp[{currentJob}]");
-                propPacketUtil.AddProperty($"charaWork.parameterSave.hpMax[{currentJob}]");
-                propPacketUtil.AddProperty($"charaWork.parameterSave.state_mainSkill[{currentJob}]");
+                // todo: should this be using job as index?
+                propPacketUtil.AddProperty($"charaWork.parameterSave.hp[{0}]");
+                propPacketUtil.AddProperty($"charaWork.parameterSave.hpMax[{0}]");
+                propPacketUtil.AddProperty($"charaWork.parameterSave.state_mainSkill[{0}]");
+                propPacketUtil.AddProperty($"charaWork.parameterSave.state_mainSkillLevel");
 
                 packets.AddRange(propPacketUtil.Done());
             }
@@ -1937,6 +1947,7 @@ namespace FFXIVClassic_Map_Server.Actors
         //If the returned value is outside the hotbar, it indicates it wasn't found.
         private ushort FindFirstCommandSlotById(uint commandId)
         {
+            commandId |= 0xA0F00000;
             ushort firstSlot = (ushort)(charaWork.commandBorder + 30);
 
             for (ushort i = charaWork.commandBorder; i < charaWork.commandBorder + 30; i++)
@@ -1950,13 +1961,51 @@ namespace FFXIVClassic_Map_Server.Actors
 
             return firstSlot;
         }
-
-        /*
-        public void SendBattleActionX01Packet(uint anim, uint effect, uint text = 0x756D, uint command = 27260, uint param = 0x01, uint idek = 0x01)
+        
+        private void UpdateHotbarTimer(uint commandId, uint recastTimeSeconds)
         {
-            var packet = BattleActionX01Packet.BuildPacket(actorId, actorId, currentTarget != 0xC0000000 ? currentTarget : currentLockedTarget, (uint)anim, (uint)effect, (ushort)text, (ushort)command, (ushort)param, (byte)idek);
-            QueuePacket(packet);
-        }*/
+            ushort slot = FindFirstCommandSlotById(commandId);
+            charaWork.parameterSave.commandSlot_recastTime[slot - charaWork.commandBorder] = Utils.UnixTimeStampUTC(DateTime.Now.AddSeconds(recastTimeSeconds));
+            var slots = new List<ushort>();
+            slots.Add(slot);
+            UpdateRecastTimers(slots);
+        }
+
+        private uint GetHotbarTimer(uint commandId)
+        {
+            ushort slot = FindFirstCommandSlotById(commandId);
+            return charaWork.parameterSave.commandSlot_recastTime[slot - charaWork.commandBorder];
+        }
+
+        public override void Cast(uint spellId, uint targetId = 0)
+        {
+            if (aiContainer.CanChangeState())
+                aiContainer.Cast(zone.FindActorInArea<Character>(targetId == 0 ? currentTarget : targetId), spellId);
+            else if (aiContainer.GetCurrentState() is MagicState)
+                // You are already casting.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32536, 0x20);
+            else
+                // Please wait a moment and try again.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20);
+        }
+
+        public override void Ability(uint abilityId, uint targetId = 0)
+        {
+            if (aiContainer.CanChangeState())
+                aiContainer.Ability(zone.FindActorInArea<Character>(targetId == 0 ? currentTarget : targetId), abilityId);
+            else
+                // Please wait a moment and try again.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20);
+        }
+
+        public override void WeaponSkill(uint skillId, uint targetId = 0)
+        {
+            if (aiContainer.CanChangeState())
+                aiContainer.WeaponSkill(zone.FindActorInArea<Character>(targetId == 0 ? currentTarget : targetId), skillId);
+            else
+                // Please wait a moment and try again.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20);
+        }
 
         public override bool IsValidTarget(Character target, ValidTarget validTarget)
         {
@@ -1977,7 +2026,8 @@ namespace FFXIVClassic_Map_Server.Actors
             // enemy only
             if ((validTarget & ValidTarget.Enemy) != 0)
             {
-                if (target.currentSubState == SetActorStatePacket.SUB_STATE_NONE)
+                // todo: this seems ambiguous
+                if (target.isStatic)
                 {
                     // That command cannot be performed on the current target.
                     SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20);
@@ -1990,7 +2040,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     return false;
                 }
                 // todo: pvp?
-                if (target.currentSubState == currentSubState)
+                if (target.allegiance == allegiance)
                 {
                     // That command cannot be performed on an ally.
                     SendGameMessage(Server.GetWorldManager().GetActor(), 32549, 0x20);
@@ -1998,14 +2048,15 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
             }
 
-            if ((validTarget & ValidTarget.Ally) != 0 && target.currentSubState != currentSubState)
+            if ((validTarget & ValidTarget.Ally) != 0 && target.allegiance != allegiance)
             {
                 // That command cannot be performed on the current target.
                 SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20);
                 return false;
             }
 
-            if ((validTarget & ValidTarget.NPC) != 0 && target.currentSubState == SetActorStatePacket.SUB_STATE_NONE)
+            // todo: isStatic seems ambiguous?
+            if ((validTarget & ValidTarget.NPC) != 0 && target.isStatic)
                 return true;
 
             // todo: why is player always zoning?
@@ -2022,7 +2073,13 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override bool CanCast(Character target, BattleCommand spell)
         {
-            // todo: move the ability specific stuff to ability.cs
+            if (GetHotbarTimer(spell.id) > Utils.UnixTimeStampUTC())
+            {
+                // todo: this needs confirming
+                // Please wait a moment and try again.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20, (uint)spell.id);
+                return false;
+            }
             if (target == null)
             {
                 // Target does not exist.
@@ -2046,6 +2103,13 @@ namespace FFXIVClassic_Map_Server.Actors
         public override bool CanWeaponSkill(Character target, BattleCommand skill)
         {
             // todo: see worldmaster ids 32558~32557 for proper ko message and stuff
+            if (GetHotbarTimer(skill.id) > Utils.UnixTimeStampUTC())
+            {
+                // todo: this needs confirming
+                // Please wait a moment and try again.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20, (uint)skill.id);
+                return false;
+            }
             if (target == null)
             {
                 // Target does not exist.
@@ -2069,7 +2133,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public override void OnAttack(State state, BattleAction action, ref BattleAction error)
         {
             base.OnAttack(state, action, ref error);
-
+            // todo: switch based on main weap (also probably move this anim assignment somewhere else)
+            action.animation = 0x19001000;
             if (error == null)
             {
                 // melee attack animation
@@ -2080,6 +2145,25 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 ((BattleNpc)target).hateContainer.UpdateHate(this, action.amount);
             }
+        }
+
+        public override void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
+        {
+            // todo: update hotbar timers to skill's recast time (also needs to be done on class change or equip crap)
+            base.OnCast(state, actions, ref errors);
+            var spell = ((MagicState)state).GetSpell();
+            // todo: should just make a thing that updates the one slot cause this is dumb as hell
+            
+            UpdateHotbarTimer(spell.id, spell.recastTimeSeconds);
+        }
+
+        public override void OnWeaponSkill(State state, BattleAction[] actions, ref BattleAction[] errors)
+        {
+            // todo: update hotbar timers to skill's recast time (also needs to be done on class change or equip crap)
+            base.OnWeaponSkill(state, actions, ref errors);
+            var skill = ((WeaponSkillState)state).GetWeaponSkill();
+            // todo: should just make a thing that updates the one slot cause this is dumb as hell
+            UpdateHotbarTimer(skill.id, skill.recastTimeSeconds);
         }
     }
 }

@@ -101,7 +101,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             var scaledCost = spell.CalculateCost((uint)caster.charaWork.parameterSave.state_mainSkillLevel);
 
             // todo: calculate cost for mob/player
-            if (caster.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER)
+            if (caster is BattleNpc)
             {
                 
             }

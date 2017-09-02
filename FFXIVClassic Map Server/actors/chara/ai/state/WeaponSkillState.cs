@@ -90,7 +90,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnComplete()
         {
-            skill.targetFind.FindWithinArea(target, skill.validTarget);
+            skill.targetFind.FindWithinArea(target, skill.validTarget, skill.aoeTarget);
             isCompleted = true;
 
             var targets = skill.targetFind.GetTargets();
@@ -104,10 +104,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 // evasion, miss, dodge, etc to be handled in script, calling helpers from scripts/weaponskills.lua
                 action.amount = (ushort)lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillFinish", owner, target, skill, action);
                 actions[i++] = action;
-
-                //packets.Add(BattleActionX01Packet.BuildPacket(chara.actorId, owner.actorId, action.targetId, skill.battleAnimation, action.effectId, action.worldMasterTextId, skill.id, action.amount, action.param));
             }
 
+            // todo: this is fuckin stupid, probably only need *one* error packet, not an error for each action
+            var errors = (BattleAction[])actions.Clone();
+
+            owner.OnWeaponSkill(this, actions, ref errors);
             owner.DoBattleAction(skill.id, 0, actions);                        
         }
 
@@ -126,10 +128,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                     // todo: actually check proc rate/random chance of whatever effect
                     effectId = list[0].GetStatusEffectId();
                 }
-                // todo: which is actually the swing packet
-                //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
-                //owner.zone.BroadcastPacketAroundActor(owner, errorPacket);
-                //errorPacket = null;
                 interrupt = true;
                 return;
             }
@@ -139,12 +137,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         private bool CanUse()
         {
-            return owner.CanWeaponSkill(target, skill);
+            return owner.CanWeaponSkill(target, skill) && skill.IsValidTarget(owner, target);
         }
 
         public BattleCommand GetWeaponSkill()
         {
             return skill;
+        }
+
+        public override void Cleanup()
+        {
+            owner.aiContainer.UpdateLastActionTime();
         }
     }
 }

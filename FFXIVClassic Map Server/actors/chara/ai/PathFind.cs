@@ -195,13 +195,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             float baseSpeed = owner.GetSpeed();
 
             // todo: get actual speed crap
-            if (owner.currentSubState != SetActorStatePacket.SUB_STATE_NONE)
+            if (!(owner is Player))
             {
-                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER)
+                if (owner is BattleNpc)
                 {
                     //owner.ChangeSpeed(0.0f, SetActorSpeedPacket.DEFAULT_WALK - 2.0f, SetActorSpeedPacket.DEFAULT_RUN - 2.0f, SetActorSpeedPacket.DEFAULT_ACTIVE - 2.0f);
                 }
-                // baseSpeed += ConfigConstants.SPEED_MOD;
+                // baseSpeed += ConfigConstants.NPC_SPEED_MOD;
             }
             return baseSpeed;
         }

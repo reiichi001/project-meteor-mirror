@@ -365,10 +365,10 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void ChangeState(ushort newState)
         {
-            if (newState != currentMainState)
+            //if (newState != currentMainState)
             {
                 currentMainState = newState;
-                updateFlags |= ActorUpdateFlags.State;
+                updateFlags |= (ActorUpdateFlags.State | ActorUpdateFlags.Position);
             }
         }
 
@@ -402,7 +402,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     if (positionUpdates != null && positionUpdates.Count > 0)
                     {
                         // push latest for player
-                        var pos = positionUpdates[currentSubState == SetActorStatePacket.SUB_STATE_PLAYER ? positionUpdates.Count - 1 : 0];
+                        var pos = positionUpdates[0];
                         oldPositionX = positionX;
                         oldPositionY = positionY;
                         oldPositionZ = positionZ;
@@ -417,8 +417,8 @@ namespace FFXIVClassic_Map_Server.Actors
                         //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
 
                         positionUpdates.Remove(pos);
-                        packets.Add(CreatePositionUpdatePacket());
                     }
+                    packets.Add(CreatePositionUpdatePacket());
                 }
 
                 if ((updateFlags & ActorUpdateFlags.Speed) != 0)
@@ -434,8 +434,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 if ((updateFlags & ActorUpdateFlags.State) != 0)
                 {
                     packets.Add(SetActorStatePacket.BuildPacket(actorId, currentMainState, currentSubState));
-                    if (this is Character)
-                        ((Character)this).DoBattleAction(21001, 0x7C000062, new BattleAction(this.actorId, 0, 1, 0, 0, 1)); //Attack Mode
                 }
 
                 updateFlags = ActorUpdateFlags.None;

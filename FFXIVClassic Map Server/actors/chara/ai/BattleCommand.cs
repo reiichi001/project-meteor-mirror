@@ -53,6 +53,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public BattleCommandRequirements requirements;
         public ValidTarget validTarget;
         public TargetFindAOEType aoeType;
+        public TargetFindAOETarget aoeTarget;
         public byte numHits;
         public BattleCommandPositionBonus positionBonus;
         public BattleCommandProcRequirement procRequirement;
@@ -105,11 +106,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (aoeType == TargetFindAOEType.Box)
             {
                 // todo: read box width from sql
-                targetFind.SetAOEBox(validTarget, range, aoeRange);
+                targetFind.SetAOEBox(validTarget, aoeTarget, range, aoeRange);
             }
             else
             {
-                targetFind.SetAOEType(validTarget, aoeType, range, aoeRange);
+                targetFind.SetAOEType(validTarget, aoeType, aoeTarget, range, aoeRange);
             }
 
 
@@ -183,8 +184,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if ((validTarget & ValidTarget.Enemy) != 0)
             {
                 if (target == user || target != null &&
-                    target.currentSubState != (user.currentSubState == SetActorStatePacket.SUB_STATE_MONSTER ?
-                SetActorStatePacket.SUB_STATE_PLAYER : SetActorStatePacket.SUB_STATE_MONSTER))
+                    user.allegiance == target.allegiance)
                 {
                     if (user is Player)
                         ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32519, 0x20, (uint)id);
@@ -194,14 +194,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             if ((validTarget & (ValidTarget.PartyMember | ValidTarget.Player | ValidTarget.Ally)) != 0)
             {
-                if (target == null || target.currentSubState != user.currentSubState )
+                if (target == null || target.allegiance != user.allegiance)
                 {
                     if (user is Player)
                         ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32516, 0x20, (uint)id);
                     return false;
                 }
             }
-            return targetFind.CanTarget(target, true, true);
+            return targetFind.CanTarget(target, true, true, true);
         }
 
         public ushort CalculateCost(uint level)

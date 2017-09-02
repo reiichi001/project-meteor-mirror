@@ -57,14 +57,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 float spellSpeed = spell.castTimeSeconds;
 
                 // command casting duration
-                if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
+                if (owner is Player)
                 {
                     // todo: modify spellSpeed based on modifiers and stuff
-                    ((Player)owner).SendStartCastbar(spell.id, Utils.UnixTimeStampUTC(DateTime.Now.AddSeconds(spellSpeed)));
-                    owner.SendChant(0xF, 0x0);
-                    owner.DoBattleAction(spell.id, 0x6F000002, new BattleAction(target.actorId, 30128, 1, 0, 1)); //You begin casting (6F000002: BLM, 6F000003: WHM)                    
+                    ((Player)owner).SendStartCastbar(spell.id, Utils.UnixTimeStampUTC(DateTime.Now.AddSeconds(spellSpeed)));               
                 }
-
+                owner.SendChant(0xF, 0x0);
+                owner.DoBattleAction(spell.id, 0x6F000002, new BattleAction(target.actorId, 30128, 1, 0, 1)); //You begin casting (6F000002: BLM, 6F000003: WHM)     
             }
         }
 
@@ -106,7 +105,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnComplete()
         {
-            spell.targetFind.FindWithinArea(target, spell.validTarget);
+            spell.targetFind.FindWithinArea(target, spell.validTarget, spell.aoeTarget);
             isCompleted = true;
 
             var targets = spell.targetFind.GetTargets();
@@ -119,7 +118,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 actions[i++] = action;
             }
 
-            owner.SendChant(0, 0);
+            // todo: this is fuckin stupid, probably only need *one* error packet, not an error for each action
+            var errors = (BattleAction[])actions.Clone();
+
+            owner.OnCast(this, actions, ref errors);
             owner.DoBattleAction(spell.id, spell.battleAnimation, actions);
         }
 
@@ -138,10 +140,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                     // todo: actually check proc rate/random chance of whatever effect
                     effectId = list[0].GetStatusEffectId();
                 }
-                // todo: which is actually the swing packet
-                //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
-                //owner.zone.BroadcastPacketAroundActor(owner, errorPacket);
-                //errorPacket = null;
                 interrupt = true;
                 return;
             }
@@ -159,7 +157,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         private bool CanCast()
         {
-            return owner.CanCast(target, spell) && !HasMoved();
+            return owner.CanCast(target, spell) && spell.IsValidTarget(owner, target) && !HasMoved();
         }
 
         private bool HasMoved()
@@ -169,13 +167,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void Cleanup()
         {
-            if (owner.currentSubState == SetActorStatePacket.SUB_STATE_PLAYER)
-            {                
+            owner.SendChant(0, 0);
+
+            if (owner is Player)
+            {
                 ((Player)owner).SendEndCastbar();
             }
-            // command casting duration
-            //var packets = new List<SubPacket>();            
-            //owner.zone.BroadcastPacketsAroundActor(owner, packets);
+            owner.aiContainer.UpdateLastActionTime();
         }
 
         public BattleCommand GetSpell()

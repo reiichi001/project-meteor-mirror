@@ -321,6 +321,11 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public T FindActorInArea<T>(uint id) where T : Actor
+        {
+            return FindActorInArea(id) as T;
+        }
+
         public Actor FindActorInZoneByUniqueID(string uniqueId)
         {
             lock (mActorList)
