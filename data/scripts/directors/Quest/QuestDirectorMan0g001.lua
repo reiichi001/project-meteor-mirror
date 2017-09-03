@@ -61,7 +61,7 @@ function onEventStarted(player, actor, triggerName)
 	
 end
 
-function onUpdate()
+function onUpdate(deltaTime, area)
 end
 
 function onTalkEvent(player, npc)

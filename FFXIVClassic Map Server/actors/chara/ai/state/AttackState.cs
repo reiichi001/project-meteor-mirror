@@ -33,15 +33,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override bool Update(DateTime tick)
         {
-            /*
-            TryInterrupt();
-
-            if (interrupt)
-            {
-                OnInterrupt();
-                return true;
-            }
-            */
 
             if ((target == null || owner.target != target || owner.target?.actorId != owner.currentLockedTarget) && owner.isAutoAttackEnabled)
                 owner.aiContainer.ChangeTarget(target = owner.zone.FindActorInArea<Character>(owner.currentLockedTarget));
@@ -159,7 +150,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             // todo: shouldnt need to check if owner is dead since all states would be cleared
             if (owner.aiContainer.IsDead() || target.aiContainer.IsDead())
             {
-                target = null;
+                owner.aiContainer.ChangeTarget(null);
                 return false;
             }
             else if (!owner.aiContainer.GetTargetFind().CanTarget(target, false, true))

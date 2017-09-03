@@ -13,6 +13,7 @@ namespace FFXIVClassic_Map_Server.Actors
 {
     class Pet : BattleNpc
     {
+        public Character master;
         public Pet(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot,
                     ushort actorState, uint animationId, string customDisplayName)
             : base(actorNumber, actorClass, uniqueId, spawnedArea, posX, posY, posZ, rot, actorState, animationId, customDisplayName)  

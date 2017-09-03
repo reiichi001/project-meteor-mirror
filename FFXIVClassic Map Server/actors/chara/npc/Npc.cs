@@ -58,14 +58,16 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.battleSave.potencial = 1.0f;
 
-            charaWork.parameterSave.state_mainSkill[0] = 3;
-            charaWork.parameterSave.state_mainSkill[2] = 3;
-            charaWork.parameterSave.state_mainSkillLevel = 2;
+            // todo: these really need to be read from db etc
+            {
+                charaWork.parameterSave.state_mainSkill[0] = 3;
+                charaWork.parameterSave.state_mainSkill[2] = 3;
+                charaWork.parameterSave.state_mainSkillLevel = 1;
 
-            charaWork.parameterSave.hp[0] = 500;
-            charaWork.parameterSave.hpMax[0] = 500;
-
-            for (int i = 0; i < 32; i++ )            
+                charaWork.parameterSave.hp[0] = 80;
+                charaWork.parameterSave.hpMax[0] = 80;
+            }
+            for (int i = 0; i < 32; i++ )
                 charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);            
 
             npcWork.pushCommand = actorClass.pushCommand;
@@ -400,13 +402,30 @@ namespace FFXIVClassic_Map_Server.Actors
             aiContainer.Update(tick);
         }
 
-        //A party member list packet came, set the party
-       /* public void SetParty(MonsterPartyGroup group)
+        public override void OnSpawn()
         {
-            if (group is MonsterPartyGroup)
-                currentParty = group;
+            base.OnSpawn();
         }
-        */
+
+        public override void OnDeath()
+        {
+            base.OnDeath();
+        }
+
+        public override void OnDespawn()
+        {
+            zone.BroadcastPacketAroundActor(this, RemoveActorPacket.BuildPacket(this.actorId));
+            zone.BroadcastPacketAroundActor(this, RemoveActorPacket.BuildPacket(this.actorId));
+            QueuePositionUpdate(spawnX, spawnY, spawnZ);
+            LuaEngine.CallLuaBattleFunction(this, "onDespawn", this);
+        }
+        //A party member list packet came, set the party
+        /* public void SetParty(MonsterPartyGroup group)
+         {
+             if (group is MonsterPartyGroup)
+                 currentParty = group;
+         }
+         */
 
     }
 }

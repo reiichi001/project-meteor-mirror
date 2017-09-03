@@ -288,7 +288,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public virtual void OnPath(Vector3 point)
         {
-            lua.LuaEngine.CallLuaBattleAction(this, "onPath", this, point);
+            lua.LuaEngine.CallLuaBattleFunction(this, "onPath", this, point);
 
             updateFlags |= ActorUpdateFlags.Position;
             this.isAtSpawn = false;
@@ -428,6 +428,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public virtual void Spawn(DateTime tick)
         {
+            aiContainer.Reset();
             // todo: reset hp/mp/tp etc here
             ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
             charaWork.parameterSave.hp = charaWork.parameterSave.hpMax;
@@ -448,23 +449,23 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public bool IsDead()
         {
-            return currentMainState == SetActorStatePacket.MAIN_STATE_DEAD || currentMainState == SetActorStatePacket.MAIN_STATE_DEAD2;
+            return aiContainer.IsDead();
         }
 
         public bool IsAlive()
         {
-            return !IsDead();
+            return !aiContainer.IsDead();
         }
 
         public short GetHP()
         {
             // todo: 
-            return charaWork.parameterSave.hp[currentJob];
+            return charaWork.parameterSave.hp[0];
         }
 
         public short GetMaxHP()
         {
-            return charaWork.parameterSave.hpMax[currentJob];
+            return charaWork.parameterSave.hpMax[0];
         }
 
         public short GetMP()
@@ -500,16 +501,20 @@ namespace FFXIVClassic_Map_Server.Actors
         // todo: the following functions are virtuals since we want to check hidden item bonuses etc on player for certain conditions
         public virtual void AddHP(int hp)
         {
-            // todo: +/- hp and die
-            // todo: battlenpcs probably have way more hp?
-            var addHp = charaWork.parameterSave.hp[currentJob] + hp;
-            addHp = addHp.Clamp(ushort.MinValue, charaWork.parameterSave.hpMax[currentJob]);
-            charaWork.parameterSave.hp[currentJob] = (short)addHp;
+            // dont wanna die ded
+            if (IsAlive())
+            {
+                // todo: +/- hp and die
+                // todo: battlenpcs probably have way more hp?
+                var addHp = charaWork.parameterSave.hp[0] + hp;
+                addHp = addHp.Clamp(ushort.MinValue, charaWork.parameterSave.hpMax[0]);
+                charaWork.parameterSave.hp[0] = (short)addHp;
 
-            if (charaWork.parameterSave.hp[currentJob] < 1)
-                Die(Program.Tick);
+                if (charaWork.parameterSave.hp[0] < 1)
+                    Die(Program.Tick);
 
-            updateFlags |= ActorUpdateFlags.HpTpMp;
+                updateFlags |= ActorUpdateFlags.HpTpMp;
+            }
         }
 
         public void AddMP(int mp)
@@ -580,21 +585,47 @@ namespace FFXIVClassic_Map_Server.Actors
 
             // todo: call onAttack/onDamageTaken
             target.DelHP(action.amount);
+            if (target is BattleNpc)
+                ((BattleNpc)target).lastAttacker = this;
         }
 
         public virtual void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
         {
             var spell = ((MagicState)state).GetSpell();
+            // damage is handled in script
             this.DelMP(spell.mpCost); // mpCost can be set in script e.g. if caster has something for free spells
+
+            if (target is BattleNpc)
+                ((BattleNpc)target).lastAttacker = this;
         }
 
         public virtual void OnWeaponSkill(State state, BattleAction[] actions, ref BattleAction[] errors)
         {
             var skill = ((WeaponSkillState)state).GetWeaponSkill();
+            // damage is handled in script
             this.DelTP(skill.tpCost);
+
+            if (target is BattleNpc)
+                ((BattleNpc)target).lastAttacker = this;
         }
 
         public virtual void OnAbility(State state, BattleAction[] actions, ref BattleAction[] errors)
+        {
+            if (target is BattleNpc)
+                ((BattleNpc)target).lastAttacker = this;
+        }
+
+        public virtual void OnSpawn()
+        {
+
+        }
+
+        public virtual void OnDeath()
+        {
+
+        }
+
+        public virtual void OnDespawn()
         {
 
         }
