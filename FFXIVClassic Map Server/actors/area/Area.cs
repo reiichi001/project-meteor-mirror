@@ -401,6 +401,16 @@ namespace FFXIVClassic_Map_Server.Actors
             return GetAllActors<Actor>();
         }
 
+        public virtual List<Player> GetPlayers()
+        {
+            return GetAllActors<Player>();
+        }
+
+        public virtual List<BattleNpc> GetMonsters()
+        {
+            return GetAllActors<BattleNpc>();
+        }
+
         public void BroadcastPacketsAroundActor(Actor actor, List<SubPacket> packets)
         {
             foreach (SubPacket packet in packets)
@@ -635,7 +645,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     a.Update(tick);
 
                 var deltaTime = (tick - Program.LastTick).TotalMilliseconds;
-                LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, deltaTime);
+                LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, deltaTime, this);
             }
         }
 

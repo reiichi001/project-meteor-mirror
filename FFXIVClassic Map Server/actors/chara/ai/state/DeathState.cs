@@ -14,8 +14,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         public DeathState(Character owner, DateTime tick, uint timeToFadeOut) 
             : base(owner, null)
         {
-            owner.ChangeState(SetActorStatePacket.MAIN_STATE_DEAD);
             owner.Disengage();
+            owner.ChangeState(SetActorStatePacket.MAIN_STATE_DEAD);
             canInterrupt = false;
             startTime = tick;
             despawnTime = startTime.AddSeconds(timeToFadeOut);
@@ -23,17 +23,18 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override bool Update(DateTime tick)
         {
+            // todo: set a flag on chara for accept raise, play animation and spawn
+            if (owner.GetMod((uint)Modifier.Raise) > 0)
+            {
+                owner.Spawn(tick);
+                return true;
+            }
+
             // todo: handle raise etc
             if (tick >= despawnTime)
             {
-                if (owner is BattleNpc)
-                {
-                    owner.Despawn(tick);
-                }
-                else
-                {
-                    // todo: queue a warp for the player
-                }
+                // todo: for players, return them to homepoint
+                owner.Despawn(tick);
                 return true;
             }
             return false;

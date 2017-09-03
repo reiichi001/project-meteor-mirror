@@ -1781,21 +1781,6 @@ namespace FFXIVClassic_Map_Server.Actors
             base.PostUpdate(tick, packets);
         }
 
-        public override void AddHP(int hp)
-        {
-            // todo: +/- hp and die
-            // todo: check hidden effects and shit
-            var addHp = charaWork.parameterSave.hp[currentJob] + hp;
-            addHp = addHp.Clamp(ushort.MinValue, charaWork.parameterSave.hpMax[currentJob]);
-            charaWork.parameterSave.hp[currentJob] = (short)addHp;
-
-            if (charaWork.parameterSave.hp[currentJob] < 1)
-                Die(Program.Tick);
-
-            updateFlags |= ActorUpdateFlags.HpTpMp;
-        }
-
-
         public override void Die(DateTime tick)
         {
             // todo: death timer
@@ -1981,7 +1966,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (aiContainer.CanChangeState())
                 aiContainer.Cast(zone.FindActorInArea<Character>(targetId == 0 ? currentTarget : targetId), spellId);
-            else if (aiContainer.GetCurrentState() is MagicState)
+            else if (aiContainer.IsCurrentState<MagicState>())
                 // You are already casting.
                 SendGameMessage(Server.GetWorldManager().GetActor(), 32536, 0x20);
             else
@@ -2141,7 +2126,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 //action.animation = 0x19001000;
             }
             var target = state.GetTarget();
-            //if (target is BattleNpc)
+            if (target is BattleNpc)
             {
                 ((BattleNpc)target).hateContainer.UpdateHate(this, action.amount);
             }
@@ -2164,6 +2149,8 @@ namespace FFXIVClassic_Map_Server.Actors
             var skill = ((WeaponSkillState)state).GetWeaponSkill();
             // todo: should just make a thing that updates the one slot cause this is dumb as hell
             UpdateHotbarTimer(skill.id, skill.recastTimeSeconds);
+            // todo: this really shouldnt be called on each ws?
+            lua.LuaEngine.CallLuaBattleFunction(this, "onWeaponSkill", this, state.GetTarget(), skill);
         }
     }
 }

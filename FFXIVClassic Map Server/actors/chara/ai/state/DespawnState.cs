@@ -10,22 +10,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 {
     class DespawnState : State
     {
-        private DateTime endTime;
-        public DespawnState(Character owner, Character target, uint despawnTimeSeconds) :
+        private DateTime respawnTime;
+        public DespawnState(Character owner, uint respawnTimeSeconds) :
             base(owner, null)
         {
             startTime = Program.Tick;
-            endTime = startTime.AddSeconds(despawnTimeSeconds);
+            respawnTime = startTime.AddSeconds(respawnTimeSeconds);
+            owner.ChangeState(SetActorStatePacket.MAIN_STATE_DEAD2);
+            owner.OnDespawn();
         }
 
         public override bool Update(DateTime tick)
         {
-            if (tick >= endTime)
+            if (tick >= respawnTime)
             {
-                // todo: send packet to despawn the npc, set it so npc is despawned when requesting spawn packets
-                owner.zone.BroadcastPacketAroundActor(owner, RemoveActorPacket.BuildPacket(owner.actorId));
-                owner.QueuePositionUpdate(owner.spawnX, owner.spawnY, owner.spawnZ);
-                lua.LuaEngine.CallLuaBattleAction(owner, "onDespawn", owner);
+                owner.Spawn(tick);
                 return true;
             }
             return false;

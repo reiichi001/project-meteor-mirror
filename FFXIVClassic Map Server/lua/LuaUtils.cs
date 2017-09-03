@@ -116,6 +116,12 @@ namespace FFXIVClassic_Map_Server
 
         public static void WriteLuaParams(BinaryWriter writer, List<LuaParam> luaParams)
         {
+            if (luaParams == null)
+            {
+                Program.Log.Error("LuaUtils.WriteLuaParams LuaParams are null!");
+                return;
+            }
+
             foreach (LuaParam l in luaParams)
             {           
                 if (l.typeID == 0x1)

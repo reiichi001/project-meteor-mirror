@@ -384,12 +384,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             // todo: use tick instead of now?
             this.startTime = DateTime.Now;
             this.lastTick = startTime;
-
-            // todo: set the effect name to be called by scripts or just lookup effects in db
-            // name = WorldManager.GetEffectInfo(id).Name;
-            // todo: check if can gain effect
-            // todo: call effect's onGain
-            // todo: broadcast effect gain packet
         }
 
         public StatusEffect(Character owner, StatusEffect effect)

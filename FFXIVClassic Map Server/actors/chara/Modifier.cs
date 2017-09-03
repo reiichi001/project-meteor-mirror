@@ -50,6 +50,8 @@ namespace FFXIVClassic_Map_Server.actors.chara
 
         HarvestPotency         = 38,
         HarvestLimit           = 39,
-        HarvestRate            = 40
+        HarvestRate            = 40,
+
+        Raise                  = 41,
     }
 }

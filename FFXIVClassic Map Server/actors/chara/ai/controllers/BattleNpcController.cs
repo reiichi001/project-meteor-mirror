@@ -96,6 +96,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         {
             var target = owner.target;
             base.Disengage();
+            owner.statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnDeath, true);
             // todo:
             lastActionTime = lastUpdate.AddSeconds(5);
             owner.isMovingToSpawn = true;
@@ -104,7 +105,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             neutralTime = lastActionTime;
             owner.hateContainer.ClearHate();
             owner.moveState = 1;
-            lua.LuaEngine.CallLuaBattleAction(owner, "onDisengage", owner, target, Utils.UnixTimeStampUTC(battleStartTime));
+            lua.LuaEngine.CallLuaBattleFunction(owner, "onDisengage", owner, target, Utils.UnixTimeStampUTC(battleStartTime));
         }
 
         public override void Cast(Character target, uint spellId)
@@ -203,7 +204,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             }
 
             Move();
-            lua.LuaEngine.CallLuaBattleAction(owner, "onCombatTick", owner, owner.target, Utils.UnixTimeStampUTC());
+            lua.LuaEngine.CallLuaBattleFunction(owner, "onCombatTick", owner, owner.target, Utils.UnixTimeStampUTC(tick));
         }
 
         private void Move()
@@ -308,6 +309,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public bool CanDetectTarget(Character target, bool forceSight = false)
         {
+            if (owner.IsDead())
+                return false;
+
             // todo: this should probably be changed to only allow detection at end of path?
             if (owner.aiContainer.pathFind.IsFollowingScriptedPath() || owner.aiContainer.pathFind.IsFollowingPath() && !owner.aiContainer.pathFind.AtPoint())
             {

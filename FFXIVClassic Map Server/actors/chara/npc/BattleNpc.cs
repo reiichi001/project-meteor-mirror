@@ -15,6 +15,8 @@ using FFXIVClassic_Map_Server.actors.chara.ai.state;
 using FFXIVClassic_Map_Server.utils;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.actors.chara.ai.utils;
+using FFXIVClassic_Map_Server.actors.group;
+using FFXIVClassic_Map_Server.packets.send;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -34,8 +36,10 @@ namespace FFXIVClassic_Map_Server.Actors
         public AggroType aggroType;
         public bool neutral;
         private uint despawnTime;
+        private uint respawnTime;
         private uint spawnDistance;
 
+        public Character lastAttacker;
 
         public BattleNpc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot,
             ushort actorState, uint animationId, string customDisplayName)
@@ -56,13 +60,36 @@ namespace FFXIVClassic_Map_Server.Actors
             spawnY = posY;
             spawnZ = posZ;
 
-            // todo: read this from db
+            // todo: read these from db also
             aggroType = AggroType.Sight;
             this.moveState = 2;
             ResetMoveSpeeds();
             despawnTime = 10;
-
+            respawnTime = 30;
             CalculateBaseStats();
+        }
+
+        public override List<SubPacket> GetSpawnPackets(Player player, ushort spawnType)
+        {
+            List<SubPacket> subpackets = new List<SubPacket>();
+            if (IsAlive())
+            {
+                subpackets.Add(CreateAddActorPacket());
+                subpackets.AddRange(GetEventConditionPackets());
+                subpackets.Add(CreateSpeedPacket());
+                subpackets.Add(CreateSpawnPositonPacket(0x0));
+
+                subpackets.Add(CreateAppearancePacket());
+
+                subpackets.Add(CreateNamePacket());
+                subpackets.Add(CreateStatePacket());
+                subpackets.Add(CreateIdleAnimationPacket());
+                subpackets.Add(CreateInitStatusPacket());
+                subpackets.Add(CreateSetActorIconPacket());
+                subpackets.Add(CreateIsZoneingPacket());
+                subpackets.Add(CreateScriptBindPacket(player));
+            }
+            return subpackets;
         }
 
         public uint GetAggroType()
@@ -135,6 +162,16 @@ namespace FFXIVClassic_Map_Server.Actors
             despawnTime = seconds;
         }
 
+        public uint GetRespawnTime()
+        {
+            return respawnTime;
+        }
+
+        public void SetRespawnTime(uint seconds)
+        {
+            respawnTime = seconds;
+        }
+
         ///<summary> // todo: create an action object? </summary>
         public bool OnAttack(AttackState state)
         {
@@ -143,32 +180,61 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override void Spawn(DateTime tick)
         {
-            base.Spawn(tick);
+            if (respawnTime > 0)
+            {
+                base.Spawn(tick);
 
-            this.isMovingToSpawn = false;
-            this.ResetMoveSpeeds();
-            this.hateContainer.ClearHate();
-            this.ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
+                this.isMovingToSpawn = false;
+                this.ResetMoveSpeeds();
+                this.hateContainer.ClearHate();
+                zone.BroadcastPacketsAroundActor(this, GetSpawnPackets(null, 0x01));
+                zone.BroadcastPacketsAroundActor(this, GetInitPackets());
+                charaWork.parameterSave.hp = charaWork.parameterSave.hpMax;
+                charaWork.parameterSave.mp = charaWork.parameterSave.mpMax;
+                RecalculateStats();
+
+                updateFlags |= ActorUpdateFlags.AllNpc;
+            }
         }
 
         public override void Die(DateTime tick)
         {
             if (IsAlive())
             {
+                if (lastAttacker is Pet && ((Pet)lastAttacker).master is Player)
+                {
+                    lastAttacker = ((Pet)lastAttacker).master;
+                }
+
+                if (lastAttacker is Player)
+                {
+                    if (lastAttacker.currentParty != null && lastAttacker.currentParty is Party)
+                    {
+                        foreach (var memberId in ((Party)lastAttacker.currentParty).members)
+                        {
+                            var partyMember = zone.FindActorInArea<Player>(memberId);
+                            // onDeath(monster, player, killer)
+                            lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, partyMember, lastAttacker);
+                            // <actor> defeat/defeats <target>
+                            ((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
+                        }
+                    }
+                    else
+                    {
+                        // onDeath(monster, player, killer)
+                        lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, lastAttacker, lastAttacker);
+                        ((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
+                    }
+                }
                 aiContainer.InternalDie(tick, despawnTime);
                 aiContainer.pathFind.Clear();
-
                 this.ResetMoveSpeeds();
-                this.positionX = oldPositionX;
-                this.positionY = oldPositionY;
-                this.positionZ = oldPositionZ;
                 
-                
-                this.isAtSpawn = true;
+                // todo: reset cooldowns
             }
             else
             {
-                var err = $"[{actorId}][{customDisplayName}] {positionX} {positionY} {positionZ} {GetZoneID()} tried to die ded";
+                var err = $"[{actorId}][{GetUniqueId()}] {positionX} {positionY} {positionZ} {GetZone().GetName()} tried to die ded";
                 Program.Log.Error(err);
                 //throw new Exception(err);
             }
@@ -176,9 +242,10 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override void Despawn(DateTime tick)
         {
-            aiContainer.ClearStates();
             // todo: probably didnt need to make a new state...
-            aiContainer.ForceChangeState(new DespawnState(this, null, 0));
+            aiContainer.InternalDespawn(tick, respawnTime);
+            lua.LuaEngine.CallLuaBattleFunction(this, "onDespawn", this);
+            this.isAtSpawn = true;
         }
 
         public void OnRoam(DateTime tick)
@@ -203,6 +270,7 @@ namespace FFXIVClassic_Map_Server.Actors
             else
             {
                 this.isMovingToSpawn = false;
+                lua.LuaEngine.CallLuaBattleFunction(this, "onRoam", this);
             }
         }
 
@@ -216,6 +284,21 @@ namespace FFXIVClassic_Map_Server.Actors
             base.OnAttack(state, action, ref error);
             // todo: move this somewhere else prolly and change based on model/appearance (so maybe in Character.cs instead)
             action.animation = 0x11001000; // (temporary) wolf anim
+        }
+
+        public override void OnSpawn()
+        {
+            base.OnSpawn();
+        }
+
+        public override void OnDeath()
+        {
+            base.OnDeath();
+        }
+
+        public override void OnDespawn()
+        {
+            base.OnDespawn();
         }
     }
 }

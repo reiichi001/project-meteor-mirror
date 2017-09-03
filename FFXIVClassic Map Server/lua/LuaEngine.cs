@@ -134,15 +134,22 @@ namespace FFXIVClassic_Map_Server.lua
         /// // todo: this is dumb, should probably make a function for each action with different default return values
         /// or just make generic function and pass default value as first arg after functionName
         /// </summary>
-        public static void CallLuaBattleAction(Character actor, string functionName, params object[] args)
+        public static void CallLuaBattleFunction(Character actor, string functionName, params object[] args)
         {
-            string path = $"./scripts/unique/{actor.zone.zoneName}/Monster/{actor.customDisplayName}.lua";
+            // todo: should use "scripts/zones/ZONE_NAME/battlenpcs/NAME.lua" instead of scripts/unique
+            string path = "";
 
             // todo: should we call this for players too?
             if (actor is Player)
             {
                 // todo: check this is correct
                 path = FILEPATH_PLAYER;
+            }
+            else if (actor is Npc)
+            {
+                // todo: this is probably unnecessary as im not sure there were pets for players
+                if (!(actor is Pet && ((Pet)actor).master is Player))
+                    path = String.Format("./scripts/unique/{0}/{1}/{2}.lua", actor.zone.zoneName, actor is BattleNpc ? "Monster" : "PopulaceStandard", ((Npc)actor).GetUniqueId());
             }
             // dont wanna throw an error if file doesnt exist
             if (File.Exists(path))
@@ -154,7 +161,7 @@ namespace FFXIVClassic_Map_Server.lua
                 }
                 catch (Exception e)
                 {
-                    Program.Log.Error($"LuaEngine.CallLuaBattleAction [{functionName}] {e.Message}");
+                    Program.Log.Error($"LuaEngine.CallLuaBattleFunction [{functionName}] {e.Message}");
                 }
                 DynValue res = new DynValue();
 
@@ -167,6 +174,7 @@ namespace FFXIVClassic_Map_Server.lua
 
         public static int CallLuaStatusEffectFunction(Character actor, StatusEffect effect, string functionName, params object[] args)
         {
+            // todo: this is stupid, load the actual effect crap
             var name = ((StatusEffectId)effect.GetStatusEffectId()).ToString().ToLower();
             string path = $"./scripts/effects/{name}.lua";
 

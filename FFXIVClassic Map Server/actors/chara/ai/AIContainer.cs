@@ -203,7 +203,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public bool IsDead()
         {
             return owner.currentMainState == SetActorStatePacket.MAIN_STATE_DEAD ||
-                owner.currentMainState == SetActorStatePacket.MAIN_STATE_DEAD2 || owner.GetHP() == 0;
+                owner.currentMainState == SetActorStatePacket.MAIN_STATE_DEAD2;
         }
 
         public bool IsRoaming()
@@ -262,8 +262,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void InternalChangeTarget(Character target)
         {
-            // todo: use invalid target id
-            // todo: this is retarded, call entity's changetarget function
+            // targets are changed in the controller
             if (IsEngaged() || target == null)
             {
 
@@ -288,7 +287,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             if (CanChangeState() || (GetCurrentState() != null && GetCurrentState().IsCompleted()))
             {
-                ForceChangeState(new AttackState(this.owner, target));
+                ForceChangeState(new AttackState(owner, target));
                 return true;
             }
             return false;
@@ -301,7 +300,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             owner.updateFlags |= ActorUpdateFlags.HpTpMp;
             ChangeTarget(null);
-            owner.ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
+
+            if (owner.currentMainState == SetActorStatePacket.MAIN_STATE_ACTIVE)
+                owner.ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
+
             ClearStates();
         }
 
@@ -337,11 +339,18 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             }
         }
 
-        public void InternalDie(DateTime tick, uint timeToFadeout)
+        public void InternalDie(DateTime tick, uint fadeoutTimerSeconds)
+        {
+            pathFind?.Clear();
+            ClearStates();
+            ForceChangeState(new DeathState(owner, tick, fadeoutTimerSeconds));
+        }
+
+        public void InternalDespawn(DateTime tick, uint respawnTimerSeconds)
         {
             ClearStates();
             Disengage();
-            ForceChangeState(new DeathState(owner, tick, timeToFadeout));
+            ForceChangeState(new DespawnState(owner, respawnTimerSeconds));
         }
 
         public void InternalRaise(Character target)
