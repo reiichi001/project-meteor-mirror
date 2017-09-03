@@ -530,24 +530,50 @@ namespace FFXIVClassic_Lobby_Server
 
         public static List<Retainer> GetRetainers(uint userId)
         {
-            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            List<Retainer> retainers = new List<Retainer>();
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                List<Retainer> retainerList = null;
                 try
                 {
                     conn.Open();
-                    retainerList = conn.Query<Retainer>("SELECT * FROM retainers WHERE id=@UserId ORDER BY characterId, slot", new { UserId = userId }).ToList();
+
+                    string query = @"
+                                    SELECT characters.id as charaId, server_retainers.id as retainerId, server_retainers.name, characters_retainers.doRename FROM characters 
+                                    INNER JOIN characters_retainers ON characters.id = characters_retainers.characterId
+                                    INNER JOIN server_retainers ON characters_retainers.retainerId = server_retainers.id
+                                    WHERE userId = @userId
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@userId", userId);
+                    
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint characterId = reader.GetUInt32("charaId");
+                            uint retainerId = reader.GetUInt32("retainerId");
+                            string name = reader.GetString("name");
+                            bool doRename = reader.GetBoolean("doRename");                            
+
+                            retainers.Add(new Retainer(characterId, retainerId, name, doRename));
+                        }
+                    }
+
                 }
                 catch (MySqlException e)
                 {
                     Program.Log.Error(e.ToString());
-                    retainerList = new List<Retainer>(); }
+                }
                 finally
                 {
                     conn.Dispose();
                 }
-                return retainerList;
+
+                return retainers;
             }
+
         }
 
     }
