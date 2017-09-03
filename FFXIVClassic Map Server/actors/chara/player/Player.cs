@@ -1932,7 +1932,9 @@ namespace FFXIVClassic_Map_Server.Actors
         //If the returned value is outside the hotbar, it indicates it wasn't found.
         private ushort FindFirstCommandSlotById(uint commandId)
         {
-            commandId |= 0xA0F00000;
+            if(commandId != 0)
+                commandId |= 0xA0F00000;
+
             ushort firstSlot = (ushort)(charaWork.commandBorder + 30);
 
             for (ushort i = charaWork.commandBorder; i < charaWork.commandBorder + 30; i++)
