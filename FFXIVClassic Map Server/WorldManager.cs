@@ -435,12 +435,14 @@ namespace FFXIVClassic_Map_Server
                     bge.int, bge.mnd, bge.pie, bge.att, bge.acc, bge.def, bge.eva, bge.slash, bge.pierce, bge.h2h, bge.blunt,
                     bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water FROM 
                     server_battlenpc_spawn_locations bsl INNER JOIN server_battlenpc_groups bgr ON bsl.groupId = bgr.groupId INNER JOIN 
-                    server_battlenpc_genus bge ON bgr.genusId = bgr.genusId WHERE bgr.zoneId = @zoneId;
+                    server_battlenpc_genus bge ON bgr.genusId = bgr.genusId WHERE bgr.zoneId = {0} GROUP BY bsl.bnpcIndex;
                     ";
+                    Debugger.Break();
                     foreach (var zone in zoneList.Values)
                     {
+                        query = String.Format(query, zone.GetZoneID());
+
                         MySqlCommand cmd = new MySqlCommand(query, conn);
-                        cmd.Parameters.AddWithValue("@zoneId", zone.GetZoneID());
 
                         cmd.ExecuteNonQuery();
                         using (MySqlDataReader reader = cmd.ExecuteReader())
@@ -455,6 +457,8 @@ namespace FFXIVClassic_Map_Server
 
                                 battleNpc.kindredType = (KindredType)reader.GetUInt32("kindredId");
                                 battleNpc.npcSpawnType = (NpcSpawnType)reader.GetUInt32("spawnType");
+
+                                battleNpc.charaWork.parameterSave.state_mainSkillLevel = (short)Program.Random.Next(reader.GetByte("minLevel"), reader.GetByte("maxLevel"));
 
                                 // todo: setup private areas and other crap and
                                 // set up rest of stat resists
