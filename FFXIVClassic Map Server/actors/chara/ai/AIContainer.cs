@@ -11,8 +11,6 @@ using FFXIVClassic_Map_Server.packets.send.actor;
 // port of ai code in dsp by kjLotus (https://github.com/DarkstarProject/darkstar/blob/master/src/map/ai)
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
-    // todo: actually implement stuff
-    // todo: use spell/ability/ws/mobskill objects instead of looking up ids
     class AIContainer
     {
         private Character owner;

@@ -21,10 +21,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public override void Update(DateTime tick)
         {
-            // todo: handle player stuff on tick
             if (owner.newMainState != owner.currentMainState)
             {
-                //owner.updateFlags = ActorUpdateFlags.Combat;
                 if (owner.newMainState == SetActorStatePacket.MAIN_STATE_ACTIVE)
                 {
                     owner.Engage();
@@ -48,8 +46,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             var canEngage = this.owner.aiContainer.InternalEngage(target);
             if (canEngage)
             {
-                // todo: check speed/is able to move
-                // todo: too far, path to player if mob, message if player
                 if (owner.statusEffects.HasStatusEffect(StatusEffectId.Sleep))
                 {
                     // That command cannot be performed.

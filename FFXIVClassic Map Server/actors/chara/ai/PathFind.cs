@@ -14,7 +14,7 @@ using FFXIVClassic_Map_Server.packets.send.actor;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
-    // todo: path flags, check for obstacles etc
+    // todo: check for obstacles, los, etc
     public enum PathFindFlags
     {
         None,
@@ -40,7 +40,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             PreparePath(dest.X, dest.Y, dest.Z, stepSize, maxPath, polyRadius);
         }
 
-        // todo: is this class even needed?
         public void PreparePath(float x, float y, float z, float stepSize = 1.25f, int maxPath = 40, float polyRadius = 0.0f)
         {
             var pos = new Vector3(owner.positionX, owner.positionY, owner.positionZ);

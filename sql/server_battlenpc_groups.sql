@@ -20,7 +20,7 @@ CREATE TABLE `server_battlenpc_groups` (
   `actorClassId` int(10) unsigned NOT NULL,
   `minLevel` tinyint(3) unsigned NOT NULL DEFAULT '1',
   `maxLevel` tinyint(3) unsigned NOT NULL DEFAULT '1',
-  `respawnTime` int(10) unisgned NOT NULL DEFAULT '10',
+  `respawnTime` int(10) unsigned NOT NULL DEFAULT '10',
   `hp` int(10) unsigned NOT NULL DEFAULT '0',
   `mp` int(10) unsigned NOT NULL DEFAULT '0',
   `skillListId` int(10) unsigned NOT NULL DEFAULT '0',

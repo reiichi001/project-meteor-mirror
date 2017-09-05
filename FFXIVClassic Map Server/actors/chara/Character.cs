@@ -94,7 +94,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public Pet pet;
 
-        public Dictionary<Modifier, Int64> modifiers = new Dictionary<Modifier, long>();
+        private Dictionary<Modifier, Int64> modifiers = new Dictionary<Modifier, long>();
 
         protected ushort hpBase, hpMaxBase, mpBase, mpMaxBase, tpBase;
         protected BattleTemp baseStats = new BattleTemp();

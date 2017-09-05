@@ -20,5 +20,6 @@ CREATE TABLE `server_battlenpc_spawn_locations` (
   `positionX` float NOT NULL,
   `positionY` float NOT NULL,
   `positionZ` float NOT NULL,
-  `rotation` float NOT NULL,
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;
+  `rotation` float NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;

@@ -58,6 +58,7 @@ namespace FFXIVClassic_Map_Server.Actors
         
         public Character lastAttacker;
 
+        public uint spellListId, skillListId, dropListId;
         public Dictionary<uint, BattleCommand> skillList = new Dictionary<uint, BattleCommand>();
         public Dictionary<uint, BattleCommand> spellList = new Dictionary<uint, BattleCommand>();
 

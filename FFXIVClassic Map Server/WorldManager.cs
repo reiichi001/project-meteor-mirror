@@ -24,6 +24,7 @@ using System.Threading;
 using System.Diagnostics;
 using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.actors.chara.ai;
+using FFXIVClassic_Map_Server.actors.chara;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -416,6 +417,88 @@ namespace FFXIVClassic_Map_Server
             }
 
             Program.Log.Info(String.Format("Loaded {0} spawn(s).", count));
+        }
+
+        public void LoadBattleNpcs()
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    var query = @"
+                    SELECT bsl.uniqueId, bsl.groupId, bsl.positionX, bsl.positionY, bsl.positionZ, bsl.rotation, 
+                    bgr.groupId, bgr.genusId, bgr.actorClassId, bgr.minLevel, bgr.maxLevel, bgr.respawnTime,
+                    bgr.hp, bgr.mp, bgr.skillListId, bgr.spellListId, bgr.dropListId, bgr.allegiance,
+                    bgr.spawnType, bgr.animationId, bgr.actorState, bgr.privateAreaName, bgr.privateAreaLevel, bgr.zoneId,
+                    bge.genusId, bge.modelSize, bge.kindredId, bge.detection, bge.hpp, bge.mpp, bge.tpp, bge.str, bge.vit, bge.dex,
+                    bge.int, bge.mnd, bge.pie, bge.att, bge.acc, bge.def, bge.eva, bge.slash, bge.pierce, bge.h2h, bge.blunt,
+                    bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water FROM 
+                    server_battlenpc_spawn_locations bsl INNER JOIN server_battlenpc_groups bgr ON bsl.groupId = bgr.groupId INNER JOIN 
+                    server_battlenpc_genus bge ON bgr.genusId = bgr.genusId WHERE bgr.zoneId = @zoneId;
+                    ";
+                    foreach (var zone in zoneList.Values)
+                    {
+                        MySqlCommand cmd = new MySqlCommand(query, conn);
+                        cmd.Parameters.AddWithValue("@zoneId", zone.GetZoneID());
+
+                        cmd.ExecuteNonQuery();
+                        using (MySqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                int actorId = zone.GetActorCount() + 1;
+
+                                var battleNpc = new BattleNpc(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
+                                    reader.GetString("uniqueId"), zone, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
+                                    reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
+
+                                battleNpc.kindredType = (KindredType)reader.GetUInt32("kindredId");
+                                battleNpc.npcSpawnType = (NpcSpawnType)reader.GetUInt32("spawnType");
+
+                                // todo: setup private areas and other crap and
+                                // set up rest of stat resists
+                                battleNpc.SetMod((uint)Modifier.Hp, reader.GetUInt32("hp"));
+                                battleNpc.SetMod((uint)Modifier.HpPercent, reader.GetUInt32("hpp"));
+                                battleNpc.SetMod((uint)Modifier.Mp, reader.GetUInt32("mp"));
+                                battleNpc.SetMod((uint)Modifier.MpPercent, reader.GetUInt32("mpp"));
+                                battleNpc.SetMod((uint)Modifier.Tp, reader.GetUInt32("tp"));
+                                battleNpc.SetMod((uint)Modifier.TpPercent, reader.GetUInt32("tpp"));
+
+                                battleNpc.SetMod((uint)Modifier.Strength, reader.GetUInt32("str"));
+                                battleNpc.SetMod((uint)Modifier.Vitality, reader.GetUInt32("vit"));
+                                battleNpc.SetMod((uint)Modifier.Dexterity, reader.GetUInt32("dex"));
+                                battleNpc.SetMod((uint)Modifier.Intelligence, reader.GetUInt32("int"));
+                                battleNpc.SetMod((uint)Modifier.Mind, reader.GetUInt32("mnd"));
+                                battleNpc.SetMod((uint)Modifier.Piety, reader.GetUInt32("pie"));
+                                battleNpc.SetMod((uint)Modifier.Attack, reader.GetUInt32("att"));
+                                battleNpc.SetMod((uint)Modifier.Accuracy, reader.GetUInt32("acc"));
+                                battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"));
+                                battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"));
+
+                                //battleNpc.SetMod((uint)Modifier.ResistFire, )
+
+                                battleNpc.SetAggroType(reader.GetUInt32("detection"));
+
+                                // todo: load spell/skill/drop lists
+                                battleNpc.dropListId = reader.GetUInt32("dropListId");
+                                battleNpc.spellListId = reader.GetUInt32("spellListId");
+                                battleNpc.skillListId = reader.GetUInt32("skillListId");
+
+                                zone.AddActorToZone(battleNpc);
+                            }
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
         }
 
         public void SpawnAllActors()
@@ -1013,7 +1096,7 @@ namespace FFXIVClassic_Map_Server
         
         public void ZoneThreadLoop(Object state)
         {
-            // todo: fuck coroutines, seem to be causing it to hang
+            // todo: coroutines GetActorInWorld stuff seems to be causing it to hang
             // todo: spawn new thread for each zone on startup
             lock (zoneList)
             {

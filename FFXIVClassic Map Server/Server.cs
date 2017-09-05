@@ -53,6 +53,7 @@ namespace FFXIVClassic_Map_Server
             mWorldManager.LoadSeamlessBoundryList();
             mWorldManager.LoadActorClasses();
             mWorldManager.LoadSpawnLocations();
+            mWorldManager.LoadBattleNpcs();
             mWorldManager.SpawnAllActors();
             mWorldManager.LoadStatusEffects();
             mWorldManager.LoadBattleCommands();

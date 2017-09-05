@@ -20,14 +20,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             base(owner, target)
         {
             this.startTime = DateTime.Now;
-            // todo: lookup skill from global table
             this.skill = Server.GetWorldManager().GetBattleCommand(skillId);
             var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillPrepare", owner, target, skill);
 
-            // todo: check recast
             if (returnCode == 0 && owner.CanWeaponSkill(target, skill))
             {
-                // todo: Azia can fix, check the recast time and send error
                 OnStart();
             }
             else

@@ -75,10 +75,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 if (owner.GetState() != SetActorStatePacket.MAIN_STATE_ACTIVE)
                     owner.ChangeState(SetActorStatePacket.MAIN_STATE_ACTIVE);
 
-
-                // todo: check speed/is able to move
-                // todo: too far, path to player if mob, message if player
-                // owner.ResetMoveSpeeds();
                 owner.moveState = 2;
                 lastActionTime = DateTime.Now;
                 battleStartTime = lastActionTime;

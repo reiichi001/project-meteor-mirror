@@ -12,6 +12,8 @@ using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.packets.receive.supportdesk;
 using FFXIVClassic_Map_Server.actors.chara.ai;
+using FFXIVClassic_Map_Server.Actors.Chara;
+using FFXIVClassic_Map_Server.actors.chara;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -2207,51 +2209,6 @@ namespace FFXIVClassic_Map_Server
                 }
             }
             return battleCommands;
-        }
-
-        public static Dictionary<uint, BattleNpc> LoadBattleNpcList(uint zoneId)
-        {
-            Dictionary<uint, BattleNpc> battleNpcList = new Dictionary<uint, BattleNpc>();
-
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                try
-                {
-                    conn.Open();
-                    var query = @"";
-                    /*
-                    var query = @"SELECT bsl.uniqueId, bsl.groupId, bsl.positionX, bls.positionY, bsl.positionZ, " +
-                                @"bgr.groupId, bgr.genusId, bgr.actorClassId, bgr.minLevel, bgr.maxLevel, bgr.respawnTime, " +
-                                @"bgr.hp, bgr.mp, bgr.skillListId, bgr.spellListId, bgr.dropListId, bgr.allegiance, " +
-                                @"bgr.spawnType, bgr.animationId, bgr.actorState, bgr.privateAreaName, bgr.privateAreaLevel, bgr.zoneId, " +
-                                @"bge.genusId, bge.modelSize, bge.kindredId, bge.detection, bge.hpp, bge.mpp, bge.tpp, bge.str, bge.vit, bge.dex, " +
-                                @"bge.int, bge.mnd, bge.pie, bge.att, bge.acc, bge.def, bge.eva, bge.slash, bge.pierce, bge.h2h, bge.blunt, " +
-                                @"bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water FROM " +
-                                @"server_battlenpc_spawn_locations bsl INNER JOIN server_battlenpc_groups bgr ON bsl.groupId = bgr.groupId INNER JOIN " +
-                                @"server_battlenpc_genus bge ON bgr.genusId = bgr.genusId INNER JOIN  WHERE bgr.zoneId = @zoneId";
-                    */
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@zoneId", zoneId);
-
-                    cmd.ExecuteNonQuery();
-                    using (MySqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-
-                        }
-                    }
-                }
-                catch (MySqlException e)
-                {
-                    Program.Log.Error(e.ToString());
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-            }
-            return battleNpcList;
         }
     }
 

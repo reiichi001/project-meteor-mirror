@@ -158,7 +158,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             
             if (BattleUtils.CalculateSpellCost(user, target, this) > user.GetMP())
             {
-                // todo: error message
                 if (user is Player)
                     ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32545, 0x20, (uint)id);
                 return false;

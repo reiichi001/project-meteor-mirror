@@ -395,6 +395,13 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public int GetActorCount()
+        {
+            lock (mActorList)
+            {
+                return mActorList.Count;
+            }
+        }
 
         public virtual List<Actor> GetAllActors()
         {

@@ -23,14 +23,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         {
             this.startPos = owner.GetPosAsVector3();
             this.startTime = DateTime.Now;
-            // todo: lookup spell from global table
             this.spell = Server.GetWorldManager().GetBattleCommand(spellId);
             var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onMagicPrepare", owner, target, spell);
 
-            // todo: check recast
             if (returnCode == 0 && owner.CanCast(target, spell))
             {
-                // todo: Azia can fix, check the recast time and send error
                 OnStart();
             }
             else

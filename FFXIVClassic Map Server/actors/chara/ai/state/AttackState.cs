@@ -23,12 +23,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             ChangeTarget(target);
             attackTime = startTime;
             owner.aiContainer.pathFind?.Clear();
-            // todo: should handle everything here instead of on next tick..
         }
 
         public override void OnStart()
         {
-            // todo: check within attack range
+
         }
 
         public override bool Update(DateTime tick)
@@ -150,6 +149,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             // todo: shouldnt need to check if owner is dead since all states would be cleared
             if (owner.aiContainer.IsDead() || target.aiContainer.IsDead())
             {
+                if (owner is BattleNpc)
+                    ((BattleNpc)owner).hateContainer.ClearHate(target);
+
                 owner.aiContainer.ChangeTarget(null);
                 return false;
             }
