@@ -152,9 +152,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             owner.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
 
             if (list[slot] != null)            
-                normalInventory.RefreshItem(list[slot], item);            
+                normalInventory.RefreshItem(owner, list[slot], item);            
             else
-                normalInventory.RefreshItem(item);
+                normalInventory.RefreshItem(owner, item);
 
             owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
             SendEquipmentPackets(slot, item);
@@ -180,7 +180,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             owner.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
 
-            normalInventory.RefreshItem(list[slot]);
+            normalInventory.RefreshItem(owner, list[slot]);
 
             owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
             SendEquipmentPackets(slot, null);

@@ -1265,7 +1265,9 @@ namespace FFXIVClassic_Map_Server
                             byte materia4 = reader.GetByte(11);
                             byte materia5 = reader.GetByte(12);
 
-                            items.Add(new InventoryItem(uniqueId, itemId, quantity, itemType, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5));
+                            InventoryItem item = new InventoryItem(uniqueId, itemId, quantity, itemType, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5);
+                            item.slot = slot;
+                            items.Add(item);
                         }
                     }
                 }
