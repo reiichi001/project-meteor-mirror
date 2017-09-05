@@ -194,7 +194,7 @@ namespace FFXIVClassic_Map_Server.packets.send.groups
 
         }
 
-        public SubPacket buildPacket(uint playerActorID, uint actorID)
+        public SubPacket buildPacket(uint actorID)
         {
             binWriter.Seek(0x8, SeekOrigin.Begin);
             binWriter.Write((byte)runningByteTotal);

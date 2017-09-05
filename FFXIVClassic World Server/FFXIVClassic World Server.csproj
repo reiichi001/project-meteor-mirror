@@ -95,6 +95,7 @@
     <Compile Include="DataObjects\Group\Linkshell.cs" />
     <Compile Include="DataObjects\Group\LinkshellMember.cs" />
     <Compile Include="DataObjects\Group\Party.cs" />
+    <Compile Include="DataObjects\Group\RetainerMeetingRelationGroup.cs" />
     <Compile Include="DataObjects\Group\Relation.cs" />
     <Compile Include="DataObjects\Group\RetainerGroup.cs" />
     <Compile Include="DataObjects\Group\RetainerGroupMember.cs" />
@@ -190,7 +191,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent></PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

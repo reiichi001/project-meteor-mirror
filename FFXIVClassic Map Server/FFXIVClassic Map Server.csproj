@@ -82,6 +82,7 @@
     <Compile Include="actors\chara\npc\ActorClass.cs" />
     <Compile Include="actors\chara\npc\NpcWork.cs" />
     <Compile Include="actors\chara\AetheryteWork.cs" />
+    <Compile Include="actors\chara\npc\Retainer.cs" />
     <Compile Include="actors\chara\player\Equipment.cs" />
     <Compile Include="actors\chara\player\Inventory.cs" />
     <Compile Include="actors\chara\Work.cs" />
@@ -92,6 +93,7 @@
     <Compile Include="actors\EventList.cs" />
     <Compile Include="actors\group\GLContentGroup.cs" />
     <Compile Include="actors\group\ContentGroup.cs" />
+    <Compile Include="actors\group\RetainerMeetingRelationGroup.cs" />
     <Compile Include="actors\group\Work\ContentGroupWork.cs" />
     <Compile Include="actors\group\Work\GlobalTemp.cs" />
     <Compile Include="actors\group\Group.cs" />
@@ -260,6 +262,10 @@
     <Compile Include="packets\send\recruitment\EndRecruitmentPacket.cs" />
     <Compile Include="packets\send\recruitment\RecruiterStatePacket.cs" />
     <Compile Include="packets\send\recruitment\StartRecruitingResponse.cs" />
+    <Compile Include="packets\send\search\ItemSearchResult.cs" />
+    <Compile Include="packets\send\search\ItemSearchResultsEndPacket.cs" />
+    <Compile Include="packets\send\search\ItemSearchResultsBodyPacket.cs" />
+    <Compile Include="packets\send\search\ItemSearchResultsBeginPacket.cs" />
     <Compile Include="packets\send\SendMessagePacket.cs" />
     <Compile Include="packets\send\SetMapPacket.cs" />
     <Compile Include="packets\send\SetMusicPacket.cs" />

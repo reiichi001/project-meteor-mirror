@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic_Map_Server.actors.chara.npc;
 
 namespace FFXIVClassic_Map_Server.dataobjects
 {
@@ -96,11 +97,28 @@ namespace FFXIVClassic_Map_Server.dataobjects
             //Remove missing actors
             for (int i = 0; i < actorInstanceList.Count; i++)
             {
-                if (!list.Contains(actorInstanceList[i]))
+                //Retainer Instance
+                if (actorInstanceList[i] is Retainer && playerActor.currentSpawnedRetainer == null)
+                {
+                    QueuePacket(RemoveActorPacket.BuildPacket(actorInstanceList[i].actorId));
+                    actorInstanceList.RemoveAt(i);
+                }
+                else if (!list.Contains(actorInstanceList[i]) && !(actorInstanceList[i] is Retainer))
                 {
                     QueuePacket(RemoveActorPacket.BuildPacket(actorInstanceList[i].actorId));
                     actorInstanceList.RemoveAt(i);
                 }                
+            }
+
+            //Retainer Instance
+            if (playerActor.currentSpawnedRetainer != null && !playerActor.sentRetainerSpawn)
+            {
+                Actor actor = playerActor.currentSpawnedRetainer;
+                QueuePacket(actor.GetSpawnPackets(playerActor, 1));
+                QueuePacket(actor.GetInitPackets());
+                QueuePacket(actor.GetSetEventStatusPackets());
+                actorInstanceList.Add(actor);
+                playerActor.sentRetainerSpawn = true;
             }
 
             //Add new actors or move

@@ -91,7 +91,7 @@ namespace FFXIVClassic_Map_Server.actors.group
             groupWork.addByte(Utils.MurmurHash2("contentGroupWork.property[0]", 0), 1);
             groupWork.setTarget("/_init");
 
-            SubPacket test = groupWork.buildPacket(session.id, session.id);
+            SubPacket test = groupWork.buildPacket(session.id);
             test.DebugPrintSubPacket();
             session.QueuePacket(test);
         }

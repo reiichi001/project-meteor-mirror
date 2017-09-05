@@ -217,6 +217,7 @@ namespace FFXIVClassic_World_Server
             SendPartySync(pt);   
 
             mRetainerGroupManager.GetRetainerGroup(session.sessionId).SendGroupPackets(session);
+
             List<Linkshell> linkshells = mLinkshellManager.GetPlayerLinkshellMembership(session.sessionId);
             foreach (Linkshell ls in linkshells)
                 ls.SendGroupPackets(session);

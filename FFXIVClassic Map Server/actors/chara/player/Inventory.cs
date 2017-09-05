@@ -12,9 +12,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
     class Inventory
     {       
         public const ushort NORMAL = 0x0000; //Max 0xC8
+        public const ushort TRADE = 0x0001; //Max 0x96
         public const ushort LOOT = 0x0004; //Max 0xA
         public const ushort MELDREQUEST = 0x0005; //Max 0x04
         public const ushort BAZAAR = 0x0007; //Max 0x0A
+        public const ushort RETAINER_BAZAAR = 0x0008; //????
         public const ushort CURRENCY = 0x0063; //Max 0x140
         public const ushort KEYITEMS = 0x0064; //Max 0x500
         public const ushort EQUIPMENT = 0x00FE; //Max 0x23

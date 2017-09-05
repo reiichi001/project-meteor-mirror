@@ -20,6 +20,7 @@ using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.packets.send.group;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
+using FFXIVClassic_Map_Server.actors.chara.npc;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -133,6 +134,10 @@ namespace FFXIVClassic_Map_Server.Actors
         //Aetheryte
         public uint homepoint = 0;
         public byte homepointInn = 0;
+
+        //Instancing
+        public Retainer currentSpawnedRetainer = null;
+        public bool sentRetainerSpawn = false;
 
         private List<Director> ownedDirectors = new List<Director>();
         private Director loginInitDirector = null;
@@ -1558,6 +1563,12 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePacket(InventoryEndChangePacket.BuildPacket(toBeExamined.actorId));
         }
 
+        public void SendMyTradeToPlayer(Player player)
+        {
+            Inventory tradeInventory = new Inventory(this, 4, Inventory.TRADE);
+            tradeInventory.SendFullInventory(player);
+        }
+
         public void SendDataPacket(params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
@@ -1730,5 +1741,40 @@ namespace FFXIVClassic_Map_Server.Actors
             Database.ChangePlayerChocoboAppearance(this, appearanceId);
             chocoboAppearance = appearanceId;
         }
+
+        public bool SpawnMyRetainer(Npc bell, int retainerIndex)
+        {
+            Tuple<uint, uint, string> retainerData = Database.GetRetainer(this, retainerIndex);
+
+            ActorClass actorClass = Server.GetWorldManager().GetActorClass(retainerData.Item2);
+
+            if (actorClass == null)
+                return false;
+
+            float distance = (float)Math.Sqrt(((positionX - bell.positionX) * (positionX - bell.positionX)) + ((positionZ - bell.positionZ) * (positionZ - bell.positionZ)));
+            float posX = bell.positionX - ((-1.0f * (bell.positionX - positionX)) / distance);
+            float posZ = bell.positionZ - ((-1.0f * (bell.positionZ - positionZ)) / distance);
+
+            Retainer retainer = new Retainer(retainerData.Item1, retainerData.Item3, actorClass, this, posX, bell.positionY, positionZ, (float)Math.Atan2(positionX - posX, positionZ - posZ));
+
+            retainer.LoadEventConditions(actorClass.eventConditions);
+
+            //RetainerMeetingRelationGroup group = new RetainerMeetingRelationGroup(5555, this, retainer);
+            //group.SendGroupPackets(playerSession);
+
+            currentSpawnedRetainer = retainer;
+            sentRetainerSpawn = false;
+
+            return true;
+        }
+
+        public void DespawnMyRetainer()
+        {
+            if (currentSpawnedRetainer != null)
+            {
+                currentSpawnedRetainer = null;
+            }
+        }
+
     }
 }

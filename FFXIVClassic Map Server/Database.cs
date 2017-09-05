@@ -76,7 +76,7 @@ namespace FFXIVClassic_Map_Server
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 Dictionary<uint, ItemData> gamedataItems = new Dictionary<uint, ItemData>();
-          
+
                 try
                 {
                     conn.Open();
@@ -611,7 +611,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
         }
-        
+
         public static bool IsQuestCompleted(Player player, uint questId)
         {
             bool isCompleted = false;
@@ -677,7 +677,7 @@ namespace FFXIVClassic_Map_Server
                     currentPrivateAreaType,
                     homepoint,
                     homepointInn
-                    FROM characters WHERE id = @charId";                    
+                    FROM characters WHERE id = @charId";
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
@@ -693,7 +693,7 @@ namespace FFXIVClassic_Map_Server
                             player.oldRotation = player.rotation = reader.GetFloat(4);
                             player.currentMainState = reader.GetUInt16(5);
                             player.zoneId = reader.GetUInt32(6);
-                            player.isZoning = true;                            
+                            player.isZoning = true;
                             player.gcCurrent = reader.GetByte(7);
                             player.gcRankLimsa = reader.GetByte(8);
                             player.gcRankGridania = reader.GetByte(9);
@@ -718,7 +718,7 @@ namespace FFXIVClassic_Map_Server
 
                             if (player.destinationZone != 0)
                                 player.zoneId = player.destinationZone;
-                            
+
                             if (player.privateArea != null && !player.privateArea.Equals(""))
                                 player.zone = Server.GetWorldManager().GetPrivateArea(player.zoneId, player.privateArea, player.privateAreaType);
                             else
@@ -888,8 +888,8 @@ namespace FFXIVClassic_Map_Server
                         int count = 0;
                         while (reader.Read())
                         {
-                            player.charaWork.status[count] = reader.GetUInt16(0);
-                            player.charaWork.statusShownTime[count] = reader.GetUInt32(1);
+                            player.charaWork.status[count] = reader.GetUInt16("statusId");
+                            player.charaWork.statusShownTime[count] = reader.GetUInt32("expireTime");
                         }
                     }
 
@@ -1690,7 +1690,7 @@ namespace FFXIVClassic_Map_Server
                 }
                 finally
                 {
-                    conn.Dispose();                   
+                    conn.Dispose();
                 }
             }
 
@@ -1905,7 +1905,7 @@ namespace FFXIVClassic_Map_Server
                     SET
                     chocoboAppearance=@chocoboAppearance
                     WHERE
-                    characterId = @characterId";                    
+                    characterId = @characterId";
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@characterId", player.actorId);
@@ -1924,6 +1924,53 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-    }
 
+        public static Tuple<uint, uint, string> GetRetainer(Player player, int retainerIndex)
+        {
+            Tuple<uint, uint, string> data = null;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT server_retainers.id as retainerId, server_retainers.name as name, actorClassId FROM characters_retainers                                    
+                                    INNER JOIN server_retainers ON characters_retainers.retainerId = server_retainers.id
+                                    WHERE characterId = @charaId
+                                    ORDER BY id
+                                    LIMIT 1 OFFSET @retainerIndex
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@retainerIndex", retainerIndex-1);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint retainerId = reader.GetUInt32("retainerId");
+                            string name = reader.GetString("name");
+                            uint actorClassId = reader.GetUInt32("actorClassId");
+                            data = new Tuple<uint, uint, string>(retainerId, actorClassId, name);
+                        }
+                    }
+
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+
+                return data;
+            }
+        }
+
+    }
 }

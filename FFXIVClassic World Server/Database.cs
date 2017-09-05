@@ -165,7 +165,7 @@ namespace FFXIVClassic_World_Server
                 try
                 {
                     conn.Open();
-                    MySqlCommand cmd = new MySqlCommand("SELECT id, name, classActorId, cdIDOffset, placeName, conditions, level FROM server_retainers INNER JOIN characters_retainers ON retainerId = server_retainers.id WHERE characterId = @charaId", conn);
+                    MySqlCommand cmd = new MySqlCommand("SELECT id, name, actorClassId, cdIDOffset, placeName, conditions, level FROM server_retainers INNER JOIN characters_retainers ON retainerId = server_retainers.id WHERE characterId = @charaId", conn);
                     cmd.Parameters.AddWithValue("@charaId", charaId);
                     using (MySqlDataReader Reader = cmd.ExecuteReader())
                     {
@@ -173,13 +173,13 @@ namespace FFXIVClassic_World_Server
                         {
                             uint id = Reader.GetUInt32("id") | 0xE0000000;
                             string name = Reader.GetString("name");
-                            uint classActorId = Reader.GetUInt32("classActorId");
+                            uint actorClassId = Reader.GetUInt32("actorClassId");
                             byte cdIDOffset = Reader.GetByte("cdIDOffset");
                             ushort placeName = Reader.GetUInt16("placeName");
                             byte conditions = Reader.GetByte("conditions");
                             byte level = Reader.GetByte("level");
 
-                            members.Add(new RetainerGroupMember(id, name, classActorId, cdIDOffset, placeName, conditions, level));
+                            members.Add(new RetainerGroupMember(id, name, actorClassId, cdIDOffset, placeName, conditions, level));
                         }
                     }
                 }

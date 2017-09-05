@@ -12,6 +12,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
         public const uint GroupInvitationRelationGroup = 50001;
         public const uint TradeRelationGroup = 50002;
+        public const uint RetainerMeetingRelationGroup = 50003;
         public const uint BazaarBuyItemRelationGroup = 50009;
 
         public const uint RetainerGroup = 80001;

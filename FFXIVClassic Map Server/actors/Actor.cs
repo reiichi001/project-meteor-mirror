@@ -83,7 +83,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public SubPacket CreateNamePacket()
         {
-            return SetActorNamePacket.BuildPacket(actorId, displayNameId, displayNameId == 0xFFFFFFFF | displayNameId == 0x0 ? customDisplayName : "");
+            return SetActorNamePacket.BuildPacket(actorId, customDisplayName != null ? 0 : displayNameId, displayNameId == 0xFFFFFFFF | displayNameId == 0x0 | customDisplayName != null ? customDisplayName : "");
         }
 
         public SubPacket CreateSpeedPacket()
