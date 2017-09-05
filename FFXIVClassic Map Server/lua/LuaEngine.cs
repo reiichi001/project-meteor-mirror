@@ -17,6 +17,7 @@ using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.area;
 using System.Threading;
 using FFXIVClassic_Map_Server.actors.chara.ai;
+using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 
 namespace FFXIVClassic_Map_Server.lua
 {
@@ -148,7 +149,7 @@ namespace FFXIVClassic_Map_Server.lua
             else if (actor is Npc)
             {
                 // todo: this is probably unnecessary as im not sure there were pets for players
-                if (!(actor is Pet && ((Pet)actor).master is Player))
+                if (!(actor.aiContainer.GetController<PetController>()?.GetPetMaster() is Player))
                     path = String.Format("./scripts/unique/{0}/{1}/{2}.lua", actor.zone.zoneName, actor is BattleNpc ? "Monster" : "PopulaceStandard", ((Npc)actor).GetUniqueId());
             }
             // dont wanna throw an error if file doesnt exist

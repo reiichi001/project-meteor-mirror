@@ -166,25 +166,19 @@ namespace FFXIVClassic_Map_Server.actors.area
 
         public override void Update(DateTime tick)
         {
-            // todo: again, this is retarded but debug stuff
             base.Update(tick);
 
+            // todo: again, this is retarded but debug stuff
             var diffTime = tick - lastUpdate;
-            // arbitrary cap
-            if (diffTime.TotalMilliseconds >= 33)
-            {
-            }
             
             if (diffTime.TotalSeconds >= 10)
             {
                 if (this.pathCalls > 0)
                 {
-                    Program.Log.Error("Number of pathfinding calls {0} average time {1}", pathCalls, pathCallTime / pathCalls);
+                    Program.Log.Debug("Number of pathfinding calls {0} average time {1}ms", pathCalls, (float)(pathCallTime / pathCalls));
                 }
-                // todo: this is stupid debug stuff that needs to fuck off
                 lastUpdate = tick;
             }
         }
-
     }
 }

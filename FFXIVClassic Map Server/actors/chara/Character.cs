@@ -19,10 +19,10 @@ namespace FFXIVClassic_Map_Server.Actors
     /// <summary> Which Character types am I friendly with </summary>
     enum CharacterTargetingAllegiance
     {
-        /// <summary> Friendly to Players </summary>
-        Player,
         /// <summary> Friendly to BattleNpcs </summary>
-        BattleNpcs
+        BattleNpcs,
+        /// <summary> Friendly to Players </summary>
+        Player
     }
 
     class Character : Actor
@@ -562,6 +562,16 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             // todo: recalculate stats and crap
             updateFlags |= ActorUpdateFlags.HpTpMp;
+        }
+
+        public void SetStat(uint statId, uint val)
+        {
+            charaWork.battleTemp.generalParameter[statId] = (ushort)val;
+        }
+
+        public ushort GetStat(uint statId)
+        {
+            return charaWork.battleTemp.generalParameter[statId];
         }
 
         public virtual float GetSpeed()

@@ -36,6 +36,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public override void Update(DateTime tick)
         {
+            lastUpdate = tick;
             // todo: handle aggro/deaggro and other shit here
             if (owner.aiContainer.IsEngaged())
             {
@@ -104,8 +105,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             owner.aiContainer.pathFind.PreparePath(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 10);
             neutralTime = lastActionTime;
             owner.hateContainer.ClearHate();
+            owner.ResetMoveSpeeds();
             owner.moveState = 1;
-            lua.LuaEngine.CallLuaBattleFunction(owner, "onDisengage", owner, target, Utils.UnixTimeStampUTC(battleStartTime));
+            lua.LuaEngine.CallLuaBattleFunction(owner, "onDisengage", owner, target, Utils.UnixTimeStampUTC(lastUpdate));
         }
 
         public override void Cast(Character target, uint spellId)
@@ -143,7 +145,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             if (tick >= waitTime)
             {
                 // todo: aggro cooldown
-                neutralTime = tick.AddSeconds(3);
+                neutralTime = tick.AddSeconds(5);
                 if (owner.aiContainer.pathFind.IsFollowingPath())
                 {
                     owner.aiContainer.pathFind.FollowPath();

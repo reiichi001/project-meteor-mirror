@@ -93,6 +93,23 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             }
         }
 
+        public void InternalUseItem(Character target, uint slot, uint itemId)
+        {
+            // todo: can allies use items?
+            if (owner is Player)
+            {
+                if (CanChangeState())
+                {
+                    ChangeState(new ItemState((Player)owner, target, (ushort)slot, itemId));
+                }
+                else
+                {
+                    // You cannot use that item now.
+                    ((Player)owner).SendGameMessage(Server.GetWorldManager().GetActor(), 32544, 0x20, itemId);
+                }
+            }
+        }
+
         public void ClearStates()
         {
             while (states.Count > 0)
@@ -107,9 +124,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.controller = controller;
         }
 
-        public Controller GetController()
+        public T GetController<T>() where T : Controller
         {
-            return controller;
+            return controller as T;
         }
 
         public TargetFind GetTargetFind()
@@ -190,13 +207,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public bool IsSpawned()
         {
-            // todo: set a flag when finished spawning
             return !IsDead();
         }
 
         public bool IsEngaged()
         {
-            // todo: check this is legit
             return owner.currentMainState == SetActorStatePacket.MAIN_STATE_ACTIVE;
         }
 
@@ -260,6 +275,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 InternalMobSkill(target, mobSkillId);
         }
 
+        public void UseItem(Character target, uint slot, uint itemId)
+        {
+            if (controller != null)
+                controller.UseItem(target, slot, itemId);
+        }
         public void InternalChangeTarget(Character target)
         {
             // targets are changed in the controller

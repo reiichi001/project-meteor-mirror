@@ -125,6 +125,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.param = param != -1.0f ? param : 0.0f;
         }
 
+        /// <summary>
+        /// Call this to prepare Box AOE
+        /// </summary>
+        /// <param name="validTarget"></param>
+        /// <param name="aoeTarget"></param>
+        /// <param name="length"></param>
+        /// <param name="width"></param>
         public void SetAOEBox(ValidTarget validTarget, TargetFindAOETarget aoeTarget, float length, float width)
         {
             this.validTarget = validTarget;
@@ -272,7 +279,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 foreach (var actorId in party.members)
                 {
-                    AddTarget(owner.zone.FindActorInArea(actorId) as Character, withPet);
+                    AddTarget(owner.zone.FindActorInArea<Character>(actorId), withPet);
                 }
             }
         }
@@ -373,9 +380,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         private bool IsWithinCircle(Character target, float maxDistance)
         {
+            // todo: make y diff modifiable?
+            if (Math.Abs(owner.positionX - target.positionY) > 6.0f)
+                return false;
+
             if (this.targetPosition == null)
                 this.targetPosition = aoeTarget == TargetFindAOETarget.Self ? owner.GetPosAsVector3() : masterTarget.GetPosAsVector3();
-
             return target.GetPosAsVector3().IsWithinCircle(targetPosition, param);
         }
 
@@ -393,9 +403,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             // if character is a player owned pet, treat as a player
             if (target.aiContainer != null)
             {
-                var controller = target.aiContainer.GetController();
-                if (controller != null && controller is PetController)
-                    return ((PetController)controller).GetPetMaster();
+                var controller = target.aiContainer.GetController<PetController>();
+                if (controller != null)
+                    return controller.GetPetMaster();
             }
             return null;
         }

@@ -384,7 +384,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        // todo: for zones override this to seach contentareas (assuming flag is passed)
+        // todo: for zones override this to search contentareas (assuming flag is passed)
         public virtual List<T> GetAllActors<T>() where T : Actor
         {
             lock (mActorList)

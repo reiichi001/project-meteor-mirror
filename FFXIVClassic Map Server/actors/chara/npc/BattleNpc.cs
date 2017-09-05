@@ -26,20 +26,40 @@ namespace FFXIVClassic_Map_Server.Actors
         None = 0x00,
         Sight = 0x01,
         Scent = 0x02,
-        LowHp = 0x04,
-        IgnoreLevelDifference = 0x08
+        Sound = 0x04,
+        LowHp = 0x08,
+        IgnoreLevelDifference = 0x10
+    }
+
+    enum KindredType
+    {
+        Unknown   = 0,
+        Beast     = 1,
+        Plantoid  = 2,
+        Aquan     = 3,
+        Spoken    = 4,
+        Reptilian = 5,
+        Insect    = 6,
+        Avian     = 7,
+        Undead    = 8,
+        Cursed    = 9,
+        Voidsent  = 10,
     }
 
     class BattleNpc : Npc
     {
         public HateContainer hateContainer;
         public AggroType aggroType;
+        public KindredType kindredType;
         public bool neutral;
         private uint despawnTime;
         private uint respawnTime;
         private uint spawnDistance;
-
+        
         public Character lastAttacker;
+
+        public Dictionary<uint, BattleCommand> skillList = new Dictionary<uint, BattleCommand>();
+        public Dictionary<uint, BattleCommand> spellList = new Dictionary<uint, BattleCommand>();
 
         public BattleNpc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot,
             ushort actorState, uint animationId, string customDisplayName)
@@ -193,6 +213,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.parameterSave.mp = charaWork.parameterSave.mpMax;
                 RecalculateStats();
 
+                OnSpawn();
                 updateFlags |= ActorUpdateFlags.AllNpc;
             }
         }
@@ -201,9 +222,10 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (IsAlive())
             {
-                if (lastAttacker is Pet && ((Pet)lastAttacker).master is Player)
+                // todo: does retail 
+                if (lastAttacker is Pet && lastAttacker.aiContainer.GetController<PetController>()?.GetPetMaster() is Player)
                 {
-                    lastAttacker = ((Pet)lastAttacker).master;
+                    lastAttacker = lastAttacker.aiContainer.GetController<PetController>().GetPetMaster();
                 }
 
                 if (lastAttacker is Player)
@@ -226,8 +248,8 @@ namespace FFXIVClassic_Map_Server.Actors
                         ((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
                     }
                 }
+                positionUpdates?.Clear();
                 aiContainer.InternalDie(tick, despawnTime);
-                aiContainer.pathFind.Clear();
                 this.ResetMoveSpeeds();
                 
                 // todo: reset cooldowns
@@ -289,6 +311,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public override void OnSpawn()
         {
             base.OnSpawn();
+            lua.LuaEngine.CallLuaBattleFunction(this, "onSpawn", this);
         }
 
         public override void OnDeath()

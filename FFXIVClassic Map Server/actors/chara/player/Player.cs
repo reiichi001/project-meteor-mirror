@@ -1755,6 +1755,10 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override void PostUpdate(DateTime tick, List<SubPacket> packets = null)
         {
+            // todo: is this correct?
+            if (this.playerSession.isUpdatesLocked)
+                return;
+
             // todo: should probably add another flag for battleTemp since all this uses reflection
             packets = new List<SubPacket>();
 

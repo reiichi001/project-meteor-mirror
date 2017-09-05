@@ -97,6 +97,7 @@
     <Compile Include="actors\chara\ai\state\AttackState.cs" />
     <Compile Include="actors\chara\ai\state\DeathState.cs" />
     <Compile Include="actors\chara\ai\state\DespawnState.cs" />
+    <Compile Include="actors\chara\ai\state\ItemState.cs" />
     <Compile Include="actors\chara\ai\state\MagicState.cs" />
     <Compile Include="actors\chara\ai\state\State.cs" />
     <Compile Include="actors\chara\ai\state\WeaponSkillState.cs" />

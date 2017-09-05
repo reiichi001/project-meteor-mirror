@@ -44,6 +44,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         Miss = 0x08
     }
 
+    public enum BattleCommandValidUser : byte
+    {
+        All,
+        Player,
+        Monster
+    }
+
     class BattleCommand
     {
         public ushort id;
@@ -75,6 +82,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public int aoeRange;
 
         public TargetFind targetFind;
+        public BattleCommandValidUser validUser;
 
         public BattleCommand(ushort id, string name)
         {
@@ -100,12 +108,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public bool IsValidTarget(Character user, Character target)
         {
-            // todo: set box length..
             targetFind = new TargetFind(user);
             
             if (aoeType == TargetFindAOEType.Box)
             {
-                // todo: read box width from sql
                 targetFind.SetAOEBox(validTarget, aoeTarget, range, aoeRange);
             }
             else

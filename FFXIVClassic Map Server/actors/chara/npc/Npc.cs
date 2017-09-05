@@ -21,6 +21,17 @@ using FFXIVClassic_Map_Server.actors.chara.ai;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
+    [Flags]
+    enum NpcSpawnType : ushort
+    {
+        Normal    = 0x00,
+        Scripted  = 0x01,
+        Nighttime = 0x02,
+        Evening   = 0x04,
+        Daytime   = 0x08,
+        Weather   = 0x10,
+    }
+
     class Npc : Character
     {
         private uint actorClassId;
@@ -30,6 +41,7 @@ namespace FFXIVClassic_Map_Server.Actors
         private uint layout, instance;
 
         public NpcWork npcWork = new NpcWork();
+        public NpcSpawnType npcSpawnType;
 
         public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, string customDisplayName)
             : base((4 << 28 | spawnedArea.actorId << 19 | (uint)actorNumber))  
@@ -414,7 +426,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override void OnDespawn()
         {
-            zone.BroadcastPacketAroundActor(this, RemoveActorPacket.BuildPacket(this.actorId));
             zone.BroadcastPacketAroundActor(this, RemoveActorPacket.BuildPacket(this.actorId));
             QueuePositionUpdate(spawnX, spawnY, spawnZ);
             LuaEngine.CallLuaBattleFunction(this, "onDespawn", this);

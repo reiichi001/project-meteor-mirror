@@ -87,5 +87,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         {
 
         }
+
+        public override void UseItem(Character target, uint slot, uint itemId)
+        {
+            owner.aiContainer.InternalUseItem(target, slot, itemId);
+        }
     }
 }

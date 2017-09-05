@@ -401,7 +401,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     if (positionUpdates != null && positionUpdates.Count > 0)
                     {
-                        // push latest for player
                         var pos = positionUpdates[0];
                         oldPositionX = positionX;
                         oldPositionY = positionY;
