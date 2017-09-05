@@ -533,12 +533,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
             #region Inventory & Equipment
             QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
-            inventories[Inventory.NORMAL].SendFullInventory();
-            inventories[Inventory.CURRENCY].SendFullInventory();
-            inventories[Inventory.KEYITEMS].SendFullInventory();
-            inventories[Inventory.BAZAAR].SendFullInventory();
-            inventories[Inventory.MELDREQUEST].SendFullInventory();
-            inventories[Inventory.LOOT].SendFullInventory();
+            inventories[Inventory.NORMAL].SendFullInventory(this);
+            inventories[Inventory.CURRENCY].SendFullInventory(this);
+            inventories[Inventory.KEYITEMS].SendFullInventory(this);
+            inventories[Inventory.BAZAAR].SendFullInventory(this);
+            inventories[Inventory.MELDREQUEST].SendFullInventory(this);
+            inventories[Inventory.LOOT].SendFullInventory(this);
             equipment.SendFullEquipment(false);   
             playerSession.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
             #endregion

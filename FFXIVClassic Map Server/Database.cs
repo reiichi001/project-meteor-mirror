@@ -1265,7 +1265,7 @@ namespace FFXIVClassic_Map_Server
                             byte materia4 = reader.GetByte(11);
                             byte materia5 = reader.GetByte(12);
 
-                            items.Add(new InventoryItem(uniqueId, itemId, quantity, slot, itemType, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5));
+                            items.Add(new InventoryItem(uniqueId, itemId, quantity, itemType, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5));
                         }
                     }
                 }
@@ -1282,7 +1282,7 @@ namespace FFXIVClassic_Map_Server
             return items;
         }
 
-        public static InventoryItem AddItem(Player player, uint itemId, int quantity, byte quality, byte itemType, int durability, ushort type)
+        public static InventoryItem CreateItem(uint itemId, int quantity, byte quality, byte itemType, int durability)
         {
             InventoryItem insertedItem = null;
 
@@ -1303,27 +1303,52 @@ namespace FFXIVClassic_Map_Server
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
-                    string query2 = @"
-                                    INSERT INTO characters_inventory
-                                    (characterId, slot, inventoryType, serverItemId, quantity)
-                                    SELECT @charId, IFNULL(MAX(SLOT)+1, 0), @inventoryType, LAST_INSERT_ID(), @quantity FROM characters_inventory WHERE characterId = @charId AND inventoryType = @inventoryType;
-                                    ";
-
-                    MySqlCommand cmd2 = new MySqlCommand(query2, conn);
-
                     cmd.Parameters.AddWithValue("@itemId", itemId);
                     cmd.Parameters.AddWithValue("@quality", quality);
                     cmd.Parameters.AddWithValue("@itemType", itemType);
                     cmd.Parameters.AddWithValue("@durability", durability);
 
-                    cmd2.Parameters.AddWithValue("@charId", player.actorId);
-                    cmd2.Parameters.AddWithValue("@inventoryType", type);
-                    cmd2.Parameters.AddWithValue("@quantity", quantity);
-
                     cmd.ExecuteNonQuery();
-                    cmd2.ExecuteNonQuery();
 
-                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.GetInventory(type).GetNextEmptySlot(), itemType, quality, durability, 0, 0, 0, 0, 0, 0);
+                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, itemType, quality, durability, 0, 0, 0, 0, 0, 0);
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            return insertedItem;
+        }
+
+        public static InventoryItem AddItem(Player player, InventoryItem addedItem, uint type)
+        {
+            InventoryItem insertedItem = null;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    INSERT INTO characters_inventory
+                                    (characterId, slot, inventoryType, serverItemId, quantity)
+                                    SELECT @charId, IFNULL(MAX(SLOT)+1, 0), @inventoryType, @uid, @quantity FROM characters_inventory WHERE characterId = @charId AND inventoryType = @inventoryType;
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Parameters.AddWithValue("@uid", addedItem.uniqueId);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@inventoryType", type);
+                    cmd.Parameters.AddWithValue("@quantity", insertedItem.quantity);
+
+                    cmd.ExecuteNonQuery();                                      
                 }
                 catch (MySqlException e)
                 {
