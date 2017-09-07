@@ -16,43 +16,39 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `server_battlenpc_groups`
+-- Table structure for table `server_battlenpc_pools`
 --
 
-DROP TABLE IF EXISTS `server_battlenpc_groups`;
+DROP TABLE IF EXISTS `server_battlenpc_pools`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `server_battlenpc_groups` (
-  `groupId` int(10) unsigned NOT NULL DEFAULT '0',
-  `poolId` int(10) unsigned NOT NULL DEFAULT '0',
+CREATE TABLE `server_battlenpc_pools` (
+  `poolId` int(10) unsigned NOT NULL,
   `actorClassId` int(10) unsigned NOT NULL,
-  `scriptName` varchar(50) NOT NULL,
-  `minLevel` tinyint(3) unsigned NOT NULL DEFAULT '1',
-  `maxLevel` tinyint(3) unsigned NOT NULL DEFAULT '1',
-  `respawnTime` int(10) unsigned NOT NULL DEFAULT '10',
-  `hp` int(10) unsigned NOT NULL DEFAULT '0',
-  `mp` int(10) unsigned NOT NULL DEFAULT '0',
-  `dropListId` int(10) unsigned NOT NULL DEFAULT '0',
-  `allegiance` tinyint(3) unsigned NOT NULL DEFAULT '0',
-  `spawnType` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `animationId` int(10) unsigned NOT NULL DEFAULT '0',
-  `actorState` smallint(5) unsigned NOT NULL DEFAULT '0',
-  `privateAreaName` varchar(32) NOT NULL DEFAULT '',
-  `privateAreaLevel` int(11) NOT NULL DEFAULT '0',
-  `zoneId` smallint(3) unsigned NOT NULL,
-  PRIMARY KEY (`groupId`)
+  `name` varchar(50) NOT NULL,
+  `genusId` int(10) unsigned NOT NULL,
+  `currentJob` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `combatSkill` tinyint(3) unsigned NOT NULL,
+  `combatDelay` smallint(5) unsigned NOT NULL,
+  `combatDmgMult` float unsigned NOT NULL DEFAULT '1',
+  `aggroType` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `immunity` int(10) unsigned NOT NULL DEFAULT '0',
+  `linkType` tinyint(3) unsigned NOT NULL DEFAULT '0',
+  `spellListId` int(10) unsigned NOT NULL DEFAULT '0',
+  `skillListId` int(10) unsigned NOT NULL,
+  PRIMARY KEY (`poolId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `server_battlenpc_groups`
+-- Dumping data for table `server_battlenpc_pools`
 --
 
-LOCK TABLES `server_battlenpc_groups` WRITE;
-/*!40000 ALTER TABLE `server_battlenpc_groups` DISABLE KEYS */;
+LOCK TABLES `server_battlenpc_pools` WRITE;
+/*!40000 ALTER TABLE `server_battlenpc_pools` DISABLE KEYS */;
 set autocommit=0;
-INSERT INTO `server_battlenpc_groups` VALUES (1,1,2104001,'wharf_rat',1,1,10,0,0,0,0,0,0,0,'',0,170);
-/*!40000 ALTER TABLE `server_battlenpc_groups` ENABLE KEYS */;
+INSERT INTO `server_battlenpc_pools` VALUES (1,2104001,'wharf_rat',12,0,1,4200,1,0,0,0,0,0);
+/*!40000 ALTER TABLE `server_battlenpc_pools` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -65,4 +61,4 @@ commit;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-07 21:54:42
+-- Dump completed on 2017-09-07 21:54:45

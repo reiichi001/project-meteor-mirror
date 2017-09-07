@@ -427,38 +427,54 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Open();
                     var query = @"
-                    SELECT bsl.uniqueId, bsl.groupId, bsl.positionX, bsl.positionY, bsl.positionZ, bsl.rotation, 
-                    bgr.groupId, bgr.genusId, bgr.actorClassId, bgr.minLevel, bgr.maxLevel, bgr.respawnTime,
-                    bgr.hp, bgr.mp, bgr.skillListId, bgr.spellListId, bgr.dropListId, bgr.allegiance,
-                    bgr.spawnType, bgr.animationId, bgr.actorState, bgr.privateAreaName, bgr.privateAreaLevel, bgr.zoneId,
+                    SELECT bsl.groupId, bsl.positionX, bsl.positionY, bsl.positionZ, bsl.rotation, 
+                    bgr.groupId, bgr.poolId, bgr.actorClassId, bgr.scriptName, bgr.minLevel, bgr.maxLevel, bgr.respawnTime, bgr.hp, bgr.mp,
+                    bgr.dropListId, bgr.allegiance, bgr.spawnType, bgr.animationId, bgr.actorState, bgr.privateAreaName, bgr.privateAreaLevel, bgr.zoneId,
+                    bpo.poolId, bpo.genusId, bpo.currentJob, bpo.combatSkill, bpo.combatDelay, bpo.combatDmgMult, bpo.aggroType,
+                    bpo.immunity, bpo.linkType, bpo.skillListId, bpo.spellListId,
                     bge.genusId, bge.modelSize, bge.kindredId, bge.detection, bge.hpp, bge.mpp, bge.tpp, bge.str, bge.vit, bge.dex,
                     bge.int, bge.mnd, bge.pie, bge.att, bge.acc, bge.def, bge.eva, bge.slash, bge.pierce, bge.h2h, bge.blunt,
-                    bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water FROM 
-                    server_battlenpc_spawn_locations bsl INNER JOIN server_battlenpc_groups bgr ON bsl.groupId = bgr.groupId INNER JOIN 
-                    server_battlenpc_genus bge ON bgr.genusId = bgr.genusId WHERE bgr.zoneId = {0} GROUP BY bsl.bnpcIndex;
+                    bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water
+                    FROM server_battlenpc_spawn_locations bsl
+                    INNER JOIN server_battlenpc_groups bgr ON bsl.groupId = bgr.groupId
+                    INNER JOIN server_battlenpc_pools bpo ON bgr.poolId = bpo.poolId
+                    INNER JOIN server_battlenpc_genus bge ON bpo.genusId = bge.genusId
+                    WHERE bgr.zoneId = @zoneId GROUP BY bsl.bnpcIndex;
                     ";
-                    Debugger.Break();
-                    foreach (var zone in zoneList.Values)
+
+                    var count = 0;
+                    foreach (var zonePair in zoneList)
                     {
-                        query = String.Format(query, zone.GetZoneID());
-
+                        var zone = zonePair.Value;
+                        
                         MySqlCommand cmd = new MySqlCommand(query, conn);
+                        cmd.Parameters.AddWithValue("@zoneId", zonePair.Key);
 
-                        cmd.ExecuteNonQuery();
                         using (MySqlDataReader reader = cmd.ExecuteReader())
                         {
                             while (reader.Read())
                             {
                                 int actorId = zone.GetActorCount() + 1;
 
+                                // todo: add to private areas, set up immunity, mob linking,
+                                // - load skill/spell/drop lists, set npcWork.hateType, 
+
                                 var battleNpc = new BattleNpc(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
-                                    reader.GetString("uniqueId"), zone, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
+                                    reader.GetString("scriptName"), zone, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
                                     reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
 
+                                battleNpc.neutral = reader.GetByte("aggroType") == 0;
+
+                                battleNpc.SetDetectionType(reader.GetUInt32("detection"));
                                 battleNpc.kindredType = (KindredType)reader.GetUInt32("kindredId");
                                 battleNpc.npcSpawnType = (NpcSpawnType)reader.GetUInt32("spawnType");
 
+                                // todo: set hateType to appropriate detectionType thing
+                                //battleNpc.npcWork.hateType
+                                battleNpc.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte("currentJob");
                                 battleNpc.charaWork.parameterSave.state_mainSkillLevel = (short)Program.Random.Next(reader.GetByte("minLevel"), reader.GetByte("maxLevel"));
+
+                                battleNpc.allegiance = (CharacterTargetingAllegiance)reader.GetByte("allegiance");
 
                                 // todo: setup private areas and other crap and
                                 // set up rest of stat resists
@@ -466,7 +482,6 @@ namespace FFXIVClassic_Map_Server
                                 battleNpc.SetMod((uint)Modifier.HpPercent, reader.GetUInt32("hpp"));
                                 battleNpc.SetMod((uint)Modifier.Mp, reader.GetUInt32("mp"));
                                 battleNpc.SetMod((uint)Modifier.MpPercent, reader.GetUInt32("mpp"));
-                                battleNpc.SetMod((uint)Modifier.Tp, reader.GetUInt32("tp"));
                                 battleNpc.SetMod((uint)Modifier.TpPercent, reader.GetUInt32("tpp"));
 
                                 battleNpc.SetMod((uint)Modifier.Strength, reader.GetUInt32("str"));
@@ -480,19 +495,19 @@ namespace FFXIVClassic_Map_Server
                                 battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"));
                                 battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"));
 
-                                //battleNpc.SetMod((uint)Modifier.ResistFire, )
 
-                                battleNpc.SetAggroType(reader.GetUInt32("detection"));
-
-                                // todo: load spell/skill/drop lists
                                 battleNpc.dropListId = reader.GetUInt32("dropListId");
                                 battleNpc.spellListId = reader.GetUInt32("spellListId");
                                 battleNpc.skillListId = reader.GetUInt32("skillListId");
 
+                                //battleNpc.SetMod((uint)Modifier.ResistFire, )
+
                                 zone.AddActorToZone(battleNpc);
+                                count++;
                             }
                         }
                     }
+                    Program.Log.Info("Loaded {0} monsters.", count);
                 }
                 catch (MySqlException e)
                 {

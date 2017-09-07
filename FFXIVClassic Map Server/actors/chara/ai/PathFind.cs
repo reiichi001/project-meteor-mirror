@@ -182,18 +182,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void Clear()
         {
-            // todo:
             path?.Clear();
             pathFlags = PathFindFlags.None;
             distanceFromPoint = 0.0f;
-
         }
 
         private float GetSpeed()
         {
             float baseSpeed = owner.GetSpeed();
 
-            // todo: get actual speed crap
             if (!(owner is Player))
             {
                 if (owner is BattleNpc)

@@ -45,7 +45,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             }
             else
             {
-                // todo: check within attack range
                 owner.LookAt(target);
             }
         }

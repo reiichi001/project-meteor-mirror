@@ -21,14 +21,15 @@ using FFXIVClassic_Map_Server.packets.send;
 namespace FFXIVClassic_Map_Server.Actors
 {
     [Flags]
-    enum AggroType
+    enum DetectionType
     {
-        None = 0x00,
-        Sight = 0x01,
-        Scent = 0x02,
-        Sound = 0x04,
-        LowHp = 0x08,
-        IgnoreLevelDifference = 0x10
+        None                  = 0x00,
+        Sight                 = 0x01,
+        Scent                 = 0x02,
+        Sound                 = 0x04,
+        LowHp                 = 0x08,
+        IgnoreLevelDifference = 0x10,
+        Magic                 = 0x20,
     }
 
     enum KindredType
@@ -49,7 +50,7 @@ namespace FFXIVClassic_Map_Server.Actors
     class BattleNpc : Npc
     {
         public HateContainer hateContainer;
-        public AggroType aggroType;
+        public DetectionType detectionType;
         public KindredType kindredType;
         public bool neutral;
         private uint despawnTime;
@@ -82,7 +83,7 @@ namespace FFXIVClassic_Map_Server.Actors
             spawnZ = posZ;
 
             // todo: read these from db also
-            aggroType = AggroType.Sight;
+            detectionType = DetectionType.Sight;
             this.moveState = 2;
             ResetMoveSpeeds();
             despawnTime = 10;
@@ -113,14 +114,14 @@ namespace FFXIVClassic_Map_Server.Actors
             return subpackets;
         }
 
-        public uint GetAggroType()
+        public uint GetDetectionType()
         {
-            return (uint)aggroType;
+            return (uint)detectionType;
         }
         
-        public void SetAggroType(uint aggroType)
+        public void SetDetectionType(uint detectionType)
         {
-            this.aggroType = (AggroType)aggroType;
+            this.detectionType = (DetectionType)detectionType;
         }
 
         public override void Update(DateTime tick)

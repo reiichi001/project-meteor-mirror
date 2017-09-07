@@ -109,7 +109,6 @@ namespace FFXIVClassic_Map_Server.Actors
             this.moveSpeeds[2] = SetActorSpeedPacket.DEFAULT_RUN;
             this.moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_ACTIVE;
 
-            // todo: make this halal
             this.moveState = this.oldMoveState;
             this.updateFlags |= ActorUpdateFlags.Speed;
         }
@@ -649,13 +648,13 @@ namespace FFXIVClassic_Map_Server.Actors
             rotation = (float)dRot;
         }
 
+        // todo: is this legit?
         public bool IsFacing(float x, float z, float angle = 40.0f)
         {
             angle = (float)(Math.PI * angle / 180);
             return Math.Abs(Vector3.GetAngle(positionX, positionZ, x, z) - rotation) < angle;
         }
 
-        // todo: is this legit?
         public bool IsFacing(Actor target, float angle = 40.0f)
         {
             if (target == null)

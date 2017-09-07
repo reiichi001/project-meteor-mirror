@@ -24,7 +24,6 @@ DROP TABLE IF EXISTS `server_battlenpc_spawn_locations`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `server_battlenpc_spawn_locations` (
   `bnpcIndex` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `uniqueId` varchar(32) NOT NULL DEFAULT '',
   `customDisplayName` varchar(32) NOT NULL DEFAULT '',
   `groupId` int(10) unsigned NOT NULL,
   `positionX` float NOT NULL,
@@ -42,8 +41,8 @@ CREATE TABLE `server_battlenpc_spawn_locations` (
 LOCK TABLES `server_battlenpc_spawn_locations` WRITE;
 /*!40000 ALTER TABLE `server_battlenpc_spawn_locations` DISABLE KEYS */;
 set autocommit=0;
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (1,'wharf_rat','test',1,25.584,200,-450,-2.514);
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (2,'wharf_rat','test',1,20,200,-444,-3.14);
+INSERT INTO `server_battlenpc_spawn_locations` VALUES (1,'test',1,25.584,200,-450,-2.514);
+INSERT INTO `server_battlenpc_spawn_locations` VALUES (2,'test',1,20,200,-444,-3.14);
 /*!40000 ALTER TABLE `server_battlenpc_spawn_locations` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;
@@ -57,4 +56,4 @@ commit;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-06  0:07:11
+-- Dump completed on 2017-09-07 21:54:41

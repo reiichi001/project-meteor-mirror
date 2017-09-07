@@ -150,7 +150,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             validTarget = flags;
             // todo: maybe this should only be set if successfully added?
-            this.targetPosition = target.GetPosAsVector3();
             AddTarget(target, false);
         }
 
@@ -161,7 +160,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public void FindWithinArea(Character target, ValidTarget flags, TargetFindAOETarget aoeTarget)
         {
             validTarget = flags;
-            // todo: maybe we should keep a snapshot which is only updated on each tick for consistency
             // are we creating aoe circles around target or self
             if (aoeTarget == TargetFindAOETarget.Self)
                 this.targetPosition = owner.GetPosAsVector3();
@@ -182,7 +180,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 {
                     findType = TargetFindCharacterType.PlayerToPlayer;
 
-                    // todo: handle player parties
                     if (masterTarget.currentParty != null)
                     {
                         if ((validTarget & (ValidTarget.Ally | ValidTarget.PartyMember)) != 0)
@@ -273,7 +270,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         private void AddAllInParty(Character target, bool withPet)
         {
-            // todo:
             var party = target.currentParty as Party;
             if (party != null)
             {
@@ -294,10 +290,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             var actors = owner.zone.GetActorsAroundActor<BattleNpc>(owner, 50);
 
-            // todo: should we look for Characters instead in case player is charmed by BattleNpc
             foreach (BattleNpc actor in actors)
             {
-                // todo:
                 AddTarget(actor, false);
             }
         }

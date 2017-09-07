@@ -73,7 +73,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 32001 [@2B([@IF($E4($EB(1),$EB(2)),you,[@IF($E9(7),[@SHEETEN(xtx/displayName,2,$E9(7),1,1)],$EB(2))])])] [@IF($E4($EB(1),$EB(2)),resist,resists)] the effect of [@SHEET(xtx/status,$E8(11),3)].
                 32002 [@SHEET(xtx/status,$E8(11),3)] fails to take effect.
             */
-            // todo: check flags/overwritable and add effect to list
             var effect = GetStatusEffectById(newEffect.GetStatusEffectId());
             bool canOverwrite = false;
             if (effect != null)
@@ -100,7 +99,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 {
                     effects.Add(newEffect.GetStatusEffectId(), newEffect);
                     newEffect.SetSilent(silent);
-                    // todo: this is retarded..
                     {
                         var index = Array.IndexOf(effects.Values.ToArray(), newEffect);
                         owner.charaWork.status[index] = newEffect.GetStatusId();
@@ -128,7 +126,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                     
                 }
 
-                // todo: this is retarded..
                 {
                     var index = Array.IndexOf(effects.Values.ToArray(), effect);
                     owner.charaWork.status[index] = 0;

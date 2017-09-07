@@ -63,7 +63,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public override bool Engage(Character target)
         {
-            // todo: check distance, last swing time, status effects
             var canEngage = this.owner.aiContainer.InternalEngage(target);
             if (canEngage)
             {
@@ -140,7 +139,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
             if (tick >= waitTime)
             {
-                // todo: aggro cooldown
                 neutralTime = tick.AddSeconds(5);
                 if (owner.aiContainer.pathFind.IsFollowingPath())
                 {
@@ -154,7 +152,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                         
                     }
                 }
-                // todo:
                 waitTime = tick.AddSeconds(10);
                 owner.OnRoam(tick);
 
@@ -171,11 +168,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             {
                 foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
                 {
-                    if (!owner.isMovingToSpawn && owner.aiContainer.pathFind.AtPoint() && owner.aggroType != AggroType.None)
+                    if (!owner.isMovingToSpawn && owner.aiContainer.pathFind.AtPoint() && owner.detectionType != DetectionType.None)
                     {
                         uint levelDifference = (uint)Math.Abs(owner.charaWork.parameterSave.state_mainSkillLevel - player.charaWork.parameterSave.state_mainSkillLevel);
 
-                        if (levelDifference <= 10 || (owner.aggroType & AggroType.IgnoreLevelDifference) != 0 && CanAggroTarget(player))
+                        if (levelDifference <= 10 || (owner.detectionType & DetectionType.IgnoreLevelDifference) != 0 && CanAggroTarget(player))
                         {
                             owner.hateContainer.AddBaseHate(player);
                             break;
@@ -287,7 +284,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public bool CanAggroTarget(Character target)
         {
-            if (owner.neutral || owner.aggroType == AggroType.None || owner.IsDead())
+            if (owner.neutral || owner.detectionType == DetectionType.None || owner.IsDead())
             {
                 return false;
             }
@@ -326,7 +323,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
             var distance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ);
 
-            bool detectSight = forceSight || (owner.aggroType & AggroType.Sight) != 0;
+            bool detectSight = forceSight || (owner.detectionType & DetectionType.Sight) != 0;
             bool hasSneak = false;
             bool hasInvisible = false;
             bool isFacing = owner.IsFacing(target);
@@ -344,7 +341,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             }
 
 
-            if ((owner.aggroType & AggroType.LowHp) != 0 && target.GetHPP() < 75)
+            if ((owner.detectionType & DetectionType.LowHp) != 0 && target.GetHPP() < 75)
                 return CanSeePoint(target.positionX, target.positionY, target.positionZ);
 
             if (detectSight && !hasInvisible && isFacing)

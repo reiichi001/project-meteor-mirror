@@ -381,7 +381,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.durationMs = durationMs;
             this.tier = tier;
 
-            // todo: use tick instead of now?
             this.startTime = DateTime.Now;
             this.lastTick = startTime;
         }
@@ -415,19 +414,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         // return true when duration has elapsed
         public bool Update(DateTime tick)
         {
-            // todo: maybe not tick if already reached duration?
             if (tickMs != 0 && (tick - lastTick).TotalMilliseconds >= tickMs)
             {
-                // todo: call effect's onTick
-                // todo: maybe keep a global lua object instead of creating a new one each time we wanna call a script
                 lastTick = tick;
                 LuaEngine.CallLuaStatusEffectFunction(this.owner, this, "onTick", this.owner, this);
             }
-            // todo: handle infinite duration effects?
+
             if (durationMs != 0 && (tick - startTime).TotalMilliseconds >= durationMs)
             {
-                // todo: call effect's onLose
-                // todo: broadcast effect lost packet
                 return true;
             }
             return false;
