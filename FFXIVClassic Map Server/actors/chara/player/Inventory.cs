@@ -124,6 +124,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     item.quantity = Math.Min(item.quantity + quantityCount, gItem.maxStack);
                     isDirty[i] = true;
                     quantityCount -= (gItem.maxStack - oldQuantity);
+
+                    if (owner is Player)
+                    {
+                        Database.SetQuantity((Player)owner, item.uniqueId, item.quantity);
+                    }
+
                     if (quantityCount <= 0)
                         break;
                 }
@@ -145,10 +151,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 isDirty[endOfListIndex] = true;
                 list[endOfListIndex++] = addedItem;                
                 quantityCount -= gItem.maxStack;
+
+                if (owner is Player)
+                {
+                    Database.AddItem((Player)owner, addedItem, inventoryCode);
+                }
             }
 
             if (owner is Player)
+            {
                 SendUpdatePackets((Player)owner);
+            }
 
             return true;
         }
@@ -177,11 +190,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 {
                     int oldQuantity = item.quantity;
                     //Stack nomnomed
-                    if (item.quantity - quantityCount <= 0)                    
-                        list[i] = null;                    
+                    if (item.quantity - quantityCount <= 0)
+                    {
+                        if (owner is Player)
+                            Database.RemoveItem((Player)owner, list[i].uniqueId);
+                        list[i] = null;
+                    }
                     //Stack reduced
-                    else                    
+                    else
+                    {
                         item.quantity -= quantityCount;
+                        if (owner is Player)
+                            Database.SetQuantity((Player)owner, list[i].uniqueId, list[i].quantity);
+                    }                        
 
                     isDirty[i] = true;
 
@@ -215,6 +236,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (toDelete == null)
                 return;
 
+            if (owner is Player)
+                Database.RemoveItem((Player)owner, toDelete.uniqueId);
+
             list[slot] = null;
             isDirty[slot] = true;
             doRealign();
@@ -224,6 +248,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             if (slot >= endOfListIndex)
                 return;
+
+            if (owner is Player)
+                Database.RemoveItem((Player)owner, list[slot].uniqueId);
 
             list[slot] = null;
             isDirty[slot] = true;
@@ -243,8 +270,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
                 if (list[slot].quantity <= 0)
                 {
+                    if (owner is Player)
+                        Database.RemoveItem((Player)owner, list[slot].uniqueId);
+
                     list[slot] = null;
                     doRealign();
+                }
+                else
+                {
+                    if (owner is Player)
+                        Database.SetQuantity((Player)owner, list[slot].uniqueId, list[slot].quantity);
                 }
 
                 isDirty[slot] = true;
