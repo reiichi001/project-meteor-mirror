@@ -118,6 +118,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 QueuePacket(actor.GetInitPackets());
                 QueuePacket(actor.GetSetEventStatusPackets());
                 actorInstanceList.Add(actor);
+                ((Npc)actor).DoOnActorSpawn(playerActor);
                 playerActor.sentRetainerSpawn = true;
             }
 

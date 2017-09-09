@@ -11,6 +11,7 @@ using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.packets.receive.supportdesk;
+using FFXIVClassic_Map_Server.actors.chara.npc;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -1076,7 +1077,7 @@ namespace FFXIVClassic_Map_Server
 
                     player.GetInventory(Inventory.NORMAL).InitList(GetInventory(player, 0, Inventory.NORMAL));
                     player.GetInventory(Inventory.KEYITEMS).InitList(GetInventory(player, 0, Inventory.KEYITEMS));
-                    player.GetInventory(Inventory.CURRENCY).InitList(GetInventory(player, 0, Inventory.CURRENCY));
+                    player.GetInventory(Inventory.CURRENCY_CRYSTALS).InitList(GetInventory(player, 0, Inventory.CURRENCY_CRYSTALS));
                     player.GetInventory(Inventory.BAZAAR).InitList(GetInventory(player, 0, Inventory.BAZAAR));
                     player.GetInventory(Inventory.MELDREQUEST).InitList(GetInventory(player, 0, Inventory.MELDREQUEST));
                     player.GetInventory(Inventory.LOOT).InitList(GetInventory(player, 0, Inventory.LOOT));
@@ -1283,6 +1284,79 @@ namespace FFXIVClassic_Map_Server
             return items;
         }
 
+        public static List<InventoryItem> GetInventory(Retainer retainer, uint type)
+        {
+            List<InventoryItem> items = new List<InventoryItem>();
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT
+                                    serverItemId,
+                                    itemId,
+                                    quantity,
+                                    itemType,
+                                    quality,
+                                    durability,
+                                    spiritBind,
+                                    materia1,
+                                    materia2,
+                                    materia3,
+                                    materia4,
+                                    materia5
+                                    FROM retainers_inventory
+                                    INNER JOIN server_items ON serverItemId = server_items.id
+                                    WHERE retainerId = @retainerId AND inventoryType = @type";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
+                    cmd.Parameters.AddWithValue("@type", type);
+
+                    ushort slot = 0;
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint uniqueId = reader.GetUInt32("serverItemId");
+                            uint itemId = reader.GetUInt32("itemId");
+                            int quantity = reader.GetInt32("quantity");
+
+                            byte itemType = reader.GetByte("itemType");
+                            byte qualityNumber = reader.GetByte("quality");
+
+                            int durability = reader.GetInt32("durability");
+                            ushort spiritBind = reader.GetUInt16("spiritBind");
+
+                            byte materia1 = reader.GetByte("materia1");
+                            byte materia2 = reader.GetByte("materia2");
+                            byte materia3 = reader.GetByte("materia3");
+                            byte materia4 = reader.GetByte("materia4");
+                            byte materia5 = reader.GetByte("materia5");
+
+                            InventoryItem item = new InventoryItem(uniqueId, itemId, quantity, itemType, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5);
+                            item.slot = slot;
+                            slot++;
+                            items.Add(item);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            return items;
+        }
+
         public static InventoryItem CreateItem(uint itemId, int quantity, byte quality, byte itemType, int durability)
         {
             InventoryItem insertedItem = null;
@@ -1409,6 +1483,105 @@ namespace FFXIVClassic_Map_Server
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
+                    cmd.ExecuteNonQuery();
+
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+        }
+
+        public static void AddItem(Retainer retainer, InventoryItem addedItem, uint type)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    INSERT INTO retainers_inventory
+                                    (retainerId, inventoryType, serverItemId, quantity)
+                                    VALUES
+                                    (@retainerId, @inventoryType, @serverItemId, @quantity)                                    
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Parameters.AddWithValue("@serverItemId", addedItem.uniqueId);
+                    cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
+                    cmd.Parameters.AddWithValue("@inventoryType", type);
+                    cmd.Parameters.AddWithValue("@quantity", addedItem.quantity);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void SetQuantity(Retainer retainer, ulong serverItemId, int quantity)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    UPDATE retainers_inventory
+                                    SET quantity = @quantity
+                                    WHERE retainerId = @retainerId and serverItemId = @serverItemId;
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
+                    cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
+                    cmd.Parameters.AddWithValue("@quantity", quantity);
+                    cmd.ExecuteNonQuery();
+
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+        }
+
+        public static void RemoveItem(Retainer retainer, ulong serverItemId)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}; Allow User Variables=True", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    DELETE FROM retainers_inventory
+                                    WHERE retainerId = @retainerId and serverItemId = @serverItemId;
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
                     cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
                     cmd.ExecuteNonQuery();
 
@@ -1897,9 +2070,9 @@ namespace FFXIVClassic_Map_Server
         }
 
 
-        public static Tuple<uint, uint, string> GetRetainer(Player player, int retainerIndex)
+        public static Retainer LoadRetainer(Player player, int retainerIndex)
         {
-            Tuple<uint, uint, string> data = null;
+            Retainer retainer = null;
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -1926,7 +2099,11 @@ namespace FFXIVClassic_Map_Server
                             uint retainerId = reader.GetUInt32("retainerId");
                             string name = reader.GetString("name");
                             uint actorClassId = reader.GetUInt32("actorClassId");
-                            data = new Tuple<uint, uint, string>(retainerId, actorClassId, name);
+
+                            ActorClass actorClass = Server.GetWorldManager().GetActorClass(actorClassId);
+
+                            retainer = new Retainer(retainerId, actorClass, player, 0, 0, 0, 0);
+                            retainer.LoadEventConditions(actorClass.eventConditions);
                         }
                     }
 
@@ -1940,7 +2117,7 @@ namespace FFXIVClassic_Map_Server
                     conn.Dispose();
                 }
 
-                return data;
+                return retainer;
             }
         }
 

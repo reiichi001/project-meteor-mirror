@@ -12,45 +12,50 @@ namespace FFXIVClassic_Map_Server.actors.chara.npc
 {
     class Retainer : Npc
     {
-        Player player;
+        public const int MAXSIZE_INVENTORY_NORMAL = 150;
+        public const int MAXSIZE_INVENTORY_CURRANCY = 320;
+        public const int MAXSIZE_INVENTORY_BAZAAR = 10;
 
-        public Retainer(string retainerName, ActorClass actorClass, Player player, float posX, float posY, float posZ, float rot)
-            : base(0, actorClass, "myretainer", player.GetZone(), posX, posY, posZ, rot, 0, 0, retainerName)
+        private uint retainerId;
+        private Player ownerPlayer;
+        private Dictionary<ushort, Inventory> inventories = new Dictionary<ushort, Inventory>();
+
+        public Retainer(uint retainerId, ActorClass actorClass, Player player, float posX, float posY, float posZ, float rot)
+            : base(0, actorClass, "myretainer", player.GetZone(), posX, posY, posZ, rot, 0, 0, null)
         {
-            this.player = player;
+            this.retainerId = retainerId;
+            this.ownerPlayer = player;
             this.actorName = String.Format("_rtnre{0:x7}", actorId);
+
+            inventories[Inventory.NORMAL] = new Inventory(this, MAXSIZE_INVENTORY_NORMAL, Inventory.NORMAL);
+            inventories[Inventory.CURRENCY_CRYSTALS] = new Inventory(this, MAXSIZE_INVENTORY_CURRANCY, Inventory.CURRENCY_CRYSTALS);
+            inventories[Inventory.BAZAAR] = new Inventory(this, MAXSIZE_INVENTORY_BAZAAR, Inventory.BAZAAR);
+
+            inventories[Inventory.NORMAL].InitList(Database.GetInventory(this, Inventory.NORMAL));
+            inventories[Inventory.CURRENCY_CRYSTALS].InitList(Database.GetInventory(this, Inventory.CURRENCY_CRYSTALS));
+            inventories[Inventory.BAZAAR].InitList(Database.GetInventory(this, Inventory.BAZAAR));
         }
 
-        public void SendBazaarItems(Player player)
+        public Inventory GetInventory(ushort type)
         {
-                Inventory bazaar = new Inventory(this, 150, (ushort)0);
-                bazaar.AddItem(1000001);
-                bazaar.AddItem(3020517);
-                player.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
-                bazaar.SendFullInventory(player);
-                player.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
-            
+            if (inventories.ContainsKey(type))
+                return inventories[type];
+            else
+                return null;
         }
 
-        public void SendStorageItems(Player player)
-        {
-            Inventory storage = new Inventory(this, 10, Inventory.CURRENCY);
-            storage.AddItem(1000001);
-            storage.AddItem(3020519);
+        public void SendFullRetainerInventory(Player player)
+        {         
             player.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
-            storage.SendFullInventory(player);
+            inventories[Inventory.NORMAL].SendFullInventory(player);
+            inventories[Inventory.CURRENCY_CRYSTALS].SendFullInventory(player);
+            inventories[Inventory.BAZAAR].SendFullInventory(player);
             player.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
         }
 
-        public void SendHuhItems(Player player)
+        public uint getRetainerId()
         {
-            Inventory storage = new Inventory(this, 20, 7);
-            storage.AddItem(1000003);
-            storage.AddItem(1000016);
-            player.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
-            storage.SendFullInventory(player);
-            player.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
+            return retainerId;
         }
-
     }
 }

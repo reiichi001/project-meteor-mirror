@@ -161,7 +161,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             inventories[Inventory.NORMAL] = new Inventory(this, MAXSIZE_INVENTORY_NORMAL, Inventory.NORMAL);
             inventories[Inventory.KEYITEMS] = new Inventory(this, MAXSIZE_INVENTORY_KEYITEMS, Inventory.KEYITEMS);
-            inventories[Inventory.CURRENCY] = new Inventory(this, MAXSIZE_INVENTORY_CURRANCY, Inventory.CURRENCY);
+            inventories[Inventory.CURRENCY_CRYSTALS] = new Inventory(this, MAXSIZE_INVENTORY_CURRANCY, Inventory.CURRENCY_CRYSTALS);
             inventories[Inventory.MELDREQUEST] = new Inventory(this, MAXSIZE_INVENTORY_MELDREQUEST, Inventory.MELDREQUEST);
             inventories[Inventory.BAZAAR] = new Inventory(this, MAXSIZE_INVENTORY_BAZAAR, Inventory.BAZAAR);
             inventories[Inventory.LOOT] = new Inventory(this, MAXSIZE_INVENTORY_LOOT, Inventory.LOOT);
@@ -535,7 +535,7 @@ namespace FFXIVClassic_Map_Server.Actors
             #region Inventory & Equipment
             QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
             inventories[Inventory.NORMAL].SendFullInventory(this);
-            inventories[Inventory.CURRENCY].SendFullInventory(this);
+            inventories[Inventory.CURRENCY_CRYSTALS].SendFullInventory(this);
             inventories[Inventory.KEYITEMS].SendFullInventory(this);
             inventories[Inventory.BAZAAR].SendFullInventory(this);
             inventories[Inventory.MELDREQUEST].SendFullInventory(this);
@@ -1048,8 +1048,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public int GetCurrentGil()
         {
-            if (GetInventory(Inventory.CURRENCY).HasItem(1000001))
-                return GetInventory(Inventory.CURRENCY).GetItemByCatelogId(1000001).quantity;
+            if (GetInventory(Inventory.CURRENCY_CRYSTALS).HasItem(1000001))
+                return GetInventory(Inventory.CURRENCY_CRYSTALS).GetItemByCatelogId(1000001).quantity;
             else
                 return 0;
         }
@@ -1745,20 +1745,16 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public Retainer SpawnMyRetainer(Npc bell, int retainerIndex)
         {
-            Tuple<uint, uint, string> retainerData = Database.GetRetainer(this, retainerIndex);
-
-            ActorClass actorClass = Server.GetWorldManager().GetActorClass(retainerData.Item2);
-
-            if (actorClass == null)
-                return null;
+            Retainer retainer = Database.LoadRetainer(this, retainerIndex);
 
             float distance = (float)Math.Sqrt(((positionX - bell.positionX) * (positionX - bell.positionX)) + ((positionZ - bell.positionZ) * (positionZ - bell.positionZ)));
             float posX = bell.positionX - ((-1.0f * (bell.positionX - positionX)) / distance);
             float posZ = bell.positionZ - ((-1.0f * (bell.positionZ - positionZ)) / distance);
 
-            Retainer retainer = new Retainer(retainerData.Item3, actorClass, this, posX, bell.positionY, positionZ, (float)Math.Atan2(positionX - posX, positionZ - posZ));
-
-            retainer.LoadEventConditions(actorClass.eventConditions);
+            retainer.positionX = posX;
+            retainer.positionY = positionY;
+            retainer.positionZ = posZ;
+            retainer.rotation = (float)Math.Atan2(positionX - posX, positionZ - posZ);
 
             retainerMeetingGroup = new RetainerMeetingRelationGroup(5555, this, retainer);
             retainerMeetingGroup.SendGroupPackets(playerSession);
