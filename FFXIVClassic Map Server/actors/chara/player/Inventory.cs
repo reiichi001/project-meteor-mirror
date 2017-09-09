@@ -5,6 +5,7 @@ using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace FFXIVClassic_Map_Server.actors.chara.player
@@ -62,8 +63,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             {
                 InventoryItem item = list[i];
 
-                if (item == null)
-                    throw new Exception("Item slot was null!!!");
+                Debug.Assert(item != null, "Item slot was null!!!");
 
                 if (item.uniqueId == uniqueItemId)
                     return item;
@@ -77,8 +77,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             {
                 InventoryItem item = list[i];
 
-                if (item == null)
-                    throw new Exception("Item slot was null!!!");
+                Debug.Assert(item != null, "Item slot was null!!!");
 
                 if (item.itemId == catelogId)
                     return item;
@@ -98,7 +97,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public bool AddItem(uint itemId, int quantity, byte quality)
         {
-            if (!IsSpaceForAdd(itemId, quantity))
+            if (!IsSpaceForAdd(itemId, quantity, quality))
                 return false;
 
             ItemData gItem = Server.GetItemGamedata(itemId);
@@ -115,10 +114,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             {                
                 InventoryItem item = list[i];
 
-                if (item == null)
-                    throw new Exception("Item slot was null!!!");
+                Debug.Assert(item != null, "Item slot was null!!!");
 
-                if (item.itemId == itemId && item.quantity < gItem.maxStack)
+                if (item.itemId == itemId && item.quality == quality && item.quantity < gItem.maxStack)
                 {
                     int oldQuantity = item.quantity;
                     item.quantity = Math.Min(item.quantity + quantityCount, gItem.maxStack);
@@ -166,9 +164,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             return true;
         }
 
+        public void RemoveItem(uint itemId)
+        {
+            RemoveItem(itemId, 1);
+        }
+        
         public void RemoveItem(uint itemId, int quantity)
         {
-            if (!HasItem(itemId, quantity))
+            RemoveItem(itemId, quantity, 1);
+        }
+
+        public void RemoveItem(uint itemId, int quantity, int quality)
+        {
+            if (!HasItem(itemId, quantity, quality))
                 return;
 
             List<ushort> slotsToUpdate = new List<ushort>();
@@ -183,10 +191,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             {
                 InventoryItem item = list[i];
 
-                if (item == null)
-                    throw new Exception("Item slot was null!!!");
+                Debug.Assert(item != null, "Item slot was null!!!");
 
-                if (item.itemId == itemId)
+                if (item.itemId == itemId && item.quality == quality)
                 {
                     int oldQuantity = item.quantity;
                     //Stack nomnomed
@@ -223,8 +230,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             ushort slot = 0;
             InventoryItem toDelete = null;
-            foreach (InventoryItem item in list)
+            for (int i = endOfListIndex - 1; i >= 0; i--)
             {
+                InventoryItem item = list[i];
+
+                Debug.Assert(item != null, "Item slot was null!!!");
+
                 if (item.uniqueId == itemDBId)
                 {
                     toDelete = item;
@@ -241,7 +252,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             list[slot] = null;
             isDirty[slot] = true;
+
             doRealign();
+            if (owner is Player)
+                SendUpdatePackets((Player)owner);
         }
 
         public void RemoveItemAtSlot(ushort slot)
@@ -254,6 +268,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             list[slot] = null;
             isDirty[slot] = true;
+            
             doRealign();
             if (owner is Player)
                 SendUpdatePackets((Player)owner);
@@ -464,14 +479,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             return endOfListIndex >= inventoryCapacity;
         }
         
-        public bool IsSpaceForAdd(uint itemId, int quantity)
+        public bool IsSpaceForAdd(uint itemId, int quantity, int quality)
         {
             int quantityCount = quantity;
             for (int i = 0; i < endOfListIndex; i++)
             {
                 InventoryItem item = list[i];
                 ItemData gItem = Server.GetItemGamedata(item.itemId);
-                if (item.itemId == itemId && item.quantity < gItem.maxStack)
+                if (item.itemId == itemId && item.quality == quality && item.quantity < gItem.maxStack)
                 {
                     quantityCount -= (gItem.maxStack - item.quantity);
                     if (quantityCount <= 0)
@@ -489,11 +504,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public bool HasItem(uint itemId, int minQuantity)
         {
+            return HasItem(itemId, minQuantity, 1);
+        }
+
+        public bool HasItem(uint itemId, int minQuantity, int quality)
+        {
             int count = 0;
 
-            foreach (InventoryItem item in list)
+            for (int i = endOfListIndex - 1; i >= 0; i--)
             {
-                if (item.itemId == itemId)
+                InventoryItem item = list[i];
+
+                Debug.Assert(item != null, "Item slot was null!!!");
+
+                if (item.itemId == itemId && item.quality == quality)
                     count += item.quantity;
 
                 if (count >= minQuantity)

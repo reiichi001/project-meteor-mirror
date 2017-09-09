@@ -1338,12 +1338,12 @@ namespace FFXIVClassic_Map_Server
                                     INSERT INTO characters_inventory
                                     (characterId, inventoryType, serverItemId, quantity)
                                     VALUES
-                                    (@charId, @inventoryType, uid, @quantity)                                    
+                                    (@charId, @inventoryType, @serverItemId, @quantity)                                    
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
-                    cmd.Parameters.AddWithValue("@uid", addedItem.uniqueId);
+                    cmd.Parameters.AddWithValue("@serverItemId", addedItem.uniqueId);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@inventoryType", type);
                     cmd.Parameters.AddWithValue("@quantity", addedItem.quantity);
@@ -1404,7 +1404,7 @@ namespace FFXIVClassic_Map_Server
 
                     string query = @"
                                     DELETE FROM characters_inventory
-                                    WHERE characterId = @charId and serverItemId = @itemDBCode;
+                                    WHERE characterId = @charId and serverItemId = @serverItemId;
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
