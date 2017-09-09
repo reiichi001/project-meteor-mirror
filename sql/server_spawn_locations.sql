@@ -4,11 +4,10 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 7/9/2017 7:11:04 PM
+Date: 9/9/2017 2:33:14 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
-SET AUTOCOMMIT=0;
 -- ----------------------------
 -- Table structure for server_spawn_locations
 -- ----------------------------
@@ -27,7 +26,7 @@ CREATE TABLE `server_spawn_locations` (
   `animationId` int(10) unsigned NOT NULL DEFAULT '0',
   `customDisplayName` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=939 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=960 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records 
@@ -541,7 +540,7 @@ INSERT INTO `server_spawn_locations` VALUES ('509', '1001494', 'loutish_lad', '1
 INSERT INTO `server_spawn_locations` VALUES ('510', '1001495', 'gil-digging_mistress', '184', '', '0', '-19.11', '196', '95.09', '2.13', '0', '1037', null);
 INSERT INTO `server_spawn_locations` VALUES ('511', '1001496', 'twittering_tomboy', '184', '', '0', '-32.37', '196', '80.75', '-0.74', '0', '1101', null);
 INSERT INTO `server_spawn_locations` VALUES ('512', '1280127', '', '0', '', '0', '-400', '19', '338', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('513', '1090372', 'exit_trigger', '184', '', '0', '-13', '194.91', '76.75', '-2.72', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('513', '1090372', 'exit_trigger', '184', '', '0', '-13', '194.91', '76.75', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('514', '1000438', 'well-traveled_merchant', '193', '', '0', '-0.71', '10.35', '-40.51', '0.3', '0', '1035', null);
 INSERT INTO `server_spawn_locations` VALUES ('515', '1000439', 'tipsy_adventurer', '193', '', '0', '-1.87', '9.15', '-30.67', '2.44', '0', '1032', null);
 INSERT INTO `server_spawn_locations` VALUES ('516', '1000440', 'cultivated_tender', '193', '', '0', '7.06', '9.15', '-28.62', '-1.54', '0', '1041', null);
@@ -951,4 +950,24 @@ INSERT INTO `server_spawn_locations` VALUES ('935', '1060027', 'yoshi_p', '130',
 INSERT INTO `server_spawn_locations` VALUES ('936', '5900004', 'door1', '175', 'PrivateAreaMasterPast', '3', '14', '196', '174', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('937', '5900004', 'door2', '175', 'PrivateAreaMasterPast', '3', '12', '196', '184', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('938', '5900004', 'door3', '184', '', '0', '-44', '196', '68', '0', '0', '0', null);
-COMMIT;
+INSERT INTO `server_spawn_locations` VALUES ('939', '1001042', 'high-spirited_fellow', '175', 'PrivateAreaMasterPast', '3', '-36.23', '196', '80', '1.8', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('940', '1001044', 'disreputable_midlander', '175', 'PrivateAreaMasterPast', '3', '-23.92', '196', '76.73', '-0.15', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('941', '1000840', 'rururaji', '175', 'PrivateAreaMasterPast', '3', '-13.509', '196', '86.927', '-1.521', '0', '1017', null);
+INSERT INTO `server_spawn_locations` VALUES ('942', '1001112', 'long-legged_lady', '175', 'PrivateAreaMasterPast', '3', '4.308', '196', '116.764', '-1.226', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('943', '0', 'mumpish_miqote', '175', 'PrivateAreaMasterPast', '3', '-15.126', '196', '107.116', '1.308', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('944', '1000401', 'keen-eyed_merchant', '175', 'PrivateAreaMasterPast', '3', '-27.845', '196', '85.814', '1.511', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('945', '1500129', 'yayatoki', '175', 'PrivateAreaMasterPast', '3', '-27.31', '196', '87.25', '1.91', '0', '1040', null);
+INSERT INTO `server_spawn_locations` VALUES ('946', '1099046', 'uldah_opening_exit', '175', 'PrivateAreaMasterPast', '3', '-48.704', '196.097', '67.102', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('947', '1001646', 'tooth-grinding_traveler', '175', 'PrivateAreaMasterPast', '3', '-19.553', '196', '79.418', '1.534', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('948', '1001645', 'large-lunged_laborer', '175', 'PrivateAreaMasterPast', '3', '-17.625', '196.072', '79.49', '-1.702', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('949', '1001647', 'full-lipped_fille', '175', 'PrivateAreaMasterPast', '3', '3.938', '196', '119.318', '-2.744', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('950', '1090372', 'blocker1', '175', 'PrivateAreaMasterPast', '3', '-13', '194.91', '76.75', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('951', '1090372', 'blocker2', '175', 'PrivateAreaMasterPast', '3', '3.2', '196', '125.121', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('952', '1000841', 'momodi', '175', 'PrivateAreaMasterPast', '4', '-73.33', '195', '78.531', '-1.404', '0', '1060', null);
+INSERT INTO `server_spawn_locations` VALUES ('953', '1090265', 'market_entrance111', '180', 'PrivateAreaMasterMarket', '102', '160', '0', '157', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('954', '1500397', 'vendor1', '180', 'PrivateAreaMasterMarket', '102', '166.7', '1', '174', '-1.57', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('955', '1500419', 'salesman', '180', 'PrivateAreaMasterMarket', '102', '153.3', '1.4', '174', '1.57', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('956', '1200027', 'retainerbell', '180', 'PrivateAreaMasterMarket', '102', '153.3', '1', '184', '2.9', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('957', '1500417', 'vendor2', '180', 'PrivateAreaMasterMarket', '102', '166.7', '1.4', '194', '-1.57', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('958', '1500428', 'repairman', '180', 'PrivateAreaMasterMarket', '102', '153.3', '1', '194', '1.57', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('959', '1090265', 'market_entrance222', '180', 'PrivateAreaMasterMarket', '102', '160', '2', '210', '0', '0', '0', null);
