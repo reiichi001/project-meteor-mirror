@@ -92,6 +92,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             return AddItem(itemId, 1, 1);
         }
 
+        public void AddItem(uint[] itemId)
+        {
+            for (int i = 0; i < itemId.Length; i++)
+                AddItem(itemId[i]);
+        }
+
         public bool AddItem(uint itemId, int quantity)
         {
             return AddItem(itemId, quantity, 1);

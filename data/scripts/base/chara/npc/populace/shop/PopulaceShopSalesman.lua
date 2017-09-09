@@ -112,7 +112,7 @@ function processNormalShop(player, choice)
 			else
 				player:SendMessage(0x20, "", "Player sold a thing at slot " .. tostring(sellResult)..".");
 				
-				itemToSell = player:GetInventory(0x00):GetItemBySlot(sellResult.slot);	
+				itemToSell = player:GetInventory(0x00):GetItemAtSlot(sellResult.slot);	
 				gItemTOSell = GetItemGamedata(itemToSell.itemId);
 				
 				player:GetInventory(0x63):AddItem(shopInfo.shopCurrancy, gItemTOSell.sellPrice);
