@@ -1,5 +1,6 @@
 ﻿
 using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send.actor.inventory;
@@ -28,14 +29,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         private Character owner;
         private ushort inventoryCapacity;
         private ushort inventoryCode;
+        private bool isTemporary;
         private InventoryItem[] list;
         private bool[] isDirty;
 
-        public Inventory(Character ownerPlayer, ushort capacity, ushort code)
+        public Inventory(Character ownerPlayer, ushort capacity, ushort code, bool temporary = false)
         {
             owner = ownerPlayer;
             inventoryCapacity = capacity;
             inventoryCode = code;
+            isTemporary = temporary;
             list = new InventoryItem[capacity];
             isDirty = new bool[capacity];
         }
@@ -125,7 +128,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
                     if (owner is Player)
                     {
-                        Database.SetQuantity((Player)owner, item.uniqueId, item.quantity);
+                        DoDatabaseQuantity(item.uniqueId, item.quantity);
                     }
 
                     if (quantityCount <= 0)
@@ -150,10 +153,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 list[endOfListIndex++] = addedItem;                
                 quantityCount -= gItem.maxStack;
 
-                if (owner is Player)
-                {
-                    Database.AddItem((Player)owner, addedItem, inventoryCode);
-                }
+                DoDatabaseAdd(addedItem);
             }
 
             if (owner is Player)
@@ -199,16 +199,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     //Stack nomnomed
                     if (item.quantity - quantityCount <= 0)
                     {
-                        if (owner is Player)
-                            Database.RemoveItem((Player)owner, list[i].uniqueId);
+                        DoDatabaseRemove(list[i].uniqueId);                        
                         list[i] = null;
                     }
                     //Stack reduced
                     else
                     {
                         item.quantity -= quantityCount;
-                        if (owner is Player)
-                            Database.SetQuantity((Player)owner, list[i].uniqueId, list[i].quantity);
+                        DoDatabaseQuantity(list[i].uniqueId, list[i].quantity);
                     }                        
 
                     isDirty[i] = true;
@@ -221,7 +219,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 }
             }
 
-            doRealign();
+            DoRealign();
             if (owner is Player)
                 SendUpdatePackets((Player)owner);
         }
@@ -246,14 +244,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             if (toDelete == null)
                 return;
-
-            if (owner is Player)
-                Database.RemoveItem((Player)owner, toDelete.uniqueId);
+            
+            DoDatabaseRemove(toDelete.uniqueId);
 
             list[slot] = null;
             isDirty[slot] = true;
 
-            doRealign();
+            DoRealign();
             if (owner is Player)
                 SendUpdatePackets((Player)owner);
         }
@@ -263,13 +260,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (slot >= endOfListIndex)
                 return;
 
-            if (owner is Player)
-                Database.RemoveItem((Player)owner, list[slot].uniqueId);
+            DoDatabaseRemove(list[slot].uniqueId);
 
             list[slot] = null;
             isDirty[slot] = true;
             
-            doRealign();
+            DoRealign();
             if (owner is Player)
                 SendUpdatePackets((Player)owner);
         }
@@ -285,17 +281,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
                 if (list[slot].quantity <= 0)
                 {
-                    if (owner is Player)
-                        Database.RemoveItem((Player)owner, list[slot].uniqueId);
+                    DoDatabaseRemove(list[slot].uniqueId);
 
                     list[slot] = null;
-                    doRealign();
+                    DoRealign();
                 }
-                else
-                {
-                    if (owner is Player)
-                        Database.SetQuantity((Player)owner, list[slot].uniqueId, list[slot].quantity);
-                }
+                else                
+                    DoDatabaseQuantity(list[slot].uniqueId, list[slot].quantity);                
 
                 isDirty[slot] = true;
                 if (owner is Player)
@@ -439,7 +431,47 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         #endregion
 
-        #region Client Updating
+        #region Client and DB Updating
+
+        private void DoDatabaseAdd(InventoryItem addedItem)
+        {
+            if (isTemporary)
+                return;
+
+            if (owner is Player)            
+                Database.AddItem((Player)owner, addedItem, inventoryCode);            
+            else if (owner is Retainer)
+            {
+
+            }
+        }
+
+        private void DoDatabaseQuantity(ulong itemDBId, int quantity)
+        {
+            if (isTemporary)
+                return;
+
+            if (owner is Player)            
+                Database.SetQuantity((Player)owner, itemDBId, inventoryCode);            
+            else if (owner is Retainer)
+            {
+
+            }
+        }
+
+        private void DoDatabaseRemove(ulong itemDBId)
+        {
+            if (isTemporary)
+                return;
+
+            if (owner is Player)            
+                Database.RemoveItem((Player)owner, itemDBId);            
+            else if (owner is Retainer)
+            {
+
+            }
+        }
+
         private void SendUpdatePackets(Player player)
         {
             List<InventoryItem> items = new List<InventoryItem>();
@@ -532,7 +564,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             return endOfListIndex;
         }
 
-        private void doRealign()
+        private void DoRealign()
         {
             int lastNullSlot = -1;            
 
