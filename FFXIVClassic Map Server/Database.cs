@@ -1225,7 +1225,6 @@ namespace FFXIVClassic_Map_Server
                                     serverItemId,
                                     itemId,
                                     quantity,
-                                    slot,
                                     itemType,
                                     quality,
                                     durability,
@@ -1237,35 +1236,37 @@ namespace FFXIVClassic_Map_Server
                                     materia5
                                     FROM characters_inventory
                                     INNER JOIN server_items ON serverItemId = server_items.id
-                                    WHERE characterId = @charId AND inventoryType = @type AND slot >= @slot ORDER BY slot";
+                                    WHERE characterId = @charId AND inventoryType = @type";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
-                    cmd.Parameters.AddWithValue("@slot", slotOffset);
                     cmd.Parameters.AddWithValue("@type", type);
 
+                    ushort slot = 0;
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            uint uniqueId = reader.GetUInt32(0);
-                            uint itemId = reader.GetUInt32(1);
-                            int quantity = reader.GetInt32(2);
-                            ushort slot = reader.GetUInt16(3);
+                            uint uniqueId = reader.GetUInt32("serverItemId");
+                            uint itemId = reader.GetUInt32("itemId");
+                            int quantity = reader.GetInt32("quantity");
 
-                            byte itemType = reader.GetByte(4);
-                            byte qualityNumber = reader.GetByte(5);
+                            byte itemType = reader.GetByte("itemType");
+                            byte qualityNumber = reader.GetByte("quality");
 
-                            int durability = reader.GetInt32(6);
-                            ushort spiritBind = reader.GetUInt16(7);
+                            int durability = reader.GetInt32("durability");
+                            ushort spiritBind = reader.GetUInt16("spiritBind");
 
-                            byte materia1 = reader.GetByte(8);
-                            byte materia2 = reader.GetByte(9);
-                            byte materia3 = reader.GetByte(10);
-                            byte materia4 = reader.GetByte(11);
-                            byte materia5 = reader.GetByte(12);
+                            byte materia1 = reader.GetByte("materia1");
+                            byte materia2 = reader.GetByte("materia2");
+                            byte materia3 = reader.GetByte("materia3");
+                            byte materia4 = reader.GetByte("materia4");
+                            byte materia5 = reader.GetByte("materia5");
 
-                            items.Add(new InventoryItem(uniqueId, itemId, quantity, slot, itemType, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5));
+                            InventoryItem item = new InventoryItem(uniqueId, itemId, quantity, itemType, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5);
+                            item.slot = slot;
+                            slot++;
+                            items.Add(item);
                         }
                     }
                 }
@@ -1282,7 +1283,7 @@ namespace FFXIVClassic_Map_Server
             return items;
         }
 
-        public static InventoryItem AddItem(Player player, uint itemId, int quantity, byte quality, byte itemType, int durability, ushort type)
+        public static InventoryItem CreateItem(uint itemId, int quantity, byte quality, byte itemType, int durability)
         {
             InventoryItem insertedItem = null;
 
@@ -1303,27 +1304,14 @@ namespace FFXIVClassic_Map_Server
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
-                    string query2 = @"
-                                    INSERT INTO characters_inventory
-                                    (characterId, slot, inventoryType, serverItemId, quantity)
-                                    SELECT @charId, IFNULL(MAX(SLOT)+1, 0), @inventoryType, LAST_INSERT_ID(), @quantity FROM characters_inventory WHERE characterId = @charId AND inventoryType = @inventoryType;
-                                    ";
-
-                    MySqlCommand cmd2 = new MySqlCommand(query2, conn);
-
                     cmd.Parameters.AddWithValue("@itemId", itemId);
                     cmd.Parameters.AddWithValue("@quality", quality);
                     cmd.Parameters.AddWithValue("@itemType", itemType);
                     cmd.Parameters.AddWithValue("@durability", durability);
 
-                    cmd2.Parameters.AddWithValue("@charId", player.actorId);
-                    cmd2.Parameters.AddWithValue("@inventoryType", type);
-                    cmd2.Parameters.AddWithValue("@quantity", quantity);
-
                     cmd.ExecuteNonQuery();
-                    cmd2.ExecuteNonQuery();
 
-                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, (ushort)player.GetInventory(type).GetNextEmptySlot(), itemType, quality, durability, 0, 0, 0, 0, 0, 0);
+                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, itemType, quality, durability, 0, 0, 0, 0, 0, 0);
                 }
                 catch (MySqlException e)
                 {
@@ -1338,7 +1326,42 @@ namespace FFXIVClassic_Map_Server
             return insertedItem;
         }
 
-        public static void SetQuantity(Player player, uint slot, ushort type, int quantity)
+        public static void AddItem(Player player, InventoryItem addedItem, uint type)
+        {          
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    INSERT INTO characters_inventory
+                                    (characterId, inventoryType, serverItemId, quantity)
+                                    VALUES
+                                    (@charId, @inventoryType, @serverItemId, @quantity)                                    
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Parameters.AddWithValue("@serverItemId", addedItem.uniqueId);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@inventoryType", type);
+                    cmd.Parameters.AddWithValue("@quantity", addedItem.quantity);
+
+                    cmd.ExecuteNonQuery();                                      
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void SetQuantity(Player player, ulong serverItemId, int quantity)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -1349,54 +1372,13 @@ namespace FFXIVClassic_Map_Server
                     string query = @"
                                     UPDATE characters_inventory
                                     SET quantity = @quantity
-                                    WHERE characterId = @charId AND slot = @slot AND inventoryType = @type;
-                                    ";
-
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@charId", player.actorId);
-                    cmd.Parameters.AddWithValue("@quantity", quantity);
-                    cmd.Parameters.AddWithValue("@slot", slot);
-                    cmd.Parameters.AddWithValue("@type", type);
-                    cmd.ExecuteNonQuery();
-
-                }
-                catch (MySqlException e)
-                {
-                    Program.Log.Error(e.ToString());
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-            }
-
-        }
-
-        public static void RemoveItem(Player player, ulong serverItemId, ushort type)
-        {
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}; Allow User Variables=True", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                try
-                {
-                    conn.Open();
-
-                    string query = @"
-                                    SELECT slot INTO @slotToDelete FROM characters_inventory WHERE serverItemId = @serverItemId;
-                                    UPDATE characters_inventory
-                                    SET slot = slot - 1
-                                    WHERE characterId = @charId AND slot > @slotToDelete AND inventoryType = @type;
-
-                                    DELETE FROM characters_inventory
-                                    WHERE serverItemId = @serverItemId AND inventoryType = @type;
-
-                                    DELETE FROM server_items
-                                    WHERE id = @serverItemId;
+                                    WHERE characterId = @charId and serverItemId = @serverItemId;
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
-                    cmd.Parameters.AddWithValue("@type", type);
+                    cmd.Parameters.AddWithValue("@quantity", quantity);
                     cmd.ExecuteNonQuery();
 
                 }
@@ -1412,7 +1394,7 @@ namespace FFXIVClassic_Map_Server
 
         }
 
-        public static void RemoveItem(Player player, ushort slot, ushort type)
+        public static void RemoveItem(Player player, ulong serverItemId)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}; Allow User Variables=True", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -1421,23 +1403,13 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
 
                     string query = @"
-                                    SELECT serverItemId INTO @serverItemId FROM characters_inventory WHERE characterId = @charId AND slot = @slot;
-
                                     DELETE FROM characters_inventory
-                                    WHERE characterId = @charId AND slot = @slot AND inventoryType = @type;
-
-                                    DELETE FROM server_items
-                                    WHERE id = @serverItemId;
-
-                                    UPDATE characters_inventory
-                                    SET slot = slot - 1
-                                    WHERE characterId = @charId AND slot > @slot AND inventoryType = @type;
+                                    WHERE characterId = @charId and serverItemId = @serverItemId;
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
-                    cmd.Parameters.AddWithValue("@slot", slot);
-                    cmd.Parameters.AddWithValue("@type", type);
+                    cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
                     cmd.ExecuteNonQuery();
 
                 }

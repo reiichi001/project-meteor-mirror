@@ -135,7 +135,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint homepoint = 0;
         public byte homepointInn = 0;
 
-        //Instancing
+        //Retainer
+        RetainerMeetingRelationGroup retainerMeetingGroup = null;
         public Retainer currentSpawnedRetainer = null;
         public bool sentRetainerSpawn = false;
 
@@ -533,12 +534,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
             #region Inventory & Equipment
             QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
-            inventories[Inventory.NORMAL].SendFullInventory();
-            inventories[Inventory.CURRENCY].SendFullInventory();
-            inventories[Inventory.KEYITEMS].SendFullInventory();
-            inventories[Inventory.BAZAAR].SendFullInventory();
-            inventories[Inventory.MELDREQUEST].SendFullInventory();
-            inventories[Inventory.LOOT].SendFullInventory();
+            inventories[Inventory.NORMAL].SendFullInventory(this);
+            inventories[Inventory.CURRENCY].SendFullInventory(this);
+            inventories[Inventory.KEYITEMS].SendFullInventory(this);
+            inventories[Inventory.BAZAAR].SendFullInventory(this);
+            inventories[Inventory.MELDREQUEST].SendFullInventory(this);
+            inventories[Inventory.LOOT].SendFullInventory(this);
             equipment.SendFullEquipment(false);   
             playerSession.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
             #endregion
@@ -1742,30 +1743,30 @@ namespace FFXIVClassic_Map_Server.Actors
             chocoboAppearance = appearanceId;
         }
 
-        public bool SpawnMyRetainer(Npc bell, int retainerIndex)
+        public Retainer SpawnMyRetainer(Npc bell, int retainerIndex)
         {
             Tuple<uint, uint, string> retainerData = Database.GetRetainer(this, retainerIndex);
 
             ActorClass actorClass = Server.GetWorldManager().GetActorClass(retainerData.Item2);
 
             if (actorClass == null)
-                return false;
+                return null;
 
             float distance = (float)Math.Sqrt(((positionX - bell.positionX) * (positionX - bell.positionX)) + ((positionZ - bell.positionZ) * (positionZ - bell.positionZ)));
             float posX = bell.positionX - ((-1.0f * (bell.positionX - positionX)) / distance);
             float posZ = bell.positionZ - ((-1.0f * (bell.positionZ - positionZ)) / distance);
 
-            Retainer retainer = new Retainer(retainerData.Item1, retainerData.Item3, actorClass, this, posX, bell.positionY, positionZ, (float)Math.Atan2(positionX - posX, positionZ - posZ));
+            Retainer retainer = new Retainer(retainerData.Item3, actorClass, this, posX, bell.positionY, positionZ, (float)Math.Atan2(positionX - posX, positionZ - posZ));
 
             retainer.LoadEventConditions(actorClass.eventConditions);
 
-            //RetainerMeetingRelationGroup group = new RetainerMeetingRelationGroup(5555, this, retainer);
-            //group.SendGroupPackets(playerSession);
+            retainerMeetingGroup = new RetainerMeetingRelationGroup(5555, this, retainer);
+            retainerMeetingGroup.SendGroupPackets(playerSession);
 
             currentSpawnedRetainer = retainer;
             sentRetainerSpawn = false;
 
-            return true;
+            return retainer;
         }
 
         public void DespawnMyRetainer()
@@ -1773,6 +1774,8 @@ namespace FFXIVClassic_Map_Server.Actors
             if (currentSpawnedRetainer != null)
             {
                 currentSpawnedRetainer = null;
+                retainerMeetingGroup.SendDeletePacket(playerSession);
+                retainerMeetingGroup = null;
             }
         }
 

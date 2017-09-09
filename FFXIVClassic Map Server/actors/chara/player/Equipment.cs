@@ -106,13 +106,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             for (int i = 0; i < slots.Length; i++)
             {
-                InventoryItem item = normalInventory.GetItemBySlot(itemSlots[i]);
+                InventoryItem item = normalInventory.GetItemAtSlot(itemSlots[i]);
 
                 if (item == null)
                     continue;
 
                 Database.EquipItem(owner, slots[i], item.uniqueId);
-                list[slots[i]] = normalInventory.GetItemBySlot(itemSlots[i]);
+                list[slots[i]] = normalInventory.GetItemAtSlot(itemSlots[i]);
             }
 
             owner.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
@@ -133,7 +133,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public void Equip(ushort slot, ushort invSlot)
         {
-            InventoryItem item = normalInventory.GetItemBySlot(invSlot);
+            InventoryItem item = normalInventory.GetItemAtSlot(invSlot);
 
             if (item == null)
                 return;
@@ -152,9 +152,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             owner.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
 
             if (list[slot] != null)            
-                normalInventory.RefreshItem(list[slot], item);            
+                normalInventory.RefreshItem(owner, list[slot], item);            
             else
-                normalInventory.RefreshItem(item);
+                normalInventory.RefreshItem(owner, item);
 
             owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
             SendEquipmentPackets(slot, item);
@@ -180,7 +180,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             owner.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
 
-            normalInventory.RefreshItem(list[slot]);
+            normalInventory.RefreshItem(owner, list[slot]);
 
             owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
             SendEquipmentPackets(slot, null);

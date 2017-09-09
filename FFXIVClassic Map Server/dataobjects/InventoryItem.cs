@@ -23,12 +23,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public byte materia5 = 0;
 
         //Bare Minimum
-        public InventoryItem(uint id, uint itemId, ushort slot)
+        public InventoryItem(uint id, uint itemId)
         {
             this.uniqueId = id;
             this.itemId = itemId;
             this.quantity = 1;
-            this.slot = slot;
 
             ItemData gItem = Server.GetItemGamedata(itemId);
             itemType = gItem.isExclusive ? (byte)0x3 : (byte)0x0;
@@ -55,12 +54,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
             this.materia5 = item.materia5;
         }
 
-        public InventoryItem(uint uniqueId, uint itemId, int quantity, ushort slot, byte itemType, byte qualityNumber, int durability, ushort spiritbind, byte materia1, byte materia2, byte materia3, byte materia4, byte materia5)
+        public InventoryItem(uint uniqueId, uint itemId, int quantity, byte itemType, byte qualityNumber, int durability, ushort spiritbind, byte materia1, byte materia2, byte materia3, byte materia4, byte materia5)
         {
             this.uniqueId = uniqueId;
             this.itemId = itemId;
             this.quantity = quantity;
-            this.slot = slot;
             this.itemType = itemType;
             this.quality = qualityNumber;
             this.durability = durability;
