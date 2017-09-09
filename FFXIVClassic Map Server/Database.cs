@@ -2103,6 +2103,7 @@ namespace FFXIVClassic_Map_Server
                             ActorClass actorClass = Server.GetWorldManager().GetActorClass(actorClassId);
 
                             retainer = new Retainer(retainerId, actorClass, player, 0, 0, 0, 0);
+                            retainer.customDisplayName = name;
                             retainer.LoadEventConditions(actorClass.eventConditions);
                         }
                     }
