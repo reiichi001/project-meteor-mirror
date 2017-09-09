@@ -39,9 +39,9 @@ function onEventStarted(player, npc, triggerName)
 	while (true) do
 		choice = callClientFunction(player, "eventTalkRetainerMenu", false, true);
 		if (choice == 1) then
-			doItemTrade(player, npc);
+			doItemTrade(player, retainer);
 		elseif (choice == 2) then
-			doBazaar(player, npc);
+			doBazaar(player, retainer);
 		elseif (choice == 7) then
 			callClientFunction(player, "eventTalkRetainerMannequin", 0);		
 		elseif (choice == 8) then

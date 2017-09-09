@@ -22,16 +22,18 @@ function doItemTrade(player, retainer)
 	callClientFunction(player, "eventTalkRetainerItemTrade", 1);
 	
 	while (true) do
-		resultCode, type7Param, un1, quantity, itemId, unk2 = callClientFunction(player, "eventTalkRetainerItemTrade", 2);
+		resultCode, type7Param, un1, quantity, itemId, quality = callClientFunction(player, "eventTalkRetainerItemTrade", 2);
 		
 		--Retreieve
-		if (resultCode == 31) then
-			--UpdatePlayer
-			--UpdateRetainer
+		if (resultCode == 31) then		
+			retainer:GetInventory(type7Param.inventoryType):RemoveItemAtSlot(type7Param.slot, quantity);
+			retainer:GetInventory(type7Param.inventoryType):SendUpdatePackets(player, true);
+			player:GetInventory(type7Param.inventoryType):AddItem(itemId, quantity, quality);
 		--Entrust
-		elseif (resultCode == 32) then
-			--UpdatePlayer
-			--UpdateRetainer
+		elseif (resultCode == 32) then					
+			player:GetInventory(type7Param.inventoryType):RemoveItemAtSlot(type7Param.slot, quantity);
+			retainer:GetInventory(type7Param.inventoryType):AddItem(itemId, quantity, quality);
+			retainer:GetInventory(type7Param.inventoryType):SendUpdatePackets(player, true);
 		end
 		
 		callClientFunction(player, "eventReturnResult", resultCode, false);
