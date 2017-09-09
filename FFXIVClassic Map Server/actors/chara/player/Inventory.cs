@@ -126,11 +126,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     isDirty[i] = true;
                     quantityCount -= (gItem.maxStack - oldQuantity);
 
-                    if (owner is Player)
-                    {
-                        DoDatabaseQuantity(item.uniqueId, item.quantity);
-                    }
-
+                    DoDatabaseQuantity(item.uniqueId, item.quantity);
+                    
                     if (quantityCount <= 0)
                         break;
                 }
@@ -156,10 +153,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 DoDatabaseAdd(addedItem);
             }
 
-            if (owner is Player)
-            {
-                SendUpdatePackets((Player)owner);
-            }
+            SendUpdatePackets();           
 
             return true;
         }
@@ -220,8 +214,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             }
 
             DoRealign();
-            if (owner is Player)
-                SendUpdatePackets((Player)owner);
+            SendUpdatePackets();
         }
 
         public void RemoveItemByUniqueId(ulong itemDBId)
@@ -251,8 +244,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             isDirty[slot] = true;
 
             DoRealign();
-            if (owner is Player)
-                SendUpdatePackets((Player)owner);
+            SendUpdatePackets();
         }
 
         public void RemoveItemAtSlot(ushort slot)
@@ -266,8 +258,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             isDirty[slot] = true;
             
             DoRealign();
-            if (owner is Player)
-                SendUpdatePackets((Player)owner);
+            SendUpdatePackets();
         }
 
         public void RemoveItemAtSlot(ushort slot, int quantity)
@@ -290,8 +281,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     DoDatabaseQuantity(list[slot].uniqueId, list[slot].quantity);                
 
                 isDirty[slot] = true;
-                if (owner is Player)
-                    SendUpdatePackets((Player)owner);
+                SendUpdatePackets((Player)owner);
             }                                  
         }
 
@@ -431,7 +421,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         #endregion
 
-        #region Client and DB Updating
+        #region Automatic Client and DB Updating
 
         private void DoDatabaseAdd(InventoryItem addedItem)
         {
@@ -470,6 +460,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             {
 
             }
+        }
+
+        private void SendUpdatePackets()
+        {
+            if (owner is Player)
+                SendUpdatePackets((Player)owner);
         }
 
         private void SendUpdatePackets(Player player)
