@@ -1337,7 +1337,8 @@ namespace FFXIVClassic_Map_Server
                     string query = @"
                                     INSERT INTO characters_inventory
                                     (characterId, inventoryType, serverItemId, quantity)
-                                    SELECT @charId, @inventoryType, @uid, @quantity FROM characters_inventory WHERE characterId = @charId AND inventoryType = @inventoryType;
+                                    VALUES
+                                    (@charId, @inventoryType, uid, @quantity)                                    
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
