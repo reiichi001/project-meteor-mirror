@@ -182,8 +182,12 @@ namespace FFXIVClassic_Map_Server
 
                         if (ownerActor == null)
                         {
+                            //Is it your retainer?
+                            if (session.GetActor().currentSpawnedRetainer != null && session.GetActor().currentSpawnedRetainer.actorId == eventStart.scriptOwnerActorID)
+                                ownerActor = session.GetActor().currentSpawnedRetainer;
                             //Is it a instance actor?
-                            ownerActor = session.GetActor().zone.FindActorInArea(session.GetActor().currentEventOwner);
+                            if (ownerActor == null)
+                                ownerActor = session.GetActor().zone.FindActorInArea(session.GetActor().currentEventOwner);
                             if (ownerActor == null)
                             {
                                 //Is it a Director?

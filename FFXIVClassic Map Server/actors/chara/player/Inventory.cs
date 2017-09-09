@@ -232,6 +232,27 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 SendUpdatePackets((Player)owner);
         }
 
+        public void RemoveItemAtSlot(ushort slot, int quantity)
+        {
+            if (slot >= endOfListIndex)
+                return;
+
+            if (list[slot] != null)
+            {
+                list[slot].quantity -= quantity;
+
+                if (list[slot].quantity <= 0)
+                {
+                    list[slot] = null;
+                    doRealign();
+                }
+
+                isDirty[slot] = true;
+                if (owner is Player)
+                    SendUpdatePackets((Player)owner);
+            }                                  
+        }
+
         public void ChangeDurability(uint slot, uint durabilityChange)
         {
             isDirty[slot] = true;
@@ -390,12 +411,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             Array.Clear(isDirty, 0, isDirty.Length);
 
+            player.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
             player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));                        
             //Send Updated Slots
             SendInventoryPackets(player, items);
             //Send Remove packets for tail end
             SendInventoryRemovePackets(player, slotsToRemove);
             player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
+            player.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
         }
         #endregion
 
