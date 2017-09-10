@@ -155,7 +155,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 owner.aiContainer.ChangeTarget(null);
                 return false;
             }
-            else if (!owner.aiContainer.GetTargetFind().CanTarget(target, false, true))
+            else if (!owner.IsValidTarget(target, ValidTarget.Enemy) || !owner.aiContainer.GetTargetFind().CanTarget(target, false, true))
             {
                 return false;
             }

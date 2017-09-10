@@ -154,6 +154,7 @@ namespace FFXIVClassic_Map_Server
                     case 0x00CC:
                         LockTargetPacket lockTarget = new LockTargetPacket(subpacket.data);
                         session.GetActor().currentLockedTarget = lockTarget.actorID;
+                        // todo: this really needs figuring out..
                         session.GetActor().isAutoAttackEnabled = lockTarget.otherVal == 0x00000040;
 
                         break;

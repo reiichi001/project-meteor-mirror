@@ -526,6 +526,16 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public BattleNpc GetBattleNpcById(uint id)
+        {
+            foreach (var bnpc in GetAllActors<BattleNpc>())
+            {
+                if (bnpc.GetBattleNpcId() == id)
+                    return bnpc;
+            }
+            return null;
+        }
+
         public void DespawnActor(string uniqueId)
         {
             RemoveActorFromZone(FindActorInZoneByUniqueID(uniqueId));

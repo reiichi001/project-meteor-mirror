@@ -23,14 +23,14 @@ DROP TABLE IF EXISTS `server_battlenpc_spawn_locations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `server_battlenpc_spawn_locations` (
-  `bnpcIndex` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `bnpcId` int(10) unsigned NOT NULL AUTO_INCREMENT,
   `customDisplayName` varchar(32) NOT NULL DEFAULT '',
   `groupId` int(10) unsigned NOT NULL,
   `positionX` float NOT NULL,
   `positionY` float NOT NULL,
   `positionZ` float NOT NULL,
   `rotation` float NOT NULL,
-  PRIMARY KEY (`bnpcIndex`)
+  PRIMARY KEY (`bnpcId`)
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -56,4 +56,4 @@ commit;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-07 21:54:41
+-- Dump completed on 2017-09-10  2:47:43

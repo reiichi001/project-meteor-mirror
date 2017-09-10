@@ -414,6 +414,17 @@ namespace FFXIVClassic_Map_Server.Actors
             aiContainer.Update(tick);
         }
 
+        public override void PostUpdate(DateTime tick, List<SubPacket> packets = null)
+        {
+            packets = packets ?? new List<SubPacket>();
+
+            if ((updateFlags & ActorUpdateFlags.Work) != 0)
+            {
+
+            }
+            base.PostUpdate(tick, packets);
+        }
+
         public override void OnSpawn()
         {
             base.OnSpawn();

@@ -25,9 +25,10 @@ namespace FFXIVClassic_Map_Server.Actors
         Name = 0x08,
         Appearance = 0x10,
         Speed = 0x20,
+        Work = 0x40,
 
-        AllNpc = 0x2F,
-        AllPlayer = 0x3F
+        AllNpc = 0x6F,
+        AllPlayer = 0x9F
     }
 
     class Actor

@@ -159,7 +159,6 @@ namespace FFXIVClassic_Map_Server.Actors
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this);
             propPacketUtil.AddProperty("charaWork.currentContentGroup");
             zone.BroadcastPacketsAroundActor(this, propPacketUtil.Done());
-
         }
 
         public List<SubPacket> GetActorStatusPackets()
@@ -593,6 +592,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 //var packet = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
             }
 
+            target.OnDamageTaken(this, action);
             // todo: call onAttack/onDamageTaken
             target.DelHP(action.amount);
             if (target is BattleNpc)
@@ -605,6 +605,9 @@ namespace FFXIVClassic_Map_Server.Actors
             // damage is handled in script
             this.DelMP(spell.mpCost); // mpCost can be set in script e.g. if caster has something for free spells
 
+            foreach (var action in actions)
+                zone.FindActorInArea<Character>(action.targetId).OnDamageTaken(this, action);
+
             if (target is BattleNpc)
                 ((BattleNpc)target).lastAttacker = this;
         }
@@ -615,6 +618,9 @@ namespace FFXIVClassic_Map_Server.Actors
             // damage is handled in script
             this.DelTP(skill.tpCost);
 
+            foreach (var action in actions)
+                zone.FindActorInArea<BattleNpc>(action.targetId)?.OnDamageTaken(this, action);
+
             if (target is BattleNpc)
                 ((BattleNpc)target).lastAttacker = this;
         }
@@ -623,6 +629,9 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (target is BattleNpc)
                 ((BattleNpc)target).lastAttacker = this;
+
+            foreach (var action in actions)
+                zone.FindActorInArea<BattleNpc>(action.targetId)?.OnDamageTaken(this, action);
         }
 
         public virtual void OnSpawn()
@@ -636,6 +645,11 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         public virtual void OnDespawn()
+        {
+
+        }
+
+        public virtual void OnDamageTaken(Character attacker, BattleAction action)
         {
 
         }

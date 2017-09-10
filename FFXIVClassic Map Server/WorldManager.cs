@@ -25,6 +25,7 @@ using System.Diagnostics;
 using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.actors.chara;
+using FFXIVClassic_Map_Server.Actors.Chara;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -427,7 +428,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Open();
                     var query = @"
-                    SELECT bsl.groupId, bsl.positionX, bsl.positionY, bsl.positionZ, bsl.rotation, 
+                    SELECT bsl.bnpcId, bsl.groupId, bsl.positionX, bsl.positionY, bsl.positionZ, bsl.rotation, 
                     bgr.groupId, bgr.poolId, bgr.actorClassId, bgr.scriptName, bgr.minLevel, bgr.maxLevel, bgr.respawnTime, bgr.hp, bgr.mp,
                     bgr.dropListId, bgr.allegiance, bgr.spawnType, bgr.animationId, bgr.actorState, bgr.privateAreaName, bgr.privateAreaLevel, bgr.zoneId,
                     bpo.poolId, bpo.genusId, bpo.currentJob, bpo.combatSkill, bpo.combatDelay, bpo.combatDmgMult, bpo.aggroType,
@@ -439,7 +440,7 @@ namespace FFXIVClassic_Map_Server
                     INNER JOIN server_battlenpc_groups bgr ON bsl.groupId = bgr.groupId
                     INNER JOIN server_battlenpc_pools bpo ON bgr.poolId = bpo.poolId
                     INNER JOIN server_battlenpc_genus bge ON bpo.genusId = bge.genusId
-                    WHERE bgr.zoneId = @zoneId GROUP BY bsl.bnpcIndex;
+                    WHERE bgr.zoneId = @zoneId GROUP BY bsl.bnpcId;
                     ";
 
                     var count = 0;
@@ -457,20 +458,19 @@ namespace FFXIVClassic_Map_Server
                                 int actorId = zone.GetActorCount() + 1;
 
                                 // todo: add to private areas, set up immunity, mob linking,
-                                // - load skill/spell/drop lists, set npcWork.hateType, 
+                                // - load skill/spell/drop lists, set detection icon, load pool/family/group mods
 
                                 var battleNpc = new BattleNpc(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
                                     reader.GetString("scriptName"), zone, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
                                     reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
 
+                                battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
                                 battleNpc.neutral = reader.GetByte("aggroType") == 0;
 
                                 battleNpc.SetDetectionType(reader.GetUInt32("detection"));
                                 battleNpc.kindredType = (KindredType)reader.GetUInt32("kindredId");
                                 battleNpc.npcSpawnType = (NpcSpawnType)reader.GetUInt32("spawnType");
 
-                                // todo: set hateType to appropriate detectionType thing
-                                //battleNpc.npcWork.hateType
                                 battleNpc.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte("currentJob");
                                 battleNpc.charaWork.parameterSave.state_mainSkillLevel = (short)Program.Random.Next(reader.GetByte("minLevel"), reader.GetByte("maxLevel"));
 
@@ -525,6 +525,112 @@ namespace FFXIVClassic_Map_Server
             Program.Log.Info("Spawning actors...");
             foreach (Zone z in zoneList.Values)
                 z.SpawnAllActors(true);
+        }
+
+        public void SpawnBattleNpcById(uint id)
+        {
+            // todo: this is stupid duplicate code and really needs to die, think of a better way later
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    var query = @"
+                    SELECT bsl.bnpcId, bsl.groupId, bsl.positionX, bsl.positionY, bsl.positionZ, bsl.rotation, 
+                    bgr.groupId, bgr.poolId, bgr.actorClassId, bgr.scriptName, bgr.minLevel, bgr.maxLevel, bgr.respawnTime, bgr.hp, bgr.mp,
+                    bgr.dropListId, bgr.allegiance, bgr.spawnType, bgr.animationId, bgr.actorState, bgr.privateAreaName, bgr.privateAreaLevel, bgr.zoneId,
+                    bpo.poolId, bpo.genusId, bpo.currentJob, bpo.combatSkill, bpo.combatDelay, bpo.combatDmgMult, bpo.aggroType,
+                    bpo.immunity, bpo.linkType, bpo.skillListId, bpo.spellListId,
+                    bge.genusId, bge.modelSize, bge.kindredId, bge.detection, bge.hpp, bge.mpp, bge.tpp, bge.str, bge.vit, bge.dex,
+                    bge.int, bge.mnd, bge.pie, bge.att, bge.acc, bge.def, bge.eva, bge.slash, bge.pierce, bge.h2h, bge.blunt,
+                    bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water
+                    FROM server_battlenpc_spawn_locations bsl
+                    INNER JOIN server_battlenpc_groups bgr ON bsl.groupId = bgr.groupId
+                    INNER JOIN server_battlenpc_pools bpo ON bgr.poolId = bpo.poolId
+                    INNER JOIN server_battlenpc_genus bge ON bpo.genusId = bge.genusId
+                    WHERE bsl.bnpcId = @bnpcId GROUP BY bsl.bnpcId;
+                    ";
+
+                    var count = 0;
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@bnpcId", id);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var zone = Server.GetWorldManager().GetZone(reader.GetUInt16("zoneId"));
+                            int actorId = zone.GetActorCount() + 1;
+                            var bnpc = zone.GetBattleNpcById(id);
+
+                            if (bnpc != null)
+                            {
+                                bnpc.ForceRespawn();
+                                break;
+                            }
+
+                            // todo: add to private areas, set up immunity, mob linking,
+                            // - load skill/spell/drop lists, set detection icon, load pool/family/group mods
+
+                            var battleNpc = new BattleNpc(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
+                                reader.GetString("scriptName"), zone, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
+                                reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
+
+                            battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
+                            battleNpc.neutral = reader.GetByte("aggroType") == 0;
+                            
+                            battleNpc.SetDetectionType(reader.GetUInt32("detection"));
+                            battleNpc.kindredType = (KindredType)reader.GetUInt32("kindredId");
+                            battleNpc.npcSpawnType = (NpcSpawnType)reader.GetUInt32("spawnType");
+
+                            battleNpc.charaWork.parameterSave.state_mainSkill[0] = reader.GetByte("currentJob");
+                            battleNpc.charaWork.parameterSave.state_mainSkillLevel = (short)Program.Random.Next(reader.GetByte("minLevel"), reader.GetByte("maxLevel"));
+
+                            battleNpc.allegiance = (CharacterTargetingAllegiance)reader.GetByte("allegiance");
+
+                            // todo: setup private areas and other crap and
+                            // set up rest of stat resists
+                            battleNpc.SetMod((uint)Modifier.Hp, reader.GetUInt32("hp"));
+                            battleNpc.SetMod((uint)Modifier.HpPercent, reader.GetUInt32("hpp"));
+                            battleNpc.SetMod((uint)Modifier.Mp, reader.GetUInt32("mp"));
+                            battleNpc.SetMod((uint)Modifier.MpPercent, reader.GetUInt32("mpp"));
+                            battleNpc.SetMod((uint)Modifier.TpPercent, reader.GetUInt32("tpp"));
+
+                            battleNpc.SetMod((uint)Modifier.Strength, reader.GetUInt32("str"));
+                            battleNpc.SetMod((uint)Modifier.Vitality, reader.GetUInt32("vit"));
+                            battleNpc.SetMod((uint)Modifier.Dexterity, reader.GetUInt32("dex"));
+                            battleNpc.SetMod((uint)Modifier.Intelligence, reader.GetUInt32("int"));
+                            battleNpc.SetMod((uint)Modifier.Mind, reader.GetUInt32("mnd"));
+                            battleNpc.SetMod((uint)Modifier.Piety, reader.GetUInt32("pie"));
+                            battleNpc.SetMod((uint)Modifier.Attack, reader.GetUInt32("att"));
+                            battleNpc.SetMod((uint)Modifier.Accuracy, reader.GetUInt32("acc"));
+                            battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"));
+                            battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"));
+
+
+                            battleNpc.dropListId = reader.GetUInt32("dropListId");
+                            battleNpc.spellListId = reader.GetUInt32("spellListId");
+                            battleNpc.skillListId = reader.GetUInt32("skillListId");
+
+                            battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
+                            //battleNpc.SetMod((uint)Modifier.ResistFire, )
+
+                            zone.AddActorToZone(battleNpc);
+                            count++;
+                        }
+                    }
+                    Program.Log.Info("WorldManager.SpawnBattleNpcById spawned BattleNpc {0}.", id);
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
         }
 
         //Moves the actor to the new zone if exists. No packets are sent nor position changed. Merged zone is removed.

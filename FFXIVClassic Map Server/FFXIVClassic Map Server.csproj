@@ -109,6 +109,7 @@
     <Compile Include="actors\chara\Modifier.cs" />
     <Compile Include="actors\chara\npc\ActorClass.cs" />
     <Compile Include="actors\chara\npc\BattleNpc.cs" />
+    <Compile Include="actors\chara\npc\MobModifier.cs" />
     <Compile Include="actors\chara\npc\NpcWork.cs" />
     <Compile Include="actors\chara\AetheryteWork.cs" />
     <Compile Include="actors\chara\npc\Pet.cs" />

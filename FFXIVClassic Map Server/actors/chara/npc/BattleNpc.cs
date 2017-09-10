@@ -17,6 +17,7 @@ using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.actors.chara.ai.utils;
 using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.packets.send;
+using FFXIVClassic_Map_Server.Actors.Chara;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -56,12 +57,13 @@ namespace FFXIVClassic_Map_Server.Actors
         private uint despawnTime;
         private uint respawnTime;
         private uint spawnDistance;
-        
+        private uint bnpcId;
         public Character lastAttacker;
 
         public uint spellListId, skillListId, dropListId;
         public Dictionary<uint, BattleCommand> skillList = new Dictionary<uint, BattleCommand>();
         public Dictionary<uint, BattleCommand> spellList = new Dictionary<uint, BattleCommand>();
+        private Dictionary<MobModifier, Int64> mobModifiers = new Dictionary<MobModifier, Int64>();
 
         public BattleNpc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot,
             ushort actorState, uint animationId, string customDisplayName)
@@ -110,8 +112,41 @@ namespace FFXIVClassic_Map_Server.Actors
                 subpackets.Add(CreateSetActorIconPacket());
                 subpackets.Add(CreateIsZoneingPacket());
                 subpackets.Add(CreateScriptBindPacket(player));
+                subpackets.Add(GetHateTypePacket(player));
             }
             return subpackets;
+        }
+
+        public SubPacket GetHateTypePacket(Player player)
+        {
+            npcWork.hateType = 1;
+
+            if (player != null)
+            {
+                if (aiContainer.IsEngaged())
+                {
+                    npcWork.hateType = 2;
+                }
+
+                if (player.actorId == this.currentLockedTarget)
+                {
+                    npcWork.hateType = NpcWork.HATE_TYPE_ENGAGED_PARTY;
+                }
+                else if (player.currentParty != null)
+                {
+                    foreach (var memberId in ((Party)player.currentParty).members)
+                    {
+                        if (this.currentLockedTarget == memberId)
+                        {
+                            npcWork.hateType = NpcWork.HATE_TYPE_ENGAGED_PARTY;
+                            break;
+                        }
+                    }
+                }
+            }
+            var propPacketUtil = new ActorPropertyPacketUtil("npcWork", this);
+            propPacketUtil.AddProperty("npcWork.hateType");
+            return propPacketUtil.Done()[0];
         }
 
         public uint GetDetectionType()
@@ -220,6 +255,23 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public void ForceRespawn()
+        {
+            base.Spawn(Program.Tick);
+
+            this.isMovingToSpawn = false;
+            this.ResetMoveSpeeds();
+            this.hateContainer.ClearHate();
+            zone.BroadcastPacketsAroundActor(this, GetSpawnPackets(null, 0x01));
+            zone.BroadcastPacketsAroundActor(this, GetInitPackets());
+            charaWork.parameterSave.hp = charaWork.parameterSave.hpMax;
+            charaWork.parameterSave.mp = charaWork.parameterSave.mpMax;
+            RecalculateStats();
+
+            OnSpawn();
+            updateFlags |= ActorUpdateFlags.AllNpc;
+        }
+
         public override void Die(DateTime tick)
         {
             if (IsAlive())
@@ -308,6 +360,25 @@ namespace FFXIVClassic_Map_Server.Actors
             base.OnAttack(state, action, ref error);
             // todo: move this somewhere else prolly and change based on model/appearance (so maybe in Character.cs instead)
             action.animation = 0x11001000; // (temporary) wolf anim
+
+            if (GetMobMod((uint)MobModifier.AttackScript) != 0)
+                lua.LuaEngine.CallLuaBattleFunction(this, "onAttack", this, state.GetTarget(), action.amount);
+        }
+
+        public override void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
+        {
+            base.OnCast(state, actions, ref errors);
+
+        }
+
+        public override void OnAbility(State state, BattleAction[] actions, ref BattleAction[] errors)
+        {
+            base.OnAbility(state, actions, ref errors);
+        }
+
+        public override void OnWeaponSkill(State state, BattleAction[] actions, ref BattleAction[] errors)
+        {
+            base.OnWeaponSkill(state, actions, ref errors);
         }
 
         public override void OnSpawn()
@@ -324,6 +395,39 @@ namespace FFXIVClassic_Map_Server.Actors
         public override void OnDespawn()
         {
             base.OnDespawn();
+        }
+
+        public uint GetBattleNpcId()
+        {
+            return bnpcId;
+        }
+
+        public void SetBattleNpcId(uint id)
+        {
+            this.bnpcId = id;
+        }
+
+
+        public Int64 GetMobMod(uint mobModId)
+        {
+            Int64 res;
+            if (mobModifiers.TryGetValue((MobModifier)mobModId, out res))
+                return res;
+            return 0;
+        }
+
+        public void SetMobMod(uint mobModId, Int64 val)
+        {
+            if (mobModifiers.ContainsKey((MobModifier)mobModId))
+                mobModifiers[(MobModifier)mobModId] = val;
+            else
+                mobModifiers.Add((MobModifier)mobModId, val);
+        }
+
+        public override void OnDamageTaken(Character attacker, BattleAction action)
+        {
+            if (GetMobMod((uint)MobModifier.DefendScript) != 0)
+                lua.LuaEngine.CallLuaBattleFunction(this, "onDamageTaken", this, attacker, action.amount);
         }
     }
 }

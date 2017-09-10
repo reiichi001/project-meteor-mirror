@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.Actors;
 using MoonSharp;
 using MoonSharp.Interpreter;
+using FFXIVClassic_Map_Server.lua;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
@@ -15,8 +16,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public uint durationMs;
         public bool checkState;
         // todo: lua function
-        Script script;
+        LuaScript script;
     }
+
     class ActionQueue
     {
         private Character owner;
@@ -27,7 +29,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public ActionQueue(Character owner)
         {
-
+            this.owner = owner;
+            actionQueue = new Queue<Action>();
+            timerQueue = new Queue<Action>();
         }
 
         public void PushAction(Action action)
@@ -45,5 +49,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         }
 
+        public void CheckAction(DateTime tick)
+        {
+
+        }
     }
 }

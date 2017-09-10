@@ -25,6 +25,7 @@ using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.actors.chara.ai.utils;
 using FFXIVClassic_Map_Server.actors.chara.ai.state;
+using FFXIVClassic_Map_Server.actors.chara.npc;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -2035,6 +2036,47 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     // That command cannot be performed on an ally.
                     SendGameMessage(Server.GetWorldManager().GetActor(), 32549, 0x20);
+                    return false;
+                }
+
+                bool partyEngaged = false;
+                // todo: replace with confrontation status effect? (see how dsp does it)
+                if (target.aiContainer.IsEngaged())
+                {
+                    if (currentParty != null)
+                    {
+                        if (target is BattleNpc)
+                        {
+                            var helpingActorId = ((BattleNpc)target).GetMobMod((uint)MobModifier.CallForHelp);
+                            partyEngaged = this.actorId == helpingActorId || (((BattleNpc)target).GetMobMod((uint)MobModifier.FreeForAll) != 0);
+                        }
+
+                        if (!partyEngaged)
+                        {
+                            foreach (var memberId in ((Party)currentParty).members)
+                            {
+                                if (memberId == target.currentLockedTarget)
+                                {
+                                    partyEngaged = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if (target.currentLockedTarget == actorId)
+                    {
+                        partyEngaged = true;
+                    }
+                }
+                else
+                {
+                    partyEngaged = true;
+                }
+
+                if (!partyEngaged)
+                {
+                    // That target is already engaged.
+                    SendGameMessage(Server.GetWorldManager().GetActor(), 32520, 0x20);
                     return false;
                 }
             }

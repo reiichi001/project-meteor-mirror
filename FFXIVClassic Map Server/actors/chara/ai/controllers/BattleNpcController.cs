@@ -363,8 +363,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         public override void ChangeTarget(Character target)
         {
             owner.target = target;
-            owner.currentLockedTarget = target != null ? target.actorId : 0xC0000000;
-            owner.currentTarget = target != null ? target.actorId : 0xC0000000;
+            owner.currentLockedTarget = target?.actorId ?? 0xC0000000;
+            owner.currentTarget = target?.actorId ?? 0xC0000000;
+
+            foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
+                player.QueuePacket(owner.GetHateTypePacket(player));
+
             base.ChangeTarget(target);
         }
     }
