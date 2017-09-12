@@ -40,7 +40,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public void QueuePacket(SubPacket subPacket)
         {
             subPacket.SetTargetId(id);
-            Server.GetWorldConnection()?.QueuePacket(subPacket);
+            Server.GetWorldConnection().QueuePacket(subPacket);
         }
 
         public Player GetActor()
@@ -90,7 +90,6 @@ namespace FFXIVClassic_Map_Server.dataobjects
             playerActor.QueuePositionUpdate(new Vector3(x,y,z));
         }
 
-        long lastMilis = 0;
         public void UpdateInstance(List<Actor> list)
         {
             if (isUpdatesLocked)
@@ -120,14 +119,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
                 if (actorInstanceList.Contains(actor))
                 {
-                    //Don't send for static characters (npcs)
-                    // todo: this is retarded, need actual mob class
-                    //if (actor is Character && ((Character)actor).isStatic)
-                    //    continue;
 
-                    //var packet = actor.CreatePositionUpdatePacket();
-                    //if (packet != null)
-                    //    QueuePacket(packet);
                 }
                 else
                 {   

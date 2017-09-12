@@ -134,7 +134,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public bool CanFollowPath()
         {
-            return pathFind != null && (GetCurrentState() != null || GetCurrentState().CanChangeState());
+            return pathFind != null && (GetCurrentState() == null || GetCurrentState().CanChangeState());
         }
 
         public bool CanChangeState()
@@ -278,6 +278,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (controller != null)
                 controller.UseItem(target, slot, itemId);
         }
+
         public void InternalChangeTarget(Character target)
         {
             // targets are changed in the controller

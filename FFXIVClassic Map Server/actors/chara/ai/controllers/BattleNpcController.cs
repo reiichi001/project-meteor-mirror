@@ -8,6 +8,8 @@ using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.utils;
+using FFXIVClassic_Map_Server.actors.chara.ai.state;
+using FFXIVClassic_Map_Server.actors.chara.npc;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 {
@@ -132,10 +134,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 Engage(owner.hateContainer.GetMostHatedTarget());
                 return;
             }
-            //else if (owner.currentLockedTarget != 0)
-            //{
-            //    ChangeTarget(Server.GetWorldManager().GetActorInWorld(owner.currentLockedTarget).GetAsCharacter());
-            //}
 
             if (tick >= waitTime)
             {
@@ -155,7 +153,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 waitTime = tick.AddSeconds(10);
                 owner.OnRoam(tick);
 
-                if (!owner.aiContainer.pathFind.IsFollowingPath())
+                if (!owner.aiContainer.pathFind.IsFollowingPath() && CanMoveForward(0.0f))
                 {
                     // will move on next tick
                     owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
@@ -166,22 +164,25 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
             if (tick >= neutralTime)
             {
-                foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
+                if (!owner.neutral && owner.IsAlive())
                 {
-                    if (!owner.isMovingToSpawn && owner.aiContainer.pathFind.AtPoint() && owner.detectionType != DetectionType.None)
+                    foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
                     {
-                        uint levelDifference = (uint)Math.Abs(owner.charaWork.parameterSave.state_mainSkillLevel - player.charaWork.parameterSave.state_mainSkillLevel);
-
-                        if (levelDifference <= 10 || (owner.detectionType & DetectionType.IgnoreLevelDifference) != 0 && CanAggroTarget(player))
+                        if (!owner.isMovingToSpawn && owner.aiContainer.pathFind.AtPoint() && owner.detectionType != DetectionType.None)
                         {
-                            owner.hateContainer.AddBaseHate(player);
-                            break;
+                            uint levelDifference = (uint)Math.Abs(owner.charaWork.parameterSave.state_mainSkillLevel - player.charaWork.parameterSave.state_mainSkillLevel);
+
+                            if (levelDifference <= 10 || (owner.detectionType & DetectionType.IgnoreLevelDifference) != 0 && CanAggroTarget(player))
+                            {
+                                owner.hateContainer.AddBaseHate(player);
+                                break;
+                            }
                         }
                     }
                 }
             }
 
-            if (owner.aiContainer.pathFind.IsFollowingPath())
+            if (owner.aiContainer.pathFind.IsFollowingPath() && owner.aiContainer.CanFollowPath())
             {
                 owner.aiContainer.pathFind.FollowPath();
             }
@@ -328,6 +329,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             bool hasInvisible = false;
             bool isFacing = owner.IsFacing(target);
 
+            // use the mobmod sight range before defaulting to 20 yalms
+            if (detectSight && !hasInvisible && isFacing && distance < owner.GetMobMod((uint)MobModifier.SightRange))
+                return CanSeePoint(target.positionX, target.positionY, target.positionZ);
+
             // todo: check line of sight and aggroTypes
             if (distance > 20)
             {
@@ -341,10 +346,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             }
 
 
-            if ((owner.detectionType & DetectionType.LowHp) != 0 && target.GetHPP() < 75)
+
+            if ((owner.detectionType & DetectionType.Sound) != 0 && !hasSneak && distance < owner.GetMobMod((uint)MobModifier.SoundRange))
                 return CanSeePoint(target.positionX, target.positionY, target.positionZ);
 
-            if (detectSight && !hasInvisible && isFacing)
+            if ((owner.detectionType & DetectionType.Magic) != 0 && target.aiContainer.IsCurrentState<MagicState>())
+                return CanSeePoint(target.positionX, target.positionY, target.positionZ);
+
+            if ((owner.detectionType & DetectionType.LowHp) != 0 && target.GetHPP() < 75)
                 return CanSeePoint(target.positionX, target.positionY, target.positionZ);
 
             return false;

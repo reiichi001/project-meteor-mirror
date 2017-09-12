@@ -73,17 +73,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         public override void OnInterrupt()
         {
             // todo: send paralyzed/sleep message etc.
+            if (errorResult != null)
+            {
+                owner.zone.BroadcastPacketAroundActor(owner, BattleActionX01Packet.BuildPacket(errorResult.targetId, errorResult.animation, 0x765D, errorResult));
+                errorResult = null;
+            }
         }
 
         public override void OnComplete()
         {
-            // todo: possible underflow
             BattleAction action = new BattleAction(target.actorId, 0x765D, (uint) HitEffect.Hit, 0, (byte) HitDirection.None);
             errorResult = null;
-
-            //var packet = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
-            
-            // HitDirection (auto attack shouldnt need this afaik)
 
             // todo: implement auto attack damage bonus in Character.OnAttack
             /*
@@ -98,30 +98,22 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
               Thaumaturge  Mind          Piety
               * The above damage bonus also applies to “Shot” attacks by archers.
              */
-
+            // handle paralyze/intimidate/sleep/whatever in Character.OnAttack
             owner.OnAttack(this, action, ref errorResult);
-            // handle paralyze/intimidate/sleep/whatever in character thing
             owner.DoBattleAction((ushort)BattleActionX01PacketCommand.Attack, action.animation, errorResult == null ? action : errorResult);            
-           
-            //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, effectId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
         }
 
         public override void TryInterrupt()
         {
             if (owner.statusEffects.HasStatusEffectsByFlag((uint)StatusEffectFlags.PreventAction))
             {
-                // todo: sometimes paralyze can let you attack, get random percentage of actually letting you attack
+                // todo: sometimes paralyze can let you attack, calculate proc rate
                 var list = owner.statusEffects.GetStatusEffectsByFlag((uint)StatusEffectFlags.PreventAction);
                 uint statusId = 0;
                 if (list.Count > 0)
                 {
-                    // todo: actually check proc rate/random chance of whatever effect
                     statusId = list[0].GetStatusId();
                 }
-                // todo: which is actually the swing packet
-                //this.errorPacket = BattleActionX01Packet.BuildPacket(target.actorId, owner.actorId, target.actorId, 0, statusId, 0, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, 0);
-                //owner.zone.BroadcastPacketAroundActor(owner, errorPacket);
-                //errorPacket = null;
                 interrupt = true;
                 return;
             }
@@ -147,7 +139,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 return false;
             }
             // todo: shouldnt need to check if owner is dead since all states would be cleared
-            if (owner.aiContainer.IsDead() || target.aiContainer.IsDead())
+            if (owner.IsDead() || target.IsDead())
             {
                 if (owner is BattleNpc)
                     ((BattleNpc)owner).hateContainer.ClearHate(target);

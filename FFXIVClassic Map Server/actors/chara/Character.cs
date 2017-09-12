@@ -115,6 +115,7 @@ namespace FFXIVClassic_Map_Server.Actors
             // todo: base this on equip and shit
             SetMod((uint)Modifier.AttackRange, 3);
             SetMod((uint)Modifier.AttackDelay, (Program.Random.Next(30, 60) * 100));
+            SetMod((uint)Modifier.Speed, (uint)moveSpeeds[2]);
 
             spawnX = positionX;
             spawnY = positionY;
@@ -315,12 +316,10 @@ namespace FFXIVClassic_Map_Server.Actors
                     packets.Add(BattleActionX00Packet.BuildPacket(actorId, 0x72000062, 0));
                     packets.Add(BattleActionX01Packet.BuildPacket(actorId, 0x7C000062, 21001, new BattleAction(actorId, 0, 1)));
 
-                    // this is silly, but looks like state change goes full retard unless theyre sent in order
                     updateFlags &= ~ActorUpdateFlags.State;
                     //DoBattleAction(21001, 0x7C000062, new BattleAction(this.actorId, 0, 1, 0, 0, 1)); //Attack Mode
                 }
 
-                // todo: should probably add another flag for battleTemp since all this uses reflection
                 if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
                 {
                     var propPacketUtil = new ActorPropertyPacketUtil("charaWork.parameterSave", this);
@@ -497,6 +496,21 @@ namespace FFXIVClassic_Map_Server.Actors
             return (byte)((charaWork.parameterSave.hp[0] / charaWork.parameterSave.hpMax[0]) * 100);
         }
 
+        public void SetHP(uint hp)
+        {
+            charaWork.parameterSave.hp[0] = (short)hp;
+            if (hp > charaWork.parameterSave.hpMax[0])
+                SetMaxHP(hp);
+
+            updateFlags |= ActorUpdateFlags.HpTpMp;
+        }
+
+        public void SetMaxHP(uint hp)
+        {
+            charaWork.parameterSave.hpMax[0] = (short)hp;
+            updateFlags |= ActorUpdateFlags.HpTpMp;
+        }
+
         // todo: the following functions are virtuals since we want to check hidden item bonuses etc on player for certain conditions
         public virtual void AddHP(int hp)
         {
@@ -516,6 +530,16 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public short GetJob()
+        {
+            return charaWork.parameterSave.state_mainSkill[0];
+        }
+
+        public short GetLevel()
+        {
+            return charaWork.parameterSave.state_mainSkillLevel;
+        }
+
         public void AddMP(int mp)
         {
             charaWork.parameterSave.mp = (short)(charaWork.parameterSave.mp + mp).Clamp(ushort.MinValue, charaWork.parameterSave.mpMax);
@@ -527,8 +551,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void AddTP(int tp)
         {
-            tpBase = (ushort)((tpBase + tp).Clamp(0, 3000));
-
+            charaWork.parameterTemp.tp = (short)((charaWork.parameterTemp.tp + tp).Clamp(0, 3000));
             updateFlags |= ActorUpdateFlags.HpTpMp;
         }
 
@@ -550,9 +573,9 @@ namespace FFXIVClassic_Map_Server.Actors
         public void CalculateBaseStats()
         {
             // todo: apply mods and shit here, get race/level/job and shit
-            // baseStats.generalParameter[ASIDHOASID] =  
+
         }
-        // todo: should this include stats too?
+
         public void RecalculateStats()
         {
             if (GetMod((uint)Modifier.Hp) != 0)
@@ -576,7 +599,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public virtual float GetSpeed()
         {
             // todo: for battlenpc/player calculate speed
-            return moveSpeeds[2] + GetMod((uint)Modifier.Speed);
+            return GetMod((uint)Modifier.Speed);
         }
 
         public virtual void OnAttack(State state, BattleAction action, ref BattleAction error)

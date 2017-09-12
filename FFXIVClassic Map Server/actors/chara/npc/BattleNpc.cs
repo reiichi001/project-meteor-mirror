@@ -63,6 +63,12 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint spellListId, skillListId, dropListId;
         public Dictionary<uint, BattleCommand> skillList = new Dictionary<uint, BattleCommand>();
         public Dictionary<uint, BattleCommand> spellList = new Dictionary<uint, BattleCommand>();
+
+        public uint poolId, genusId;
+        public ModifierList poolMods;
+        public ModifierList genusMods;
+        public ModifierList spawnMods;
+
         private Dictionary<MobModifier, Int64> mobModifiers = new Dictionary<MobModifier, Int64>();
 
         public BattleNpc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot,
@@ -326,9 +332,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void OnRoam(DateTime tick)
         {
-            // todo: move this to battlenpccontroller..
-            bool foundActor = false;
-
             // leash back to spawn
             if (!IsCloseToSpawn())
             {
@@ -345,7 +348,15 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             else
             {
-                this.isMovingToSpawn = false;
+                // recover hp
+                if (GetHPP() < 100)
+                {
+                    AddHP(GetMaxHP() / 10);
+                }
+                else
+                {
+                    this.isMovingToSpawn = false;
+                }
                 lua.LuaEngine.CallLuaBattleFunction(this, "onRoam", this);
             }
         }
@@ -368,7 +379,6 @@ namespace FFXIVClassic_Map_Server.Actors
         public override void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
         {
             base.OnCast(state, actions, ref errors);
-
         }
 
         public override void OnAbility(State state, BattleAction[] actions, ref BattleAction[] errors)

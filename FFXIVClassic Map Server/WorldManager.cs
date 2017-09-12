@@ -40,7 +40,10 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<ulong, Party> currentPlayerParties = new Dictionary<ulong, Party>(); //GroupId, Party object
         private Dictionary<uint, StatusEffect> statusEffectList = new Dictionary<uint, StatusEffect>();
         private Dictionary<ushort, BattleCommand> battleCommandList = new Dictionary<ushort, BattleCommand>();
-
+        private Dictionary<uint, ModifierList> battleNpcGenusMods = new Dictionary<uint, ModifierList>();
+        private Dictionary<uint, ModifierList> battleNpcPoolMods = new Dictionary<uint, ModifierList>();
+        private Dictionary<uint, ModifierList> battleNpcSpawnMods = new Dictionary<uint, ModifierList>();
+        
         private Server mServer;
 
         private const int MILIS_LOOPTIME = 333;
@@ -422,6 +425,10 @@ namespace FFXIVClassic_Map_Server
 
         public void LoadBattleNpcs()
         {
+            LoadBattleNpcModifiers("server_battlenpc_genus_mods", "genusId", battleNpcGenusMods);
+            LoadBattleNpcModifiers("server_battlenpc_pool_mods", "poolId", battleNpcPoolMods);
+            LoadBattleNpcModifiers("server_battlenpc_spawn_mods", "bnpcId", battleNpcSpawnMods);
+
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
@@ -433,7 +440,7 @@ namespace FFXIVClassic_Map_Server
                     bgr.dropListId, bgr.allegiance, bgr.spawnType, bgr.animationId, bgr.actorState, bgr.privateAreaName, bgr.privateAreaLevel, bgr.zoneId,
                     bpo.poolId, bpo.genusId, bpo.currentJob, bpo.combatSkill, bpo.combatDelay, bpo.combatDmgMult, bpo.aggroType,
                     bpo.immunity, bpo.linkType, bpo.skillListId, bpo.spellListId,
-                    bge.genusId, bge.modelSize, bge.kindredId, bge.detection, bge.hpp, bge.mpp, bge.tpp, bge.str, bge.vit, bge.dex,
+                    bge.genusId, bge.modelSize, bge.speed, bge.kindredId, bge.detection, bge.hpp, bge.mpp, bge.tpp, bge.str, bge.vit, bge.dex,
                     bge.int, bge.mnd, bge.pie, bge.att, bge.acc, bge.def, bge.eva, bge.slash, bge.pierce, bge.h2h, bge.blunt,
                     bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water
                     FROM server_battlenpc_spawn_locations bsl
@@ -446,7 +453,7 @@ namespace FFXIVClassic_Map_Server
                     var count = 0;
                     foreach (var zonePair in zoneList)
                     {
-                        var zone = zonePair.Value;
+                        Area zone = zonePair.Value;
                         
                         MySqlCommand cmd = new MySqlCommand(query, conn);
                         cmd.Parameters.AddWithValue("@zoneId", zonePair.Key);
@@ -465,6 +472,14 @@ namespace FFXIVClassic_Map_Server
                                     reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
 
                                 battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
+
+                                battleNpc.poolId = reader.GetUInt32("poolId");
+                                battleNpc.genusId = reader.GetUInt32("genusId");
+                                battleNpcPoolMods.TryGetValue(battleNpc.poolId, out battleNpc.poolMods);
+                                battleNpcGenusMods.TryGetValue(battleNpc.genusId, out battleNpc.genusMods);
+                                battleNpcSpawnMods.TryGetValue(battleNpc.GetBattleNpcId(), out battleNpc.spawnMods);
+
+                                battleNpc.SetMod((uint)Modifier.Speed, reader.GetByte("speed"));
                                 battleNpc.neutral = reader.GetByte("aggroType") == 0;
 
                                 battleNpc.SetDetectionType(reader.GetUInt32("detection"));
@@ -527,7 +542,7 @@ namespace FFXIVClassic_Map_Server
                 z.SpawnAllActors(true);
         }
 
-        public void SpawnBattleNpcById(uint id)
+        public void SpawnBattleNpcById(uint id, Area area = null)
         {
             // todo: this is stupid duplicate code and really needs to die, think of a better way later
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -541,7 +556,7 @@ namespace FFXIVClassic_Map_Server
                     bgr.dropListId, bgr.allegiance, bgr.spawnType, bgr.animationId, bgr.actorState, bgr.privateAreaName, bgr.privateAreaLevel, bgr.zoneId,
                     bpo.poolId, bpo.genusId, bpo.currentJob, bpo.combatSkill, bpo.combatDelay, bpo.combatDmgMult, bpo.aggroType,
                     bpo.immunity, bpo.linkType, bpo.skillListId, bpo.spellListId,
-                    bge.genusId, bge.modelSize, bge.kindredId, bge.detection, bge.hpp, bge.mpp, bge.tpp, bge.str, bge.vit, bge.dex,
+                    bge.genusId, bge.modelSize, bge.speed, bge.kindredId, bge.detection, bge.hpp, bge.mpp, bge.tpp, bge.str, bge.vit, bge.dex,
                     bge.int, bge.mnd, bge.pie, bge.att, bge.acc, bge.def, bge.eva, bge.slash, bge.pierce, bge.h2h, bge.blunt,
                     bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water
                     FROM server_battlenpc_spawn_locations bsl
@@ -560,9 +575,9 @@ namespace FFXIVClassic_Map_Server
                     {
                         while (reader.Read())
                         {
-                            var zone = Server.GetWorldManager().GetZone(reader.GetUInt16("zoneId"));
-                            int actorId = zone.GetActorCount() + 1;
-                            var bnpc = zone.GetBattleNpcById(id);
+                            area = area ?? Server.GetWorldManager().GetZone(reader.GetUInt16("zoneId"));
+                            int actorId = area.GetActorCount() + 1;
+                            var bnpc = area.GetBattleNpcById(id);
 
                             if (bnpc != null)
                             {
@@ -574,12 +589,20 @@ namespace FFXIVClassic_Map_Server
                             // - load skill/spell/drop lists, set detection icon, load pool/family/group mods
 
                             var battleNpc = new BattleNpc(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
-                                reader.GetString("scriptName"), zone, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
+                                reader.GetString("scriptName"), area, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
                                 reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
-
-                            battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
-                            battleNpc.neutral = reader.GetByte("aggroType") == 0;
                             
+                            battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
+                            battleNpc.SetMod((uint)Modifier.Speed, reader.GetByte("speed"));
+                            battleNpc.neutral = reader.GetByte("aggroType") == 0;
+
+                            // set mob mods
+                            battleNpc.poolId = reader.GetUInt32("poolId");
+                            battleNpc.genusId = reader.GetUInt32("genusId");
+                            battleNpcPoolMods.TryGetValue(battleNpc.poolId, out battleNpc.poolMods);
+                            battleNpcGenusMods.TryGetValue(battleNpc.genusId, out battleNpc.genusMods);
+                            battleNpcSpawnMods.TryGetValue(battleNpc.GetBattleNpcId(), out battleNpc.spawnMods);
+
                             battleNpc.SetDetectionType(reader.GetUInt32("detection"));
                             battleNpc.kindredType = (KindredType)reader.GetUInt32("kindredId");
                             battleNpc.npcSpawnType = (NpcSpawnType)reader.GetUInt32("spawnType");
@@ -608,19 +631,53 @@ namespace FFXIVClassic_Map_Server
                             battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"));
                             battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"));
 
-
                             battleNpc.dropListId = reader.GetUInt32("dropListId");
                             battleNpc.spellListId = reader.GetUInt32("spellListId");
                             battleNpc.skillListId = reader.GetUInt32("skillListId");
 
                             battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
+                            battleNpc.CalculateBaseStats();
+                            battleNpc.RecalculateStats();
                             //battleNpc.SetMod((uint)Modifier.ResistFire, )
 
-                            zone.AddActorToZone(battleNpc);
+                            area.AddActorToZone(battleNpc);
                             count++;
                         }
                     }
                     Program.Log.Info("WorldManager.SpawnBattleNpcById spawned BattleNpc {0}.", id);
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public void LoadBattleNpcModifiers(string tableName, string primaryKey, Dictionary<uint, ModifierList> list)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    var query = $"SELECT {primaryKey}, modId, modVal, isMobMod FROM {tableName} GROUP BY {primaryKey};";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var id = reader.GetUInt32(primaryKey);
+                            ModifierList modList = new ModifierList(id);
+                            modList.SetModifier(reader.GetUInt16("modId"), reader.GetInt64("modVal"), reader.GetBoolean("isMobMod"));
+                            list.Add(id, modList);
+                        }
+                    }
                 }
                 catch (MySqlException e)
                 {
