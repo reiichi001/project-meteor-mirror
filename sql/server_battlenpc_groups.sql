@@ -25,7 +25,6 @@ DROP TABLE IF EXISTS `server_battlenpc_groups`;
 CREATE TABLE `server_battlenpc_groups` (
   `groupId` int(10) unsigned NOT NULL DEFAULT '0',
   `poolId` int(10) unsigned NOT NULL DEFAULT '0',
-  `actorClassId` int(10) unsigned NOT NULL,
   `scriptName` varchar(50) NOT NULL,
   `minLevel` tinyint(3) unsigned NOT NULL DEFAULT '1',
   `maxLevel` tinyint(3) unsigned NOT NULL DEFAULT '1',
@@ -51,7 +50,10 @@ CREATE TABLE `server_battlenpc_groups` (
 LOCK TABLES `server_battlenpc_groups` WRITE;
 /*!40000 ALTER TABLE `server_battlenpc_groups` DISABLE KEYS */;
 set autocommit=0;
-INSERT INTO `server_battlenpc_groups` VALUES (1,1,2104001,'wharf_rat',1,1,10,0,0,0,0,0,0,0,'',0,170);
+INSERT INTO `server_battlenpc_groups` VALUES (1,1,'wharf_rat',1,1,10,0,0,0,0,0,0,0,'',0,170);
+INSERT INTO `server_battlenpc_groups` VALUES (2,2,'bloodthirsty_wolf',1,1,0,0,0,0,0,1,0,0,'',0,166);
+INSERT INTO `server_battlenpc_groups` VALUES (3,3,'yda',1,1,0,0,0,0,1,1,0,0,'',0,166);
+INSERT INTO `server_battlenpc_groups` VALUES (4,4,'papalymo',1,1,0,0,0,0,1,1,0,0,'',0,166);
 /*!40000 ALTER TABLE `server_battlenpc_groups` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;
@@ -65,4 +67,4 @@ commit;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-07 21:54:42
+-- Dump completed on 2017-09-16  2:42:34

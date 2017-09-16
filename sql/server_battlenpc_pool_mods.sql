@@ -26,7 +26,8 @@ CREATE TABLE `server_battlenpc_pool_mods` (
   `poolId` int(10) unsigned NOT NULL,
   `modId` smallint(5) unsigned NOT NULL,
   `modVal` bigint(20) NOT NULL,
-  `isMobMod` tinyint(1) unsigned NOT NULL DEFAULT '0'
+  `isMobMod` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`poolId`,`modId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -37,6 +38,8 @@ CREATE TABLE `server_battlenpc_pool_mods` (
 LOCK TABLES `server_battlenpc_pool_mods` WRITE;
 /*!40000 ALTER TABLE `server_battlenpc_pool_mods` DISABLE KEYS */;
 set autocommit=0;
+INSERT INTO `server_battlenpc_pool_mods` VALUES (2,2,3,1);
+INSERT INTO `server_battlenpc_pool_mods` VALUES (2,3,3,1);
 /*!40000 ALTER TABLE `server_battlenpc_pool_mods` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;
@@ -50,4 +53,4 @@ commit;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-11 23:52:06
+-- Dump completed on 2017-09-16  2:43:11

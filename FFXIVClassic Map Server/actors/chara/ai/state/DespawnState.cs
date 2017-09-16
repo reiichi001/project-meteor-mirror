@@ -24,6 +24,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         {
             if (tick >= respawnTime)
             {
+                owner.ResetTempVars();
                 owner.Spawn(tick);
                 return true;
             }

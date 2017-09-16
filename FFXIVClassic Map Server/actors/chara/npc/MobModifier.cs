@@ -28,7 +28,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.npc
         AttackScript      = 17, // call my script's onAttack whenever i attack
         DefendScript      = 18, // call my script's onDamageTaken whenever i take damage
         SpellScript       = 19, // call my script's onSpellCast whenever i finish casting
-        WeaponskillScript = 20, // call my script's onWeaponSkill whenever i finish using a weaponskill
+        WeaponSkillScript = 20, // call my script's onWeaponSkill whenever i finish using a weaponskill
         AbilityScript     = 21, // call my script's onAbility whenever i finish using an ability
         CallForHelp       = 22, // actor with this id outside of target's party with this can attack me
         FreeForAll        = 23, // any actor can attack me

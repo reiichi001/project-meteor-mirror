@@ -15,7 +15,9 @@ function onCreateContentArea(players, director, contentArea, contentGroup)
 	mob2 = contentArea:SpawnActor(2205403, "mob2", -3.02, 17.35, 14.24, -2.81);
 	mob3 = contentArea:SpawnActor(2205403, "mob3", -3.02-3, 17.35, 14.24, -2.81);
 	
-	contentGroup:AddMember(player);
+	for _, player in pairs(players) do
+        contentGroup:AddMember(player);
+    end;
 	contentGroup:AddMember(director);
 	contentGroup:AddMember(yshtola);
 	contentGroup:AddMember(stahlmann);

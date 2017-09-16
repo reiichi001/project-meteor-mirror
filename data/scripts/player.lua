@@ -19,7 +19,7 @@ function onBeginLogin(player)
 	end
 			
 	--For Opening. Set Director and reset position incase d/c
-	if	   (player:HasQuest(110001) == true and player:GetZoneID() == 193) then
+	if (player:HasQuest(110001) == true and player:GetZoneID() == 193) then
 		director = player:GetZone():CreateDirector("OpeningDirector", false);		
 		player:AddDirector(director);
 		director:StartDirector(true);

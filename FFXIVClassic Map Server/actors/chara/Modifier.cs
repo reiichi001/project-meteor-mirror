@@ -53,5 +53,6 @@ namespace FFXIVClassic_Map_Server.actors.chara
         HarvestRate            = 40,
 
         Raise                  = 41,
+        MinimumHpLock          = 42, // hp cannot fall below this value
     }
 }

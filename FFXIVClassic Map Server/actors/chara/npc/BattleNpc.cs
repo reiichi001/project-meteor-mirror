@@ -54,10 +54,10 @@ namespace FFXIVClassic_Map_Server.Actors
         public DetectionType detectionType;
         public KindredType kindredType;
         public bool neutral;
-        private uint despawnTime;
-        private uint respawnTime;
-        private uint spawnDistance;
-        private uint bnpcId;
+        protected uint despawnTime;
+        protected uint respawnTime;
+        protected uint spawnDistance;
+        protected uint bnpcId;
         public Character lastAttacker;
 
         public uint spellListId, skillListId, dropListId;
@@ -69,7 +69,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public ModifierList genusMods;
         public ModifierList spawnMods;
 
-        private Dictionary<MobModifier, Int64> mobModifiers = new Dictionary<MobModifier, Int64>();
+        protected Dictionary<MobModifier, Int64> mobModifiers = new Dictionary<MobModifier, Int64>();
 
         public BattleNpc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot,
             ushort actorState, uint animationId, string customDisplayName)
@@ -379,16 +379,30 @@ namespace FFXIVClassic_Map_Server.Actors
         public override void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
         {
             base.OnCast(state, actions, ref errors);
+
+            if (GetMobMod((uint)MobModifier.SpellScript) != 0)
+                foreach (var action in actions)
+                    lua.LuaEngine.CallLuaBattleFunction(this, "onCast", this, zone.FindActorInArea<Character>(action.targetId), ((MagicState)state).GetSpell(), action);
         }
 
         public override void OnAbility(State state, BattleAction[] actions, ref BattleAction[] errors)
         {
             base.OnAbility(state, actions, ref errors);
+
+            /*
+            if (GetMobMod((uint)MobModifier.AbilityScript) != 0)
+                foreach (var action in actions)
+                    lua.LuaEngine.CallLuaBattleFunction(this, "onAbility", this, zone.FindActorInArea<Character>(action.targetId), ((AbilityState)state).GetAbility(), action);
+            */
         }
 
         public override void OnWeaponSkill(State state, BattleAction[] actions, ref BattleAction[] errors)
         {
             base.OnWeaponSkill(state, actions, ref errors);
+
+            if (GetMobMod((uint)MobModifier.WeaponSkillScript) != 0)
+                foreach (var action in actions)
+                    lua.LuaEngine.CallLuaBattleFunction(this, "onWeaponSkill", this, zone.FindActorInArea<Character>(action.targetId), ((WeaponSkillState)state).GetWeaponSkill(), action);
         }
 
         public override void OnSpawn()
@@ -434,10 +448,10 @@ namespace FFXIVClassic_Map_Server.Actors
                 mobModifiers.Add((MobModifier)mobModId, val);
         }
 
-        public override void OnDamageTaken(Character attacker, BattleAction action)
+        public override void OnDamageTaken(Character attacker, BattleAction action, DamageTakenType damageTakenType)
         {
             if (GetMobMod((uint)MobModifier.DefendScript) != 0)
-                lua.LuaEngine.CallLuaBattleFunction(this, "onDamageTaken", this, attacker, action.amount);
+                lua.LuaEngine.CallLuaBattleFunction(this, "onDamageTaken", this, attacker, action.amount, (uint)damageTakenType);
         }
     }
 }

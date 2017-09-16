@@ -111,6 +111,9 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             lock (mActorList)
             {
+                if (actor is Character)
+                    ((Character)actor).ResetTempVars();
+
                 if (!mActorList.ContainsKey(actor.actorId))
                     mActorList.Add(actor.actorId, actor);
 

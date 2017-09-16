@@ -235,5 +235,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             return tpCost;
         }
+
+        public List<Character> GetTargets()
+        {
+            return targetFind?.GetTargets<Character>();
+        }
     }
 }

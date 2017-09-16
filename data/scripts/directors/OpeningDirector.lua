@@ -28,7 +28,7 @@ function onUpdate()
 end
 
 function onTalkEvent(player, npc)
-;
+
 	if (player:HasQuest(110001) == true) then
 		man0l0Quest = player:GetQuest("man0l0");
 		

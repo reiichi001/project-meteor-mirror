@@ -35,7 +35,7 @@ CREATE TABLE `server_battlenpc_pools` (
   `immunity` int(10) unsigned NOT NULL DEFAULT '0',
   `linkType` tinyint(3) unsigned NOT NULL DEFAULT '0',
   `spellListId` int(10) unsigned NOT NULL DEFAULT '0',
-  `skillListId` int(10) unsigned NOT NULL,
+  `skillListId` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`poolId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -46,11 +46,12 @@ CREATE TABLE `server_battlenpc_pools` (
 
 LOCK TABLES `server_battlenpc_pools` WRITE;
 /*!40000 ALTER TABLE `server_battlenpc_pools` DISABLE KEYS */;
-set autocommit=0;
 INSERT INTO `server_battlenpc_pools` VALUES (1,2104001,'wharf_rat',12,0,1,4200,1,0,0,0,0,0);
+INSERT INTO `server_battlenpc_pools` VALUES (2,2205403,'bloodthirsty_wolf',3,0,1,4200,1,0,0,0,0,0);
+INSERT INTO `server_battlenpc_pools` VALUES (3,2290001,'yda',29,2,1,4200,1,0,0,0,0,0);
+INSERT INTO `server_battlenpc_pools` VALUES (4,2290002,'papalymo',29,22,1,4200,1,0,0,0,0,0);
 /*!40000 ALTER TABLE `server_battlenpc_pools` ENABLE KEYS */;
 UNLOCK TABLES;
-commit;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -61,4 +62,4 @@ commit;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-11 23:51:35
+-- Dump completed on 2017-09-16  2:40:29

@@ -13,6 +13,7 @@ using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.actors.chara.ai.state;
 using FFXIVClassic_Map_Server.actors.chara.ai.utils;
+using FFXIVClassic_Map_Server.actors.chara.npc;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -23,6 +24,15 @@ namespace FFXIVClassic_Map_Server.Actors
         BattleNpcs,
         /// <summary> Friendly to Players </summary>
         Player
+    }
+
+    enum DamageTakenType
+    {
+        None,
+        Attack,
+        Magic,
+        Weaponskill,
+        Ability
     }
 
     class Character : Actor
@@ -101,6 +111,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public ushort currentJob;
         public ushort newMainState;
         public float spawnX, spawnY, spawnZ;
+
+        protected Dictionary<string, UInt64> tempVars = new Dictionary<string, UInt64>();
 
         public Character(uint actorID) : base(actorID)
         {
@@ -392,6 +404,12 @@ namespace FFXIVClassic_Map_Server.Actors
             return false;
         }
 
+        public virtual bool Engage(Character target)
+        {
+            aiContainer.Engage(target);
+            return false;
+        }
+
         public virtual bool Disengage(ushort newMainState = 0xFFFF)
         {
             if (newMainState != 0xFFFF)
@@ -447,12 +465,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public bool IsDead()
         {
-            return aiContainer.IsDead();
+            return !IsAlive();
         }
 
         public bool IsAlive()
         {
-            return !aiContainer.IsDead();
+            return !aiContainer.IsDead() && GetHP() > 0;
         }
 
         public short GetHP()
@@ -520,7 +538,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 // todo: +/- hp and die
                 // todo: battlenpcs probably have way more hp?
                 var addHp = charaWork.parameterSave.hp[0] + hp;
-                addHp = addHp.Clamp(ushort.MinValue, charaWork.parameterSave.hpMax[0]);
+                addHp = addHp.Clamp((short)GetMod((uint)Modifier.MinimumHpLock), charaWork.parameterSave.hpMax[0]);
                 charaWork.parameterSave.hp[0] = (short)addHp;
 
                 if (charaWork.parameterSave.hp[0] < 1)
@@ -615,7 +633,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 //var packet = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
             }
 
-            target.OnDamageTaken(this, action);
+            target.OnDamageTaken(this, action, DamageTakenType.Ability);
             // todo: call onAttack/onDamageTaken
             target.DelHP(action.amount);
             if (target is BattleNpc)
@@ -629,7 +647,7 @@ namespace FFXIVClassic_Map_Server.Actors
             this.DelMP(spell.mpCost); // mpCost can be set in script e.g. if caster has something for free spells
 
             foreach (var action in actions)
-                zone.FindActorInArea<Character>(action.targetId).OnDamageTaken(this, action);
+                zone.FindActorInArea<Character>(action.targetId).OnDamageTaken(this, action, DamageTakenType.Magic);
 
             if (target is BattleNpc)
                 ((BattleNpc)target).lastAttacker = this;
@@ -642,7 +660,7 @@ namespace FFXIVClassic_Map_Server.Actors
             this.DelTP(skill.tpCost);
 
             foreach (var action in actions)
-                zone.FindActorInArea<BattleNpc>(action.targetId)?.OnDamageTaken(this, action);
+                zone.FindActorInArea<BattleNpc>(action.targetId)?.OnDamageTaken(this, action, DamageTakenType.Weaponskill);
 
             if (target is BattleNpc)
                 ((BattleNpc)target).lastAttacker = this;
@@ -654,7 +672,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 ((BattleNpc)target).lastAttacker = this;
 
             foreach (var action in actions)
-                zone.FindActorInArea<BattleNpc>(action.targetId)?.OnDamageTaken(this, action);
+                zone.FindActorInArea<BattleNpc>(action.targetId)?.OnDamageTaken(this, action, DamageTakenType.Ability);
         }
 
         public virtual void OnSpawn()
@@ -672,11 +690,64 @@ namespace FFXIVClassic_Map_Server.Actors
 
         }
 
-        public virtual void OnDamageTaken(Character attacker, BattleAction action)
+        public virtual void OnDamageTaken(Character attacker, BattleAction action, DamageTakenType damageTakenType)
         {
 
         }
-        #endregion
+
+        public UInt64 GetTempVar(string name)
+        {
+            UInt64 retVal = 0;
+            if (tempVars.TryGetValue(name, out retVal))
+                return retVal;
+            return 0;
+        }
+
+        // cause lua is a dick
+        public void SetTempVar(string name, uint val)
+        {
+            if (tempVars.ContainsKey(name))
+                tempVars[name] = val;
+        }
+
+        public void SetTempVar(string name, UInt64 val)
+        {
+            if (tempVars.ContainsKey(name))
+                tempVars[name] = val;
+        }
+
+        public void ResetTempVars()
+        {
+            tempVars.Clear();
+        }
+
+        #region lua helpers
+        public bool IsEngaged()
+        {
+            return aiContainer.IsEngaged();
+        }
+
+        public bool IsPlayer()
+        {
+            return this is Player;
+        }
+
+        public bool IsMonster()
+        {
+            return this is BattleNpc && !IsAlly();
+        }
+
+        public bool IsPet()
+        {
+            return this is Pet;
+        }
+
+        public bool IsAlly()
+        {
+            return this is Ally;
+        }
+        #endregion lua helpers
+        #endregion ai stuff
     }
 
 }

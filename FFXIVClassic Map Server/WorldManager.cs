@@ -436,13 +436,13 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
                     var query = @"
                     SELECT bsl.bnpcId, bsl.groupId, bsl.positionX, bsl.positionY, bsl.positionZ, bsl.rotation, 
-                    bgr.groupId, bgr.poolId, bgr.actorClassId, bgr.scriptName, bgr.minLevel, bgr.maxLevel, bgr.respawnTime, bgr.hp, bgr.mp,
+                    bgr.groupId, bgr.poolId, bgr.scriptName, bgr.minLevel, bgr.maxLevel, bgr.respawnTime, bgr.hp, bgr.mp,
                     bgr.dropListId, bgr.allegiance, bgr.spawnType, bgr.animationId, bgr.actorState, bgr.privateAreaName, bgr.privateAreaLevel, bgr.zoneId,
-                    bpo.poolId, bpo.genusId, bpo.currentJob, bpo.combatSkill, bpo.combatDelay, bpo.combatDmgMult, bpo.aggroType,
+                    bpo.poolId, bpo.genusId, bpo.actorClassId, bpo.currentJob, bpo.combatSkill, bpo.combatDelay, bpo.combatDmgMult, bpo.aggroType,
                     bpo.immunity, bpo.linkType, bpo.skillListId, bpo.spellListId,
                     bge.genusId, bge.modelSize, bge.speed, bge.kindredId, bge.detection, bge.hpp, bge.mpp, bge.tpp, bge.str, bge.vit, bge.dex,
                     bge.int, bge.mnd, bge.pie, bge.att, bge.acc, bge.def, bge.eva, bge.slash, bge.pierce, bge.h2h, bge.blunt,
-                    bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water
+                    bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water, bge.element
                     FROM server_battlenpc_spawn_locations bsl
                     INNER JOIN server_battlenpc_groups bgr ON bsl.groupId = bgr.groupId
                     INNER JOIN server_battlenpc_pools bpo ON bgr.poolId = bpo.poolId
@@ -517,8 +517,12 @@ namespace FFXIVClassic_Map_Server
 
                                 //battleNpc.SetMod((uint)Modifier.ResistFire, )
 
-                                zone.AddActorToZone(battleNpc);
-                                count++;
+                                // todo: this is dumb
+                                if (battleNpc.npcSpawnType == NpcSpawnType.Normal)
+                                {
+                                    zone.AddActorToZone(battleNpc);
+                                    count++;
+                                }
                             }
                         }
                     }
@@ -552,13 +556,13 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
                     var query = @"
                     SELECT bsl.bnpcId, bsl.groupId, bsl.positionX, bsl.positionY, bsl.positionZ, bsl.rotation, 
-                    bgr.groupId, bgr.poolId, bgr.actorClassId, bgr.scriptName, bgr.minLevel, bgr.maxLevel, bgr.respawnTime, bgr.hp, bgr.mp,
+                    bgr.groupId, bgr.poolId, bgr.scriptName, bgr.minLevel, bgr.maxLevel, bgr.respawnTime, bgr.hp, bgr.mp,
                     bgr.dropListId, bgr.allegiance, bgr.spawnType, bgr.animationId, bgr.actorState, bgr.privateAreaName, bgr.privateAreaLevel, bgr.zoneId,
-                    bpo.poolId, bpo.genusId, bpo.currentJob, bpo.combatSkill, bpo.combatDelay, bpo.combatDmgMult, bpo.aggroType,
+                    bpo.poolId, bpo.genusId, bpo.actorClassId, bpo.currentJob, bpo.combatSkill, bpo.combatDelay, bpo.combatDmgMult, bpo.aggroType,
                     bpo.immunity, bpo.linkType, bpo.skillListId, bpo.spellListId,
                     bge.genusId, bge.modelSize, bge.speed, bge.kindredId, bge.detection, bge.hpp, bge.mpp, bge.tpp, bge.str, bge.vit, bge.dex,
                     bge.int, bge.mnd, bge.pie, bge.att, bge.acc, bge.def, bge.eva, bge.slash, bge.pierce, bge.h2h, bge.blunt,
-                    bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water
+                    bge.fire, bge.ice, bge.wind, bge.lightning, bge.earth, bge.water, bge.element
                     FROM server_battlenpc_spawn_locations bsl
                     INNER JOIN server_battlenpc_groups bgr ON bsl.groupId = bgr.groupId
                     INNER JOIN server_battlenpc_pools bpo ON bgr.poolId = bpo.poolId

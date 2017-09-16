@@ -15,19 +15,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 {
     class BattleNpcController : Controller
     {
-        private DateTime lastActionTime;
-        private DateTime lastSpellCastTime;
-        private DateTime lastSkillTime;
-        private DateTime lastSpecialSkillTime; // todo: i dont think monsters have "2hr" cooldowns like ffxi
-        private DateTime deaggroTime;
-        private DateTime neutralTime;
-        private DateTime waitTime;
+        protected DateTime lastActionTime;
+        protected DateTime lastSpellCastTime;
+        protected DateTime lastSkillTime;
+        protected DateTime lastSpecialSkillTime; // todo: i dont think monsters have "2hr" cooldowns like ffxi
+        protected DateTime deaggroTime;
+        protected DateTime neutralTime;
+        protected DateTime waitTime;
 
         private bool firstSpell = true;
-        private DateTime lastRoamUpdate;
-        private DateTime battleStartTime;
+        protected DateTime lastRoamUpdate;
+        protected DateTime battleStartTime;
 
-        private new BattleNpc owner;
+        protected new BattleNpc owner;
         public BattleNpcController(BattleNpc owner) :
             base(owner)
         {
@@ -84,7 +84,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             return canEngage;
         }
 
-        private bool TryEngage(Character target)
+        protected bool TryEngage(Character target)
         {
             // todo:
             return true;
@@ -127,7 +127,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             // todo:
         }
 
-        private void DoRoamTick(DateTime tick)
+        protected virtual void DoRoamTick(DateTime tick)
         {
             if (owner.hateContainer.GetHateList().Count > 0)
             {
@@ -166,15 +166,18 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             {
                 if (!owner.neutral && owner.IsAlive())
                 {
-                    foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
+                    foreach (var chara in owner.zone.GetActorsAroundActor<Character>(owner, 50))
                     {
+                        if (owner.allegiance == chara.allegiance)
+                            continue;
+
                         if (!owner.isMovingToSpawn && owner.aiContainer.pathFind.AtPoint() && owner.detectionType != DetectionType.None)
                         {
-                            uint levelDifference = (uint)Math.Abs(owner.charaWork.parameterSave.state_mainSkillLevel - player.charaWork.parameterSave.state_mainSkillLevel);
+                            uint levelDifference = (uint)Math.Abs(owner.charaWork.parameterSave.state_mainSkillLevel - chara.charaWork.parameterSave.state_mainSkillLevel);
 
-                            if (levelDifference <= 10 || (owner.detectionType & DetectionType.IgnoreLevelDifference) != 0 && CanAggroTarget(player))
+                            if (levelDifference <= 10 || (owner.detectionType & DetectionType.IgnoreLevelDifference) != 0 && CanAggroTarget(chara))
                             {
-                                owner.hateContainer.AddBaseHate(player);
+                                owner.hateContainer.AddBaseHate(chara);
                                 break;
                             }
                         }
@@ -188,7 +191,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             }
         }
 
-        private void DoCombatTick(DateTime tick)
+        protected virtual void DoCombatTick(DateTime tick, List<Character> contentGroupCharas = null)
         {
             HandleHate();
 
@@ -200,10 +203,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             }
 
             Move();
-            lua.LuaEngine.CallLuaBattleFunction(owner, "onCombatTick", owner, owner.target, Utils.UnixTimeStampUTC(tick));
+            lua.LuaEngine.CallLuaBattleFunction(owner, "onCombatTick", owner, owner.target, Utils.UnixTimeStampUTC(tick), contentGroupCharas);
         }
 
-        private void Move()
+        protected virtual void Move()
         {
             if (!owner.aiContainer.CanFollowPath())
             {
@@ -257,7 +260,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             }
         }
 
-        private void FaceTarget()
+        protected void FaceTarget()
         {
             // todo: check if stunned etc
             if (owner.statusEffects.HasStatusEffectsByFlag(StatusEffectFlags.PreventAction))
@@ -269,7 +272,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             }
         }
 
-        private bool CanMoveForward(float distance)
+        protected bool CanMoveForward(float distance)
         {
             // todo: check spawn leash and stuff
             if (!owner.IsCloseToSpawn())
@@ -283,7 +286,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             return true;
         }
 
-        public bool CanAggroTarget(Character target)
+        public virtual bool CanAggroTarget(Character target)
         {
             if (owner.neutral || owner.detectionType == DetectionType.None || owner.IsDead())
             {
@@ -303,7 +306,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             return false;
         }
 
-        public bool CanDetectTarget(Character target, bool forceSight = false)
+        public virtual bool CanDetectTarget(Character target, bool forceSight = false)
         {
             if (owner.IsDead())
                 return false;
@@ -359,12 +362,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             return false;
         }
 
-        public bool CanSeePoint(float x, float y, float z)
+        public virtual bool CanSeePoint(float x, float y, float z)
         {
             return NavmeshUtils.CanSee((Zone)owner.zone, owner.positionX, owner.positionY, owner.positionZ, x, y, z);
         }
 
-        private void HandleHate()
+        protected virtual void HandleHate()
         {
             ChangeTarget(owner.hateContainer.GetMostHatedTarget());
         }

@@ -1,5 +1,6 @@
 require ("global")
 require ("tutorial")
+require ("modifiers")
 require ("quests/man/man0g0")
 
 --processTtrBtl001: Active Mode Tutorial
@@ -9,6 +10,37 @@ function init()
 	return "/Director/Quest/QuestDirectorMan0g001";
 end
 
+function onCreateContentArea(players, director, contentArea, contentGroup)
+
+    local worldManager = GetWorldManager();
+    
+	yshtola = GetWorldManager():SpawnBattleNpcById(6, contentArea);
+	stahlmann = GetWorldManager():SpawnBattleNpcById(7, contentArea);
+	
+	mob1 = GetWorldManager():SpawnBattleNpcById(3, contentArea);
+	mob2 = GetWorldManager():SpawnBattleNpcById(4, contentArea);
+	mob3 = GetWorldManager():SpawnBattleNpcById(5, contentArea);
+	
+    local added = false;
+    for _, player in pairs(players) do
+        if player.currentParty and not added then
+            player.currentParty.AddMember(yshtola);
+            player.currentParty.AddMember(stahlmann);
+            added = true;
+        end;
+        -- dont let player die
+        player.SetModifier(modifiersGlobal.MinimumHpLock, 1);
+  
+        contentGroup:AddMember(player);
+    end;
+	contentGroup:AddMember(director);
+	contentGroup:AddMember(yshtola);
+	contentGroup:AddMember(stahlmann);
+	contentGroup:AddMember(mob1);
+	contentGroup:AddMember(mob2);
+	contentGroup:AddMember(mob3);
+end
+
 function onEventStarted(player, actor, triggerName)	
 
 	man0g0Quest = player:GetQuest("Man0g0");
@@ -16,30 +48,20 @@ function onEventStarted(player, actor, triggerName)
 	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl001", nil, nil, nil);
 	player:EndEvent();
 	waitForSignal("playerActive");
-	wait(1); --If this isn't here, the scripts bugs out. TODO: Find a better alternative.
+	wait(2); --If this isn't here, the scripts bugs out. TODO: Find a better alternative.
 	kickEventContinue(player, actor, "noticeEvent", "noticeEvent");	
 	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl002", nil, nil, nil);
 	player:EndEvent();
-	wait(4);
+    
 	closeTutorialWidget(player);
-	showTutorialSuccessWidget(player, 9055); --Open TutorialSuccessWidget for attacking enemy
 	wait(3);
+    
+    man0g0Quest:NextPhase(5);
 	openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_TP);
-	wait(5);
-	closeTutorialWidget(player);
-	openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_WEAPONSKILLS);
-	wait(4); --Should be wait for weaponskillUsed signal
-	closeTutorialWidget(player);
-	showTutorialSuccessWidget(player, 9065); --Open TutorialSuccessWidget for weapon skill
+    wait(5);
 	
-	wait(6); --Should be wait for mobkill
-	worldMaster = GetWorldMaster();
-	player:SendDataPacket("attention", worldMaster, "", 51073, 2);
-	wait(7);
-	player:ChangeMusic(7);
-	player:ChangeState(0); 
-	kickEventContinue(player, actor, "noticeEvent", "noticeEvent");
-	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processEvent020_1", nil, nil, nil);	
+    man0g0Quest:NextPhase(6);
+	closeTutorialWidget(player);
 	
 	--[[
 	IF DoW:
@@ -54,10 +76,10 @@ function onEventStarted(player, actor, triggerName)
 		OpenWidget (DEFEAT ENEMY)			
 	]]
 	
-	man0g0Quest:NextPhase(10);	
-	player:EndEvent();	
+	--man0g0Quest:NextPhase(10);	
+	--player:EndEvent();	
 	
-	GetWorldManager():DoZoneChange(player, 155, "PrivateAreaMasterPast", 1, 15, 175.38, -1.21, -1156.51, -2.1);
+	--GetWorldManager():DoZoneChange(player, 155, "PrivateAreaMasterPast", 1, 15, 175.38, -1.21, -1156.51, -2.1);
 	
 end
 

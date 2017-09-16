@@ -169,5 +169,9 @@ namespace FFXIVClassic_Map_Server.actors.group
                 DeleteGroup();
         }
 
+        public List<uint> GetMembers()
+        {
+            return members;
+        }
     }
 }
