@@ -23,6 +23,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         public const ushort EQUIPMENT               = 0x00FE; //Max 0x23
         public const ushort EQUIPMENT_OTHERPLAYER   = 0x00F9; //Max 0x23
         
+        public enum INV_ERROR {
+            SUCCESS = 0,
+            INVENTORY_FULL,
+            ALREADY_HAS_UNIQUE,
+            SYSTEM_ERROR
+        };
+
         private Character owner;
         private ushort inventoryCapacity;
         private ushort inventoryCode;
@@ -87,7 +94,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             return null;
         }
 
-        public bool AddItem(uint itemId)
+        public INV_ERROR AddItem(uint itemId)
         {
             return AddItem(itemId, 1, 1);
         }
@@ -98,22 +105,22 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 AddItem(itemId[i]);
         }
 
-        public bool AddItem(uint itemId, int quantity)
+        public INV_ERROR AddItem(uint itemId, int quantity)
         {
             return AddItem(itemId, quantity, 1);
         }
 
-        public bool AddItem(uint itemId, int quantity, byte quality)
+        public INV_ERROR AddItem(uint itemId, int quantity, byte quality)
         {
             if (!IsSpaceForAdd(itemId, quantity, quality))
-                return false;
+                return INV_ERROR.INVENTORY_FULL;
 
             ItemData gItem = Server.GetItemGamedata(itemId);
           
             if (gItem == null)
             {
                 Program.Log.Error("Inventory.AddItem: unable to find item %u", itemId);
-                return false;
+                return INV_ERROR.SYSTEM_ERROR;
             }
 
             //Check if item id exists 
@@ -139,12 +146,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             }
                   
             //If it's unique, abort
-            //if (quantityCount > 0 && storedItem.isUnique)
-          //      return ITEMERROR_UNIQUE;
-
-            //If Inventory is full
-            //if (quantityCount > 0 && isInventoryFull())
-         //       return ITEMERROR_FULL;         
+            if (quantityCount > 0 && gItem.isExclusive)
+                return INV_ERROR.ALREADY_HAS_UNIQUE;
 
             //New item that spilled over
             while (quantityCount > 0)
@@ -160,7 +163,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             SendUpdatePackets();           
 
-            return true;
+            return INV_ERROR.SUCCESS;
         }
 
         public void RemoveItem(uint itemId)
