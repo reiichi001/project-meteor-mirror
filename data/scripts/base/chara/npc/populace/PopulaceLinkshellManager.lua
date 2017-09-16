@@ -39,6 +39,11 @@ function onEventStarted(player, npc, triggerName)
 	
 	--Create
 	if (result == 3) then
+	
+		player:SendMessage(0x20, "", "" .. tostring(lsName));
+		player:SendMessage(0x20, "", "" .. tostring(crestId));
+		player:SendMessage(0x20, "", "" .. tostring(command));
+	
 		createLinkshell(lsName, crestId);
 		callClientFunction(player, "eventTalkStepMakeupDone");		
 	--Modify
