@@ -593,7 +593,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 }
             }
 
-            endOfListIndex = lastNullSlot;
+            if (lastNullSlot != -1)
+                endOfListIndex = lastNullSlot;
         }
 
         #endregion
