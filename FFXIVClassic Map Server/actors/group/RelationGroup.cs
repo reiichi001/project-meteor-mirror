@@ -11,13 +11,13 @@ using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.actors.group
 {
-    class Relation : Group
+    class RelationGroup : Group
     {
         public RelationWork work = new RelationWork();
         private uint charaOther;
         private ulong topicGroup;
 
-        public Relation(ulong groupIndex, uint host, uint other, uint command, ulong topicGroup) : base (groupIndex)
+        public RelationGroup(ulong groupIndex, uint host, uint other, uint command, ulong topicGroup) : base (groupIndex)
         {
             this.charaOther = other;
             work._globalTemp.host = ((ulong)host << 32) | (0xc17909);

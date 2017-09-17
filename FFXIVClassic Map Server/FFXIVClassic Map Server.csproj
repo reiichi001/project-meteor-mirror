@@ -93,13 +93,14 @@
     <Compile Include="actors\EventList.cs" />
     <Compile Include="actors\group\GLContentGroup.cs" />
     <Compile Include="actors\group\ContentGroup.cs" />
+    <Compile Include="actors\group\TradeGroup.cs" />
     <Compile Include="actors\group\RetainerMeetingRelationGroup.cs" />
     <Compile Include="actors\group\Work\ContentGroupWork.cs" />
     <Compile Include="actors\group\Work\GlobalTemp.cs" />
     <Compile Include="actors\group\Group.cs" />
     <Compile Include="actors\group\MonsterParty.cs" />
     <Compile Include="actors\group\Party.cs" />
-    <Compile Include="actors\group\Relation.cs" />
+    <Compile Include="actors\group\RelationGroup.cs" />
     <Compile Include="actors\group\Work\GroupGlobalSave.cs" />
     <Compile Include="actors\group\Work\GroupGlobalTemp.cs" />
     <Compile Include="actors\group\Work\GroupMemberSave.cs" />

@@ -41,8 +41,10 @@ namespace FFXIVClassic_Map_Server
         private const int MILIS_LOOPTIME = 10;
         private Timer mZoneTimer;
 
-        //Content Groups
+        //Zone Server Groups
         public Dictionary<ulong, Group> mContentGroups = new Dictionary<ulong, Group>();
+        public Dictionary<ulong, RelationGroup> mRelationGroups = new Dictionary<ulong, RelationGroup>();
+        public Dictionary<ulong, TradeGroup> mTradeGroups = new Dictionary<ulong, TradeGroup>();
         private Object groupLock = new Object();
         public ulong groupIndexId = 1;
 
@@ -712,9 +714,7 @@ namespace FFXIVClassic_Map_Server
             player.SendInstanceUpdate();
 
             player.playerSession.LockUpdates(false);
-
-            
-
+        
             LuaEngine.GetInstance().CallLuaFunction(player, contentArea, "onZoneIn", true);
         }
 
@@ -863,11 +863,170 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public RelationGroup CreateRelationGroup(Actor inviter, Actor invitee, ulong groupType)
+        {
+            lock (groupLock)
+            {                
+                groupIndexId = groupIndexId | 0x0000000000000000;
+
+                RelationGroup group = new RelationGroup(groupIndexId, inviter.actorId, invitee.actorId, 0, groupType);
+                mRelationGroups.Add(groupIndexId, group);
+                groupIndexId++;
+
+                group.SendGroupPacketsAll(inviter.actorId, invitee.actorId);
+
+                return group;
+            }
+        }
+
+        public RelationGroup GetRelationGroup(uint actorId)
+        {
+            lock (groupLock)
+            {
+                foreach (RelationGroup relation in mRelationGroups.Values)
+                {
+                    if (relation.GetHost() == actorId || relation.GetOther() == actorId)
+                        return relation;
+                }
+                return null;
+            }
+        }
+
+        public void DeleteRelationGroup(ulong groupid)
+        {
+            lock (groupLock)
+            {
+                if (mRelationGroups.ContainsKey(groupid))
+                    mRelationGroups.Remove(groupid);
+            }
+        }
+
+        public TradeGroup CreateTradeGroup(Player inviter, Player invitee)
+        {
+            lock (groupLock)
+            {
+                groupIndexId = groupIndexId | 0x0000000000000000;
+
+                TradeGroup group = new TradeGroup(groupIndexId, inviter.actorId, invitee.actorId);
+                mTradeGroups.Add(groupIndexId, group);
+                groupIndexId++;
+
+                group.SendGroupPacketsAll(inviter.actorId, invitee.actorId);
+
+                inviter.SendGameMessage(GetActor(), 25101, 0x20, (object)invitee); //You request to trade with X
+                invitee.SendGameMessage(GetActor(), 25037, 0x20, (object)inviter); //X wishes to trade with you
+
+                return group;
+            }
+        }
+
+        public TradeGroup GetTradeGroup(uint actorId)
+        {
+            lock (groupLock)
+            {
+                foreach (TradeGroup group in mTradeGroups.Values)
+                {
+                    if (group.GetHost() == actorId || group.GetOther() == actorId)
+                        return (TradeGroup)group;
+                }
+                return null;
+            }
+        }
+
+        public void DeleteTradeGroup(ulong groupid)
+        {
+            lock (groupLock)
+            {
+                if (mTradeGroups.ContainsKey(groupid))
+                {
+                    TradeGroup group = mTradeGroups[groupid];
+                    group.SendDeletePackets(group.GetHost(), group.GetOther());
+                    mTradeGroups.Remove(groupid);
+                }
+            }
+        }
+
+        public void AcceptTrade(Player invitee)
+        {
+            TradeGroup group = GetTradeGroup(invitee.actorId);
+
+            if (group == null)
+            {
+                invitee.SendMessage(0x20, "", "MASSIVE ERROR: No tradegroup found!!!");
+                return;
+            }
+
+            Player inviter = (Player)invitee.GetZone().FindActorInArea(group.GetHost());
+
+            DeleteTradeGroup(group.groupIndex);
+        }
+
+        public void CancelTradeTooFar(Player inviter)
+        {
+            TradeGroup group = GetTradeGroup(inviter.actorId);
+
+            if (group == null)
+            {
+                inviter.SendMessage(0x20, "", "MASSIVE ERROR: No tradegroup found!!!");
+                return;
+            }
+
+            Player invitee = (Player)inviter.GetZone().FindActorInArea(group.GetOther());
+
+            inviter.SendGameMessage(GetActor(), 25042, 0x20); //You cancel the trade.
+            if (invitee != null)
+                invitee.SendGameMessage(GetActor(), 25042, 0x20); //The trade has been canceled.
+
+            DeleteTradeGroup(group.groupIndex);
+        }
+
+        public void CancelTrade(Player inviter)
+        {
+            TradeGroup group = GetTradeGroup(inviter.actorId);
+
+            if (group == null)
+            {
+                inviter.SendMessage(0x20, "", "MASSIVE ERROR: No tradegroup found!!!");
+                return;
+            }
+
+            Player invitee = (Player)inviter.GetZone().FindActorInArea(group.GetOther());            
+
+            inviter.SendGameMessage(GetActor(), 25041, 0x20); //You cancel the trade.
+            if (invitee != null)
+                invitee.SendGameMessage(GetActor(), 25040, 0x20); //The trade has been canceled.
+
+            DeleteTradeGroup(group.groupIndex);
+        }
+
+        public void RefuseTrade(Player invitee)
+        {
+            TradeGroup group = GetTradeGroup(invitee.actorId);
+
+            if (group == null)
+            {
+                invitee.SendMessage(0x20, "", "MASSIVE ERROR: No tradegroup found!!!");
+                return;
+            }
+
+            Player inviter = (Player)invitee.GetZone().FindActorInArea(group.GetHost());
+
+            if (inviter != null)
+                inviter.SendGameMessage(GetActor(), 25038, 0x20); //Your trade request fails
+
+            DeleteTradeGroup(group.groupIndex);
+        }
+
         public bool SendGroupInit(Session session, ulong groupId)
         {
             if (mContentGroups.ContainsKey(groupId))
             {
                 mContentGroups[groupId].SendInitWorkValues(session);
+                return true;
+            }
+            else if (mTradeGroups.ContainsKey(groupId))
+            {
+                mTradeGroups[groupId].SendInitWorkValues(session);
                 return true;
             }
             return false;
