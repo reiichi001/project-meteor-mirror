@@ -127,8 +127,8 @@ namespace FFXIVClassic_Map_Server.actors.director
             {               
                 ((GuildleveDirector)this).LoadGuildleve();
             }
-            
-            StartCoroutine("main", this);
+
+            CallLuaScript("main", this, contentGroup);
         }
 
         public void StartContentGroup()
@@ -314,8 +314,5 @@ namespace FFXIVClassic_Map_Server.actors.director
             DynValue value = coroutine.Resume(args2);
             LuaEngine.GetInstance().ResolveResume(player, coroutine, value);
         }
-
-
-
     }    
 }

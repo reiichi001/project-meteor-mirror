@@ -22,23 +22,35 @@ function onCreateContentArea(players, director, contentArea, contentGroup)
 	mob3 = GetWorldManager():SpawnBattleNpcById(5, contentArea);
 	
     local added = false;
-    for _, player in pairs(players) do
+    for i = 0, players.Count do
+        local player = players[i];
         if player.currentParty and not added then
-            player.currentParty.AddMember(yshtola);
-            player.currentParty.AddMember(stahlmann);
+            player.currentParty.members.Add(6);
+            print("cunt")
+            player.currentParty.members.Add(7);
+            print("dickbag")
             added = true;
         end;
         -- dont let player die
-        player.SetModifier(modifiersGlobal.MinimumHpLock, 1);
-  
+        player.SetMod(modifiersGlobal.MinimumHpLock, 1);
+        print("shittttt")
         contentGroup:AddMember(player);
+        player:EndEvent();
+        i = i + 1;
     end;
+    print("shit")
 	contentGroup:AddMember(director);
+    print("shit2");
 	contentGroup:AddMember(yshtola);
+    print("shit3")
 	contentGroup:AddMember(stahlmann);
-	contentGroup:AddMember(mob1);
-	contentGroup:AddMember(mob2);
-	contentGroup:AddMember(mob3);
+	print("shit4")
+    contentGroup:AddMember(mob1);
+	print("shit5")
+    contentGroup:AddMember(mob2);
+	print("shit6")
+    contentGroup:AddMember(mob3);
+    print("dicks")
 end
 
 function onEventStarted(player, actor, triggerName)	
@@ -62,7 +74,7 @@ function onEventStarted(player, actor, triggerName)
 	
     man0g0Quest:NextPhase(6);
 	closeTutorialWidget(player);
-	
+	print("ass")
 	--[[
 	IF DoW:
 		OpenWidget (TP)
@@ -84,6 +96,7 @@ function onEventStarted(player, actor, triggerName)
 end
 
 function onUpdate(deltaTime, area)
+    print("fuck")
 end
 
 function onTalkEvent(player, npc)
@@ -102,3 +115,9 @@ end
 
 function onCommand(player, command)	
 end
+
+function main(director, contentGroup)
+    print("shitstain")
+    onCreateContentArea(director:GetPlayerMembers(), director, director:GetZone(), contentGroup);
+    player:EndEvent();
+end;
