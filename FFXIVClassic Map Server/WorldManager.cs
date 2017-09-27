@@ -40,6 +40,7 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<ulong, Party> currentPlayerParties = new Dictionary<ulong, Party>(); //GroupId, Party object
         private Dictionary<uint, StatusEffect> statusEffectList = new Dictionary<uint, StatusEffect>();
         private Dictionary<ushort, BattleCommand> battleCommandList = new Dictionary<ushort, BattleCommand>();
+        private Dictionary<Tuple<byte, short>, uint> battleCommandIdByLevel = new Dictionary<Tuple<byte, short>, uint>();//Holds battle command ids keyed by class id and level (in that order)
         private Dictionary<uint, ModifierList> battleNpcGenusMods = new Dictionary<uint, ModifierList>();
         private Dictionary<uint, ModifierList> battleNpcPoolMods = new Dictionary<uint, ModifierList>();
         private Dictionary<uint, ModifierList> battleNpcSpawnMods = new Dictionary<uint, ModifierList>();
@@ -1422,13 +1423,19 @@ namespace FFXIVClassic_Map_Server
 
         public void LoadBattleCommands()
         {
-            battleCommandList = Database.LoadGlobalBattleCommandList();
+            Database.LoadGlobalBattleCommandList(battleCommandList, battleCommandIdByLevel);
         }
 
         public BattleCommand GetBattleCommand(uint id)
         {
             BattleCommand battleCommand;
             return battleCommandList.TryGetValue((ushort)id, out battleCommand) ? battleCommand.Clone() : null;
+        }
+
+        public uint GetBattleCommandIdByLevel(byte classId, short level)
+        {
+            uint id = 0;
+            return battleCommandIdByLevel.TryGetValue(Tuple.Create(classId, level), out id) ? id : 0;
         }
     }
 }

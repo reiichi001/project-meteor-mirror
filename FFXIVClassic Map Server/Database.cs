@@ -1218,7 +1218,7 @@ namespace FFXIVClassic_Map_Server
             }
 
         }
-        public static void EquipAbility(Player player, ushort hotbarSlot, uint commandId, uint recastTime)
+        public static void EquipAbility(Player player, byte classId, ushort hotbarSlot, uint commandId, uint recastTime)
         {
             //2700083201 is where abilities start. 2700083200 is for unequipping abilities. Trying to put this in the hotbar will crash the game, need to put 0 instead
             if (commandId > 2700083200)
@@ -1245,7 +1245,7 @@ namespace FFXIVClassic_Map_Server
 
                         cmd = new MySqlCommand(query, conn);
                         cmd.Parameters.AddWithValue("@charId", player.actorId);
-                        cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
+                        cmd.Parameters.AddWithValue("@classId", classId);
                         cmd.Parameters.AddWithValue("@commandId", commandId);
                         cmd.Parameters.AddWithValue("@hotbarSlot", hotbarSlot);
                         cmd.Parameters.AddWithValue("@recastTime", recastTime);
@@ -1358,6 +1358,57 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public static ushort FindFirstCommandSlot(Player player, byte classId)
+        {
+            ushort slot = 0;
+            using (MySqlConnection conn = new MySqlConnection(
+                String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}",
+                ConfigConstants.DATABASE_HOST,
+                ConfigConstants.DATABASE_PORT,
+                ConfigConstants.DATABASE_NAME,
+                ConfigConstants.DATABASE_USERNAME,
+                ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd;
+                    string query = "";
+
+                    //Drop
+                    List<Tuple<ushort, uint>> hotbarList = new List<Tuple<ushort, uint>>();
+                    query = @"
+                        SELECT hotbarSlot
+                        FROM characters_hotbar
+                        WHERE characterId = @charId AND classId = @classId
+                        ORDER BY hotbarSlot
+                        ";
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@classId", classId);
+                   
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            if (slot != reader.GetUInt16("hotbarSlot"))
+                                return slot;
+
+                            slot++;
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return slot;
+        }
         public static List<InventoryItem> GetInventory(Player player, uint slotOffset, uint type)
         {
             List<InventoryItem> items = new List<InventoryItem>();
@@ -2146,9 +2197,9 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public static Dictionary<ushort, BattleCommand> LoadGlobalBattleCommandList()
+        public static void LoadGlobalBattleCommandList(Dictionary<ushort, BattleCommand> battleCommandDict, Dictionary<Tuple<byte, short>, uint> battleCommandIdByLevel)
         {
-            var battleCommands = new Dictionary<ushort, BattleCommand>();
+            //var battleCommands = new Dictionary<ushort, BattleCommand>();
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -2195,7 +2246,11 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.battleAnimation = reader.GetUInt32("battleAnimation");
                             battleCommand.validUser = (BattleCommandValidUser)reader.GetByte("validUser");
                             
-                            battleCommands.Add(id, battleCommand);
+                            battleCommandDict.Add(id, battleCommand);
+
+                            //Handle level 1 abilities separately because of FUCKING ARCHER REEE, just add those to the hotbar when the job is unlocked or on char creation, ez
+                            if(battleCommand.level > 1)
+                                battleCommandIdByLevel.Add(Tuple.Create<byte, short>(battleCommand.job, battleCommand.level), id | 0xA0F00000);
                         }
                     }
                 }
@@ -2208,7 +2263,6 @@ namespace FFXIVClassic_Map_Server
                     conn.Dispose();
                 }
             }
-            return battleCommands;
         }
     }
 

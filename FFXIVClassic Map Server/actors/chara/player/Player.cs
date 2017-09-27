@@ -956,11 +956,11 @@ namespace FFXIVClassic_Map_Server.Actors
             //Calculate hp/mp
 
             //Get Potenciel ??????
-            
+
             //Set HP/MP/TP PARAMS
 
             //Set mainskill and level
-            
+
             //Set Parameters
 
             //Set current EXP
@@ -972,7 +972,6 @@ namespace FFXIVClassic_Map_Server.Actors
             //Check if bonus point available... set
 
             //Set rested EXP
-
             charaWork.parameterSave.state_mainSkill[0] = classId;
             charaWork.parameterSave.state_mainSkillLevel = charaWork.battleSave.skillLevel[classId-1];
             playerWork.restBonusExpRate = 0.0f;
@@ -1846,7 +1845,89 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePackets(recastPacketUtil.Done());
         }
 
-        public void EquipAbility(ushort hotbarSlot, ushort commandId)
+        //Find the first open slot in classId's hotbar and equip an ability there.
+        public void EquipAbilityInFirstOpenSlot(byte classId, uint commandId, bool printMessage = true)
+        {
+            //Find first open slot on class's hotbar slot, then call EquipAbility with that slot.
+            ushort hotbarSlot = 0;
+
+            //If the class we're equipping for is the current class, we can just look at charawork.command
+            if(classId == charaWork.parameterSave.state_mainSkill[0])
+            {
+                hotbarSlot = FindFirstCommandSlotById(0);
+            }
+            //Otherwise, we need to check the database.
+            else
+            {
+                hotbarSlot = (ushort) (Database.FindFirstCommandSlot(this, classId) + charaWork.commandBorder);
+            }
+
+            EquipAbility(classId, commandId, hotbarSlot, printMessage);
+        }
+
+        //Add commandId to classId's hotbar at hotbarSlot.
+        //If classId is not the current class, do it in the database
+        //hotbarSlot is 32-indexed
+        public void EquipAbility(byte classId, uint commandId, ushort hotbarSlot, bool printMessage = true)
+        {
+            var ability = Server.GetWorldManager().GetBattleCommand(commandId);
+            uint trueCommandId = commandId | 0xA0F00000;
+            ushort lowHotbarSlot = (ushort)(hotbarSlot - charaWork.commandBorder);
+            ushort maxRecastTime = (ushort)ability.recastTimeSeconds;
+            uint recastEnd = Utils.UnixTimeStampUTC() + maxRecastTime;
+            List<ushort> slotsToUpdate = new List<ushort>();
+            
+            //If the class we're equipping for is the current class (need to find out if state_mainSkill is supposed to change when you're a job)
+            //then equip the ability in charawork.commands and save in databse, otherwise just save in database
+            if (classId == charaWork.parameterSave.state_mainSkill[0])
+            {
+                charaWork.command[hotbarSlot] = trueCommandId;
+                charaWork.commandCategory[hotbarSlot] = 1;
+                charaWork.parameterTemp.maxCommandRecastTime[lowHotbarSlot] = maxRecastTime;
+                charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot] = recastEnd;
+
+                slotsToUpdate.Add(hotbarSlot);
+                UpdateHotbar(slotsToUpdate);
+            }
+
+            Database.EquipAbility(this, classId, (ushort) (hotbarSlot - charaWork.commandBorder), commandId, recastEnd);
+
+            if(printMessage)
+                SendGameMessage(Server.GetWorldManager().GetActor(), 30603, 0x20, 0, commandId);
+        }
+
+        //Doesn't take a classId because the only way to swap abilities is through the ability equip widget oe /eaction, which only apply to current class
+        //hotbarSlot 1 and 2 are 32-indexed.
+        public void SwapAbilities(ushort hotbarSlot1, ushort hotbarSlot2)
+        {
+            uint lowHotbarSlot1 = (ushort)(hotbarSlot1 - charaWork.commandBorder);
+            uint lowHotbarSlot2 = (ushort)(hotbarSlot2 - charaWork.commandBorder);
+            
+            //Store information about first command
+            uint commandId = charaWork.command[hotbarSlot1];
+            uint recastEnd = charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot1];
+            ushort recastMax = charaWork.parameterTemp.maxCommandRecastTime[lowHotbarSlot1];
+
+            //Move second command's info to first hotbar slot
+            charaWork.command[hotbarSlot1] = charaWork.command[hotbarSlot2];
+            charaWork.parameterTemp.maxCommandRecastTime[lowHotbarSlot1] = charaWork.parameterTemp.maxCommandRecastTime[lowHotbarSlot2];
+            charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot1] = charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot2];
+
+            //Move first command's info to second slot
+            charaWork.command[hotbarSlot2] = commandId;
+            charaWork.parameterTemp.maxCommandRecastTime[lowHotbarSlot2] = recastMax;
+            charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot2] = recastEnd;
+            
+            //Save changes
+            Database.EquipAbility(this, charaWork.parameterSave.state_mainSkill[0], (ushort)(lowHotbarSlot1), charaWork.command[hotbarSlot1], charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot1]);
+
+            List<ushort> slotsToUpdate = new List<ushort>();
+            slotsToUpdate.Add(hotbarSlot1);
+            slotsToUpdate.Add(hotbarSlot2);
+            UpdateHotbar(slotsToUpdate);
+        }
+
+        public void EquipAbility(ushort hotbarSlot, uint commandId)
         {
             var ability = Server.GetWorldManager().GetBattleCommand(commandId);
             uint trueCommandId = commandId | 0xA0F00000;
@@ -1881,7 +1962,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.parameterTemp.maxCommandRecastTime[oldSlot - charaWork.commandBorder] = charaWork.parameterTemp.maxCommandRecastTime[trueHotbarSlot - charaWork.commandBorder];
                 charaWork.parameterSave.commandSlot_recastTime[oldSlot - charaWork.commandBorder] = charaWork.parameterSave.commandSlot_recastTime[trueHotbarSlot - charaWork.commandBorder];
                 //Save changes
-                Database.EquipAbility(this, (ushort)(oldSlot - charaWork.commandBorder), charaWork.command[oldSlot], charaWork.parameterSave.commandSlot_recastTime[oldSlot - charaWork.commandBorder]);
+                Database.EquipAbility(this, charaWork.parameterSave.state_mainSkill[0], (ushort)(oldSlot - charaWork.commandBorder), charaWork.command[oldSlot], charaWork.parameterSave.commandSlot_recastTime[oldSlot - charaWork.commandBorder]);
                 slotsToUpdate.Add(oldSlot);
             }
 
@@ -1897,11 +1978,11 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.parameterSave.commandSlot_recastTime[trueHotbarSlot - charaWork.commandBorder] = recastEnd;
                 slotsToUpdate.Add(trueHotbarSlot);
 
-                Database.EquipAbility(this, (ushort) (trueHotbarSlot - charaWork.commandBorder), trueCommandId, recastEnd);
+                Database.EquipAbility(this, charaWork.parameterSave.state_mainSkill[0], (ushort) (trueHotbarSlot - charaWork.commandBorder), trueCommandId, recastEnd);
 
                 //"[Command] set."
                 if (!isAlreadyEquipped)
-                    SendGameMessage(Server.GetWorldManager().GetActor(), 30603, 0x20, 0, commandId);
+                    SendGameMessage(Server.GetWorldManager().GetActor(), 30603, 0x20, 0, commandId ^ 0xA0F00000);
             }
             //Ability is already equipped
             else if (isAlreadyEquipped)
@@ -1920,7 +2001,7 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
 
-        public void UnequipAbility(ushort hotbarSlot)
+        public void UnequipAbility(ushort hotbarSlot, bool printMessage = true)
         {
             List<ushort> slotsToUpdate = new List<ushort>();
             ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder - 1);
@@ -1928,14 +2009,16 @@ namespace FFXIVClassic_Map_Server.Actors
             Database.UnequipAbility(this, (ushort)(trueHotbarSlot - charaWork.commandBorder));
             charaWork.command[trueHotbarSlot] = 0;
             slotsToUpdate.Add(trueHotbarSlot);
-            SendGameMessage(Server.GetWorldManager().GetActor(), 30604, 0x20, 0, commandId ^ 0xA0F00000);
+
+            if(printMessage)
+                SendGameMessage(Server.GetWorldManager().GetActor(), 30604, 0x20, 0, commandId ^ 0xA0F00000);
 
             UpdateHotbar(slotsToUpdate);
         }
 
         //Finds the first hotbar slot with a given commandId.
         //If the returned value is outside the hotbar, it indicates it wasn't found.
-        private ushort FindFirstCommandSlotById(uint commandId)
+        public ushort FindFirstCommandSlotById(uint commandId)
         {
             if(commandId != 0)
                 commandId |= 0xA0F00000;
@@ -2199,6 +2282,94 @@ namespace FFXIVClassic_Map_Server.Actors
             UpdateHotbarTimer(skill.id, skill.recastTimeSeconds);
             // todo: this really shouldnt be called on each ws?
             lua.LuaEngine.CallLuaBattleFunction(this, "onWeaponSkill", this, state.GetTarget(), skill);
+        }
+        
+        //Handles exp being added, does not handle figuring out exp bonus from buffs or skill/link chains or any of that
+        public void AddExp(int exp, byte classId, int bonusPercent = 0)
+        {
+            exp += (int) Math.Ceiling((exp * bonusPercent / 100.0f));
+            //You earn [exp](+[bonusPercent]%) experience point(s).
+            SendGameMessage(this, Server.GetWorldManager().GetActor(), 33934, 0x44, this, 0, 0, 0, 0, 0, 0, 0, 0, 0, exp, "", bonusPercent);
+
+            bool leveled = false;
+            int diff = MAXEXP[GetLevel() - 1] - charaWork.battleSave.skillPoint[classId - 1];            
+            //While there is enough experience to level up, keep leveling up and unlocking skills and removing experience
+            while (exp >= diff && GetLevel() < charaWork.battleSave.skillLevelCap[classId])
+            {
+                //Level up
+                LevelUp(classId);
+                leveled = true;
+                //Reduce exp based on how much exp is needed to level
+                exp -= diff;
+                diff = MAXEXP[GetLevel() - 1];
+            }
+
+            if(leveled)
+            {
+                //Set exp to current class to 0 so that exp is added correctly
+                charaWork.battleSave.skillPoint[classId - 1] = 0;
+                //send new level
+                ActorPropertyPacketUtil expPropertyPacket2 = new ActorPropertyPacketUtil("charaWork/exp", this);
+                ActorPropertyPacketUtil expPropertyPacket3 = new ActorPropertyPacketUtil("charaWork/stateForAll", this);
+                expPropertyPacket2.AddProperty($"charaWork.battleSave.skillLevel[{classId - 1}]");
+                expPropertyPacket2.AddProperty($"charaWork.parameterSave.state_mainSkillLevel");
+                QueuePackets(expPropertyPacket2.Done());
+                QueuePackets(expPropertyPacket3.Done());
+                //play levelup animation (do this outside LevelUp so that it only plays once if multiple levels are earned
+                //also i dunno how to do this
+            }
+            charaWork.battleSave.skillPoint[classId - 1] = Math.Min(charaWork.battleSave.skillPoint[classId - 1] + exp, MAXEXP[GetLevel() - 1]);
+
+            ActorPropertyPacketUtil expPropertyPacket = new ActorPropertyPacketUtil("charaWork/battleStateForSelf", this);
+            expPropertyPacket.AddProperty($"charaWork.battleSave.skillPoint[{classId - 1}]");
+            
+            //Cap experience for level 50
+            QueuePackets(expPropertyPacket.Done());            
+        }
+
+        public void LevelUp(byte classId)
+        {
+            if (charaWork.battleSave.skillLevel[classId - 1] < charaWork.battleSave.skillLevelCap[classId])
+            {
+                //Increase level
+                charaWork.battleSave.skillLevel[classId - 1]++;
+                charaWork.parameterSave.state_mainSkillLevel++;
+
+                SendGameMessage(this, Server.GetWorldManager().GetActor(), 33909, 0x44, this, 0, 0, 0, 0, 0, 0, 0, 0, 0, (int) GetLevel());
+                //If there's an ability that unlocks at this level, equip it.
+                uint commandId = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, GetLevel());
+                if (commandId > 0)
+                {
+                    EquipAbilityInFirstOpenSlot(classId, commandId, false);
+                    byte jobId = ConvertClassIdToJobId(classId);
+                     if (jobId != classId)
+                        EquipAbilityInFirstOpenSlot(jobId, commandId, false);
+                }
+            }
+        }
+        
+        public static byte ConvertClassIdToJobId(byte classId)
+        {
+            byte jobId = classId;
+
+            switch(classId)
+            {
+                case CLASSID_PUG:
+                case CLASSID_GLA:
+                case CLASSID_MRD:
+                    jobId += 13;
+                    break;
+                case CLASSID_ARC:
+                case CLASSID_LNC:
+                    jobId += 10;
+                    break;
+                case CLASSID_THM:
+                case CLASSID_CNJ:
+                    jobId += 4;
+                    break;
+            }
+
+            return jobId;
         }
     }
 }

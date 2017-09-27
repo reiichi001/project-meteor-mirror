@@ -23,7 +23,7 @@
         public uint[]   command = new uint[64]; //ACTORS
         public byte[]   commandCategory = new byte[64];
         public byte     commandBorder = 0x20;
-        public bool[]     commandAcquired = new bool[4096];
+        public bool[]   commandAcquired = new bool[4096];
         public bool[]   additionalCommandAcquired = new bool[36];
 
         public uint currentContentGroup;
