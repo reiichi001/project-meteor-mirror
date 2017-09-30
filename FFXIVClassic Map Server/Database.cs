@@ -785,6 +785,62 @@ namespace FFXIVClassic_Map_Server
                         }
                     }
 
+                    //Get class experience
+                    query = @"
+                        SELECT 
+                        pug,
+                        gla,
+                        mrd,
+                        arc,
+                        lnc,
+
+                        thm,
+                        cnj,
+
+                        crp,
+                        bsm,
+                        arm,
+                        gsm,
+                        ltw,
+                        wvr,
+                        alc,
+                        cul,
+
+                        min,
+                        btn,
+                        fsh
+                        FROM characters_class_exp WHERE characterId = @charId";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_PUG - 1] = reader.GetInt16("pug");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_GLA - 1] = reader.GetInt16("gla");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_MRD - 1] = reader.GetInt16("mrd");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_ARC - 1] = reader.GetInt16("arc");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_LNC - 1] = reader.GetInt16("lnc");
+                            
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_THM - 1] = reader.GetInt16("thm");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_CNJ - 1] = reader.GetInt16("cnj");
+                            
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_CRP - 1] = reader.GetInt16("crp");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_BSM - 1] = reader.GetInt16("bsm");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_ARM - 1] = reader.GetInt16("arm");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_GSM - 1] = reader.GetInt16("gsm");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_LTW - 1] = reader.GetInt16("ltw");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_WVR - 1] = reader.GetInt16("wvr");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_ALC - 1] = reader.GetInt16("alc");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_CUL - 1] = reader.GetInt16("cul");
+
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_MIN - 1] = reader.GetInt16("min");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_BTN - 1] = reader.GetInt16("btn");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_FSH - 1] = reader.GetInt16("fsh");
+                        }
+                    }
+
                     //Load Saved Parameters
                     query = @"
                         SELECT 
@@ -1327,7 +1383,7 @@ namespace FFXIVClassic_Map_Server
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
-                    cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
+                    cmd.Parameters.AddWithValue("@classId", player.GetCurrentClassOrJob());
 
                     player.charaWork.commandBorder = 32;                 
 
@@ -2197,10 +2253,8 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public static void LoadGlobalBattleCommandList(Dictionary<ushort, BattleCommand> battleCommandDict, Dictionary<Tuple<byte, short>, uint> battleCommandIdByLevel)
+        public static void LoadGlobalBattleCommandList(Dictionary<ushort, BattleCommand> battleCommandDict, Dictionary<Tuple<byte, short>, List<uint>> battleCommandIdByLevel)
         {
-            //var battleCommands = new Dictionary<ushort, BattleCommand>();
-
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
@@ -2248,11 +2302,84 @@ namespace FFXIVClassic_Map_Server
                             
                             battleCommandDict.Add(id, battleCommand);
 
-                            //Handle level 1 abilities separately because of FUCKING ARCHER REEE, just add those to the hotbar when the job is unlocked or on char creation, ez
-                            if(battleCommand.level > 1)
-                                battleCommandIdByLevel.Add(Tuple.Create<byte, short>(battleCommand.job, battleCommand.level), id | 0xA0F00000);
+                            Tuple<byte, short> tuple = Tuple.Create<byte, short>(battleCommand.job, battleCommand.level);
+                            if (battleCommandIdByLevel.ContainsKey(tuple))
+                            {
+                                battleCommandIdByLevel[tuple].Add(id | 0xA0F00000);
+                            }
+                            else
+                            {
+                                List<uint> list = new List<uint>() { id | 0xA0F00000 };
+                                battleCommandIdByLevel.Add(tuple, list);
+                            }
                         }
                     }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void SetExp(Player player, byte classId, int exp)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    var query = String.Format(@"
+                    UPDATE characters_class_exp
+                    SET
+                    {0} = @exp
+                    WHERE
+                    characterId = @characterId", CharacterUtils.GetClassNameForId(classId));
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Prepare();
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@characterId", player.actorId);
+                    cmd.Parameters.AddWithValue("@exp", exp);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void SetLevel(Player player, byte classId, short level)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    var query = String.Format(@"
+                    UPDATE characters_class_levels
+                    SET
+                    {0} = @lvl
+                    WHERE
+                    characterId = @characterId", CharacterUtils.GetClassNameForId(classId));
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Prepare();
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@characterId", player.actorId);
+                    cmd.Parameters.AddWithValue("@lvl", level);
+                    cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
                 {

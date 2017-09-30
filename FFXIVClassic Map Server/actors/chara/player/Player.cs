@@ -387,12 +387,29 @@ namespace FFXIVClassic_Map_Server.Actors
             
             propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[0]");
             propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[1]");
-            
+
             //Battle Save Skillpoint
-            
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_ALC - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_ARC - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_ARM - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_BSM - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_BTN - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_CNJ - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_CRP - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_CUL - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_FSH - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_GLA - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_GSM - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_LNC - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_LTW - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_MIN - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_MRD - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_PUG - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_THM - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_WVR - 1}]");
+
             //Commands
             propPacketUtil.AddProperty("charaWork.commandBorder");
-
 
             for (int i = 0; i < charaWork.command.Length; i++)
             {
@@ -407,7 +424,6 @@ namespace FFXIVClassic_Map_Server.Actors
                     }
                 }
             }
-         
             
             for (int i = 0; i < charaWork.commandCategory.Length; i++)
             {
@@ -421,7 +437,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 if (charaWork.commandAcquired[i] != false)
                     propPacketUtil.AddProperty(String.Format("charaWork.commandAcquired[{0}]", i));
             }
-            
 
             for (int i = 0; i < charaWork.additionalCommandAcquired.Length; i++)
             {
@@ -436,13 +451,11 @@ namespace FFXIVClassic_Map_Server.Actors
                     propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_compatibility[{0}]", i));
             }
 
-         /*
-      for (int i = 0; i < charaWork.parameterSave.commandSlot_recastTime.Length; i++)
-      {
-          if (charaWork.parameterSave.commandSlot_recastTime[i] != 0)
-              propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i));
-      }            
-      */
+            for (int i = 0; i < charaWork.parameterSave.commandSlot_recastTime.Length; i++)
+            {
+                if (charaWork.parameterSave.commandSlot_recastTime[i] != 0)
+                    propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i));
+            }
 
             //System
             propPacketUtil.AddProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[0]");
@@ -2212,14 +2225,14 @@ namespace FFXIVClassic_Map_Server.Actors
         
         //Handles exp being added, does not handle figuring out exp bonus from buffs or skill/link chains or any of that
         public void AddExp(int exp, byte classId, int bonusPercent = 0)
-        {
+        {            
             exp += (int) Math.Ceiling((exp * bonusPercent / 100.0f));
             //You earn [exp](+[bonusPercent]%) experience point(s).
             SendGameMessage(this, Server.GetWorldManager().GetActor(), 33934, 0x44, this, 0, 0, 0, 0, 0, 0, 0, 0, 0, exp, "", bonusPercent);
 
             bool leveled = false;
             int diff = MAXEXP[GetLevel() - 1] - charaWork.battleSave.skillPoint[classId - 1];            
-            //While there is enough experience to level up, keep leveling up and unlocking skills and removing experience
+            //While there is enough experience to level up, keep leveling up, unlocking skills and removing experience from exp until we don't have enough to level up
             while (exp >= diff && GetLevel() < charaWork.battleSave.skillLevelCap[classId])
             {
                 //Level up
@@ -2243,14 +2256,17 @@ namespace FFXIVClassic_Map_Server.Actors
                 QueuePackets(expPropertyPacket3.Done());
                 //play levelup animation (do this outside LevelUp so that it only plays once if multiple levels are earned
                 //also i dunno how to do this
+
+                Database.SetLevel(this, classId, GetLevel());
             }
+            //Cap experience for level 50
             charaWork.battleSave.skillPoint[classId - 1] = Math.Min(charaWork.battleSave.skillPoint[classId - 1] + exp, MAXEXP[GetLevel() - 1]);
 
             ActorPropertyPacketUtil expPropertyPacket = new ActorPropertyPacketUtil("charaWork/battleStateForSelf", this);
             expPropertyPacket.AddProperty($"charaWork.battleSave.skillPoint[{classId - 1}]");
             
-            //Cap experience for level 50
-            QueuePackets(expPropertyPacket.Done());            
+            QueuePackets(expPropertyPacket.Done());
+            Database.SetExp(this, classId, charaWork.battleSave.skillPoint[classId - 1]);
         }
 
         public void LevelUp(byte classId)
@@ -2263,12 +2279,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 SendGameMessage(this, Server.GetWorldManager().GetActor(), 33909, 0x44, this, 0, 0, 0, 0, 0, 0, 0, 0, 0, (int) GetLevel());
                 //If there's an ability that unlocks at this level, equip it.
-                uint commandId = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, GetLevel());
-                if (commandId > 0)
+                List<uint> commandIds = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, GetLevel());
+                foreach(uint commandId in commandIds)
                 {
                     EquipAbilityInFirstOpenSlot(classId, commandId, false);
                     byte jobId = ConvertClassIdToJobId(classId);
-                     if (jobId != classId)
+                    if (jobId != classId)
                         EquipAbilityInFirstOpenSlot(jobId, commandId, false);
                 }
             }
@@ -2287,7 +2303,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     break;
                 case CLASSID_ARC:
                 case CLASSID_LNC:
-                    jobId += 10;
+                    jobId += 11;
                     break;
                 case CLASSID_THM:
                 case CLASSID_CNJ:
@@ -2296,6 +2312,21 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             return jobId;
+        }
+
+        public void SetCurrentJob(byte jobId)
+        {
+            currentJob = jobId;
+            BroadcastPacket(SetCurrentJobPacket.BuildPacket(actorId, jobId), true);
+            Database.LoadHotbar(this);
+        }
+
+        public byte GetCurrentClassOrJob()
+        {
+            if (currentJob != 0)
+                return (byte) currentJob;
+
+            return charaWork.parameterSave.state_mainSkill[0];
         }
     }
 }
