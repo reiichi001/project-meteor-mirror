@@ -14,13 +14,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
     class Inventory
     {       
         public const ushort NORMAL                  = 0; //Max 0xC8
-        public const ushort TRADE                   = 1; //Max 0x96
+        public const ushort UNKNOWN                 = 1; //Max 0x96
         public const ushort LOOT                    = 4; //Max 0xA
         public const ushort MELDREQUEST             = 5; //Max 0x04
         public const ushort BAZAAR                  = 7; //Max 0x0A
         public const ushort CURRENCY_CRYSTALS       = 99; //Max 0x140
         public const ushort KEYITEMS                = 100; //Max 0x500
         public const ushort EQUIPMENT               = 0x00FE; //Max 0x23
+        public const ushort TRADE                   = 0x00FD; //Max 0x04
         public const ushort EQUIPMENT_OTHERPLAYER   = 0x00F9; //Max 0x23
         
         public enum INV_ERROR {
@@ -291,6 +292,18 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 isDirty[slot] = true;
                 SendUpdatePackets();
             }                                  
+        }
+
+        public void Clear()
+        {
+            for (int i = 0; i < endOfListIndex; i++)
+            {
+                list[i] = null;
+                isDirty[i] = true;
+            }
+            endOfListIndex = 0;
+
+            SendUpdatePackets();
         }
 
         public void ChangeDurability(uint slot, uint durabilityChange)

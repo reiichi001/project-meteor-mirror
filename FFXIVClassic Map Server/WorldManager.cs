@@ -959,6 +959,12 @@ namespace FFXIVClassic_Map_Server
             Player inviter = (Player)invitee.GetZone().FindActorInArea(group.GetHost());
 
             DeleteTradeGroup(group.groupIndex);
+
+            inviter.StartTradeTransaction(invitee);
+            invitee.StartTradeTransaction(inviter);
+
+            inviter.KickEvent(Server.GetStaticActors("TradeExecuteCommand"), "commandContent", null, null, null, 16, null, null, null, null, null);
+            invitee.KickEvent(Server.GetStaticActors("TradeExecuteCommand"), "commandContent", null, null, null, 16, null, null, null, null, null);
         }
 
         public void CancelTradeTooFar(Player inviter)

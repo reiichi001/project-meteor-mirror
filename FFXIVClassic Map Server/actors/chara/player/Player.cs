@@ -108,6 +108,10 @@ namespace FFXIVClassic_Map_Server.Actors
         private Dictionary<ushort, Inventory> inventories = new Dictionary<ushort, Inventory>();
         private Equipment equipment;
 
+        //Trading
+        private Player otherTrader = null;
+        private Inventory myOfferings;
+
         //GC Related
         public byte gcCurrent;
         public byte gcRankLimsa;
@@ -257,6 +261,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             Database.LoadPlayerCharacter(this);
             lastPlayTimeUpdate = Utils.UnixTimeStampUTC();
+
+            
         }
         
         public List<SubPacket> Create0x132Packets()
@@ -1775,5 +1781,61 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public void StartTradeTransaction(Player otherPlayer)
+        {
+            myOfferings = new Inventory(this, 4, Inventory.TRADE, true);
+            Inventory otherPlayerOfferings = new Inventory(otherPlayer, 4, Inventory.TRADE, true);
+
+            QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
+            QueuePacket(InventorySetBeginPacket.BuildPacket(actorId, 4, Inventory.TRADE));
+
+            QueuePacket(EquipmentListX01Packet.BuildPacket(actorId, 1, 1));
+
+            QueuePacket(InventorySetEndPacket.BuildPacket(actorId));
+            QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
+
+            myOfferings.SendFullInventory(this);
+
+            otherTrader = otherPlayer;
+        }
+
+        public void Test()
+        {
+            QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
+            QueuePacket(InventorySetBeginPacket.BuildPacket(actorId, 4, Inventory.TRADE));
+
+            QueuePacket(InventoryRemoveX01Packet.BuildPacket(actorId, 1));
+
+            QueuePacket(InventorySetEndPacket.BuildPacket(actorId));
+            QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
+        }
+        public void Test2()
+        {
+            QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
+            QueuePacket(InventorySetBeginPacket.BuildPacket(actorId, 4, Inventory.TRADE));
+
+            QueuePacket(EquipmentListX01Packet.BuildPacket(actorId, 1, 1));
+
+            QueuePacket(InventorySetEndPacket.BuildPacket(actorId));
+            QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
+        }
+
+
+        public Inventory GetTradeOfferings()
+        {
+            return myOfferings;
+        }
+
+        public void FinishTradeTransaction()
+        {
+            myOfferings = null;
+            otherTrader = null;
+        }
+
+        public void CancelTradeTransaction()
+        {
+            myOfferings = null;
+            otherTrader = null;
+        }
     }
 }
