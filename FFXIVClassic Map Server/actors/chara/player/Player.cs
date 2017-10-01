@@ -389,24 +389,7 @@ namespace FFXIVClassic_Map_Server.Actors
             propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[1]");
 
             //Battle Save Skillpoint
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_ALC - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_ARC - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_ARM - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_BSM - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_BTN - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_CNJ - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_CRP - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_CUL - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_FSH - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_GLA - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_GSM - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_LNC - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_LTW - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_MIN - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_MRD - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_PUG - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_THM - 1}]");
-            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{CLASSID_WVR - 1}]");
+            propPacketUtil.AddProperty($"charaWork.battleSave.skillPoint[{charaWork.parameterSave.state_mainSkill[0] - 1}]");
 
             //Commands
             propPacketUtil.AddProperty("charaWork.commandBorder");
@@ -1000,7 +983,8 @@ namespace FFXIVClassic_Map_Server.Actors
             propertyBuilder.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
             propertyBuilder.NewTarget("playerWork/expBonus");
             propertyBuilder.AddProperty("playerWork.restBonusExpRate");
-
+            propertyBuilder.NewTarget("charaWork/battleStateForSelf");
+            propertyBuilder.AddProperty($"charaWork.battleSave.skillPoint[{classId - 1}]");
             Database.LoadHotbar(this);
 
             var time = Utils.UnixTimeStampUTC();
