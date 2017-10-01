@@ -143,6 +143,7 @@
     <Compile Include="packets\receive\events\EventStartPacket.cs" />
     <Compile Include="packets\receive\GroupCreatedPacket.cs" />
     <Compile Include="packets\receive\HandshakePacket.cs" />
+    <Compile Include="packets\receive\CountdownRequestPacket.cs" />
     <Compile Include="packets\receive\LangaugeCodePacket.cs" />
     <Compile Include="packets\receive\ParameterDataRequestPacket.cs" />
     <Compile Include="packets\receive\recruitment\RecruitmentDetailsRequestPacket.cs" />
@@ -188,6 +189,7 @@
     <Compile Include="packets\send\actor\inventory\InventoryListX32Packet.cs" />
     <Compile Include="packets\send\actor\PlayAnimationOnActorPacket.cs" />
     <Compile Include="packets\send\actor\PlayBGAnimation.cs" />
+    <Compile Include="packets\send\actor\StartCountdownPacket.cs" />
     <Compile Include="packets\send\actor\_0x132Packet.cs" />
     <Compile Include="packets\send\actor\SetActorIsZoningPacket.cs" />
     <Compile Include="packets\send\actor\battle\BattleActionX01Packet.cs" />
@@ -285,7 +287,7 @@
     <Compile Include="packets\send\supportdesk\GMTicketPacket.cs" />
     <Compile Include="packets\send\supportdesk\GMTicketSentResponsePacket.cs" />
     <Compile Include="packets\send\_0x02Packet.cs" />
-    <Compile Include="packets\send\_0x10Packet.cs" />
+    <Compile Include="packets\send\SetDalamudPacket.cs" />
     <Compile Include="packets\send\_0xE2Packet.cs" />
     <Compile Include="packets\receive\PingPacket.cs" />
     <Compile Include="packets\receive\UpdatePlayerPositionPacket.cs" />

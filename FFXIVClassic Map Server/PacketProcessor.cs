@@ -210,6 +210,11 @@ namespace FFXIVClassic_Map_Server
                     case 0x00CE:
                         subpacket.DebugPrintSubPacket();
                         break;
+                    //Countdown requested
+                    case 0x00CF:
+                        CountdownRequestPacket countdownPacket = new CountdownRequestPacket(subpacket.data);
+                        session.GetActor().BroadcastCountdown(countdownPacket.countdownLength, countdownPacket.syncTime);
+                        break;
                     //Event Result
                     case 0x012E:
                         subpacket.DebugPrintSubPacket();

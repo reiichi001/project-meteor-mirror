@@ -1623,9 +1623,9 @@ namespace FFXIVClassic_Map_Server.Actors
             currentEventRunning = null;
         }
 
-        public void BroadcastCountdown(byte countdownLength, uint startTime)
+        public void BroadcastCountdown(byte countdownLength, ulong syncTime)
         {
-            BroadcastPacket(StartCountdownPacket.BuildPacket(actorId, countdownLength, startTime, "Go!"), true);
+            BroadcastPacket(StartCountdownPacket.BuildPacket(actorId, countdownLength, syncTime, "Go!"), true);
         }
 
         public void SendInstanceUpdate()
