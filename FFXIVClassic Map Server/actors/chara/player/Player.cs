@@ -523,7 +523,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void SendZoneInPackets(WorldManager world, ushort spawnType)
         {
             QueuePacket(SetActorIsZoningPacket.BuildPacket(actorId, false));
-            QueuePacket(_0x10Packet.BuildPacket(actorId, 0xFF));
+            QueuePacket(SetDalamudPacket.BuildPacket(actorId, 0));
             QueuePacket(SetMusicPacket.BuildPacket(actorId, zone.bgmDay, 0x01));
             QueuePacket(SetWeatherPacket.BuildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR, 1));
             
@@ -1622,7 +1622,12 @@ namespace FFXIVClassic_Map_Server.Actors
             currentEventName = "";
             currentEventRunning = null;
         }
-        
+
+        public void BroadcastCountdown(byte countdownLength, uint startTime)
+        {
+            BroadcastPacket(StartCountdownPacket.BuildPacket(actorId, countdownLength, startTime, "Go!"), true);
+        }
+
         public void SendInstanceUpdate()
         {
             //Server.GetWorldManager().SeamlessCheck(this);
