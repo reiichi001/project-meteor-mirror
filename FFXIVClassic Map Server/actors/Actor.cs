@@ -33,6 +33,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
     class Actor
     {
+        public static uint INVALID_ACTORID = 0xC0000000;
         public uint actorId;
         public string actorName;
 

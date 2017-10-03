@@ -148,15 +148,13 @@ namespace FFXIVClassic_Map_Server
 
                         SetTargetPacket setTarget = new SetTargetPacket(subpacket.data);
                         session.GetActor().currentTarget = setTarget.actorID;
+                        session.GetActor().isAutoAttackEnabled = setTarget.attackTarget != 0xE0000000;
                         session.GetActor().BroadcastPacket(SetActorTargetAnimatedPacket.BuildPacket(session.id, setTarget.actorID), true);
                         break;
                     //Lock Target
                     case 0x00CC:
                         LockTargetPacket lockTarget = new LockTargetPacket(subpacket.data);
                         session.GetActor().currentLockedTarget = lockTarget.actorID;
-                        // todo: this really needs figuring out..
-                        session.GetActor().isAutoAttackEnabled = lockTarget.otherVal == 0x00000040;
-
                         break;
                     //Start Event
                     case 0x012D:
