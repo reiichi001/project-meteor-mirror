@@ -264,7 +264,10 @@
     <Compile Include="packets\send\recruitment\EndRecruitmentPacket.cs" />
     <Compile Include="packets\send\recruitment\RecruiterStatePacket.cs" />
     <Compile Include="packets\send\recruitment\StartRecruitingResponse.cs" />
+    <Compile Include="packets\send\search\PlayerSearchResult.cs" />
     <Compile Include="packets\send\search\ItemSearchResult.cs" />
+    <Compile Include="packets\send\search\PlayerSearchCommentResultPacket.cs" />
+    <Compile Include="packets\send\search\PlayerSearchInfoResultPacket.cs" />
     <Compile Include="packets\send\search\ItemSearchResultsEndPacket.cs" />
     <Compile Include="packets\send\search\ItemSearchResultsBodyPacket.cs" />
     <Compile Include="packets\send\search\ItemSearchResultsBeginPacket.cs" />
