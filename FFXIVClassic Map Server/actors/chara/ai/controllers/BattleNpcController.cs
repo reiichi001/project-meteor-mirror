@@ -153,11 +153,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 waitTime = tick.AddSeconds(10);
                 owner.OnRoam(tick);
 
-                if (!owner.aiContainer.pathFind.IsFollowingPath() && CanMoveForward(0.0f))
+                if (CanMoveForward(0.0f) && !owner.aiContainer.pathFind.IsFollowingPath())
                 {
                     // will move on next tick
                     owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
-                    owner.aiContainer.pathFind.PathInRange(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 20.0f);
+                    owner.aiContainer.pathFind.PathInRange(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 50.0f);
                 }
             }
 
@@ -173,7 +173,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
                         if (!owner.isMovingToSpawn && owner.aiContainer.pathFind.AtPoint() && owner.detectionType != DetectionType.None)
                         {
-                            uint levelDifference = (uint)Math.Abs(owner.charaWork.parameterSave.state_mainSkillLevel - chara.charaWork.parameterSave.state_mainSkillLevel);
+                            uint levelDifference = (uint)Math.Abs(owner.GetLevel() - chara.GetLevel());
 
                             if (levelDifference <= 10 || (owner.detectionType & DetectionType.IgnoreLevelDifference) != 0 && CanAggroTarget(chara))
                             {
@@ -375,8 +375,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         public override void ChangeTarget(Character target)
         {
             owner.target = target;
-            owner.currentLockedTarget = target?.actorId ?? 0xC0000000;
-            owner.currentTarget = target?.actorId ?? 0xC0000000;
+            owner.currentLockedTarget = target?.actorId ?? Actor.INVALID_ACTORID;
+            owner.currentTarget = target?.actorId ?? Actor.INVALID_ACTORID;
 
             foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
                 player.QueuePacket(owner.GetHateTypePacket(player));

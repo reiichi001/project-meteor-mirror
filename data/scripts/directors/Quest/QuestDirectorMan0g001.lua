@@ -14,29 +14,30 @@ function onCreateContentArea(players, director, contentArea, contentGroup)
 
     local worldManager = GetWorldManager();
     
-	yshtola = GetWorldManager():SpawnBattleNpcById(6, contentArea);
-	stahlmann = GetWorldManager():SpawnBattleNpcById(7, contentArea);
+	yshtola = GetWorldManager().SpawnBattleNpcById(6, contentArea);
+	stahlmann = GetWorldManager().SpawnBattleNpcById(7, contentArea);
 	
-	mob1 = GetWorldManager():SpawnBattleNpcById(3, contentArea);
-	mob2 = GetWorldManager():SpawnBattleNpcById(4, contentArea);
-	mob3 = GetWorldManager():SpawnBattleNpcById(5, contentArea);
+	mob1 = GetWorldManager().SpawnBattleNpcById(3, contentArea);
+	mob2 = GetWorldManager().SpawnBattleNpcById(4, contentArea);
+	mob3 = GetWorldManager().SpawnBattleNpcById(5, contentArea);
 	
     local added = false;
     for i = 0, players.Count do
         local player = players[i];
+		print("asses "..players.Count)
         if player.currentParty and not added then
-            player.currentParty.members.Add(6);
+			print("shitness")
+            player.currentParty.members:Add(yshtola.actorId);
             print("cunt")
-            player.currentParty.members.Add(7);
+            player.currentParty.members:Add(stahlmann.actorId);
             print("dickbag")
             added = true;
         end;
         -- dont let player die
-        player.SetMod(modifiersGlobal.MinimumHpLock, 1);
+        player:SetMod(modifiersGlobal.MinimumHpLock, 1);
+		contentGroup:AddMember(player)
         print("shittttt")
-        contentGroup:AddMember(player);
-        player:EndEvent();
-        i = i + 1;
+		break
     end;
     print("shit")
 	contentGroup:AddMember(director);

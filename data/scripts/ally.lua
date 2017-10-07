@@ -4,35 +4,35 @@ require ("weaponskill")
 
 allyGlobal =
 {
-};
+}
 
 function allyGlobal.onSpawn(ally, target)
 
-end;
+end
 
 function allyGlobal.onEngage(ally, target)
 
-end;
+end
 
 function allyGlobal.onAttack(ally, target, damage)
 
-end;
+end
 
 function allyGlobal.onDamageTaken(ally, attacker, damage)
 
-end;
+end
 
 function allyGlobal.onCombatTick(ally, target, tick, contentGroupCharas)
-    allyGlobal.HelpPlayers(ally, contentGroupCharas);
-end;
+    allyGlobal.HelpPlayers(ally, contentGroupCharas)
+end
 
 function allyGlobal.onDeath(ally, player, lastAttacker)
 
-end;
+end
 
 function allyGlobal.onDespawn(ally)
 
-end;
+end
 
 function allyGlobal.HelpPlayers(ally, contentGroupCharas, pickRandomTarget)
     if contentGroupCharas then
@@ -44,35 +44,37 @@ function allyGlobal.HelpPlayers(ally, contentGroupCharas, pickRandomTarget)
                     -- do stuff
                     if not ally.IsEngaged() then
                         if chara.IsEngaged() then
-                            allyGlobal.EngageTarget(ally, target, nil);
-                        end;
-                    end;
+                            allyGlobal.EngageTarget(ally, chara.target, nil)
+                        end
+                    end
                 elseif chara.IsMonster() and chara.IsEngaged() then
-                    
-                end;
-            end;
-        end;
-    end;
-end;
+                    if not ally.IsEngaged() then
+                        allyGlobal.EngageTarget(ally, chara.target, nil)
+                    end
+                end
+            end
+        end
+    end
+end
 
 function allyGlobal.HealPlayer(ally, player)
 
-end;
+end
 
 function allyGlobal.SupportAction(ally, player)
 
-end;
+end
 
 function allyGlobal.EngageTarget(ally, target, contentGroupCharas)
     if contentGroupCharas then
         for _, chara in pairs(contentGroupCharas) do
             if chara.IsMonster() then
                 if chara.allegiance ~= ally.allegiance then
-                    ally.Engage(chara);
-                end;
-            end;
-        end;
+                    ally.Engage(chara)
+                end
+            end
+        end
     elseif target then
-        ally.Engage(target);
-    end;
-end;
+        ally.Engage(target)
+    end
+end

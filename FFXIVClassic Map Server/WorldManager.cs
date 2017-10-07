@@ -547,8 +547,9 @@ namespace FFXIVClassic_Map_Server
                 z.SpawnAllActors(true);
         }
 
-        public void SpawnBattleNpcById(uint id, Area area = null)
+        public BattleNpc SpawnBattleNpcById(uint id, Area area = null)
         {
+            BattleNpc bnpc = null;
             // todo: this is stupid duplicate code and really needs to die, think of a better way later
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -582,7 +583,7 @@ namespace FFXIVClassic_Map_Server
                         {
                             area = area ?? Server.GetWorldManager().GetZone(reader.GetUInt16("zoneId"));
                             int actorId = area.GetActorCount() + 1;
-                            var bnpc = area.GetBattleNpcById(id);
+                            bnpc = area.GetBattleNpcById(id);
 
                             if (bnpc != null)
                             {
@@ -644,7 +645,7 @@ namespace FFXIVClassic_Map_Server
                             battleNpc.CalculateBaseStats();
                             battleNpc.RecalculateStats();
                             //battleNpc.SetMod((uint)Modifier.ResistFire, )
-
+                            bnpc = battleNpc;
                             area.AddActorToZone(battleNpc);
                             count++;
                         }
@@ -660,6 +661,7 @@ namespace FFXIVClassic_Map_Server
                     conn.Dispose();
                 }
             }
+            return bnpc;
         }
 
         public void LoadBattleNpcModifiers(string tableName, string primaryKey, Dictionary<uint, ModifierList> list)

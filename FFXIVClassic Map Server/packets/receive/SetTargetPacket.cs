@@ -7,7 +7,7 @@ namespace FFXIVClassic_Map_Server.packets.receive
     {
         public bool invalidPacket = false;
         public uint actorID;
-        public uint otherVal; //Usually 0xE0000000
+        public uint attackTarget; //Usually 0xE0000000
 
         public SetTargetPacket(byte[] data)
         {
@@ -17,7 +17,7 @@ namespace FFXIVClassic_Map_Server.packets.receive
                 {
                     try{
                         actorID = binReader.ReadUInt32();
-                        otherVal = binReader.ReadUInt32();
+                        attackTarget = binReader.ReadUInt32();
                     }
                     catch (Exception){
                         invalidPacket = true;

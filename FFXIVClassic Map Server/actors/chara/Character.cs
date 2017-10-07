@@ -84,8 +84,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public uint animationId = 0;
 
-        public uint currentTarget = 0xC0000000;
-        public uint currentLockedTarget = 0xC0000000;
+        public uint currentTarget = Actor.INVALID_ACTORID;
+        public uint currentLockedTarget = Actor.INVALID_ACTORID;
 
         public uint currentActorIcon = 0;
 
@@ -391,9 +391,9 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 if (targid == 0)
                 {
-                    if (currentTarget != 0xC0000000)
+                    if (currentTarget != Actor.INVALID_ACTORID)
                         targid = currentTarget;
-                    else if (currentLockedTarget != 0xC0000000)
+                    else if (currentLockedTarget != Actor.INVALID_ACTORID)
                         targid = currentLockedTarget;
                 }
                 //if (targid != 0)
@@ -416,7 +416,7 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 this.newMainState = newMainState;
             }
-            else
+            else if (IsEngaged())
             {
                 aiContainer.Disengage();
                 return true;
