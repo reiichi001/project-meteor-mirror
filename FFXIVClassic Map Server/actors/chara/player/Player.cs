@@ -2219,6 +2219,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //While there is enough experience to level up, keep leveling up, unlocking skills and removing experience from exp until we don't have enough to level up
             while (exp >= diff && GetLevel() < charaWork.battleSave.skillLevelCap[classId])
             {
+                
                 //Level up
                 LevelUp(classId);
                 leveled = true;
@@ -2242,6 +2243,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 //also i dunno how to do this
 
                 Database.SetLevel(this, classId, GetLevel());
+                Database.SavePlayerCurrentClass(this);
             }
             //Cap experience for level 50
             charaWork.battleSave.skillPoint[classId - 1] = Math.Min(charaWork.battleSave.skillPoint[classId - 1] + exp, MAXEXP[GetLevel() - 1]);
