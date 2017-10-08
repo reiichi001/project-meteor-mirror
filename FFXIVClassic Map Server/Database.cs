@@ -1225,18 +1225,28 @@ namespace FFXIVClassic_Map_Server
                                     SELECT
                                     serverItemId,
                                     itemId,
+                                    modifierId,
                                     quantity,
-                                    itemType,
                                     quality,
+
                                     durability,
-                                    spiritBind,
+                                    mainQuality,
+                                    subQuality1,
+                                    subQuality2,
+                                    subQuality3,
+                                    param1,
+                                    param2,
+                                    param3,
+                                    spiritbind,
                                     materia1,
                                     materia2,
                                     materia3,
                                     materia4,
                                     materia5
+
                                     FROM characters_inventory
                                     INNER JOIN server_items ON serverItemId = server_items.id
+                                    LEFT JOIN server_items_modifiers ON server_items.modifierId = server_items_modifiers.id
                                     WHERE characterId = @charId AND inventoryType = @type";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -1252,19 +1262,15 @@ namespace FFXIVClassic_Map_Server
                             uint itemId = reader.GetUInt32("itemId");
                             int quantity = reader.GetInt32("quantity");
 
-                            byte itemType = reader.GetByte("itemType");
                             byte qualityNumber = reader.GetByte("quality");
 
-                            int durability = reader.GetInt32("durability");
-                            ushort spiritBind = reader.GetUInt16("spiritBind");
+                            bool hasModifier = !reader.IsDBNull(reader.GetOrdinal("modifierId"));
+                            InventoryItem.ItemModifier modifier = null;
 
-                            byte materia1 = reader.GetByte("materia1");
-                            byte materia2 = reader.GetByte("materia2");
-                            byte materia3 = reader.GetByte("materia3");
-                            byte materia4 = reader.GetByte("materia4");
-                            byte materia5 = reader.GetByte("materia5");
+                            if (hasModifier)                            
+                                 modifier = new InventoryItem.ItemModifier(reader);                           
 
-                            InventoryItem item = new InventoryItem(uniqueId, itemId, quantity, itemType, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5);
+                            InventoryItem item = new InventoryItem(uniqueId, itemId, quantity, new byte[4], new byte[4], qualityNumber, modifier);
                             item.slot = slot;
                             slot++;
                             items.Add(item);
@@ -1298,19 +1304,29 @@ namespace FFXIVClassic_Map_Server
                                     SELECT
                                     serverItemId,
                                     itemId,
+                                    modifierId,
                                     quantity,
-                                    itemType,
                                     quality,
+
                                     durability,
-                                    spiritBind,
+                                    mainQuality,
+                                    subQuality1,
+                                    subQuality2,
+                                    subQuality3,
+                                    param1,
+                                    param2,
+                                    param3,
+                                    spiritbind,
                                     materia1,
                                     materia2,
                                     materia3,
                                     materia4,
                                     materia5
+
                                     FROM retainers_inventory
                                     INNER JOIN server_items ON serverItemId = server_items.id
-                                    WHERE retainerId = @retainerId AND inventoryType = @type";
+                                    LEFT JOIN server_items_modifiers ON server_items.modifierId = server_items_modifiers.id
+                                    WHERE characterId = @charId AND inventoryType = @type";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
@@ -1328,16 +1344,13 @@ namespace FFXIVClassic_Map_Server
                             byte itemType = reader.GetByte("itemType");
                             byte qualityNumber = reader.GetByte("quality");
 
-                            int durability = reader.GetInt32("durability");
-                            ushort spiritBind = reader.GetUInt16("spiritBind");
+                            bool hasModifier = reader.IsDBNull(reader.GetOrdinal("modifierId"));
+                            InventoryItem.ItemModifier modifier = null;
 
-                            byte materia1 = reader.GetByte("materia1");
-                            byte materia2 = reader.GetByte("materia2");
-                            byte materia3 = reader.GetByte("materia3");
-                            byte materia4 = reader.GetByte("materia4");
-                            byte materia5 = reader.GetByte("materia5");
+                            if (hasModifier)
+                                modifier = new InventoryItem.ItemModifier(reader);
 
-                            InventoryItem item = new InventoryItem(uniqueId, itemId, quantity, itemType, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5);
+                            InventoryItem item = new InventoryItem(uniqueId, itemId, quantity, new byte[4], new byte[4], qualityNumber, modifier);
                             item.slot = slot;
                             slot++;
                             items.Add(item);
@@ -1385,7 +1398,7 @@ namespace FFXIVClassic_Map_Server
 
                     cmd.ExecuteNonQuery();
 
-                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, itemType, quality, durability, 0, 0, 0, 0, 0, 0);
+                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, new byte[4], new byte[4], quality, new InventoryItem.ItemModifier());
                 }
                 catch (MySqlException e)
                 {

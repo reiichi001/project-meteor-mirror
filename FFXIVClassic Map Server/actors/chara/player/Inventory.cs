@@ -37,6 +37,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         private bool isTemporary;
         private InventoryItem[] list;
         private bool[] isDirty;
+        private bool holdingUpdates = false;
 
         private int endOfListIndex = 0;
 
@@ -135,7 +136,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 if (item.itemId == itemId && item.quality == quality && item.quantity < gItem.maxStack)
                 {
                     int oldQuantity = item.quantity;
-                    item.quantity = Math.Min(item.quantity + quantityCount, gItem.maxStack);
+                    item.quantity = Math.Min(item.quantity + quantityCount, gItem.maxStack);                    
                     isDirty[i] = true;
                     quantityCount -= (gItem.maxStack - oldQuantity);
 
@@ -165,6 +166,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             SendUpdatePackets();           
 
             return INV_ERROR.SUCCESS;
+        }
+
+        public void AddItemSpecial(ushort slot, InventoryItem item)
+        {
+            list[slot] = item;
+            SendUpdatePackets();
         }
 
         public void RemoveItem(uint itemId)
@@ -304,6 +311,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             endOfListIndex = 0;
 
             SendUpdatePackets();
+        }
+
+        public InventoryItem[] GetRawList()
+        {
+            return list;
         }
 
         public void ChangeDurability(uint slot, uint durabilityChange)
@@ -481,11 +493,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             if (owner is Player)
             {
-                SendUpdatePackets((Player)owner, true);
+                SendUpdatePackets((Player)owner);
             }                
         }
 
-        public void SendUpdatePackets(Player player, bool doneImmediate = false)
+        public void SendUpdatePackets(Player player)
         {
             List<InventoryItem> items = new List<InventoryItem>();
             List<ushort> slotsToRemove = new List<ushort>();
@@ -504,7 +516,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     slotsToRemove.Add((ushort)i);
             }
 
-            if (doneImmediate)
+            if (!holdingUpdates)
                 DoneSendUpdate();
 
             player.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
@@ -517,8 +529,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             player.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
         }
 
+        public void StartSendUpdate()
+        {
+            holdingUpdates = true;
+        }
+
         public void DoneSendUpdate()
         {
+            holdingUpdates = false;
             Array.Clear(isDirty, 0, isDirty.Length);
         }
 

@@ -111,6 +111,8 @@ namespace FFXIVClassic_Map_Server.Actors
         //Trading
         private Player otherTrader = null;
         private Inventory myOfferings;
+        private bool isTradeAccepted = false;
+        private bool isTradeLocked = false;
 
         //GC Related
         public byte gcCurrent;
@@ -1600,7 +1602,18 @@ namespace FFXIVClassic_Map_Server.Actors
                 return;
 
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
-            SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, conditionName, lParams);
+            SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, 0x75dc1, conditionName, lParams);
+            spacket.DebugPrintSubPacket();
+            QueuePacket(spacket);
+        }
+
+        public void KickEventSpecial(Actor actor, uint unknown, string conditionName, params object[] parameters)
+        {
+            if (actor == null)
+                return;
+
+            List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
+            SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, unknown, conditionName, lParams);
             spacket.DebugPrintSubPacket();
             QueuePacket(spacket);
         }
@@ -1786,18 +1799,97 @@ namespace FFXIVClassic_Map_Server.Actors
             myOfferings = new Inventory(this, 4, Inventory.TRADE, true);
             Inventory otherPlayerOfferings = new Inventory(otherPlayer, 4, Inventory.TRADE, true);
 
-            QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
-            QueuePacket(InventorySetBeginPacket.BuildPacket(actorId, 4, Inventory.TRADE));
-
-            QueuePacket(EquipmentListX01Packet.BuildPacket(actorId, 1, 1));
-
-            QueuePacket(InventorySetEndPacket.BuildPacket(actorId));
-            QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
-
-            myOfferings.SendFullInventory(this);
+            myOfferings.StartSendUpdate();
+            myOfferings.SendUpdatePackets(this);
+            myOfferings.SendUpdatePackets(otherPlayer);
+            myOfferings.DoneSendUpdate();
 
             otherTrader = otherPlayer;
+            isTradeAccepted = false;
         }
+
+        public Player GetOtherTrader()
+        {
+            return otherTrader;
+        }
+
+        public Inventory GetTradeOfferings()
+        {
+            return myOfferings;
+        }
+
+        public bool IsTrading()
+        {
+            return otherTrader != null;
+        }
+
+        public bool IsTradeAccepted()
+        {
+            return isTradeAccepted;
+        }
+
+        public void AddTradeItem(ushort slot, ushort linkedSlot, int subquantity)
+        {
+            if (!IsTrading())
+                return;
+
+            InventoryItem mine = inventories[Inventory.NORMAL].GetItemAtSlot(linkedSlot);
+
+            InventoryItem tradeItem = new InventoryItem(mine, slot);
+
+            myOfferings.StartSendUpdate();
+            myOfferings.AddItem(mine.itemId, mine.quantity, mine.quality);
+            myOfferings.SendUpdatePackets(otherTrader);
+            myOfferings.DoneSendUpdate();
+        }
+
+        public void AddTradeGil(int quantity)
+        {
+            if (!IsTrading())
+                return;
+            
+            myOfferings.StartSendUpdate();
+            myOfferings.AddItem(1000001, quantity, 1);
+            myOfferings.SendUpdatePackets(otherTrader);
+            myOfferings.DoneSendUpdate();
+        }
+
+        public void RemoveTradeItem(ushort slot)
+        {
+            if (!IsTrading())
+                return;            
+
+            myOfferings.StartSendUpdate();
+            myOfferings.RemoveItemAtSlot(slot);
+            myOfferings.SendUpdatePackets(otherTrader);
+            myOfferings.DoneSendUpdate();
+        }
+
+        public void ClearTradeItems(ushort slot)
+        {
+            if (!IsTrading())
+                return;
+
+            myOfferings.StartSendUpdate();
+            myOfferings.Clear();
+            myOfferings.SendUpdatePackets(otherTrader);
+            myOfferings.DoneSendUpdate();
+        }
+
+        public void AcceptTrade(bool accepted)
+        {
+            if (!IsTrading())
+                return;
+            isTradeAccepted = accepted;            
+        }
+
+        public void FinishTradeTransaction()
+        {
+            isTradeAccepted = false;
+            myOfferings = null;
+            otherTrader = null;
+        }
+
 
         public void Test()
         {
@@ -1820,22 +1912,5 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
         }
 
-
-        public Inventory GetTradeOfferings()
-        {
-            return myOfferings;
-        }
-
-        public void FinishTradeTransaction()
-        {
-            myOfferings = null;
-            otherTrader = null;
-        }
-
-        public void CancelTradeTransaction()
-        {
-            myOfferings = null;
-            otherTrader = null;
-        }
     }
 }

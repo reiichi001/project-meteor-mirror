@@ -46,6 +46,7 @@ namespace FFXIVClassic_Map_Server
         public Dictionary<ulong, RelationGroup> mRelationGroups = new Dictionary<ulong, RelationGroup>();
         public Dictionary<ulong, TradeGroup> mTradeGroups = new Dictionary<ulong, TradeGroup>();
         private Object groupLock = new Object();
+        private Object tradeLock = new Object();
         public ulong groupIndexId = 1;
 
         public WorldManager(Server server)
@@ -902,7 +903,7 @@ namespace FFXIVClassic_Map_Server
         }
 
         public TradeGroup CreateTradeGroup(Player inviter, Player invitee)
-        {
+        {            
             lock (groupLock)
             {
                 groupIndexId = groupIndexId | 0x0000000000000000;
@@ -946,6 +947,11 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public void TradeTEST(Player player)
+        {
+            player.KickEventSpecial(Server.GetStaticActors("TradeExecuteCommand"), 0, "commandContent", null, null, null, 16, null, null, null, null, null);
+        }
+
         public void AcceptTrade(Player invitee)
         {
             TradeGroup group = GetTradeGroup(invitee.actorId);
@@ -958,13 +964,13 @@ namespace FFXIVClassic_Map_Server
 
             Player inviter = (Player)invitee.GetZone().FindActorInArea(group.GetHost());
 
-            DeleteTradeGroup(group.groupIndex);
+            //DeleteTradeGroup(group.groupIndex);
 
             inviter.StartTradeTransaction(invitee);
             invitee.StartTradeTransaction(inviter);
 
-            inviter.KickEvent(Server.GetStaticActors("TradeExecuteCommand"), "commandContent", null, null, null, 16, null, null, null, null, null);
-            invitee.KickEvent(Server.GetStaticActors("TradeExecuteCommand"), "commandContent", null, null, null, 16, null, null, null, null, null);
+            inviter.KickEventSpecial(Server.GetStaticActors("TradeExecuteCommand"), 0, "commandContent", null, null, null, 16, null, null, null, null, null);
+            invitee.KickEventSpecial(Server.GetStaticActors("TradeExecuteCommand"), 0, "commandContent", null, null, null, 16, null, null, null, null, null);
         }
 
         public void CancelTradeTooFar(Player inviter)
@@ -1021,6 +1027,20 @@ namespace FFXIVClassic_Map_Server
                 inviter.SendGameMessage(GetActor(), 25038, 0x20); //Your trade request fails
 
             DeleteTradeGroup(group.groupIndex);
+        }
+
+        public void SwapTradedItems(Player p1, Player p2)
+        {
+            lock (tradeLock)
+            {
+                if (p1.IsTradeAccepted() && p2.IsTradeAccepted())
+                {
+                    //move items around
+
+                    p1.FinishTradeTransaction();
+                    p2.FinishTradeTransaction();
+                }
+            }
         }
 
         public bool SendGroupInit(Session session, ulong groupId)
