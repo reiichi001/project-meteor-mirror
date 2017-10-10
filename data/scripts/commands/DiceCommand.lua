@@ -6,8 +6,8 @@ DiceCommand Script
 
 function onEventStarted(player, actor, triggerName, maxNumber)	
 	
-	if (maxNumber == nil) then
-		maxNumber = 999;
+	if (maxNumber == nil or maxNumber > 1000 or maxNumber < 1) then
+		maxNumber = 100;
 	end
 		
 	result = math.random(0, maxNumber);

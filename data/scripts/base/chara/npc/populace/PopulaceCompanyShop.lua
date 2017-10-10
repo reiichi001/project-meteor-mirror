@@ -33,6 +33,7 @@ eventTalkStepBreak()            -- Returns NPC to their starting direction
 --]]
 
 require ("global")
+require ("shop")
 
 function init(npc)
 	return false, false, 0, 0;	
@@ -44,7 +45,7 @@ gcOfficer = {
 [1500201] = 3, -- Flame Shop
 }
 
-shopInfo = { -- [index] = { itemID, itemQuality, itemQuantity, itemCost gcRank, city, special, itemCategory }
+shopInfo = { -- [index] = { itemID, itemQuality, itemQuantity, itemCost, gcRank, city, special, itemCategory }
 [100001] = {3010403, 1, 10, 20, 0, 1, 0, 1},
 [100002] = {3010402, 1, 10, 30, 0, 1, 0, 1},
 [100003] = {3020202, 1, 1, 50, 0, 1, 0, 1},
@@ -450,7 +451,7 @@ shopInfo = { -- [index] = { itemID, itemQuality, itemQuantity, itemCost gcRank, 
 }
 
 function onEventStarted(player, npc, triggerName)
-    skipGCcheck = 1; -- 0 No,  1 Yes
+    skipGCcheck = 0; -- 0 No,  1 Yes
     playerGC = player.gcCurrent;
     playerGCSeal = 1000200 + playerGC;
     playerCurrentRank = 13;
@@ -470,7 +471,7 @@ function onEventStarted(player, npc, triggerName)
                 --player:SendMessage(0x20, "", "eventShopMenuOpen: " .. tostring(t1) .. ", ".. tostring(t2) .. ", ".. tostring(t3));
 
                 while (true) do
-                    -- TODO:  ADD RANK CHECK, CITY CHECK, AND RANGE CHECK
+                    -- TODO:  ADD RANK CHECK, CITY CHECK, AND ITEM-RANGE CHECK
                     
                     buyResult, buyIndex = callClientFunction(player, "eventShopMenuAsk");
                     
@@ -486,7 +487,7 @@ function onEventStarted(player, npc, triggerName)
                         end
                     end
             
-                    purchaseItem(player, shopInfo[buyIndex][1], shopInfo[buyIndex][3], shopInfo[buyIndex][2], shopInfo[buyIndex][4], playerGCSeal, location);  
+                    purchaseItem(player, location, shopInfo[buyIndex][1], shopInfo[buyIndex][3], shopInfo[buyIndex][2], shopInfo[buyIndex][4], playerGCSeal);  
                 end
                 
                 --player:SendMessage(0x20, "", "Player picked an item at gcSealShopIndex " .. tostring(buyResult) .. ", ".. tostring(buyIndex));
@@ -500,43 +501,6 @@ function onEventStarted(player, npc, triggerName)
     end        
     callClientFunction(player, "eventTalkStepBreak");
     player:endEvent();
-end
-
-
-function purchaseItem(player, itemId, quantity, quality, price, currency, location)
-    
-    local worldMaster = GetWorldMaster();
-    local cost = quantity * price;        
-    local gItemData = GetItemGamedata(itemId);    
-    local isUnique = gItemData.isRare;
-    
-    if player:GetInventory(location):HasItem(itemId) and isUnique then
-        -- You cannot have more than one <itemId> <quality> in your possession at any given time.
-        player:SendGameMessage(player, worldMaster, 40279, MESSAGE_TYPE_SYSTEM, itemId, quality);
-        return;
-    end
-    
-    if (not player:GetInventory(location):IsFull() or player:GetInventory(location):IsSpaceForAdd(itemId, quantity)) then
-        if player:GetInventory(INVENTORY_CURRENCY):HasItem(currency, cost) then
-            player:GetInventory(INVENTORY_CURRENCY):removeItem(currency, cost) 
-            player:GetInventory(location):AddItem(itemId, quantity, quality); 
-            if currency == 1000001 then
-                -- You purchase <quantity> <itemId> <quality> for <cost> gil.
-                player:SendGameMessage(player, worldMaster, 25061, MESSAGE_TYPE_SYSTEM, itemId, quality, quantity, cost); 
-            elseif currency == 1000201 or currency == 1000202 or currency == 1000203 then 
-                -- You exchange <quantity> <GC seals> for <quantity> <itemId> <quality>.
-                player:SendGameMessage(player, GetWorldMaster(), 25275, MESSAGE_TYPE_SYSTEM, itemId, quality, quantity, price, player.gcCurrent);
-            
-            end
-        else
-            -- You do not have enough gil.  (Should never see this aside from packet injection, since client prevents buying if not enough currency)
-            player:SendGameMessage(player, worldMaster, 25065, MESSAGE_TYPE_SYSTEM);
-        end
-    else
-        -- Your inventory is full.
-        player:SendGameMessage(player, worldMaster, 60022, MESSAGE_TYPE_SYSTEM);
-    end
-    return
 end
 
 
