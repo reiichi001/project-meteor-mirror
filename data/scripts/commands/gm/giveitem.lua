@@ -15,7 +15,7 @@ Adds <item> <qty> to <location> for player or <targetname>.
 function onTrigger(player, argc, item, qty, location, name, lastName)
     local sender = "[giveitem] ";
     local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
-    local message = string.format("Unable to add item %u", item);
+    local worldMaster = GetWorldMaster(); 
      
     if name then
         if lastName then
@@ -27,10 +27,16 @@ function onTrigger(player, argc, item, qty, location, name, lastName)
     
     if player then
         item = tonumber(item) or nil;
+        
+        if not item then
+            player:SendMessage(messageID, sender, "Invalid parameter for item.");
+            return;
+        end                
+        
         qty = tonumber(qty) or 1;
         
 		if location then 
-			location =  tonumber(location) or _G[string.upper(location)];
+			location = _G[string.upper(location)];
             
             if not location then
                 player:SendMessage(messageID, sender, "Unknown item location.");
@@ -40,16 +46,22 @@ function onTrigger(player, argc, item, qty, location, name, lastName)
             location = INVENTORY_NORMAL;
         end;
         
-        local added = player:getInventory(location):addItem(item, qty, 1);
         
-        if added then
-            message = string.format("Added item %u of kind %u to %s", item, location, player:GetName());
-        end;        
-    else
-        print(sender.."[giveitem] Unable to add item, ensure player name is valid.");
-        return;
-    end;
-    
-    player:SendMessage(messageID, sender, message);
-    print(message);
+        local invCheck = player:getInventory(location):AddItem(item, qty, 1);
+        
+        if (invCheck == INV_ERROR_FULL) then
+            -- Your inventory is full.
+            player:SendGameMessage(player, worldMaster, 60022, messageID);
+        elseif (invCheck == INV_ERROR_ALREADY_HAS_UNIQUE) then
+            -- You cannot have more than one <itemId> <quality> in your possession at any given time.
+            player:SendGameMessage(player, worldMaster, 40279, messageID, item, 1);
+        elseif (invCheck == INV_ERROR_SYSTEM_ERROR) then
+            player:SendMessage(MESSAGE_TYPE_SYSTEM, "", "[DEBUG] Server Error on adding item.");
+        elseif (invCheck == INV_ERROR_SUCCESS) then
+            message = string.format("Added item %s to location %s to %s", item, location, player:GetName());
+            player:SendMessage(MESSAGE_TYPE_SYSTEM, "", message);
+            player:SendGameMessage(player, worldMaster, 25246, messageID, item, qty);
+        end
+    end
+
 end;
