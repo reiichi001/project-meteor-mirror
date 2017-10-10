@@ -19,7 +19,6 @@ namespace FFXIVClassic_Map_Server
 
         static void Main(string[] args)
         {
-
             // set up logging
             Log = LogManager.GetCurrentClassLogger();
 #if DEBUG
@@ -28,11 +27,14 @@ namespace FFXIVClassic_Map_Server
 #endif
             bool startServer = true;
 
-            Program.Log.Info("---------FFXIV 1.0 Map Server---------");
+            Log.Info("==================================");
+            Log.Info("FFXIV Classic Map Server");
+            Log.Info("Version: 0.1");
+            Log.Info("==================================");
 
             //Load Config
-            if (!ConfigConstants.Load())
-                startServer = false;
+            ConfigConstants.Load();
+            ConfigConstants.ApplyLaunchArgs(args);
 
             //Test DB Connection
             Program.Log.Info("Testing DB connection... ");
@@ -51,26 +53,19 @@ namespace FFXIVClassic_Map_Server
                     startServer = false; 
                 }
             }
-
-            //Check World ID
-            DBWorld thisWorld = Database.GetServer(ConfigConstants.DATABASE_WORLDID);
-            if (thisWorld != null)
-                Program.Log.Info("Successfully pulled world info from DB. Server name is {0}.", thisWorld.name);
-            else
-                Program.Log.Info("World info could not be retrieved from the DB. Welcome and MOTD will not be displayed.");
-
+            
             //Start server if A-OK
             if (startServer)
             {
                 Server server = new Server();
-                CommandProcessor cp = new CommandProcessor(server.GetConnectedPlayerList());
+                
                 server.StartServer();
 
                 while (startServer)
                 {
                     String input = Console.ReadLine();
                     Log.Info("[Console Input] " + input);
-                    cp.DoCommand(input, null);
+                    Server.GetCommandProcessor().DoCommand(input, null);
                 }
             }
 

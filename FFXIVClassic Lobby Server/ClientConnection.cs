@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Sockets;
-using FFXIVClassic_Lobby_Server.packets;
 using FFXIVClassic.Common;
 using System.Collections.Concurrent;
 using Cyotek.Collections.Generic;

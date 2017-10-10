@@ -1,4 +1,6 @@
-﻿namespace FFXIVClassic_Map_Server.packets.send
+﻿using FFXIVClassic.Common;
+
+namespace FFXIVClassic_Map_Server.packets.send
 {
     class LogoutPacket
     {
@@ -7,7 +9,7 @@
 
         public static SubPacket BuildPacket(uint playerActorID)
         {
-            return new SubPacket(OPCODE, playerActorID, playerActorID, new byte[8]);
+            return new SubPacket(OPCODE, playerActorID, new byte[8]);
         }
     }
 }

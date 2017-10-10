@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FFXIVClassic.Common;
+using System;
 using System.IO;
 
 namespace FFXIVClassic_Map_Server.packets.receive
@@ -21,7 +22,7 @@ namespace FFXIVClassic_Map_Server.packets.receive
                 }
             }
 
-            SubPacket subpacket = new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            SubPacket subpacket = new SubPacket(OPCODE, playerActorID, data);
             return subpacket;
         }
 

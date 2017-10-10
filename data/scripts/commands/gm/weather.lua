@@ -26,7 +26,7 @@ function onTrigger(player, argc, weather, updateTime, zonewide)
         if zonewide ~= 0 then
             message = string.format(message.."for zone %u", player:GetZoneID());
         else
-            message = string.format(message.."%s", player:GetName());
+            message = message..player:GetName();
         end;
         
         -- weatherid, updateTime

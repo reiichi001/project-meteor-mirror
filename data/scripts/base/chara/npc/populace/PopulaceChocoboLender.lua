@@ -39,6 +39,12 @@ end
 
 function onEventStarted(player, npc, triggerName)
 	
+	--callClientFunction(player, "eventTalkWelcome", player);
+	--callClientFunction(player, "eventAskMainMenu", player, 20, true, true, true, true, 4);
+	--callClientFunction(player, "eventTalkMyChocobo", player);
+	--callClientFunction(player, "eventSetChocoboName", false);
+	--callClientFunction(player, "eventAfterChocoboName", player);
+
 	local curLevel = 20; -- TODO: pull from character
 	local hasIssuance = player:GetInventory(INVENTORY_KEYITEMS):HasItem(gcIssuances[npc:GetActorClassId()]);
 	local hasChocobo = player.hasChocobo;

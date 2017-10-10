@@ -1,7 +1,6 @@
 ﻿using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send.actor.inventory;
-using FFXIVClassic_Map_Server.packets.send.Actor.inventory;
 using System.Collections.Generic;
 
 namespace FFXIVClassic_Map_Server.actors.chara.player
@@ -64,24 +63,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 }
             }
 
-            toPlayer.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, toPlayer.actorId, 0x23, Inventory.EQUIPMENT_OTHERPLAYER));
+            toPlayer.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, 0x23, Inventory.EQUIPMENT_OTHERPLAYER));
             int currentIndex = 0;
 
             while (true)
             {
                 if (items.Count - currentIndex >= 16)
-                    toPlayer.QueuePacket(InventoryListX16Packet.BuildPacket(owner.actorId, toPlayer.actorId, items, ref currentIndex));
+                    toPlayer.QueuePacket(InventoryListX16Packet.BuildPacket(owner.actorId, items, ref currentIndex));
                 else if (items.Count - currentIndex > 1)
-                    toPlayer.QueuePacket(InventoryListX08Packet.BuildPacket(owner.actorId, toPlayer.actorId, items, ref currentIndex));
+                    toPlayer.QueuePacket(InventoryListX08Packet.BuildPacket(owner.actorId, items, ref currentIndex));
                 else if (items.Count - currentIndex == 1)
                 {
-                    toPlayer.QueuePacket(InventoryListX01Packet.BuildPacket(owner.actorId, toPlayer.actorId, items[currentIndex]));
+                    toPlayer.QueuePacket(InventoryListX01Packet.BuildPacket(owner.actorId, items[currentIndex]));
                     currentIndex++;
                 }
                 else
                     break;
             }
-            toPlayer.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId, toPlayer.actorId));
+            toPlayer.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
         }
 
         public void SendFullEquipment(bool DoClear)

@@ -1,72 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Net;
-using System.Net.Sockets;
-using System.Threading.Tasks;
-using System.Threading;
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Map_Server.packets;
+
 using System.IO;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using FFXIVClassic_Map_Server;
 using FFXIVClassic_Map_Server.packets.send;
-using FFXIVClassic_Map_Server.dataobjects.chara;
-using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
-using FFXIVClassic_Map_Server.actors.chara.player;
-using FFXIVClassic_Map_Server.Properties;
+using FFXIVClassic_Map_Server.Actors;
 
 namespace FFXIVClassic_Map_Server
 {
     class CommandProcessor
     {
-        private Dictionary<uint, ConnectedPlayer> mConnectedPlayerList;
-        private static Dictionary<uint, Item> gamedataItems = Server.GetGamedataItems();
+        private static Dictionary<uint, ItemData> gamedataItems = Server.GetGamedataItems();
 
-        // For the moment, this is the only predefined item
-        // TODO: make a list/enum in the future so that items can be given by name, instead of by id
         const UInt32 ITEM_GIL = 1000001;
-
-        public CommandProcessor(Dictionary<uint, ConnectedPlayer> playerList)
-        {
-            mConnectedPlayerList = playerList;
-        }
-
-        public void ChangeProperty(uint id, uint value, string target)
-        {
-            SetActorPropetyPacket ChangeProperty = new SetActorPropetyPacket(target);
-
-            ChangeProperty.SetTarget(target);
-            ChangeProperty.AddInt(id, value);
-            ChangeProperty.AddTarget();
-
-            foreach (KeyValuePair<uint, ConnectedPlayer> entry in mConnectedPlayerList)
-            {
-                SubPacket ChangePropertyPacket = ChangeProperty.BuildPacket((entry.Value.actorID), (entry.Value.actorID));
-
-                BasePacket packet = BasePacket.CreatePacket(ChangePropertyPacket, true, false);
-                packet.DebugPrintPacket();
-
-                entry.Value.QueuePacket(packet);
-            }
-        }
-
+      
         /// <summary>
         /// We only use the default options for SendMessagePacket.
         /// May as well make it less unwieldly to view
         /// </summary>
         /// <param name="client"></param>
         /// <param name="message"></param>
-        private void SendMessage(ConnectedPlayer client, String message)
+        private void SendMessage(Session session, String message)
         {
-            if (client != null)
-               client.GetActor().QueuePacket(SendMessagePacket.BuildPacket(client.actorID, client.actorID, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", message));
+            if (session != null)
+                session.GetActor().QueuePacket(SendMessagePacket.BuildPacket(session.id, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", message));
         }
 
-        internal bool DoCommand(string input, ConnectedPlayer client)
+        internal bool DoCommand(string input, Session session)
         {
             if (!input.Any() || input.Equals(""))
                 return false;
@@ -81,14 +45,16 @@ namespace FFXIVClassic_Map_Server
                              )
                      .SelectMany(str => str).ToArray();
 
-            split = split.Select(temp => temp.ToLower()).ToArray(); // Ignore case on commands
+            split = split.ToArray(); // Ignore case on commands
 
             var cmd = split[0];
 
             if (cmd.Any())
             {
                 // if client isnt null, take player to be the player actor
-                var player = client?.GetActor();
+                Player player = null;
+                if (session != null)
+                    player = session.GetActor();
 
                 if (cmd.Equals("help"))
                 {
@@ -125,11 +91,11 @@ namespace FFXIVClassic_Map_Server
             if (split[0].Equals("reloaditems"))
                 {
                     Program.Log.Info(String.Format("Got request to reload item gamedata"));
-                    SendMessage(client, "Reloading Item Gamedata...");
+                    SendMessage(session, "Reloading Item Gamedata...");
                     gamedataItems.Clear();
                     gamedataItems = Database.GetItemGamedata();
                     Program.Log.Info(String.Format("Loaded {0} items.", gamedataItems.Count));
-                    SendMessage(client, String.Format("Loaded {0} items.", gamedataItems.Count));
+                    SendMessage(session, String.Format("Loaded {0} items.", gamedataItems.Count));
                     return true;
                 }
                 #endregion
@@ -139,7 +105,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     if (split.Length == 4)
                     {
-                        ChangeProperty(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
+                       // ChangeProperty(Utils.MurmurHash2(split[1], 0), Convert.ToUInt32(split[2], 16), split[3]);
                     }
                     return true;
                 }
@@ -150,7 +116,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     if (split.Length == 4)
                     {
-                        ChangeProperty(Convert.ToUInt32(split[1], 16), Convert.ToUInt32(split[2], 16), split[3]);
+                        //ChangeProperty(Convert.ToUInt32(split[1], 16), Convert.ToUInt32(split[2], 16), split[3]);
                     }
                     return true;
                 }

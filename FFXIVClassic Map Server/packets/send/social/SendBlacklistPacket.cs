@@ -2,6 +2,8 @@
 using System.IO;
 using System.Text;
 
+using FFXIVClassic.Common;
+
 namespace FFXIVClassic_Map_Server.packets.send.social
 {
     class SendBlacklistPacket
@@ -9,7 +11,7 @@ namespace FFXIVClassic_Map_Server.packets.send.social
         public const ushort OPCODE = 0x01CB;
         public const uint PACKET_SIZE = 0x686;
 
-        public static SubPacket BuildPacket(uint playerActorID, string[] blacklistedNames, ref int offset)
+        public static SubPacket BuildPacket(uint sourceActorId, string[] blacklistedNames, ref int offset)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -34,7 +36,7 @@ namespace FFXIVClassic_Map_Server.packets.send.social
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
     }
 }

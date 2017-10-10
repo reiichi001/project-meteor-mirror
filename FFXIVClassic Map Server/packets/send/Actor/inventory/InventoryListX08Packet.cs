@@ -3,19 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor.inventory
 {
     class InventoryListX08Packet
     {
         public const ushort OPCODE = 0x0149;
         public const uint PACKET_SIZE = 0x3A8;
-
-        public static SubPacket BuildPacket(uint playerActorId, List<InventoryItem> items, ref int listOffset)
-        {
-            return BuildPacket(playerActorId, playerActorId, items, ref listOffset);
-        }
-
-        public static SubPacket BuildPacket(uint sourceActorId, uint targetActorId, List<InventoryItem> items, ref int listOffset)
+        
+        public static SubPacket BuildPacket(uint sourceActorId, List<InventoryItem> items, ref int listOffset)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -40,7 +37,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
                 }
             }
 
-            return new SubPacket(OPCODE, sourceActorId, targetActorId, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
     }
 }

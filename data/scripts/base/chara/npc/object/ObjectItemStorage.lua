@@ -28,7 +28,11 @@ function onEventStarted(player, npc, triggerName)
 			goto TOP_MENU;
 		end
 		
-		callClientFunction(player, "selectStoreItem", nil, categoryChoice);
+		itemId = callClientFunction(player, "selectStoreItem", nil, categoryChoice);
+			
+		if (itemId ~= nil) then
+			player:GetInventory(INVENTORY_NORMAL):RemoveItem(itemId, 1);
+		end
 		
 	elseif (storageChoice == 2) then
 		categoryChoice = callClientFunction(player, "selectCategory");
@@ -37,7 +41,11 @@ function onEventStarted(player, npc, triggerName)
 			goto TOP_MENU;
 		end
 	
-		callClientFunction(player, "selectReceiveItem", nil, categoryChoice);
+		itemId = callClientFunction(player, "selectReceiveItem", nil, categoryChoice);
+		
+		if (itemId ~= nil) then
+			player:GetInventory(INVENTORY_NORMAL):AddItem(itemId, 1);
+		end
 	
 	end
 	

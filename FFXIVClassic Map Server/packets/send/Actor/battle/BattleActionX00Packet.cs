@@ -1,7 +1,10 @@
-﻿using System;
+﻿using FFXIVClassic.Common;
+using System;
 using System.IO;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor.battle
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
 {
     class BattleActionX00Packet
     {
@@ -29,7 +32,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.battle
                 }
             }
 
-            return new SubPacket(OPCODE, sourceActorId, playerActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
     }
 }

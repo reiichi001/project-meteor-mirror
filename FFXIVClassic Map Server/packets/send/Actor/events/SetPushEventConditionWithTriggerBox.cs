@@ -3,14 +3,16 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor.events
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor.events
 {
     class SetPushEventConditionWithTriggerBox
     {
         public const ushort OPCODE = 0x0175;
         public const uint PACKET_SIZE = 0x60;
 
-        public static SubPacket BuildPacket(uint playerActorID, uint sourceActorID, EventList.PushBoxEventCondition condition)
+        public static SubPacket BuildPacket(uint sourceActorId, EventList.PushBoxEventCondition condition)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -29,7 +31,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.events
                 }
             }
 
-            return new SubPacket(OPCODE, sourceActorID, playerActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
     }
 }

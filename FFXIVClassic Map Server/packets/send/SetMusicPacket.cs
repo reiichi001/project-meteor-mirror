@@ -1,5 +1,7 @@
 ﻿using System;
 
+using FFXIVClassic.Common;
+
 namespace FFXIVClassic_Map_Server.packets.send
 {
     class SetMusicPacket
@@ -14,10 +16,10 @@ namespace FFXIVClassic_Map_Server.packets.send
         public const ushort EFFECT_PLAY_NORMAL_CHANNEL = 0x5; //Only works for multi channeled music
         public const ushort EFFECT_PLAY_BATTLE_CHANNEL = 0x6;
 
-        public static SubPacket BuildPacket(uint playerActorID, ushort musicID, ushort musicTrackMode)
+        public static SubPacket BuildPacket(uint sourceActorId, ushort musicID, ushort musicTrackMode)
         {
             ulong combined = (ulong)(musicID | (musicTrackMode << 16));
-            return new SubPacket(OPCODE, 0, playerActorID, BitConverter.GetBytes(combined));
+            return new SubPacket(OPCODE, 0, BitConverter.GetBytes(combined));
         }
     }
 }

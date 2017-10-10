@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.utils;
-using FFXIVClassic_Map_Server.packets;
+
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.Actors;
@@ -48,29 +48,6 @@ namespace FFXIVClassic_Map_Server
             return id;
         }
 
-        public static DBWorld GetServer(uint serverId)
-        {
-            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                DBWorld world = null;
-                try
-                {
-                    conn.Open();
-                    world = conn.Query<DBWorld>("SELECT * FROM servers WHERE id=@ServerId", new { ServerId = serverId }).SingleOrDefault();
-                }
-                catch (MySqlException e)
-                {
-                    Program.Log.Error(e.ToString());
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-
-                return world;
-            }
-        }
-
         public static List<Npc> GetNpcList()
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -94,12 +71,12 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public static Dictionary<uint, Item> GetItemGamedata()
+        public static Dictionary<uint, ItemData> GetItemGamedata()
         {
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                Dictionary<uint, Item> gamedataItems = new Dictionary<uint, Item>();
-
+                Dictionary<uint, ItemData> gamedataItems = new Dictionary<uint, ItemData>();
+          
                 try
                 {
                     conn.Open();
@@ -108,11 +85,12 @@ namespace FFXIVClassic_Map_Server
                                 SELECT
                                 *                                
                                 FROM gamedata_items
-                                LEFT JOIN gamedata_items_equipment  ON gamedata_items.catalogID = gamedata_items_equipment.catalogID
-                                LEFT JOIN gamedata_items_accessory  ON gamedata_items.catalogID = gamedata_items_accessory.catalogID
-                                LEFT JOIN gamedata_items_armor      ON gamedata_items.catalogID = gamedata_items_armor.catalogID
-                                LEFT JOIN gamedata_items_weapon     ON gamedata_items.catalogID = gamedata_items_weapon.catalogID
-                                LEFT JOIN gamedata_items_graphics   ON gamedata_items.catalogID = gamedata_items_graphics.catalogID
+                                LEFT JOIN gamedata_items_equipment        ON gamedata_items.catalogID = gamedata_items_equipment.catalogID
+                                LEFT JOIN gamedata_items_accessory        ON gamedata_items.catalogID = gamedata_items_accessory.catalogID
+                                LEFT JOIN gamedata_items_armor            ON gamedata_items.catalogID = gamedata_items_armor.catalogID
+                                LEFT JOIN gamedata_items_weapon           ON gamedata_items.catalogID = gamedata_items_weapon.catalogID
+                                LEFT JOIN gamedata_items_graphics         ON gamedata_items.catalogID = gamedata_items_graphics.catalogID                                
+                                LEFT JOIN gamedata_items_graphics_extra   ON gamedata_items.catalogID = gamedata_items_graphics_extra.catalogID
                                 ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -122,16 +100,16 @@ namespace FFXIVClassic_Map_Server
                         while (reader.Read())
                         {
                             uint id = reader.GetUInt32("catalogID");
-                            Item item = null;
+                            ItemData item = null;
 
-                            if (Item.IsWeapon(id))
+                            if (ItemData.IsWeapon(id))
                                 item = new WeaponItem(reader);
-                            else if (Item.IsArmor(id))
+                            else if (ItemData.IsArmor(id))
                                 item = new ArmorItem(reader);
-                            else if (Item.IsAccessory(id))
+                            else if (ItemData.IsAccessory(id))
                                 item = new AccessoryItem(reader);
                             else
-                                item = new Item(reader);
+                                item = new ItemData(reader);
 
                             gamedataItems.Add(item.catalogID, item);
                         }
@@ -147,6 +125,47 @@ namespace FFXIVClassic_Map_Server
                 }
 
                 return gamedataItems;
+            }
+        }
+
+        public static Dictionary<uint, GuildleveData> GetGuildleveGamedata()
+        {
+            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                Dictionary<uint, GuildleveData> gamedataGuildleves = new Dictionary<uint, GuildleveData>();
+
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                SELECT
+                                *                                
+                                FROM gamedata_guildleves
+                                ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint id = reader.GetUInt32("id");
+                            GuildleveData guildleve = new GuildleveData(reader);
+                            gamedataGuildleves.Add(guildleve.id, guildleve);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+
+                return gamedataGuildleves;
             }
         }
 
@@ -259,7 +278,11 @@ namespace FFXIVClassic_Map_Server
                     positionY = @y,
                     positionZ = @z,
                     rotation = @rot,
-                    currentZoneId = @zoneId
+                    destinationZoneId = @destZone,
+                    destinationSpawnType = @destSpawn,
+                    currentZoneId = @zoneId,
+                    currentPrivateArea = @privateArea,
+                    currentPrivateAreaType = @privateAreaType
                     WHERE id = @charaId
                     ";
 
@@ -270,6 +293,10 @@ namespace FFXIVClassic_Map_Server
                     cmd.Parameters.AddWithValue("@z", player.positionZ);
                     cmd.Parameters.AddWithValue("@rot", player.rotation);
                     cmd.Parameters.AddWithValue("@zoneId", player.zoneId);
+                    cmd.Parameters.AddWithValue("@privateArea", player.privateArea);
+                    cmd.Parameters.AddWithValue("@privateAreaType", player.privateAreaType);
+                    cmd.Parameters.AddWithValue("@destZone", player.destinationZone);
+                    cmd.Parameters.AddWithValue("@destSpawn", player.destinationSpawnType);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -318,6 +345,42 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public static void SavePlayerHomePoints(Player player)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    UPDATE characters SET 
+                    homepoint = @homepoint,
+                    homepointInn = @homepointInn
+                    WHERE id = @charaId
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@homepoint", player.homepoint);
+                    cmd.Parameters.AddWithValue("@homepointInn", player.homepointInn);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
         public static void SaveQuest(Player player, Quest quest)
         {
             int slot = player.GetQuestSlot(quest.actorId);
@@ -343,17 +406,18 @@ namespace FFXIVClassic_Map_Server
 
                     query = @"
                     INSERT INTO characters_quest_scenario 
-                    (characterId, slot, questId, questData, questFlags)
+                    (characterId, slot, questId, currentPhase, questData, questFlags)
                     VALUES
-                    (@charaId, @slot, @questId, @questData, @questFlags)
+                    (@charaId, @slot, @questId, @phase, @questData, @questFlags)
                     ON DUPLICATE KEY UPDATE
-                    questData = @questData, questFlags = @questFlags
+                    questId = @questId, currentPhase = @phase, questData = @questData, questFlags = @questFlags
                     ";
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charaId", player.actorId);
                     cmd.Parameters.AddWithValue("@slot", slot);
                     cmd.Parameters.AddWithValue("@questId", 0xFFFFF & quest.actorId);
+                    cmd.Parameters.AddWithValue("@phase", quest.GetPhase());
                     cmd.Parameters.AddWithValue("@questData", quest.GetSerializedQuestData());
                     cmd.Parameters.AddWithValue("@questFlags", quest.GetQuestFlags());
 
@@ -368,6 +432,209 @@ namespace FFXIVClassic_Map_Server
                     conn.Dispose();
                 }
             }
+        }
+
+        public static void MarkGuildleve(Player player, uint glId, bool isAbandoned, bool isCompleted)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    UPDATE characters_quest_guildleve_regional
+                    SET abandoned = @abandoned, completed = @completed
+                    WHERE characterId = @charaId and guildleveId = @guildleveId
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@guildleveId", glId);
+                    cmd.Parameters.AddWithValue("@abandoned", isAbandoned);
+                    cmd.Parameters.AddWithValue("@completed", isCompleted);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void SaveGuildleve(Player player, uint glId, int slot)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO characters_quest_guildleve_regional 
+                    (characterId, slot, guildleveId, abandoned, completed)
+                    VALUES
+                    (@charaId, @slot, @guildleveId, @abandoned, @completed)
+                    ON DUPLICATE KEY UPDATE
+                    guildleveId = @guildleveId, abandoned = @abandoned, completed = @completed
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@slot", slot);
+                    cmd.Parameters.AddWithValue("@guildleveId", glId);
+                    cmd.Parameters.AddWithValue("@abandoned", 0);
+                    cmd.Parameters.AddWithValue("@completed", 0);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void RemoveGuildleve(Player player, uint glId)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    DELETE FROM characters_quest_guildleve_regional 
+                    WHERE characterId = @charaId and guildleveId = @guildleveId                 
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@guildleveId", glId);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void RemoveQuest(Player player, uint questId)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    DELETE FROM characters_quest_scenario 
+                    WHERE characterId = @charaId and questId = @questId                 
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@questId", 0xFFFFF & questId);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void CompleteQuest(Player player, uint questId)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO characters_quest_completed 
+                    (characterId, questId)
+                    VALUES
+                    (@charaId, @questId)
+                    ON DUPLICATE KEY UPDATE characterId=characterId
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@questId", 0xFFFFF & questId);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+        
+        public static bool IsQuestCompleted(Player player, uint questId)
+        {
+            bool isCompleted = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand("SELECT * FROM characters_quest_completed WHERE characterId = @charaId and questId = @questId", conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@questId", questId);
+                    isCompleted = cmd.ExecuteScalar() != null;
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return isCompleted;
         }
 
         public static void LoadPlayerCharacter(Player player)
@@ -403,8 +670,14 @@ namespace FFXIVClassic_Map_Server
                     tribe,
                     restBonus,
                     achievementPoints,
-                    playTime
-                    FROM characters WHERE id = @charId";
+                    playTime,
+                    destinationZoneId,
+                    destinationSpawnType,
+                    currentPrivateArea,
+                    currentPrivateAreaType,
+                    homepoint,
+                    homepointInn
+                    FROM characters WHERE id = @charId";                    
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
@@ -420,8 +693,7 @@ namespace FFXIVClassic_Map_Server
                             player.oldRotation = player.rotation = reader.GetFloat(4);
                             player.currentMainState = reader.GetUInt16(5);
                             player.zoneId = reader.GetUInt32(6);
-                            player.isZoning = true;
-                            player.zone = Server.GetWorldManager().GetZone(player.zoneId);
+                            player.isZoning = true;                            
                             player.gcCurrent = reader.GetByte(7);
                             player.gcRankLimsa = reader.GetByte(8);
                             player.gcRankGridania = reader.GetByte(9);
@@ -435,6 +707,22 @@ namespace FFXIVClassic_Map_Server
                             player.playerWork.restBonusExpRate = reader.GetInt32(17);
                             player.achievementPoints = reader.GetUInt32(18);
                             player.playTime = reader.GetUInt32(19);
+                            player.homepoint = reader.GetUInt32("homepoint");
+                            player.homepointInn = reader.GetByte("homepointInn");
+                            player.destinationZone = reader.GetUInt32("destinationZoneId");
+                            player.destinationSpawnType = reader.GetByte("destinationSpawnType");
+
+                            if (!reader.IsDBNull(reader.GetOrdinal("currentPrivateArea")))
+                                player.privateArea = reader.GetString("currentPrivateArea");
+                            player.privateAreaType = reader.GetUInt32("currentPrivateAreaType");
+
+                            if (player.destinationZone != 0)
+                                player.zoneId = player.destinationZone;
+                            
+                            if (player.privateArea != null && !player.privateArea.Equals(""))
+                                player.zone = Server.GetWorldManager().GetPrivateArea(player.zoneId, player.privateArea, player.privateAreaType);
+                            else
+                                player.zone = Server.GetWorldManager().GetZone(player.zoneId);
                         }
                     }
 
@@ -690,7 +978,8 @@ namespace FFXIVClassic_Map_Server
                         slot,
                         questId,
                         questData,
-                        questFlags
+                        questFlags,
+                        currentPhase
                         FROM characters_quest_scenario WHERE characterId = @charId";
 
                     cmd = new MySqlCommand(query, conn);
@@ -703,6 +992,7 @@ namespace FFXIVClassic_Map_Server
                             player.playerWork.questScenario[index] = 0xA0F00000 | reader.GetUInt32(1);
                             string questData = null;
                             uint questFlags = 0;
+                            uint currentPhase = 0;
 
                             if (!reader.IsDBNull(2))
                                 questData = reader.GetString(2);
@@ -714,8 +1004,11 @@ namespace FFXIVClassic_Map_Server
                             else
                                 questFlags = 0;
 
+                            if (!reader.IsDBNull(4))
+                                currentPhase = reader.GetUInt32(4);
+
                             string questName = Server.GetStaticActors(player.playerWork.questScenario[index]).actorName;
-                            player.questScenario[index] = new Quest(player, player.playerWork.questScenario[index], questName, questData, questFlags);
+                            player.questScenario[index] = new Quest(player, player.playerWork.questScenario[index], questName, questData, questFlags, currentPhase);
                         }
                     }
 
@@ -1246,6 +1539,82 @@ namespace FFXIVClassic_Map_Server
 
             return cheevosPacket.BuildPacket(player.actorId);
         }
+        public static bool CreateLinkshell(Player player, string lsName, ushort lsCrest)
+        {
+            bool success = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    INSERT INTO server_linkshells                                    
+                                    (name, master, crest)
+                                    VALUES
+                                    (@lsName, @master, @crest)
+                                    ;
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@lsName", lsName);
+                    cmd.Parameters.AddWithValue("@master", player.actorId);
+                    cmd.Parameters.AddWithValue("@crest", lsCrest);
+
+                    cmd.ExecuteNonQuery();
+                    success = true;
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return success;
+        }
+
+
+        public static void SaveNpcLS(Player player, uint npcLSId, bool isCalling, bool isExtra)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = @"
+                    INSERT INTO characters_npclinkshell 
+                    (characterId, npcLinkshellId, isCalling, isExtra)
+                    VALUES
+                    (@charaId, @lsId, @calling, @extra)
+                    ON DUPLICATE KEY UPDATE
+                    characterId = @charaId, npcLinkshellId = @lsId, isCalling = @calling, isExtra = @extra
+                    ";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+                    cmd.Parameters.AddWithValue("@lsId", npcLSId);
+                    cmd.Parameters.AddWithValue("@calling", isCalling ? 1 : 0);
+                    cmd.Parameters.AddWithValue("@extra", isExtra ? 1 : 0);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
 
         public static bool SaveSupportTicket(GMSupportTicketPacket gmTicket, string playerName)
         {
@@ -1554,6 +1923,7 @@ namespace FFXIVClassic_Map_Server
                 }
             }
         }
-        
+
     }
+
 }

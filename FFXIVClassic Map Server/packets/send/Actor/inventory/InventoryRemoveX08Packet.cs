@@ -1,14 +1,16 @@
-﻿using System;
+﻿using FFXIVClassic.Common;
+using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor.inventory
 {
     class InventoryRemoveX08Packet
     {
         public const ushort OPCODE = 0x0153;
         public const uint PACKET_SIZE = 0x38;
-
         public static SubPacket BuildPacket(uint playerActorID, List<ushort> slots, ref int listOffset)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
@@ -33,8 +35,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
                     binWriter.Write((Byte)max);
                 }
             }
-
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, playerActorID, data);
         }
     }
 }

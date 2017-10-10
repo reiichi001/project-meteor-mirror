@@ -253,6 +253,9 @@ namespace FFXIVClassic_Map_Server
         {
             List<LuaParam> luaParams = new List<LuaParam>();
 
+            if (fromScript == null)
+                return luaParams;
+
             if (fromScript.Type == DataType.Tuple)
             {
                 foreach (DynValue d in fromScript.Tuple)

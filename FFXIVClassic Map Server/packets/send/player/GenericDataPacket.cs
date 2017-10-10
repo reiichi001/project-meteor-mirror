@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 
+using FFXIVClassic.Common;
+
 namespace FFXIVClassic_Map_Server.packets.send.player
 {
     class GenericDataPacket
@@ -9,7 +11,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
         public const ushort OPCODE = 0x0133;
         public const uint PACKET_SIZE = 0xE0;
 
-        public static SubPacket BuildPacket(uint playerActorID, uint targetActorID, List<LuaParam> luaParams)
+        public static SubPacket BuildPacket(uint sourceActorId, List<LuaParam> luaParams)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -21,7 +23,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, targetActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
     }
 }

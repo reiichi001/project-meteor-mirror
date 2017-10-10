@@ -1,6 +1,9 @@
-﻿using FFXIVClassic_Map_Server.packets;
+﻿
+using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.utils;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -35,6 +38,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public const int L_INDEXFINGER = 26;
         public const int UNKNOWN = 27;
 
+        public bool isStatic = false;
+
         public uint modelId;
         public uint[] appearanceIds = new uint[28];
 
@@ -47,7 +52,10 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public Work work = new Work();
         public CharaWork charaWork = new CharaWork();
-        
+
+        public Group currentParty = null;
+        public ContentGroup currentContentGroup = null;
+
         public Character(uint actorID) : base(actorID)
         {            
             //Init timer array to "notimer"
@@ -55,30 +63,56 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.statusShownTime[i] = 0xFFFFFFFF;
         }
 
-        public SubPacket CreateAppearancePacket(uint playerActorId)
+        public SubPacket CreateAppearancePacket()
         {
             SetActorAppearancePacket setappearance = new SetActorAppearancePacket(modelId, appearanceIds);
-            return setappearance.BuildPacket(actorId, playerActorId);
+            return setappearance.BuildPacket(actorId);
         }
 
-        public SubPacket CreateInitStatusPacket(uint playerActorId)
+        public SubPacket CreateInitStatusPacket()
         {
-            return (SetActorStatusAllPacket.BuildPacket(actorId, playerActorId, charaWork.status));                      
+            return (SetActorStatusAllPacket.BuildPacket(actorId, charaWork.status));                      
         }
 
-        public SubPacket CreateSetActorIconPacket(uint playerActorId)
+        public SubPacket CreateSetActorIconPacket()
         {
-            return SetActorIconPacket.BuildPacket(actorId, playerActorId, currentActorIcon);
+            return SetActorIconPacket.BuildPacket(actorId, currentActorIcon);
         }
 
-        public SubPacket CreateIdleAnimationPacket(uint playerActorId)
+        public SubPacket CreateIdleAnimationPacket()
         {
-            return SetActorIdleAnimationPacket.BuildPacket(actorId, playerActorId, animationId);
+            return SetActorSubStatPacket.BuildPacket(actorId, 0, 0, 0, 0, 0, 0, animationId);
         }
 
         public void SetQuestGraphic(Player player, int graphicNum)
         {
-            player.QueuePacket(SetActorQuestGraphicPacket.BuildPacket(player.actorId, actorId, graphicNum));
+            player.QueuePacket(SetActorQuestGraphicPacket.BuildPacket(actorId, graphicNum));
+        }
+
+        public void SetCurrentContentGroup(ContentGroup group)
+        {
+            if (group != null)
+                charaWork.currentContentGroup = group.GetTypeId();
+            else
+                charaWork.currentContentGroup = 0;
+
+            currentContentGroup = group;
+
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this);
+            propPacketUtil.AddProperty("charaWork.currentContentGroup");            
+            zone.BroadcastPacketsAroundActor(this, propPacketUtil.Done());
+
+        }     
+   
+        public void PlayAnimation(uint animId, bool onlySelf = false)
+        {            
+            if (onlySelf)
+            {
+                if (this is Player)
+                    ((Player)this).QueuePacket(PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
+            }
+            else
+                zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
         }
 
     }

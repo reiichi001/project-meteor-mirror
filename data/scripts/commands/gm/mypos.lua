@@ -16,7 +16,7 @@ function onTrigger(player)
       
     local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
     local sender = "[mypos] ";
-    local message = string.format("current position X:%d Y:%d Z:%d (Rotation: %d) Zone:%d", x, y, z, rot, zone);
+    local message = string.format("X:%.3f Y:%.3f Z:%.3f (Rotation: %.3f) Zone:%d", x, y, z, rot, zone);
 
     player:SendMessage(messageID, sender, message);
 end;

@@ -2,9 +2,9 @@
 {
     class NpcWork
     {
-        public short pushCommand;
+        public ushort pushCommand;
         public int pushCommandSub;
         public byte pushCommandPriority;
-        public byte hateType;                
+        public byte hateType = 1;                
     }
 }

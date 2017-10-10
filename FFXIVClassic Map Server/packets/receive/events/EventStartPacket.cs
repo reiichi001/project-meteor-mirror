@@ -63,7 +63,10 @@ namespace FFXIVClassic_Map_Server.packets.receive.events
 
                         binReader.BaseStream.Seek(0x31, SeekOrigin.Begin);
 
-                        luaParams = LuaUtils.ReadLuaParams(binReader);
+                        if (binReader.PeekChar() == 0x1)
+                            luaParams = new List<LuaParam>();
+                        else
+                            luaParams = LuaUtils.ReadLuaParams(binReader);
                     }
                     catch (Exception){
                         invalidPacket = true;

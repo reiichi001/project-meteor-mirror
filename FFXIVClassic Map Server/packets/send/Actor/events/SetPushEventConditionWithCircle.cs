@@ -3,14 +3,16 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor.events
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor.events
 {
     class SetPushEventConditionWithCircle
     {
         public const ushort OPCODE = 0x016F;
         public const uint PACKET_SIZE = 0x58;
 
-        public static SubPacket BuildPacket(uint playerActorID, uint sourceActorID, EventList.PushCircleEventCondition condition)
+        public static SubPacket BuildPacket(uint sourceActorId, EventList.PushCircleEventCondition condition)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -29,7 +31,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.events
                 }
             }
 
-            return new SubPacket(OPCODE, sourceActorID, playerActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
     }
 }

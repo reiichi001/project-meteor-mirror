@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor.inventory
 {
     class InventoryListX64Packet
     {
@@ -31,7 +33,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, playerActorID, data);
         }
     }
 }

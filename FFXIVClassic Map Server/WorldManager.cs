@@ -16,6 +16,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic_Map_Server.actors.group;
+using FFXIVClassic_Map_Server.packets.send.group;
+using FFXIVClassic_Map_Server.packets.WorldPackets.Receive;
+using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
+using System.Threading;
+using System.Diagnostics;
+using FFXIVClassic_Map_Server.actors.director;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -27,8 +34,17 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<uint, List<SeamlessBoundry>> seamlessBoundryList;
         private Dictionary<uint, ZoneEntrance> zoneEntranceList;
         private Dictionary<uint, ActorClass> actorClasses = new Dictionary<uint,ActorClass>();
+        private Dictionary<ulong, Party> currentPlayerParties = new Dictionary<ulong, Party>(); //GroupId, Party object
 
         private Server mServer;
+
+        private const int MILIS_LOOPTIME = 10;
+        private Timer mZoneTimer;
+
+        //Content Groups
+        public Dictionary<ulong, Group> mContentGroups = new Dictionary<ulong, Group>();
+        private Object groupLock = new Object();
+        public ulong groupIndexId = 1;
 
         public WorldManager(Server server)
         {
@@ -40,7 +56,7 @@ namespace FFXIVClassic_Map_Server
             zoneList = new Dictionary<uint, Zone>();
             int count1 = 0;
             int count2 = 0;
-
+            
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
@@ -52,7 +68,7 @@ namespace FFXIVClassic_Map_Server
                                     id,
                                     zoneName,
                                     regionId,
-                                    className,
+                                    classPath,
                                     dayMusic,
                                     nightMusic,
                                     battleMusic,
@@ -61,10 +77,13 @@ namespace FFXIVClassic_Map_Server
                                     canRideChocobo,
                                     canStealth,
                                     isInstanceRaid
-                                    FROM server_zones 
-                                    WHERE zoneName IS NOT NULL";
+                                    FROM server_zones
+                                    WHERE zoneName IS NOT NULL and serverIp = @ip and serverPort = @port";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Parameters.AddWithValue("@ip", ConfigConstants.OPTIONS_BINDIP);
+                    cmd.Parameters.AddWithValue("@port", ConfigConstants.OPTIONS_PORT);
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
@@ -95,6 +114,7 @@ namespace FFXIVClassic_Map_Server
                                     id,
                                     parentZoneId,
                                     privateAreaName,
+                                    privateAreaType,
                                     className,
                                     dayMusic,
                                     nightMusic,
@@ -113,7 +133,7 @@ namespace FFXIVClassic_Map_Server
                             if (zoneList.ContainsKey(parentZoneId))
                             {
                                 Zone parent = zoneList[parentZoneId];
-                                PrivateArea privArea = new PrivateArea(parent, reader.GetUInt32("id"), reader.GetString("className"), reader.GetString("privateAreaName"), 1, reader.GetUInt16("dayMusic"), reader.GetUInt16("nightMusic"), reader.GetUInt16("battleMusic"));
+                                PrivateArea privArea = new PrivateArea(parent, reader.GetUInt32("id"), reader.GetString("className"), reader.GetString("privateAreaName"), reader.GetUInt32("privateAreaType"), reader.GetUInt16("dayMusic"), reader.GetUInt16("nightMusic"), reader.GetUInt16("battleMusic"));
                                 parent.AddPrivateArea(privArea);
                             }
                             else
@@ -168,7 +188,7 @@ namespace FFXIVClassic_Map_Server
                             if (!reader.IsDBNull(7))
                                 privArea = reader.GetString(7);
 
-                            ZoneEntrance entance = new ZoneEntrance(reader.GetUInt32(1), privArea, reader.GetByte(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6));
+                            ZoneEntrance entance = new ZoneEntrance(reader.GetUInt32(1), privArea, 1, reader.GetByte(2), reader.GetFloat(3), reader.GetFloat(4), reader.GetFloat(5), reader.GetFloat(6));
                             zoneEntranceList[id] = entance;
                             count++;
                         }
@@ -257,12 +277,17 @@ namespace FFXIVClassic_Map_Server
 
                     string query = @"
                                     SELECT 
-                                    id,
+                                    gamedata_actor_class.id,
                                     classPath,                                    
                                     displayNameId,
                                     propertyFlags,
-                                    eventConditions
+                                    eventConditions,
+                                    pushCommand,
+                                    pushCommandSub,
+                                    pushCommandPriority
                                     FROM gamedata_actor_class
+                                    LEFT JOIN gamedata_actor_pushcommand
+                                    ON gamedata_actor_class.id = gamedata_actor_pushcommand.id
                                     WHERE classPath <> ''
                                     ";
 
@@ -284,7 +309,18 @@ namespace FFXIVClassic_Map_Server
                             else
                                 eventConditions = "{}";
 
-                            ActorClass actorClass = new ActorClass(id, classPath, nameId, propertyFlags, eventConditions);
+                            ushort pushCommand = 0;
+                            ushort pushCommandSub = 0;
+                            byte pushCommandPriority = 0;
+
+                            if (!reader.IsDBNull(reader.GetOrdinal("pushCommand")))
+                            {
+                                pushCommand = reader.GetUInt16("pushCommand");
+                                pushCommandSub = reader.GetUInt16("pushCommandSub");
+                                pushCommandPriority = reader.GetByte("pushCommandPriority");
+                            }
+
+                            ActorClass actorClass = new ActorClass(id, classPath, nameId, propertyFlags, eventConditions, pushCommand, pushCommandSub, pushCommandPriority);
                             actorClasses.Add(id, actorClass);
                             count++;
                         }
@@ -333,14 +369,21 @@ namespace FFXIVClassic_Map_Server
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
-                        {
+                        {                            
+                            uint zoneId = reader.GetUInt32("zoneId");
+                            uint classId = reader.GetUInt32("actorClassId");
+                            if (!actorClasses.ContainsKey(classId))
+                                continue;
+                            if (!zoneList.ContainsKey(zoneId))
+                                continue;
+                            Zone zone = zoneList[zoneId];
+                            if (zone == null)
+                                continue;
+
                             string customName = null;
                             if (!reader.IsDBNull(11))
                                 customName = reader.GetString("customDisplayName");
-
-                            uint classId = reader.GetUInt32("actorClassId");
-                            string uniqueId = reader.GetString("uniqueId");
-                            uint zoneId = reader.GetUInt32("zoneId");
+                            string uniqueId = reader.GetString("uniqueId");                          
                             string privAreaName = reader.GetString("privateAreaName");
                             uint privAreaLevel = reader.GetUInt32("privateAreaLevel");
                             float x = reader.GetFloat("positionX");
@@ -349,16 +392,7 @@ namespace FFXIVClassic_Map_Server
                             float rot = reader.GetFloat("rotation");
                             ushort state = reader.GetUInt16("actorState");
                             uint animId = reader.GetUInt32("animationId");
-
-                            if (!actorClasses.ContainsKey(classId))                                
-                                continue;
-                            if (!zoneList.ContainsKey(zoneId))
-                                continue;
-
-                            Zone zone = zoneList[zoneId];
-                            if (zone == null)
-                                continue;
-
+                            
                             SpawnLocation spawn = new SpawnLocation(classId, uniqueId, zoneId, privAreaName, privAreaLevel, x, y, z, rot, state, animId);
 
                             zone.AddSpawnLocation(spawn);
@@ -416,12 +450,12 @@ namespace FFXIVClassic_Map_Server
 
             player.SendMessage(0x20, "", "Doing Seamless Zone Change");
 
-            LuaEngine.OnZoneIn(player);
+            LuaEngine.GetInstance().CallLuaFunction(player, newZone, "onZoneIn", true);
         }
 
         //Adds a second zone to pull actors from. Used for an improved seamless zone change.
         public void MergeZones(Player player, uint mergedZoneId)
-        {           
+        {
             //Add player to new zone and update
             Zone mergedZone = GetZone(mergedZoneId);
 
@@ -436,7 +470,7 @@ namespace FFXIVClassic_Map_Server
 
             player.SendMessage(0x20, "", "Merging Zones");
 
-            LuaEngine.OnZoneIn(player);
+            LuaEngine.GetInstance().CallLuaFunction(player, mergedZone, "onZoneIn", true);
         }
 
         //Checks all seamless bounding boxes in region to see if player needs to merge or zonechange
@@ -518,12 +552,30 @@ namespace FFXIVClassic_Map_Server
             }
 
             ZoneEntrance ze = zoneEntranceList[zoneEntrance];
-            DoZoneChange(player, ze.zoneId, ze.privateAreaName, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
+            DoZoneChange(player, ze.zoneId, ze.privateAreaName, ze.privateAreaType, ze.spawnType, ze.spawnX, ze.spawnY, ze.spawnZ, ze.spawnRotation);
         }
 
         //Moves actor to new zone, and sends packets to spawn at the given coords.
-        public void DoZoneChange(Player player, uint destinationZoneId, string destinationPrivateArea, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
-        {
+        public void DoZoneChange(Player player, uint destinationZoneId, string destinationPrivateArea, int destinationPrivateAreaType, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
+        {       
+            //Add player to new zone and update
+            Area newArea;
+
+            if (destinationPrivateArea == null)
+                newArea = GetZone(destinationZoneId);
+            else //Add check for -1 if it is a instance
+                newArea = GetZone(destinationZoneId).GetPrivateArea(destinationPrivateArea, (uint)destinationPrivateAreaType);
+
+            //This server does not contain that zoneId
+            if (newArea == null)
+            {
+                Program.Log.Debug("Request to change to zone not on this server by: {0}.", player.customDisplayName);
+                RequestWorldServerZoneChange(player, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation);
+                return;
+            }
+
+            player.playerSession.LockUpdates(true);
+
             Area oldZone = player.zone;
             //Remove player from currentZone if transfer else it's login
             if (player.zone != null)
@@ -531,46 +583,48 @@ namespace FFXIVClassic_Map_Server
                 oldZone.RemoveActorFromZone(player);
             }
 
-            //Add player to new zone and update
-            Area newArea;
-
-            if (destinationPrivateArea == null)
-                newArea = GetZone(destinationZoneId);
-            else
-                newArea = GetZone(destinationZoneId).GetPrivateArea(destinationPrivateArea, 0);
-
-            //This server does not contain that zoneId
-            if (newArea == null)
-            {
-                if (oldZone != null)
-                {
-                    oldZone.AddActorToZone(player);
-                }
-
-                var message = "WorldManager.DoZoneChange: unable to change areas, new area is not valid.";
-                player.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM, "[Debug]", message);
-                Program.Log.Debug(message);
-                return;
-            }
-
             newArea.AddActorToZone(player);
 
             //Update player actor's properties
-            player.zoneId = newArea.actorId;
+            player.zoneId = newArea is PrivateArea ? ((PrivateArea)newArea).GetParentZone().actorId : newArea.actorId;
+
+            player.privateArea = newArea is PrivateArea ? ((PrivateArea)newArea).GetPrivateAreaName() : null;
+            player.privateAreaType = newArea is PrivateArea ? ((PrivateArea)newArea).GetPrivateAreaType() : 0;
             player.zone = newArea;
             player.positionX = spawnX;
             player.positionY = spawnY;
             player.positionZ = spawnZ;
             player.rotation = spawnRotation;
 
+            //Delete any GL directors
+            GuildleveDirector glDirector = player.GetGuildleveDirector();
+            if (glDirector != null)
+                player.RemoveDirector(glDirector);
+
+            //Delete content if have
+            if (player.currentContentGroup != null)
+            {
+                player.currentContentGroup.RemoveMember(player.actorId);
+                player.SetCurrentContentGroup(null);
+
+                if (oldZone is PrivateAreaContent)
+                    ((PrivateAreaContent)oldZone).CheckDestroy();
+            }                 
+
             //Send packets
-            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId), true, false);
-            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x0), true, false);
+            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId));
+            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x2));
             player.SendZoneInPackets(this, spawnType);
             player.playerSession.ClearInstance();
             player.SendInstanceUpdate();
 
-            LuaEngine.OnZoneIn(player);
+            player.playerSession.LockUpdates(false);
+
+            //Send "You have entered an instance" if it's a Private Area
+            if (newArea is PrivateArea)
+                player.SendGameMessage(GetActor(), 34108, 0x20);
+
+            LuaEngine.GetInstance().CallLuaFunction(player, newArea, "onZoneIn", true);
         }
 
         //Moves actor within zone to spawn position
@@ -596,7 +650,8 @@ namespace FFXIVClassic_Map_Server
             //Remove player from currentZone if transfer else it's login
             if (player.zone != null)
             {
-                player.zone.RemoveActorFromZone(player);
+                player.playerSession.LockUpdates(true);
+                player.zone.RemoveActorFromZone(player);                
                 player.zone.AddActorToZone(player);
 
                 //Update player actor's properties;
@@ -606,35 +661,99 @@ namespace FFXIVClassic_Map_Server
                 player.rotation = spawnRotation;
 
                 //Send packets
-                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x0), true, false);
-                player.playerSession.QueuePacket(player.CreateSpawnTeleportPacket(player.actorId, spawnType), true, false);
-                player.SendInstanceUpdate();
+                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10));
+                player.playerSession.QueuePacket(player.CreateSpawnTeleportPacket(spawnType));
 
+                player.playerSession.LockUpdates(false);
+                player.SendInstanceUpdate();
             }            
         }
 
-        //Login Zone In
-        public void DoLogin(Player player)
+        //Moves actor to new zone, and sends packets to spawn at the given coords.
+        public void DoZoneChangeContent(Player player, PrivateAreaContent contentArea, float spawnX, float spawnY, float spawnZ, float spawnRotation, ushort spawnType = SetActorPositionPacket.SPAWNTYPE_WARP_DUTY)
+        {
+            //Content area was null
+            if (contentArea == null)
+            {
+                Program.Log.Debug("Request to change to content area not on this server by: {0}.", player.customDisplayName);
+                return;
+            }
+
+            player.playerSession.LockUpdates(true);
+
+            Area oldZone = player.zone;
+            //Remove player from currentZone if transfer else it's login
+            if (player.zone != null)
+            {
+                oldZone.RemoveActorFromZone(player);
+            }
+
+            contentArea.AddActorToZone(player);
+
+            //Update player actor's properties
+            player.zoneId = contentArea.GetParentZone().actorId;
+
+            player.privateArea = contentArea.GetPrivateAreaName();
+            player.privateAreaType = contentArea.GetPrivateAreaType();
+            player.zone = contentArea;
+            player.positionX = spawnX;
+            player.positionY = spawnY;
+            player.positionZ = spawnZ;
+            player.rotation = spawnRotation;
+
+            //Send "You have entered an instance" if it's a Private Area
+            player.SendGameMessage(GetActor(), 34108, 0x20);
+
+            //Send packets
+            player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId));
+            player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10));
+            player.SendZoneInPackets(this, spawnType);
+            player.playerSession.ClearInstance();
+            player.SendInstanceUpdate();
+
+            player.playerSession.LockUpdates(false);
+
+            
+
+            LuaEngine.GetInstance().CallLuaFunction(player, contentArea, "onZoneIn", true);
+        }
+
+        //Session started, zone into world
+        public void DoZoneIn(Player player, bool isLogin, ushort spawnType)
         {
             //Add player to new zone and update
-            Zone zone = GetZone(player.zoneId);
+            Area playerArea;
+            if (player.privateArea != null)
+                playerArea = GetPrivateArea(player.zoneId, player.privateArea, player.privateAreaType);
+            else
+                playerArea = GetZone(player.zoneId);
 
             //This server does not contain that zoneId
-            if (zone == null)
+            if (playerArea == null)
                 return;
 
             //Set the current zone and add player
-            player.zone = zone;
+            player.zone = playerArea;
 
-            LuaEngine.OnBeginLogin(player);
-            
-            zone.AddActorToZone(player);
+            playerArea.AddActorToZone(player);
             
             //Send packets            
-            player.SendZoneInPackets(this, 0x1);
+            if (!isLogin)
+            {
+                player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId));
+                player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x2));
+                //player.SendZoneInPackets(this, spawnType);
+            }
 
-            LuaEngine.OnLogin(player);
-            LuaEngine.OnZoneIn(player);
+            player.SendZoneInPackets(this, spawnType);
+
+            player.destinationZone = 0;
+            player.destinationSpawnType = 0;
+            Database.SavePlayerPosition(player);
+
+            player.playerSession.LockUpdates(false);
+
+            LuaEngine.GetInstance().CallLuaFunction(player, playerArea, "onZoneIn", true);
         }
 
         public void ReloadZone(uint zoneId)
@@ -648,15 +767,267 @@ namespace FFXIVClassic_Map_Server
 
         }
 
-        public Player GetPCInWorld(string name)
-        {            
-            foreach (Zone zone in zoneList.Values)
-            { 
-                Player p = zone.FindPCInZone(name);
-                if (p != null)
-                    return p;
+        public ContentGroup CreateContentGroup(Director director, params Actor[] actors)
+        {
+            if (director == null)
+                return null;
+
+            lock (groupLock)
+            {
+                uint[] initialMembers = null;
+
+                if (actors != null)
+                {
+                    initialMembers = new uint[actors.Length];
+                    for (int i = 0; i < actors.Length; i++)
+                        initialMembers[i] = actors[i].actorId;
+                }
+
+                groupIndexId = groupIndexId | 0x3000000000000000;
+
+                ContentGroup contentGroup = new ContentGroup(groupIndexId, director, initialMembers);
+                mContentGroups.Add(groupIndexId, contentGroup);
+                groupIndexId++;
+                if (initialMembers != null && initialMembers.Length != 0)
+                    contentGroup.SendAll();
+
+                return contentGroup;
             }
-            return null;
+        }
+
+        public ContentGroup CreateContentGroup(Director director, List<Actor> actors)
+        {
+            if (director == null)
+                return null;
+
+            lock (groupLock)
+            {
+                uint[] initialMembers = null;
+
+                if (actors != null)
+                {
+                    initialMembers = new uint[actors.Count];
+                    for (int i = 0; i < actors.Count; i++)
+                        initialMembers[i] = actors[i].actorId;
+                }
+
+                groupIndexId = groupIndexId | 0x3000000000000000;
+
+                ContentGroup contentGroup = new ContentGroup(groupIndexId, director, initialMembers);
+                mContentGroups.Add(groupIndexId, contentGroup);
+                groupIndexId++;
+                if (initialMembers != null && initialMembers.Length != 0)
+                    contentGroup.SendAll();
+
+                return contentGroup;
+            }
+        }
+
+        public ContentGroup CreateGLContentGroup(Director director, List<Actor> actors)
+        {
+            if (director == null)
+                return null;
+
+            lock (groupLock)
+            {
+                uint[] initialMembers = null;
+
+                if (actors != null)
+                {
+                    initialMembers = new uint[actors.Count];
+                    for (int i = 0; i < actors.Count; i++)
+                        initialMembers[i] = actors[i].actorId;
+                }
+
+                groupIndexId = groupIndexId | 0x2000000000000000;
+
+                GLContentGroup contentGroup = new GLContentGroup(groupIndexId, director, initialMembers);
+                mContentGroups.Add(groupIndexId, contentGroup);
+                groupIndexId++;
+                if (initialMembers != null && initialMembers.Length != 0)
+                    contentGroup.SendAll();
+
+                return contentGroup;
+            }
+        }
+
+        public void DeleteContentGroup(ulong groupId)
+        {
+            lock (groupLock)
+            {
+                if (mContentGroups.ContainsKey(groupId) && mContentGroups[groupId] is ContentGroup)
+                {
+                    ContentGroup group = (ContentGroup)mContentGroups[groupId];
+                    mContentGroups.Remove(groupId);
+                }
+            }
+        }
+
+        public bool SendGroupInit(Session session, ulong groupId)
+        {
+            if (mContentGroups.ContainsKey(groupId))
+            {
+                mContentGroups[groupId].SendInitWorkValues(session);
+                return true;
+            }
+            return false;
+        }
+        
+        public void RequestWorldLinkshellCreate(Player player, string name, ushort crest)
+        {
+            SubPacket packet = CreateLinkshellPacket.BuildPacket(player.playerSession, name, crest, player.actorId);
+            player.QueuePacket(packet);
+        }
+
+        public void RequestWorldLinkshellCrestModify(Player player, string name, ushort crest)
+        {
+            SubPacket packet = ModifyLinkshellPacket.BuildPacket(player.playerSession, 1, name, null, crest, 0);
+            player.QueuePacket(packet);
+        }
+
+        public void RequestWorldLinkshellDelete(Player player, string name)
+        {
+            SubPacket packet = DeleteLinkshellPacket.BuildPacket(player.playerSession, name);
+            player.QueuePacket(packet);
+        }
+
+        public void RequestWorldLinkshellRankChange(Player player, string lsname, string memberName, byte newRank)
+        {
+            SubPacket packet = LinkshellRankChangePacket.BuildPacket(player.playerSession, memberName, lsname, newRank);
+            player.QueuePacket(packet);
+        }
+
+        public void RequestWorldLinkshellInviteMember(Player player, string lsname, uint invitedActorId)
+        {
+            SubPacket packet = LinkshellInvitePacket.BuildPacket(player.playerSession, invitedActorId, lsname);
+            player.QueuePacket(packet);
+        }
+
+        public void RequestWorldLinkshellCancelInvite(Player player)
+        {
+            SubPacket packet = LinkshellInviteCancelPacket.BuildPacket(player.playerSession);
+            player.QueuePacket(packet);
+        }
+
+        public void RequestWorldLinkshellLeave(Player player, string lsname)
+        {
+            SubPacket packet = LinkshellLeavePacket.BuildPacket(player.playerSession, lsname, null, false);
+            player.QueuePacket(packet);
+        }
+
+        public void RequestWorldLinkshellKick(Player player, string lsname, string kickedName)
+        {
+            SubPacket packet = LinkshellLeavePacket.BuildPacket(player.playerSession, lsname, kickedName, true);
+            player.QueuePacket(packet);
+        }
+
+        public void RequestWorldLinkshellChangeActive(Player player, string lsname)
+        {
+            SubPacket packet = LinkshellChangePacket.BuildPacket(player.playerSession, lsname);
+            player.QueuePacket(packet);
+        }
+
+        private void RequestWorldServerZoneChange(Player player, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
+        {
+            ZoneConnection zc = Server.GetWorldConnection();
+            zc.RequestZoneChange(player.playerSession.id, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation);
+        }
+
+        //World server sent a party member list synch packet to the zone server. Add and update players that may be a part of it.
+        public void PartyMemberListRecieved(PartySyncPacket syncPacket)
+        {
+            lock (currentPlayerParties)
+            {
+                Party group;
+
+                //If no members on this server, get out or clean
+                if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId) && syncPacket.memberActorIds.Length == 0)
+                    return;
+                else if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId) && syncPacket.memberActorIds.Length == 0)
+                    NoMembersInParty(currentPlayerParties[syncPacket.partyGroupId]);
+
+                //Get or create group
+                if (!currentPlayerParties.ContainsKey(syncPacket.partyGroupId))
+                {
+                    group = new Party(syncPacket.partyGroupId, syncPacket.owner);
+                    currentPlayerParties.Add(syncPacket.partyGroupId, group);
+                }
+                else
+                    group = currentPlayerParties[syncPacket.partyGroupId];
+
+                group.SetLeader(syncPacket.owner);
+                group.members = syncPacket.memberActorIds.ToList();
+
+                //Add group to everyone
+                for (int i = 0; i < group.members.Count; i++ )
+                {
+                    uint member = group.members[i];
+                    Session session = Server.GetServer().GetSession(member);
+
+                    if (session == null)
+                        continue;
+
+                    Player player = session.GetActor();
+                    if (player == null)
+                        continue;
+                    player.SetParty(group);
+                }
+            }
+        }
+
+        //Player was removed from the party either due to leaving it or leaving the server. Remove if empty.
+        public void NoMembersInParty(Party party)
+        {
+            if (currentPlayerParties.ContainsKey(party.groupIndex))
+                currentPlayerParties.Remove(party.groupIndex);
+        }
+
+        public void CreateInvitePartyGroup(Player player, string name)
+        {
+            SubPacket invitePacket = PartyInvitePacket.BuildPacket(player.playerSession, name);
+            player.QueuePacket(invitePacket);
+        }
+        public void CreateInvitePartyGroup(Player player, uint actorId)
+        {
+            SubPacket invitePacket = PartyInvitePacket.BuildPacket(player.playerSession, actorId);
+            player.QueuePacket(invitePacket);
+        }
+
+        public void GroupInviteResult(Player player, uint groupType, uint result)
+        {
+            SubPacket groupInviteResultPacket = GroupInviteResultPacket.BuildPacket(player.playerSession, groupType, result);
+            player.QueuePacket(groupInviteResultPacket);
+        }
+                
+        public void StartZoneThread()
+        {
+            mZoneTimer = new Timer(ZoneThreadLoop, null, 0, MILIS_LOOPTIME);
+            Program.Log.Info("Zone Loop has started");
+        }
+        
+        public void ZoneThreadLoop(Object state)
+        {          
+            lock (zoneList)
+            {
+                foreach (Area area in zoneList.Values)
+                    area.Update(MILIS_LOOPTIME);
+            }            
+        }
+
+        public Player GetPCInWorld(string name)
+        {
+            if (Server.GetServer().GetSession(name) != null)
+                return Server.GetServer().GetSession(name).GetActor();
+            else
+                return null;
+        }
+
+        public Player GetPCInWorld(uint charId)
+        {
+            if (Server.GetServer().GetSession(charId) != null)
+                return Server.GetServer().GetSession(charId).GetActor();
+            else
+                return null;
         }
 
         public Actor GetActorInWorld(uint charId)
@@ -665,18 +1036,18 @@ namespace FFXIVClassic_Map_Server
             {
                 Actor a = zone.FindActorInZone(charId);
                 if (a != null)
-                    return a;
+                    return a;                
             }
             return null;
         }
 
-        public Player GetPCInWorld(uint charId)
+        public Actor GetActorInWorldByUniqueId(string uid)
         {
             foreach (Zone zone in zoneList.Values)
             {
-                Player p = zone.FindPCInZone(charId);
-                if (p != null)
-                    return p;
+                Actor a = zone.FindActorInZoneByUniqueID(uid);
+                if (a != null)
+                    return a;
             }
             return null;
         }
@@ -686,6 +1057,14 @@ namespace FFXIVClassic_Map_Server
             if (!zoneList.ContainsKey(zoneId))
                 return null;
             return zoneList[zoneId];
+        }
+
+        public PrivateArea GetPrivateArea(uint zoneId, string privateArea, uint privateAreaType)
+        {
+            if (!zoneList.ContainsKey(zoneId))
+                return null;
+
+            return zoneList[zoneId].GetPrivateArea(privateArea, privateAreaType);
         }
 
         public WorldMaster GetActor()
@@ -702,16 +1081,18 @@ namespace FFXIVClassic_Map_Server
         {
             public uint zoneId;
             public string privateAreaName;
+            public int privateAreaType;
             public byte spawnType;
             public float spawnX;
             public float spawnY;
             public float spawnZ;
             public float spawnRotation;
 
-            public ZoneEntrance(uint zoneId, string privateAreaName, byte spawnType, float x, float y, float z, float rot)
+            public ZoneEntrance(uint zoneId, string privateAreaName, int privateAreaType, byte spawnType, float x, float y, float z, float rot)
             {
                 this.zoneId = zoneId;
                 this.privateAreaName = privateAreaName;
+                this.privateAreaType = privateAreaType;
                 this.spawnType = spawnType;
                 this.spawnX = x;
                 this.spawnY = y;
@@ -734,6 +1115,6 @@ namespace FFXIVClassic_Map_Server
                 return actorClasses[id];
             else
                 return null;
-        }
+        }        
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
 
-namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor.inventory
 {
     class EquipmentListX01Packet
     {
@@ -21,7 +23,7 @@ namespace FFXIVClassic_Map_Server.packets.send.Actor.inventory
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, playerActorID, data);
         }
     }
 }

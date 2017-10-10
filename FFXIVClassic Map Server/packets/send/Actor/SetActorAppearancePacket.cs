@@ -1,6 +1,8 @@
 ﻿using System.IO;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor
 {
     class SetActorAppearancePacket
     {
@@ -51,7 +53,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             appearanceIDs = appearanceTable;
         }
 
-        public SubPacket BuildPacket(uint playerActorID, uint actorID)
+        public SubPacket BuildPacket(uint sourceActorId)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -72,7 +74,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
 
             }
 
-            SubPacket packet = new SubPacket(OPCODE, playerActorID, actorID, data);
+            SubPacket packet = new SubPacket(OPCODE, sourceActorId, data);
             return packet;
         }       
 

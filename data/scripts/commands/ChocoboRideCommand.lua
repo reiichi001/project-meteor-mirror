@@ -14,17 +14,15 @@ function onEventStarted(player, actor, triggerName, isGoobbue)
 		
 		if (isGoobbue ~= true) then
 			player:ChangeMusic(83);
-			player:SendChocoboAppearance();
 			player:SendGameMessage(player, worldMaster, 26001, 0x20);
 			player:SetMountState(1);
 		else
 			player:ChangeMusic(98);
-			player:SendGoobbueAppearance();
 			player:SendGameMessage(player, worldMaster, 26019, 0x20);
 			player:SetMountState(2);
 		end
 		
-		player:ChangeSpeed(0.0, 5.0, 10.0);
+		player:ChangeSpeed(0.0, 5.0, 10.0, 10.0);
 		player:ChangeState(15);
 	else
 		player:ChangeMusic(player:GetZone().bgmDay);
@@ -38,7 +36,7 @@ function onEventStarted(player, actor, triggerName, isGoobbue)
 		end
 		
 		player:SetMountState(0);
-		player:ChangeSpeed(0.0, 2.0, 5.0)
+		player:ChangeSpeed(0.0, 2.0, 5.0, 5.0)
 		player:ChangeState(0); 
 	end
 	

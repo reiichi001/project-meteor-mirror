@@ -42,7 +42,7 @@ function onEventStarted(player, npc, triggerName)
 		createLinkshell(lsName, crestId);
 		callClientFunction(player, "eventTalkStepMakeupDone");		
 	--Modify
-	elseif (result == 1) then
+	elseif (result == 4) then
 		modifyLinkshell(lsName, crestId);
 		callClientFunction(player, "eventTalkStepModifyDone");		
 	--Disband

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
+using FFXIVClassic.Common;
+
 namespace FFXIVClassic_Map_Server.packets.send
 {
     class GameMessagePacket
@@ -56,7 +58,7 @@ namespace FFXIVClassic_Map_Server.packets.send
         private const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR4 = 0x48;
         private const ushort SIZE_GAMEMESSAGE_WITHOUT_ACTOR5 = 0x68;
 
-        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint actorId, uint textOwnerActorId, ushort textId, byte log)
+        public static SubPacket BuildPacket(uint sourceActorId, uint actorId, uint textOwnerActorId, ushort textId, byte log)
         {
             byte[] data = new byte[SIZE_GAMEMESSAGE_WITH_ACTOR1 - 0x20];
 
@@ -71,10 +73,10 @@ namespace FFXIVClassic_Map_Server.packets.send
                 }
             }
 
-            return new SubPacket(OPCODE_GAMEMESSAGE_WITH_ACTOR1, sourceId, targetId, data);
+            return new SubPacket(OPCODE_GAMEMESSAGE_WITH_ACTOR1, sourceActorId, data);
         }
 
-        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint actorId, uint textOwnerActorId, ushort textId, byte log, List<LuaParam> lParams)
+        public static SubPacket BuildPacket(uint sourceActorId, uint actorId, uint textOwnerActorId, ushort textId, byte log, List<LuaParam> lParams)
         {
             int lParamsSize = findSizeOfParams(lParams);
             byte[] data;
@@ -119,10 +121,10 @@ namespace FFXIVClassic_Map_Server.packets.send
                 }
             }
 
-            return new SubPacket(opcode, sourceId, targetId, data);
+            return new SubPacket(opcode, sourceActorId, data);
         }
 
-        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, string sender, byte log)
+        public static SubPacket BuildPacket(uint sourceActorId, uint textOwnerActorId, ushort textId, string sender, byte log)
         {
             byte[] data = new byte[SIZE_GAMEMESSAGE_WITH_CUSTOM_SENDER1 - 0x20];
 
@@ -137,10 +139,10 @@ namespace FFXIVClassic_Map_Server.packets.send
                 }
             }
 
-            return new SubPacket(OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER1, sourceId, targetId, data);
+            return new SubPacket(OPCODE_GAMEMESSAGE_WITH_CUSTOM_SENDER1, sourceActorId, data);
         }
 
-        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, string sender, byte log, List<LuaParam> lParams)
+        public static SubPacket BuildPacket(uint sourceActorId, uint textOwnerActorId, ushort textId, string sender, byte log, List<LuaParam> lParams)
         {
             int lParamsSize = findSizeOfParams(lParams);
             byte[] data;
@@ -185,10 +187,10 @@ namespace FFXIVClassic_Map_Server.packets.send
                 }
             }
 
-            return new SubPacket(opcode, sourceId, targetId, data);
+            return new SubPacket(opcode, sourceActorId, data);
         }
 
-        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, uint senderDisplayNameId, byte log)
+        public static SubPacket BuildPacket(uint sourceActorId, uint textOwnerActorId, ushort textId, uint senderDisplayNameId, byte log)
         {
             byte[] data = new byte[SIZE_GAMEMESSAGE_WITH_DISPID_SENDER1 - 0x20];
 
@@ -203,10 +205,10 @@ namespace FFXIVClassic_Map_Server.packets.send
                 }
             }
 
-            return new SubPacket(OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER1, sourceId, targetId, data);
+            return new SubPacket(OPCODE_GAMEMESSAGE_WITH_DISPID_SENDER1, sourceActorId, data);
         }
 
-        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, uint senderDisplayNameId, byte log, List<LuaParam> lParams)
+        public static SubPacket BuildPacket(uint sourceActorId, uint textOwnerActorId, ushort textId, uint senderDisplayNameId, byte log, List<LuaParam> lParams)
         {
             int lParamsSize = findSizeOfParams(lParams);
             byte[] data;
@@ -251,10 +253,10 @@ namespace FFXIVClassic_Map_Server.packets.send
                 }
             }
 
-            return new SubPacket(opcode, sourceId, targetId, data);
+            return new SubPacket(opcode, sourceActorId, data);
         }
 
-        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, byte log)
+        public static SubPacket BuildPacket(uint sourceActorId, uint textOwnerActorId, ushort textId, byte log)
         {
             byte[] data = new byte[SIZE_GAMEMESSAGE_WITHOUT_ACTOR1 - 0x20];
 
@@ -268,10 +270,10 @@ namespace FFXIVClassic_Map_Server.packets.send
                 }
             }
 
-            return new SubPacket(OPCODE_GAMEMESSAGE_WITHOUT_ACTOR1, sourceId, targetId, data);
+            return new SubPacket(OPCODE_GAMEMESSAGE_WITHOUT_ACTOR1, sourceActorId, data);
         }
 
-        public static SubPacket BuildPacket(uint sourceId, uint targetId, uint textOwnerActorId, ushort textId, byte log, List<LuaParam> lParams)
+        public static SubPacket BuildPacket(uint sourceActorId, uint textOwnerActorId, ushort textId, byte log, List<LuaParam> lParams)
         {
             int lParamsSize = findSizeOfParams(lParams);
             byte[] data;
@@ -315,7 +317,7 @@ namespace FFXIVClassic_Map_Server.packets.send
                 }
             }
 
-            return new SubPacket(opcode, sourceId, targetId, data);
+            return new SubPacket(opcode, sourceActorId, data);
         }
 
         private static int findSizeOfParams(List<LuaParam> lParams)
@@ -327,6 +329,11 @@ namespace FFXIVClassic_Map_Server.packets.send
                 {
                     case 0:
                     case 1:
+                        total += 5;
+                        break;
+                    case 2:
+                        total += 20;
+                        break;
                     case 6:
                         total += 5;
                         break;

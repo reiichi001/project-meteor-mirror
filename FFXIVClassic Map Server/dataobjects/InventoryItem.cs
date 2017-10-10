@@ -30,7 +30,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             this.quantity = 1;
             this.slot = slot;
 
-            Item gItem = Server.GetItemGamedata(itemId);
+            ItemData gItem = Server.GetItemGamedata(itemId);
             itemType = gItem.isExclusive ? (byte)0x3 : (byte)0x0;
         }
 

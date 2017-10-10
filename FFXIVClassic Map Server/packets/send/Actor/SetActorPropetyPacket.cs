@@ -5,7 +5,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor
+using FFXIVClassic.Common;
+
+namespace  FFXIVClassic_Map_Server.packets.send.actor
 {
     class SetActorPropetyPacket
     {
@@ -111,7 +113,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             string[] split = name.Split('.');
             int arrayIndex = 0;
 
-            if (!(split[0].Equals("work") || split[0].Equals("charaWork") || split[0].Equals("playerWork") || split[0].Equals("npcWork")))
+            if (!(split[0].Equals("work") || split[0].Equals("charaWork") || split[0].Equals("playerWork") || split[0].Equals("npcWork") || split[0].Equals("guildleveWork")))
                 return false;
 
             Object curObj = actor;
@@ -157,6 +159,8 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
                     return AddByte(id, (byte)(((bool)curObj) ? 1 : 0));
                 else if (curObj is byte)
                     return AddByte(id, (byte)curObj);
+                else if (curObj is sbyte)
+                    return AddByte(id, (byte)(sbyte)curObj);
                 else if (curObj is ushort)
                     return AddShort(id, (ushort)curObj);
                 else if (curObj is short)
@@ -205,14 +209,14 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
             currentTarget = newTarget;
         }
 
-        public SubPacket BuildPacket(uint playerActorID, uint actorID)
+        public SubPacket BuildPacket(uint sourceActorId)
         {
             binWriter.Seek(0, SeekOrigin.Begin);
             binWriter.Write((byte)runningByteTotal);
             
             CloseStreams();
 
-            SubPacket packet = new SubPacket(OPCODE, actorID, playerActorID, data);
+            SubPacket packet = new SubPacket(OPCODE, sourceActorId, data);
             return packet;
         }       
     

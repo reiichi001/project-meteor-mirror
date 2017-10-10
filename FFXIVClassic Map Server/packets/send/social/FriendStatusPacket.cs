@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 
+using FFXIVClassic.Common;
+
 namespace FFXIVClassic_Map_Server.packets.send.social
 {
     class FriendStatusPacket
@@ -8,7 +10,7 @@ namespace FFXIVClassic_Map_Server.packets.send.social
         public const ushort OPCODE = 0x01CF;
         public const uint PACKET_SIZE = 0x686;
 
-        public static SubPacket BuildPacket(uint playerActorID, Tuple<long, bool>[] friendStatus)
+        public static SubPacket BuildPacket(uint sourceActorId, Tuple<long, bool>[] friendStatus)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -40,7 +42,7 @@ namespace FFXIVClassic_Map_Server.packets.send.social
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
     }
 }

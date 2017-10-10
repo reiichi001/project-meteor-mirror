@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Cyotek.Collections.Generic.CircularBuffer, Version=1.0.0.0, Culture=neutral, PublicKeyToken=58daa28b0b2de221, processorArchitecture=MSIL">
       <HintPath>..\packages\Cyotek.CircularBuffer.1.0.0.0\lib\net20\Cyotek.Collections.Generic.CircularBuffer.dll</HintPath>
@@ -73,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="actors\area\PrivateArea.cs" />
+    <Compile Include="actors\area\PrivateAreaContent.cs" />
     <Compile Include="actors\area\SpawnLocation.cs" />
     <Compile Include="actors\area\Zone.cs" />
     <Compile Include="actors\chara\npc\ActorClass.cs" />
@@ -83,17 +87,28 @@
     <Compile Include="actors\chara\Work.cs" />
     <Compile Include="actors\debug\Debug.cs" />
     <Compile Include="actors\director\Director.cs" />
-    <Compile Include="actors\director\OpeningDirector.cs" />
-    <Compile Include="actors\director\quest\QuestDirectorMan0g001.cs" />
-    <Compile Include="actors\director\quest\QuestDirectorMan0l001.cs" />
-    <Compile Include="actors\director\quest\QuestDirectorMan0u001.cs" />
-    <Compile Include="actors\director\WeatherDirector.cs" />
+    <Compile Include="actors\director\GuildleveDirector.cs" />
+    <Compile Include="actors\director\Work\GuildleveWork.cs" />
     <Compile Include="actors\EventList.cs" />
+    <Compile Include="actors\group\GLContentGroup.cs" />
+    <Compile Include="actors\group\ContentGroup.cs" />
+    <Compile Include="actors\group\Work\ContentGroupWork.cs" />
+    <Compile Include="actors\group\Work\GlobalTemp.cs" />
+    <Compile Include="actors\group\Group.cs" />
+    <Compile Include="actors\group\MonsterParty.cs" />
+    <Compile Include="actors\group\Party.cs" />
+    <Compile Include="actors\group\Relation.cs" />
+    <Compile Include="actors\group\Work\GroupGlobalSave.cs" />
+    <Compile Include="actors\group\Work\GroupGlobalTemp.cs" />
+    <Compile Include="actors\group\Work\GroupMemberSave.cs" />
+    <Compile Include="actors\group\Work\PartyWork.cs" />
+    <Compile Include="actors\group\Work\RelationWork.cs" />
     <Compile Include="actors\judge\Judge.cs" />
     <Compile Include="actors\quest\Quest.cs" />
     <Compile Include="actors\StaticActors.cs" />
     <Compile Include="actors\world\WorldMaster.cs" />
-    <Compile Include="ClientConnection.cs" />
+    <Compile Include="dataobjects\GuildleveData.cs" />
+    <Compile Include="dataobjects\ZoneConnection.cs" />
     <Compile Include="CommandProcessor.cs" />
     <Compile Include="ConfigConstants.cs" />
     <Compile Include="Database.cs" />
@@ -110,24 +125,21 @@
     <Compile Include="actors\chara\CharaWork.cs" />
     <Compile Include="actors\chara\ParameterSave.cs" />
     <Compile Include="actors\chara\player\PlayerWork.cs" />
-    <Compile Include="dataobjects\DBWorld.cs" />
     <Compile Include="dataobjects\InventoryItem.cs" />
-    <Compile Include="dataobjects\ConnectedPlayer.cs" />
-    <Compile Include="dataobjects\Item.cs" />
+    <Compile Include="dataobjects\Session.cs" />
+    <Compile Include="dataobjects\ItemData.cs" />
     <Compile Include="dataobjects\RecruitmentDetails.cs" />
     <Compile Include="dataobjects\SeamlessBoundry.cs" />
     <Compile Include="dataobjects\SearchEntry.cs" />
     <Compile Include="lua\LuaEngine.cs" />
-    <Compile Include="lua\LuaEvent.cs" />
     <Compile Include="lua\LuaParam.cs" />
-    <Compile Include="lua\LuaNpc.cs" />
-    <Compile Include="lua\LuaPlayer.cs" />
     <Compile Include="lua\LuaScript.cs" />
+    <Compile Include="lua\LuaUtils.cs" />
     <Compile Include="PacketProcessor.cs" />
-    <Compile Include="packets\BasePacket.cs" />
     <Compile Include="packets\receive\ChatMessagePacket.cs" />
     <Compile Include="packets\receive\events\EventUpdatePacket.cs" />
     <Compile Include="packets\receive\events\EventStartPacket.cs" />
+    <Compile Include="packets\receive\GroupCreatedPacket.cs" />
     <Compile Include="packets\receive\HandshakePacket.cs" />
     <Compile Include="packets\receive\LangaugeCodePacket.cs" />
     <Compile Include="packets\receive\ParameterDataRequestPacket.cs" />
@@ -143,63 +155,74 @@
     <Compile Include="packets\receive\supportdesk\GMSupportTicketPacket.cs" />
     <Compile Include="packets\receive\supportdesk\GMTicketIssuesRequestPacket.cs" />
     <Compile Include="packets\receive\_0x02ReceivePacket.cs" />
-    <Compile Include="packets\receive\_0x07Packet.cs" />
-    <Compile Include="packets\send\Actor\ActorDoEmotePacket.cs" />
-    <Compile Include="packets\send\Actor\ActorInstantiatePacket.cs" />
-    <Compile Include="packets\send\Actor\ActorSpecialGraphicPacket.cs" />
-    <Compile Include="packets\send\Actor\BattleAction1Packet.cs" />
-    <Compile Include="packets\send\Actor\battle\BattleAction.cs" />
-    <Compile Include="packets\send\Actor\battle\BattleActionX00Packet.cs" />
-    <Compile Include="packets\send\Actor\battle\BattleActionX18Packet.cs" />
-    <Compile Include="packets\send\Actor\battle\BattleActionX10Packet.cs" />
-    <Compile Include="packets\send\Actor\DeleteAllActorsPacket.cs" />
-    <Compile Include="packets\send\Actor\events\SetEventStatus.cs" />
-    <Compile Include="packets\send\Actor\events\SetNoticeEventCondition.cs" />
-    <Compile Include="packets\send\Actor\events\SetPushEventConditionWithTriggerBox.cs" />
-    <Compile Include="packets\send\Actor\events\SetPushEventConditionWithFan.cs" />
-    <Compile Include="packets\send\Actor\events\SetEmoteEventCondition.cs" />
-    <Compile Include="packets\send\Actor\events\SetTalkEventCondition.cs" />
-    <Compile Include="packets\send\Actor\events\SetPushEventConditionWithCircle.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryRemoveX01Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryRemoveX08Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryRemoveX16Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryRemoveX32Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryRemoveX64Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\EquipmentListX64Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\EquipmentListX32Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\EquipmentListX16Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryListX01Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryListX08Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryListX16Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryListX64Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryListX32Packet.cs" />
-    <Compile Include="packets\send\Actor\_0x132Packet.cs" />
-    <Compile Include="packets\send\Actor\SetActorIsZoningPacket.cs" />
-    <Compile Include="packets\send\Actor\battle\BattleActionX01Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\EquipmentListX01Packet.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryBeginChangePacket.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryEndChangePacket.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryItemEndPacket.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventoryItemPacket.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventorySetBeginPacket.cs" />
-    <Compile Include="packets\send\Actor\inventory\InventorySetEndPacket.cs" />
-    <Compile Include="packets\send\Actor\inventory\EquipmentListX08Packet.cs" />
-    <Compile Include="packets\send\Actor\RemoveActorPacket.cs" />
-    <Compile Include="packets\send\Actor\SetActorIconPacket.cs" />
-    <Compile Include="packets\send\Actor\SetActorIdleAnimationPacket.cs" />
-    <Compile Include="packets\send\Actor\SetActorStatusPacket.cs" />
-    <Compile Include="packets\send\Actor\_0xFPacket.cs" />
+    <Compile Include="packets\receive\ZoneInCompletePacket.cs" />
+    <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
+    <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />
+    <Compile Include="packets\send\actor\ActorSpecialGraphicPacket.cs" />
+    <Compile Include="packets\send\actor\battle\BattleAction.cs" />
+    <Compile Include="packets\send\actor\battle\BattleActionX00Packet.cs" />
+    <Compile Include="packets\send\actor\battle\BattleActionX18Packet.cs" />
+    <Compile Include="packets\send\actor\battle\BattleActionX10Packet.cs" />
+    <Compile Include="packets\send\actor\DeleteAllActorsPacket.cs" />
+    <Compile Include="packets\send\actor\events\SetEventStatus.cs" />
+    <Compile Include="packets\send\actor\events\SetNoticeEventCondition.cs" />
+    <Compile Include="packets\send\actor\events\SetPushEventConditionWithTriggerBox.cs" />
+    <Compile Include="packets\send\actor\events\SetPushEventConditionWithFan.cs" />
+    <Compile Include="packets\send\actor\events\SetEmoteEventCondition.cs" />
+    <Compile Include="packets\send\actor\events\SetTalkEventCondition.cs" />
+    <Compile Include="packets\send\actor\events\SetPushEventConditionWithCircle.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryRemoveX01Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryRemoveX08Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryRemoveX16Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryRemoveX32Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryRemoveX64Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\EquipmentListX64Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\EquipmentListX32Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\EquipmentListX16Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryListX01Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryListX08Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryListX16Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryListX64Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryListX32Packet.cs" />
+    <Compile Include="packets\send\actor\PlayAnimationOnActorPacket.cs" />
+    <Compile Include="packets\send\actor\PlayBGAnimation.cs" />
+    <Compile Include="packets\send\actor\_0x132Packet.cs" />
+    <Compile Include="packets\send\actor\SetActorIsZoningPacket.cs" />
+    <Compile Include="packets\send\actor\battle\BattleActionX01Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\EquipmentListX01Packet.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryBeginChangePacket.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryEndChangePacket.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryItemEndPacket.cs" />
+    <Compile Include="packets\send\actor\inventory\InventoryItemPacket.cs" />
+    <Compile Include="packets\send\actor\inventory\InventorySetBeginPacket.cs" />
+    <Compile Include="packets\send\actor\inventory\InventorySetEndPacket.cs" />
+    <Compile Include="packets\send\actor\inventory\EquipmentListX08Packet.cs" />
+    <Compile Include="packets\send\actor\RemoveActorPacket.cs" />
+    <Compile Include="packets\send\actor\SetActorIconPacket.cs" />
+    <Compile Include="packets\send\actor\SetActorSubStatPacket.cs" />
+    <Compile Include="packets\send\actor\SetActorStatusPacket.cs" />
+    <Compile Include="packets\send\actor\SetActorBGPropertiesPacket.cs" />
+    <Compile Include="packets\send\actor\_0xFPacket.cs" />
+    <Compile Include="packets\send\groups\CreateNamedGroup.cs" />
+    <Compile Include="packets\send\groups\CreateNamedGroupMultiple.cs" />
     <Compile Include="packets\send\events\EndEventPacket.cs" />
     <Compile Include="packets\send\events\KickEventPacket.cs" />
     <Compile Include="packets\send\events\RunEventFunctionPacket.cs" />
     <Compile Include="packets\send\GameMessagePacket.cs" />
-    <Compile Include="packets\send\list\ListEntry.cs" />
-    <Compile Include="packets\send\list\ListUtils.cs" />
-    <Compile Include="packets\send\list\SetListPropertyPacket.cs" />
-    <Compile Include="packets\send\list\ListBeginPacket.cs" />
-    <Compile Include="packets\send\list\ListEndPacket.cs" />
-    <Compile Include="packets\send\list\ListEntriesEndPacket.cs" />
-    <Compile Include="packets\send\list\ListStartPacket.cs" />
+    <Compile Include="packets\send\groups\DeleteGroupPacket.cs" />
+    <Compile Include="packets\send\groups\GroupHeaderPacket.cs" />
+    <Compile Include="packets\send\groups\GroupMember.cs" />
+    <Compile Include="packets\send\groups\GroupMembersBeginPacket.cs" />
+    <Compile Include="packets\send\groups\GroupMembersEndPacket.cs" />
+    <Compile Include="packets\send\groups\ContentMembersX08Packet.cs" />
+    <Compile Include="packets\send\groups\GroupMembersX08Packet.cs" />
+    <Compile Include="packets\send\groups\ContentMembersX16Packet.cs" />
+    <Compile Include="packets\send\groups\GroupMembersX16Packet.cs" />
+    <Compile Include="packets\send\groups\ContentMembersX32Packet.cs" />
+    <Compile Include="packets\send\groups\GroupMembersX32Packet.cs" />
+    <Compile Include="packets\send\groups\ContentMembersX64Packet.cs" />
+    <Compile Include="packets\send\groups\GroupMembersX64Packet.cs" />
+    <Compile Include="packets\send\groups\SynchGroupWorkValuesPacket.cs" />
     <Compile Include="packets\send\player\GenericDataPacket.cs" />
     <Compile Include="packets\send\player\SendAchievementRatePacket.cs" />
     <Compile Include="packets\send\player\SetCurrentJobPacket.cs" />
@@ -214,11 +237,10 @@
     <Compile Include="packets\send\Actor\SetActorTargetPacket.cs" />
     <Compile Include="packets\send\Actor\SetActorStatusAllPacket.cs" />
     <Compile Include="packets\send\login\0x2Packet.cs" />
-    <Compile Include="packets\send\Actor\AddActorPacket.cs" />
-    <Compile Include="packets\send\Actor\MoveActorToPositionPacket.cs" />
-    <Compile Include="packets\send\Actor\SetActorAppearancePacket.cs" />
-    <Compile Include="packets\send\Actor\SetActorPositionPacket.cs" />
-    <Compile Include="packets\send\login\0x7ResponsePacket.cs" />
+    <Compile Include="packets\send\actor\AddActorPacket.cs" />
+    <Compile Include="packets\send\actor\MoveActorToPositionPacket.cs" />
+    <Compile Include="packets\send\actor\SetActorAppearancePacket.cs" />
+    <Compile Include="packets\send\actor\SetActorPositionPacket.cs" />
     <Compile Include="packets\send\LogoutPacket.cs" />
     <Compile Include="packets\send\player\SetCompletedAchievementsPacket.cs" />
     <Compile Include="packets\send\player\AchievementEarnedPacket.cs" />
@@ -228,9 +250,10 @@
     <Compile Include="packets\send\player\SetHasGoobbuePacket.cs" />
     <Compile Include="packets\send\player\SetHasChocoboPacket.cs" />
     <Compile Include="packets\send\player\SetLatestAchievementsPacket.cs" />
+    <Compile Include="packets\send\player\SetPlayerItemStoragePacket.cs" />
     <Compile Include="packets\send\player\SetPlayerDreamPacket.cs" />
     <Compile Include="packets\send\player\SetPlayerTitlePacket.cs" />
-    <Compile Include="packets\send\player\_0x196Packet.cs" />
+    <Compile Include="packets\send\player\SetSpecialEventWorkPacket.cs" />
     <Compile Include="packets\send\PongPacket.cs" />
     <Compile Include="packets\send\QuitPacket.cs" />
     <Compile Include="packets\send\recruitment\CurrentRecruitmentDetailsPacket.cs" />
@@ -258,12 +281,28 @@
     <Compile Include="packets\send\_0x02Packet.cs" />
     <Compile Include="packets\send\_0x10Packet.cs" />
     <Compile Include="packets\send\_0xE2Packet.cs" />
-    <Compile Include="packets\SubPacket.cs" />
     <Compile Include="packets\receive\PingPacket.cs" />
     <Compile Include="packets\receive\UpdatePlayerPositionPacket.cs" />
+    <Compile Include="packets\WorldPackets\Receive\ErrorPacket.cs" />
+    <Compile Include="packets\WorldPackets\Receive\PartySyncPacket.cs" />
+    <Compile Include="packets\WorldPackets\Receive\SessionEndPacket.cs" />
+    <Compile Include="packets\WorldPackets\Receive\SessionBeginPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\CreateLinkshellPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\DeleteLinkshellPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\LinkshellInviteCancelPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\LinkshellChangePacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\LinkshellRankChangePacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\ModifyLinkshellPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\GroupInviteResultPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\LinkshellInvitePacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\PartyInvitePacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\LinkshellLeavePacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\PartyLeavePacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\Group\PartyModifyPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\SessionBeginConfirmPacket.cs" />
+    <Compile Include="packets\WorldPackets\Send\SessionEndConfirmPacket.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="lua\LuaUtils.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -286,6 +325,7 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
+    <Compile Include="packets\WorldPackets\Send\WorldRequestZoneChangePacket.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -295,9 +335,12 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)data\map_config.ini" "$(SolutionDir)$(ProjectName)\$(OutDir)" /d
-xcopy "$(SolutionDir)data\scripts" "$(SolutionDir)$(ProjectName)\$(OutDir)scripts\" /e /d /y /s
-xcopy "$(SolutionDir)data\staticactors.bin" "$(SolutionDir)$(ProjectName)\$(OutDir)" /d</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

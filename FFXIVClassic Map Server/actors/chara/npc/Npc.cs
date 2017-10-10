@@ -1,10 +1,10 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors;
+using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
-using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.packets.receive.events;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.utils;
@@ -25,15 +25,19 @@ namespace FFXIVClassic_Map_Server.Actors
         private uint actorClassId;
         private string uniqueIdentifier;
 
+        private bool isMapObj = false;
+        private uint layout, instance;
+
         public NpcWork npcWork = new NpcWork();
 
-        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, uint zoneId, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, string customDisplayName)
-            : base((4 << 28 | zoneId << 19 | (uint)actorNumber))  
+        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, string customDisplayName)
+            : base((4 << 28 | spawnedArea.actorId << 19 | (uint)actorNumber))  
         {
             this.positionX = posX;
             this.positionY = posY;
             this.positionZ = posZ;
             this.rotation = rot;
+            this.currentMainState = actorState;
             this.animationId = animationId;
 
             this.displayNameId = actorClass.displayNameId;
@@ -41,8 +45,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             this.uniqueIdentifier = uniqueId;
 
-            this.zoneId = zoneId;
-            this.zone = Server.GetWorldManager().GetZone(zoneId);
+            this.zoneId = spawnedArea.actorId;
+            this.zone = spawnedArea;
 
             this.actorClassId = actorClass.actorClassId;
 
@@ -63,38 +67,93 @@ namespace FFXIVClassic_Map_Server.Actors
             for (int i = 0; i < 32; i++ )            
                 charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);            
 
-            if (className.Equals("JellyfishScenarioLimsaLv00"))
-            {
-                charaWork.property[2] = 1;
-                npcWork.hateType = 1;
-            }
+            npcWork.pushCommand = actorClass.pushCommand;
+            npcWork.pushCommandSub = actorClass.pushCommandSub;
+            npcWork.pushCommandPriority = actorClass.pushCommandPriority;
 
-            npcWork.pushCommand = 0x271D;
-            npcWork.pushCommandPriority = 1;
+            if (actorClassId == 1080078 || actorClassId == 1080079 || actorClassId == 1080080 || (actorClassId >= 1080123 && actorClassId <= 1080135) || (actorClassId >= 5000001 && actorClassId <= 5000090) || (actorClassId >= 5900001 && actorClassId <= 5900038))
+            {
+                isMapObj = true;
+                List<LuaParam> lParams = LuaEngine.GetInstance().CallLuaFunctionForReturn(null, this, "init", false);
+                if (lParams == null || lParams.Count < 6)
+                    isMapObj = false;
+                else
+                {                   
+                    layout = (uint)(Int32)lParams[4].value;
+                    instance = (uint)(Int32)lParams[5].value;
+                    isStatic = true;
+                }
+            }
 
             GenerateActorName((int)actorNumber);            
         }
 
-        public SubPacket CreateAddActorPacket(uint playerActorId)
+        public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, uint layout, uint instance)
+            : base((4 << 28 | spawnedArea.actorId << 19 | (uint)actorNumber))
         {
-            return AddActorPacket.BuildPacket(actorId, playerActorId, 8);
+            this.positionX = posX;
+            this.positionY = posY;
+            this.positionZ = posZ;
+            this.rotation = rot;
+            this.currentMainState = 0;
+            this.animationId = 0;
+
+            this.displayNameId = actorClass.displayNameId;
+
+            this.uniqueIdentifier = uniqueId;
+
+            this.zoneId = spawnedArea.actorId;
+            this.zone = spawnedArea;
+
+            this.actorClassId = actorClass.actorClassId;
+
+            LoadNpcAppearance(actorClass.actorClassId);
+
+            this.classPath = actorClass.classPath;
+            className = classPath.Substring(classPath.LastIndexOf("/") + 1);
+
+            for (int i = 0; i < 32; i++)
+                charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);
+
+            npcWork.pushCommand = actorClass.pushCommand;
+            npcWork.pushCommandSub = actorClass.pushCommandSub;
+            npcWork.pushCommandPriority = actorClass.pushCommandPriority;
+
+            this.isMapObj = true;
+            this.layout = layout;
+            this.instance = instance;
+
+            GenerateActorName((int)actorNumber);
+        }
+
+        public SubPacket CreateAddActorPacket()
+        {
+            return AddActorPacket.BuildPacket(actorId, 8);
         }
 
         // actorClassId, [], [], numBattleCommon, [battleCommon], numEventCommon, [eventCommon], args for either initForBattle/initForEvent
-        public override SubPacket CreateScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket(Player player)
         {
             List<LuaParam> lParams;
+            
+            lParams = LuaEngine.GetInstance().CallLuaFunctionForReturn(player, this, "init", false);
 
-            Player player = Server.GetWorldManager().GetPCInWorld(playerActorId);
-            lParams = DoActorInit(player);            
+            if (lParams != null && lParams.Count >= 3 && lParams[2].typeID == 0 && (int)lParams[2].value == 0)
+                isStatic = true;
+            else
+            {
+            //    charaWork.property[2] = 1;
+             //   npcWork.hateType = 1;
+            }
 
             if (lParams == null)
             {
                 string classPathFake = "/Chara/Npc/Populace/PopulaceStandard";
                 string classNameFake = "PopulaceStandard";
                 lParams = LuaUtils.CreateLuaParamList(classPathFake, false, false, false, false, false, 0xF47F6, false, false, 0, 0);
-                //ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams).DebugPrintSubPacket();
-                return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, classNameFake, lParams);
+                isStatic = true;
+                //ActorInstantiatePacket.BuildPacket(actorId, actorName, classNameFake, lParams).DebugPrintSubPacket();
+                return ActorInstantiatePacket.BuildPacket(actorId, actorName, classNameFake, lParams);
             }
             else
             {
@@ -107,32 +166,40 @@ namespace FFXIVClassic_Map_Server.Actors
                 lParams.Insert(6, new LuaParam(0, (int)actorClassId));
             }
 
-            //ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams).DebugPrintSubPacket();
-            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);
+            //ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams).DebugPrintSubPacket();
+            return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);
         }
 
-        public override BasePacket GetSpawnPackets(uint playerActorId, uint spawnType)
+        public override List<SubPacket> GetSpawnPackets(Player player, ushort spawnType)
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(CreateAddActorPacket(playerActorId));
-            subpackets.AddRange(GetEventConditionPackets(playerActorId));
-            subpackets.Add(CreateSpeedPacket(playerActorId));            
-            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x0));            
-            subpackets.Add(CreateAppearancePacket(playerActorId));
-            subpackets.Add(CreateNamePacket(playerActorId));
-            subpackets.Add(CreateStatePacket(playerActorId));
-            subpackets.Add(CreateIdleAnimationPacket(playerActorId));
-            subpackets.Add(CreateInitStatusPacket(playerActorId));
-            subpackets.Add(CreateSetActorIconPacket(playerActorId));
-            subpackets.Add(CreateIsZoneingPacket(playerActorId));           
-            subpackets.Add(CreateScriptBindPacket(playerActorId));            
+            subpackets.Add(CreateAddActorPacket());
+            subpackets.AddRange(GetEventConditionPackets());
+            subpackets.Add(CreateSpeedPacket());            
+            subpackets.Add(CreateSpawnPositonPacket(0x0));
 
-            return BasePacket.CreatePacket(subpackets, true, false);
+            if (isMapObj)            
+                subpackets.Add(SetActorBGPropertiesPacket.BuildPacket(actorId, instance, layout));                        
+            else
+                subpackets.Add(CreateAppearancePacket());
+
+            subpackets.Add(CreateNamePacket());
+            subpackets.Add(CreateStatePacket());
+            subpackets.Add(CreateIdleAnimationPacket());
+            subpackets.Add(CreateInitStatusPacket());
+            subpackets.Add(CreateSetActorIconPacket());
+            subpackets.Add(CreateIsZoneingPacket());           
+            subpackets.Add(CreateScriptBindPacket(player));            
+
+            return subpackets;
         }
 
-        public override BasePacket GetInitPackets(uint playerActorId)
+        public override List<SubPacket> GetInitPackets()
         {
-            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this, playerActorId);
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this);
+
+            //Potential
+            propPacketUtil.AddProperty("charaWork.battleSave.potencial");
 
             //Properties
             for (int i = 0; i < charaWork.property.Length; i++)
@@ -174,10 +241,16 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             propPacketUtil.AddProperty("npcWork.hateType");
-            propPacketUtil.AddProperty("npcWork.pushCommand");
-            propPacketUtil.AddProperty("npcWork.pushCommandPriority");
 
-            return BasePacket.CreatePacket(propPacketUtil.Done(), true, false);
+            if (npcWork.pushCommand != 0)
+            {
+                propPacketUtil.AddProperty("npcWork.pushCommand");
+                if (npcWork.pushCommandSub != 0)
+                    propPacketUtil.AddProperty("npcWork.pushCommandSub");
+                propPacketUtil.AddProperty("npcWork.pushCommandPriority");
+            }
+
+            return propPacketUtil.Done();
         }
 
         public string GetUniqueId()
@@ -188,6 +261,12 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint GetActorClassId()
         {
             return actorClassId;
+        }
+        
+        public void ChangeNpcAppearance(uint id)
+        {
+            LoadNpcAppearance(id);
+            zone.BroadcastPacketAroundActor(this, CreateAppearancePacket());
         }
 
         public void LoadNpcAppearance(uint id)
@@ -298,118 +377,33 @@ namespace FFXIVClassic_Map_Server.Actors
             this.eventConditions = conditions;
         }
 
-        public List<LuaParam> DoActorInit(Player player)
+        public void DoOnActorSpawn(Player player)
         {
-            LuaScript parent = null, child = null;
-
-            if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
-
-            if (parent == null && child == null)
-            {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
-                return null;
-            }
-
-            DynValue result;
-                            
-            if (child != null && child.Globals["init"] != null)
-                result = child.Call(child.Globals["init"], this);
-            else if (parent != null && parent.Globals["init"] != null)
-                result = parent.Call(parent.Globals["init"], this);
-            else
-                return null;
-
-            List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
-            return lparams;          
+            LuaEngine.GetInstance().CallLuaFunction(player, this, "onSpawn", true);           
         }
 
-        public Coroutine GetEventStartCoroutine(Player player)
+        public void PlayMapObjAnimation(Player player, string animationName)
         {
-            LuaScript parent = null, child = null;
-
-            if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
-
-            if (parent == null && child == null)
-            {
-                LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
-                return null;
-            }
-
-            //Run Script
-            Coroutine coroutine;            
-
-            if (child != null && !child.Globals.Get("onEventStarted").IsNil())
-                coroutine = child.CreateCoroutine(child.Globals["onEventStarted"]).Coroutine;
-            else if (parent.Globals.Get("onEventStarted") != null && !parent.Globals.Get("onEventStarted").IsNil())
-                coroutine = parent.CreateCoroutine(parent.Globals["onEventStarted"]).Coroutine;
-            else
-                return null;
-
-            return coroutine;
+            player.QueuePacket(PlayBGAnimation.BuildPacket(actorId, animationName));
         }
 
-        public void DoEventUpdate(Player player, EventUpdatePacket eventUpdate)
+        public void Despawn()
         {
-            LuaScript parent = null, child = null;
-
-            if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
-
-            if (parent == null && child == null)
-            {
-                //LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
-                return;
-            }
-
-            //Have to do this to combine LuaParams
-            List<Object> objects = new List<Object>();
-            objects.Add(player);
-            objects.Add(this);
-            objects.Add(eventUpdate.val2);
-            objects.AddRange(LuaUtils.CreateLuaParamObjectList(eventUpdate.luaParams));
-
-            //Run Script
-            DynValue result;
-
-            if (child != null && !child.Globals.Get("onEventUpdate").IsNil())
-                result = child.Call(child.Globals["onEventUpdate"], objects.ToArray());
-            else if (!parent.Globals.Get("onEventUpdate").IsNil())
-                result = parent.Call(parent.Globals["onEventUpdate"], objects.ToArray());
-            else
-                return;
-
+            zone.DespawnActor(this);
         }
 
-        internal void DoOnActorSpawn(Player player)
+        public void Update(double deltaTime)
         {
-           LuaScript parent = null, child = null;
-
-            if (File.Exists("./scripts/base/" + classPath + ".lua"))
-                parent = LuaEngine.LoadScript("./scripts/base/" + classPath + ".lua");
-            if (File.Exists(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier)))
-                child = LuaEngine.LoadScript(String.Format("./scripts/unique/{0}/{1}/{2}.lua", zone.zoneName, className, uniqueIdentifier));
-
-            if (parent == null && child == null)
-            {
-                //LuaEngine.SendError(player, String.Format("ERROR: Could not find script for actor {0}.", GetName()));
-                return;
-            }
-               
-            //Run Script
-            if (child != null && child.Globals["onSpawn"] != null)
-                child.Call(child.Globals["onSpawn"], player, this);
-            else if (parent != null && parent.Globals["onSpawn"] != null)
-                parent.Call(parent.Globals["onSpawn"], player, this);
-            else
-                return;          
+            LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, deltaTime);         
         }
+
+        //A party member list packet came, set the party
+       /* public void SetParty(MonsterPartyGroup group)
+        {
+            if (group is MonsterPartyGroup)
+                currentParty = group;
+        }
+        */
+
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace FFXIVClassic_Map_Server.packets.send.supportdesk
+﻿using FFXIVClassic.Common;
+
+namespace FFXIVClassic_Map_Server.packets.send.supportdesk
 {
     class EndGMTicketPacket
     {
@@ -9,7 +11,7 @@
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
             data[0] = 1;
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, playerActorID, data);
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using FFXIVClassic_Map_Server;
 using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.packets;
+
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
@@ -10,15 +10,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic_Map_Server.actors.director;
 
 namespace FFXIVClassic_Map_Server.actors.area
 {
     class Zone : Area
     {        
         Dictionary<string, Dictionary<uint, PrivateArea>> privateAreas = new Dictionary<string, Dictionary<uint, PrivateArea>>();
+        Dictionary<string, List<PrivateAreaContent>> contentAreas = new Dictionary<string, List<PrivateAreaContent>>();
+        Object contentAreasLock = new Object();
 
-        public Zone(uint id, string zoneName, ushort regionId, string className, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
-            : base(id, zoneName, regionId, className, bgmDay, bgmNight, bgmBattle, isIsolated, isInn, canRideChocobo, canStealth, isInstanceRaid)
+        public Zone(uint id, string zoneName, ushort regionId, string classPath, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
+            : base(id, zoneName, regionId, classPath, bgmDay, bgmNight, bgmBattle, isIsolated, isInn, canRideChocobo, canStealth, isInstanceRaid)
         {
 
         }
@@ -26,11 +29,11 @@ namespace FFXIVClassic_Map_Server.actors.area
         public void AddPrivateArea(PrivateArea pa)
         {
             if (privateAreas.ContainsKey(pa.GetPrivateAreaName()))
-                privateAreas[pa.GetPrivateAreaName()][0] = pa;
+                privateAreas[pa.GetPrivateAreaName()][pa.GetPrivateAreaType()] = pa;
             else
             {
                 privateAreas[pa.GetPrivateAreaName()] = new Dictionary<uint, PrivateArea>();
-                privateAreas[pa.GetPrivateAreaName()][0] = pa;
+                privateAreas[pa.GetPrivateAreaName()][pa.GetPrivateAreaType()] = pa;
             }
         }
 
@@ -48,13 +51,13 @@ namespace FFXIVClassic_Map_Server.actors.area
                 return null;
         }
 
-        public override SubPacket CreateScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket()
         {
             bool isEntranceDesion = false;
 
             List<LuaParam> lParams;
-            lParams = LuaUtils.CreateLuaParamList("/Area/Zone/" + className, false, true, zoneName, "", -1, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, true, isInstanceRaid, isEntranceDesion);
-            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, className, lParams);        
+            lParams = LuaUtils.CreateLuaParamList(classPath, false, true, zoneName, "", -1, canRideChocobo ? (byte)1 : (byte)0, canStealth, isInn, false, false, false, true, isInstanceRaid, isEntranceDesion);
+            return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);        
         }
 
         public void AddSpawnLocation(SpawnLocation spawn)
@@ -89,6 +92,50 @@ namespace FFXIVClassic_Map_Server.actors.area
                     foreach (PrivateArea pa in areas.Values)
                         pa.SpawnAllActors();
                 }
+            }
+        }
+
+        public Actor FindActorInZone(uint id)
+        {
+            if (!mActorList.ContainsKey(id))
+            {
+                foreach(Dictionary<uint, PrivateArea> paList in privateAreas.Values)
+                {
+                    foreach(PrivateArea pa in paList.Values)
+                    {
+                        Actor actor = pa.FindActorInArea(id);
+                        if (actor != null)
+                            return actor;
+                    }
+                }
+                return null;
+            }
+            else
+                return mActorList[id];
+        }
+
+        public PrivateAreaContent CreateContentArea(Player starterPlayer, string areaClassPath, string contentScript, string areaName, string directorName, params object[] args)
+        {
+            lock (contentAreasLock)
+            {
+                Director director = CreateDirector(directorName, true, args);
+
+                if (director == null)
+                    return null;
+
+                if (!contentAreas.ContainsKey(areaName))
+                    contentAreas.Add(areaName, new List<PrivateAreaContent>());
+                PrivateAreaContent contentArea = new PrivateAreaContent(this, classPath, areaName, 1, director, starterPlayer);                
+                contentAreas[areaName].Add(contentArea);
+                return contentArea;
+            }
+        }
+
+        public void DeleteContentArea(PrivateAreaContent area)
+        {
+            if (contentAreas.ContainsKey(area.GetPrivateAreaName()))
+            {
+                contentAreas[area.GetPrivateAreaName()].Remove(area);
             }
         }
 

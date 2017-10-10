@@ -1,6 +1,5 @@
 ﻿using FFXIVClassic_Map_Server;
 using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.packets;
 using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.dataobjects;
@@ -14,6 +13,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.packets.send;
+using FFXIVClassic_Map_Server.actors.group;
+using FFXIVClassic_Map_Server.actors.director;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -28,9 +29,15 @@ namespace FFXIVClassic_Map_Server.Actors
         protected string classPath;
 
         public int boundingGridSize = 50;
-        public int minX = -1000, minY = -1000, maxX = 1000, maxY = 1000;
+        public int minX = -5000, minY = -5000, maxX = 5000, maxY = 5000;
         protected int numXBlocks, numYBlocks;
         protected int halfWidth, halfHeight;
+
+        private Dictionary<uint, Director> currentDirectors = new Dictionary<uint, Director>();
+        private Object directorLock = new Object();
+        private uint directorIdCount = 0;
+
+        protected Director mWeatherDirector;
 
         protected List<SpawnLocation> mSpawnLocations = new List<SpawnLocation>();
         protected Dictionary<uint, Actor> mActorList = new Dictionary<uint, Actor>();
@@ -38,7 +45,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         LuaScript areaScript;
 
-        public Area(uint id, string zoneName, ushort regionId, string className, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
+        public Area(uint id, string zoneName, ushort regionId, string classPath, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
             : base(id)
         {
 
@@ -56,9 +63,10 @@ namespace FFXIVClassic_Map_Server.Actors
 
             this.displayNameId = 0;
             this.customDisplayName = "_areaMaster";
-            this.actorName = String.Format("_areaMaster@{0:X5}",id<<8);
+            this.actorName = String.Format("_areaMaster@{0:X5}", id << 8);
 
-            this.className = className;
+            this.classPath = classPath;
+            this.className = classPath.Substring(classPath.LastIndexOf("/") + 1);
 
             numXBlocks = (maxX - minX) / boundingGridSize;
             numYBlocks = (maxY - minY) / boundingGridSize;
@@ -68,40 +76,42 @@ namespace FFXIVClassic_Map_Server.Actors
 
             for (int y = 0; y < numYBlocks; y++)
             {
-                for (int x = 0; x < numXBlocks; x++ )
+                for (int x = 0; x < numXBlocks; x++)
                 {
                     mActorBlock[x, y] = new List<Actor>();
                 }
             }
-            
         }
 
-        public override SubPacket CreateScriptBindPacket(uint playerActorId)
+        public override SubPacket CreateScriptBindPacket()
         {
             List<LuaParam> lParams;
             lParams = LuaUtils.CreateLuaParamList(classPath, false, true, zoneName, "/Area/Zone/ZoneDefault", -1, (byte)1, true, false, false, false, false, false, false, false);
-            return ActorInstantiatePacket.BuildPacket(actorId, playerActorId, actorName, "ZoneDefault", lParams);
+            return ActorInstantiatePacket.BuildPacket(actorId, actorName, "ZoneDefault", lParams);
         }
 
-        public override BasePacket GetSpawnPackets(uint playerActorId)
+        public override List<SubPacket> GetSpawnPackets()
         {
             List<SubPacket> subpackets = new List<SubPacket>();
-            subpackets.Add(CreateAddActorPacket(playerActorId, 0));            
-            subpackets.Add(CreateSpeedPacket(playerActorId));
-            subpackets.Add(CreateSpawnPositonPacket(playerActorId, 0x1));
-            subpackets.Add(CreateNamePacket(playerActorId));
-            subpackets.Add(CreateStatePacket(playerActorId));
-            subpackets.Add(CreateIsZoneingPacket(playerActorId));
-            subpackets.Add(CreateScriptBindPacket(playerActorId));
-            return BasePacket.CreatePacket(subpackets, true, false);
+            subpackets.Add(CreateAddActorPacket(0));            
+            subpackets.Add(CreateSpeedPacket());
+            subpackets.Add(CreateSpawnPositonPacket(0x1));
+            subpackets.Add(CreateNamePacket());
+            subpackets.Add(CreateStatePacket());
+            subpackets.Add(CreateIsZoneingPacket());
+            subpackets.Add(CreateScriptBindPacket());
+            return subpackets;
         }
 
         #region Actor Management
 
         public void AddActorToZone(Actor actor)
         {
-            if (!mActorList.ContainsKey(actor.actorId))
-                mActorList.Add(actor.actorId, actor);
+            lock (mActorList)
+            {
+                if (!mActorList.ContainsKey(actor.actorId))
+                    mActorList.Add(actor.actorId, actor);
+            }
 
             int gridX = (int)actor.positionX / boundingGridSize;
             int gridY = (int)actor.positionZ / boundingGridSize;
@@ -125,7 +135,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void RemoveActorFromZone(Actor actor)
         {
-            mActorList.Remove(actor.actorId);
+            lock (mActorList)
+                mActorList.Remove(actor.actorId);
 
             int gridX = (int)actor.positionX / boundingGridSize;
             int gridY = (int)actor.positionZ / boundingGridSize;
@@ -214,11 +225,14 @@ namespace FFXIVClassic_Map_Server.Actors
 
             List<Actor> result = new List<Actor>();
 
-            for (int gx = gridX - checkDistance; gx <= gridX + checkDistance; gx++)
+            lock (mActorBlock)
             {
-                for (int gy = gridY - checkDistance; gy <= gridY + checkDistance; gy++)
+                for (int gx = gridX - checkDistance; gx <= gridX + checkDistance; gx++)
                 {
-                    result.AddRange(mActorBlock[gx, gy]);
+                    for (int gy = gridY - checkDistance; gy <= gridY + checkDistance; gy++)
+                    {
+                        result.AddRange(mActorBlock[gx, gy]);
+                    }
                 }
             }
 
@@ -257,11 +271,14 @@ namespace FFXIVClassic_Map_Server.Actors
 
             List<Actor> result = new List<Actor>();
 
-            for (int gy = ((gridY - checkDistance) < 0 ? 0 : (gridY - checkDistance)); gy <= ((gridY + checkDistance) >= numYBlocks ? numYBlocks - 1 : (gridY + checkDistance)); gy++)
+            lock (mActorBlock)
             {
-                for (int gx = ((gridX - checkDistance) < 0 ? 0 : (gridX - checkDistance)); gx <= ((gridX + checkDistance) >= numXBlocks ? numXBlocks - 1 : (gridX + checkDistance)); gx++)
+                for (int gy = ((gridY - checkDistance) < 0 ? 0 : (gridY - checkDistance)); gy <= ((gridY + checkDistance) >= numYBlocks ? numYBlocks - 1 : (gridY + checkDistance)); gy++)
                 {
-                    result.AddRange(mActorBlock[gx, gy]);
+                    for (int gx = ((gridX - checkDistance) < 0 ? 0 : (gridX - checkDistance)); gx <= ((gridX + checkDistance) >= numXBlocks ? numXBlocks - 1 : (gridX + checkDistance)); gx++)
+                    {
+                        result.AddRange(mActorBlock[gx, gy]);
+                    }
                 }
             }
 
@@ -280,44 +297,81 @@ namespace FFXIVClassic_Map_Server.Actors
 
         #endregion
 
-        public Actor FindActorInZone(uint id)
+        public Actor FindActorInArea(uint id)
         {
-            if (!mActorList.ContainsKey(id))
-                return null;
-            return mActorList[id];
+            lock (mActorList)
+            {
+                if (!mActorList.ContainsKey(id))
+                    return null;
+                return mActorList[id];
+            }
         }
 
-        public Player FindPCInZone(string name)
+        public Actor FindActorInZoneByUniqueID(string uniqueId)
         {
-            foreach (Actor a in mActorList.Values)
+            lock (mActorList)
             {
-                if (a is Player)
+                foreach (Actor a in mActorList.Values)
                 {
-                    if (((Player)a).customDisplayName.ToLower().Equals(name.ToLower()))
-                        return (Player)a;
+                    if (a is Npc)
+                    {
+                        if (((Npc)a).GetUniqueId().ToLower().Equals(uniqueId))
+                            return a;
+                    }
                 }
             }
             return null;
         }
 
+        public Player FindPCInZone(string name)
+        {
+            lock (mActorList)
+            {
+                foreach (Actor a in mActorList.Values)
+                {
+                    if (a is Player)
+                    {
+                        if (((Player)a).customDisplayName.ToLower().Equals(name.ToLower()))
+                            return (Player)a;
+                    }
+                }
+                return null;
+            }
+        }
+
         public Player FindPCInZone(uint id)
         {
-            if (!mActorList.ContainsKey(id))
-                return null;
-            return (Player)mActorList[id];
+            lock (mActorList)
+            {
+                if (!mActorList.ContainsKey(id))
+                    return null;
+                return (Player)mActorList[id];
+            }
         }
 
         public void Clear()
         {
-            //Clear All
-            mActorList.Clear();
-            for (int y = 0; y < numYBlocks; y++)
+            lock (mActorList)
             {
-                for (int x = 0; x < numXBlocks; x++)
+                //Clear All
+                mActorList.Clear();
+                lock (mActorBlock)
                 {
-                    mActorBlock[x, y].Clear();
+                    for (int y = 0; y < numYBlocks; y++)
+                    {
+                        for (int x = 0; x < numXBlocks; x++)
+                        {
+                            mActorBlock[x, y].Clear();
+                        }
+                    }
                 }
             }
+        }
+
+        public void BroadcastPacketsAroundActor(Actor actor, List<SubPacket> packets)
+        {
+            foreach (SubPacket packet in packets)
+                BroadcastPacketAroundActor(actor, packet);
         }
 
         public void BroadcastPacketAroundActor(Actor actor, SubPacket packet)
@@ -333,7 +387,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     if (isIsolated && packet.header.sourceId != a.actorId)
                         continue;
 
-                    SubPacket clonedPacket = new SubPacket(packet, actor.actorId);
+                    SubPacket clonedPacket = new SubPacket(packet, a.actorId);
                     Player p = (Player)a;                        
                     p.QueuePacket(clonedPacket);
                 }
@@ -347,10 +401,79 @@ namespace FFXIVClassic_Map_Server.Actors
             if (actorClass == null)
                 return;
 
-            Npc npc = new Npc(mActorList.Count + 1, actorClass, location.uniqueId, actorId, location.x, location.y, location.z, location.rot, location.state, location.animId, null);
+            uint zoneId;
+
+            if (this is PrivateArea)
+                zoneId = ((PrivateArea)this).GetParentZone().actorId;
+            else
+                zoneId = actorId;
+
+            Npc npc = new Npc(mActorList.Count + 1, actorClass, location.uniqueId, this, location.x, location.y, location.z, location.rot, location.state, location.animId, null);
+
             npc.LoadEventConditions(actorClass.eventConditions);            
 
             AddActorToZone(npc);                          
+        }
+
+        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0)
+        {
+            ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+
+            if (actorClass == null)
+                return null;
+
+            uint zoneId;
+
+            if (this is PrivateArea)
+                zoneId = ((PrivateArea)this).GetParentZone().actorId;
+            else
+                zoneId = actorId;
+
+            Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
+
+            npc.LoadEventConditions(actorClass.eventConditions);
+
+            AddActorToZone(npc);
+
+            return npc;
+        }
+
+        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, uint regionId, uint layoutId)
+        {
+            ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+
+            if (actorClass == null)
+                return null;
+
+            uint zoneId;
+
+            if (this is PrivateArea)
+                zoneId = ((PrivateArea)this).GetParentZone().actorId;
+            else
+                zoneId = actorId;
+
+            Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, 0, regionId, layoutId);
+
+            npc.LoadEventConditions(actorClass.eventConditions);
+
+            AddActorToZone(npc);
+
+            return npc;
+        }
+
+        public void DespawnActor(string uniqueId)
+        {
+            RemoveActorFromZone(FindActorInZoneByUniqueID(uniqueId));
+        }
+
+        public void DespawnActor(Actor actor)
+        {
+            RemoveActorFromZone(actor);
+        }
+
+        public Director GetWeatherDirector()
+        {
+            return mWeatherDirector;
         }
 
         public void ChangeWeather(ushort weather, ushort transitionTime, Player player, bool zoneWide = false)
@@ -359,19 +482,111 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (player != null && !zoneWide)
             {
-                player.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime), true, false));
+                player.QueuePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime));
             }
             if (zoneWide)
             {
-                foreach (var actor in mActorList)
+                lock (mActorList)
                 {
-                    if (actor.Value is Player)
+                    foreach (var actor in mActorList)
                     {
-                        player = ((Player)actor.Value);
-                        player.QueuePacket(BasePacket.CreatePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime), true, false));
+                        if (actor.Value is Player)
+                        {
+                            player = ((Player)actor.Value);
+                            player.QueuePacket(SetWeatherPacket.BuildPacket(player.actorId, weather, transitionTime));
+                        }
                     }
                 }
             }
+        }                
+
+        public Director CreateDirector(string path, bool hasContentGroup, params object[] args)
+        {
+            lock (directorLock)
+            {
+                Director director = new Director(directorIdCount, this, path, hasContentGroup, args);
+                currentDirectors.Add(director.actorId, director);
+                directorIdCount++;
+                return director;
+            }
         }
+
+        public Director CreateGuildleveDirector(uint glid, byte difficulty, Player owner, params object[] args)
+        {
+            String directorScriptPath = "";
+
+            uint type = Server.GetGuildleveGamedata(glid).plateId;
+
+            if (glid == 10801 || glid == 12401 || glid == 11601)
+                directorScriptPath = "Guildleve/PrivateGLBattleTutorial";
+            else
+            {
+                switch (type)
+                {
+                    case 20021:
+                        directorScriptPath = "Guildleve/PrivateGLBattleSweepNormal";
+                        break;
+                    case 20022:
+                        directorScriptPath = "Guildleve/PrivateGLBattleChaseNormal";
+                        break;
+                    case 20023:
+                        directorScriptPath = "Guildleve/PrivateGLBattleOrbNormal";
+                        break;
+                    case 20024:
+                        directorScriptPath = "Guildleve/PrivateGLBattleHuntNormal";
+                        break;
+                    case 20025:
+                        directorScriptPath = "Guildleve/PrivateGLBattleGatherNormal";
+                        break;
+                    case 20026:
+                        directorScriptPath = "Guildleve/PrivateGLBattleRoundNormal";
+                        break;
+                    case 20027:
+                        directorScriptPath = "Guildleve/PrivateGLBattleSurviveNormal";
+                        break;
+                    case 20028:
+                        directorScriptPath = "Guildleve/PrivateGLBattleDetectNormal";
+                        break;                   
+                }
+            }
+
+            lock (directorLock)
+            {
+                GuildleveDirector director = new GuildleveDirector(directorIdCount, this, directorScriptPath, glid, difficulty, owner, args);
+                currentDirectors.Add(director.actorId, director);
+                directorIdCount++;
+                return director;
+            }
+        }
+
+        public void DeleteDirector(uint id)
+        {
+            lock (directorLock)
+            {
+                if (currentDirectors.ContainsKey(id))
+                {
+                    if (!currentDirectors[id].IsDeleted())
+                        currentDirectors[id].EndDirector();
+                    currentDirectors.Remove(id);
+                }
+            }
+        }
+
+        public Director GetDirectorById(uint id)
+        {
+            if (currentDirectors.ContainsKey(id))
+                return currentDirectors[id];
+            return null;
+        }
+
+        public void Update(double deltaTime)
+        {
+            lock (mActorList)
+            {
+                foreach (Actor a in mActorList.Values)
+                    a.Update(deltaTime);
+            }
+        }
+
     }
 }

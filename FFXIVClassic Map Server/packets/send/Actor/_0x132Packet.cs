@@ -1,15 +1,17 @@
-﻿using System;
+﻿using FFXIVClassic.Common;
+using System;
 using System.IO;
 using System.Text;
 
-namespace FFXIVClassic_Map_Server.packets.send.actor
+using FFXIVClassic.Common;
+namespace  FFXIVClassic_Map_Server.packets.send.actor
 {
     class _0x132Packet
     {
         public const ushort OPCODE = 0x132;
         public const uint PACKET_SIZE = 0x48;
 
-        public static SubPacket BuildPacket(uint playerActorID, ushort number, string function)
+        public static SubPacket BuildPacket(uint sourceActorId, ushort number, string function)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -22,7 +24,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
     }
 }

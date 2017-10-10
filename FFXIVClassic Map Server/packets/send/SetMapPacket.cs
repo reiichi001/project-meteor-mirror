@@ -1,5 +1,7 @@
 ﻿using System.IO;
 
+using FFXIVClassic.Common;
+
 namespace FFXIVClassic_Map_Server.packets.send
 {
     class SetMapPacket
@@ -21,7 +23,7 @@ namespace FFXIVClassic_Map_Server.packets.send
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, playerActorID, data);
         }
     }
 }
