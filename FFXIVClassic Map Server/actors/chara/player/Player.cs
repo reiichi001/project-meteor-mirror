@@ -234,7 +234,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.commandBorder = 0x20;
 
-            charaWork.parameterTemp.tp = 3000;
+            charaWork.parameterTemp.tp = 0;
 
             Database.LoadPlayerCharacter(this);
             lastPlayTimeUpdate = Utils.UnixTimeStampUTC();
@@ -1777,9 +1777,13 @@ namespace FFXIVClassic_Map_Server.Actors
                 propPacketUtil.AddProperty($"charaWork.parameterSave.state_mainSkillLevel");
 
                 packets.AddRange(propPacketUtil.Done());
+
             }
 
             base.PostUpdate(tick, packets);
+            SetActorPropetyPacket hpInfo = new SetActorPropetyPacket("charaWork/exp");
+            hpInfo.AddTarget();
+            QueuePacket(hpInfo.BuildPacket(actorId));
         }
 
         public override void Die(DateTime tick)
@@ -1813,19 +1817,20 @@ namespace FFXIVClassic_Map_Server.Actors
             ActorPropertyPacketUtil compatibiltyUtil = new ActorPropertyPacketUtil("charaWork/commandDetailForSelf", this);
             foreach (ushort slot in slotsToUpdate)
             {
-                propPacketUtil.AddProperty(String.Format("charaWork.command[{0}]", slot));
-                propPacketUtil.AddProperty(String.Format("charaWork.commandCategory[{0}]", slot));
+                propPacketUtil.AddProperty($"charaWork.command[{slot}]");
+                propPacketUtil.AddProperty($"charaWork.commandCategory[{slot}]");
             }
 
+            propPacketUtil.NewTarget("charaWork/commandDetailForSelf");
             //Enable or disable slots based on whether there is an ability in that slot
             foreach (ushort slot in slotsToUpdate)
             {
                 charaWork.parameterSave.commandSlot_compatibility[slot - charaWork.commandBorder] = charaWork.command[slot] != 0;
-                compatibiltyUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_compatibility[{0}]", slot - charaWork.commandBorder));
+                propPacketUtil.AddProperty($"charaWork.parameterSave.commandSlot_compatibility[{slot - charaWork.commandBorder}]");
             }
 
             QueuePackets(propPacketUtil.Done());
-            QueuePackets(compatibiltyUtil.Done());
+            //QueuePackets(compatibiltyUtil.Done());
         }
 
         //Update recast timers for the passed in hotbar slots
@@ -1874,6 +1879,7 @@ namespace FFXIVClassic_Map_Server.Actors
             uint recastEnd = Utils.UnixTimeStampUTC() + maxRecastTime;
             List<ushort> slotsToUpdate = new List<ushort>();
             
+            Database.EquipAbility(this, classId, (ushort) (hotbarSlot - charaWork.commandBorder), commandId, recastEnd);
             //If the class we're equipping for is the current class (need to find out if state_mainSkill is supposed to change when you're a job)
             //then equip the ability in charawork.commands and save in databse, otherwise just save in database
             if (classId == charaWork.parameterSave.state_mainSkill[0])
@@ -1887,7 +1893,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 UpdateHotbar(slotsToUpdate);
             }
 
-            Database.EquipAbility(this, classId, (ushort) (hotbarSlot - charaWork.commandBorder), commandId, recastEnd);
 
             if(printMessage)
                 SendGameMessage(Server.GetWorldManager().GetActor(), 30603, 0x20, 0, commandId);
@@ -2184,6 +2189,8 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 ((BattleNpc)target).hateContainer.UpdateHate(this, action.amount);
             }
+
+            LuaEngine.GetInstance().OnSignal("playerAttack");
         }
 
         public override void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
@@ -2213,7 +2220,6 @@ namespace FFXIVClassic_Map_Server.Actors
             exp += (int) Math.Ceiling((exp * bonusPercent / 100.0f));
             //You earn [exp](+[bonusPercent]%) experience point(s).
             SendGameMessage(this, Server.GetWorldManager().GetActor(), 33934, 0x44, this, 0, 0, 0, 0, 0, 0, 0, 0, 0, exp, "", bonusPercent);
-
             bool leveled = false;
             int diff = MAXEXP[GetLevel() - 1] - charaWork.battleSave.skillPoint[classId - 1];            
             //While there is enough experience to level up, keep leveling up, unlocking skills and removing experience from exp until we don't have enough to level up
@@ -2314,5 +2320,21 @@ namespace FFXIVClassic_Map_Server.Actors
 
             return charaWork.parameterSave.state_mainSkill[0];
         }
+
+        public void hpstuff(uint hp)
+        {
+            SetMaxHP(hp);
+            SetHP(hp);
+            mpMaxBase = (ushort)hp;
+            charaWork.parameterSave.mpMax = (short)hp;
+            charaWork.parameterSave.mp = (short)hp;
+            AddTP(0);
+            //SendCharaExpInfo();
+            //ActorPropertyPacketUtil exp = new ActorPropertyPacketUtil("charaWork/exp", this);
+            SetActorPropetyPacket hpInfo = new SetActorPropetyPacket("charaWork/exp");
+            hpInfo.AddTarget();
+            QueuePacket(hpInfo.BuildPacket(actorId));
+        }
+        
     }
 }

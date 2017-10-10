@@ -1291,7 +1291,9 @@ namespace FFXIVClassic_Map_Server
             {
                 Program.Tick = DateTime.Now;
                 foreach (Zone zone in zoneList.Values)
+                {                    
                     zone.Update(Program.Tick);
+                }
                 Program.LastTick = Program.Tick;
             }            
         }

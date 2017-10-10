@@ -401,6 +401,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     aiContainer.Engage(zone.FindActorInArea<Character>(targid));
                 }
             }
+
             return false;
         }
 
@@ -470,7 +471,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public bool IsAlive()
         {
-            return !aiContainer.IsDead() && GetHP() > 0;
+            return !aiContainer.IsDead();// && GetHP() > 0;
         }
 
         public short GetHP()
@@ -511,7 +512,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public byte GetHPP()
         {
-            return (byte)((charaWork.parameterSave.hp[0] / charaWork.parameterSave.hpMax[0]) * 100);
+            return (byte)(charaWork.parameterSave.hp[0] == 0 ? 0 : (charaWork.parameterSave.hp[0] / charaWork.parameterSave.hpMax[0]) * 100);
         }
 
         public void SetHP(uint hp)
@@ -570,7 +571,11 @@ namespace FFXIVClassic_Map_Server.Actors
         public void AddTP(int tp)
         {
             charaWork.parameterTemp.tp = (short)((charaWork.parameterTemp.tp + tp).Clamp(0, 3000));
+            tpBase = (ushort) charaWork.parameterTemp.tp;
             updateFlags |= ActorUpdateFlags.HpTpMp;
+
+            if (tpBase >= 1000)
+                lua.LuaEngine.GetInstance().OnSignal("tpOver1000");
         }
 
         public void DelHP(int hp)
@@ -638,6 +643,9 @@ namespace FFXIVClassic_Map_Server.Actors
             target.DelHP(action.amount);
             if (target is BattleNpc)
                 ((BattleNpc)target).lastAttacker = this;
+
+            AddTP(115);
+            target.AddTP(100);
         }
 
         public virtual void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)

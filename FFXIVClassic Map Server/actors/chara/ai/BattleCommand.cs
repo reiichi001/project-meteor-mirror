@@ -233,7 +233,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (mpCost != 0)
                 return (ushort)Math.Ceiling((cost * mpCost * 0.001));
 
-            return tpCost;
+            return mpCost != 0 ? (ushort)Math.Ceiling((cost * mpCost * 0.001)) : (ushort)0;
         }
 
         public List<Character> GetTargets()

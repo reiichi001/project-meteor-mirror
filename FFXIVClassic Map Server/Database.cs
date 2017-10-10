@@ -817,27 +817,27 @@ namespace FFXIVClassic_Map_Server
                     {
                         if (reader.Read())
                         {
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_PUG - 1] = reader.GetInt16("pug");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_GLA - 1] = reader.GetInt16("gla");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_MRD - 1] = reader.GetInt16("mrd");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_ARC - 1] = reader.GetInt16("arc");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_LNC - 1] = reader.GetInt16("lnc");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_PUG - 1] = reader.GetInt32("pug");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_GLA - 1] = reader.GetInt32("gla");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_MRD - 1] = reader.GetInt32("mrd");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_ARC - 1] = reader.GetInt32("arc");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_LNC - 1] = reader.GetInt32("lnc");
                             
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_THM - 1] = reader.GetInt16("thm");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_CNJ - 1] = reader.GetInt16("cnj");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_THM - 1] = reader.GetInt32("thm");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_CNJ - 1] = reader.GetInt32("cnj");
                             
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_CRP - 1] = reader.GetInt16("crp");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_BSM - 1] = reader.GetInt16("bsm");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_ARM - 1] = reader.GetInt16("arm");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_GSM - 1] = reader.GetInt16("gsm");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_LTW - 1] = reader.GetInt16("ltw");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_WVR - 1] = reader.GetInt16("wvr");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_ALC - 1] = reader.GetInt16("alc");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_CUL - 1] = reader.GetInt16("cul");
-
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_MIN - 1] = reader.GetInt16("min");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_BTN - 1] = reader.GetInt16("btn");
-                            player.charaWork.battleSave.skillPoint[Player.CLASSID_FSH - 1] = reader.GetInt16("fsh");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_CRP - 1] = reader.GetInt32("crp");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_BSM - 1] = reader.GetInt32("bsm");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_ARM - 1] = reader.GetInt32("arm");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_GSM - 1] = reader.GetInt32("gsm");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_LTW - 1] = reader.GetInt32("ltw");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_WVR - 1] = reader.GetInt32("wvr");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_ALC - 1] = reader.GetInt32("alc");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_CUL - 1] = reader.GetInt32("cul");
+                            
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_MIN - 1] = reader.GetInt32("min");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_BTN - 1] = reader.GetInt32("btn");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_FSH - 1] = reader.GetInt32("fsh");
                         }
                     }
 

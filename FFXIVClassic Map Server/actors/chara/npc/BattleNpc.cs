@@ -298,7 +298,13 @@ namespace FFXIVClassic_Map_Server.Actors
                             // onDeath(monster, player, killer)
                             lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, partyMember, lastAttacker);
                             // <actor> defeat/defeats <target>
-                            ((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
+
+                            if (lastAttacker is Player)
+                                ((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
+
+                            if(partyMember is Player)
+                                ((Player)partyMember).AddExp(1500, (byte)partyMember.GetJob(), 5);
+                            
                         }
                     }
                     else
@@ -311,8 +317,10 @@ namespace FFXIVClassic_Map_Server.Actors
                 positionUpdates?.Clear();
                 aiContainer.InternalDie(tick, despawnTime);
                 this.ResetMoveSpeeds();
-                
+
                 // todo: reset cooldowns
+
+                lua.LuaEngine.GetInstance().OnSignal("mobkill");
             }
             else
             {

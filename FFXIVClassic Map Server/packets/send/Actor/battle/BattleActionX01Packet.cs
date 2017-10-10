@@ -25,6 +25,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
                     binWriter.Write((UInt32)sourceActorId);
+                    
                     binWriter.Write((UInt32)animationId);
 
                     //Missing... last value is float, string in here as well?

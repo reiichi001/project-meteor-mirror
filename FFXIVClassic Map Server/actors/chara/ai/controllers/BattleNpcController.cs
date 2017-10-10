@@ -194,7 +194,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         protected virtual void DoCombatTick(DateTime tick, List<Character> contentGroupCharas = null)
         {
             HandleHate();
-
             // todo: magic/attack/ws cooldowns etc
             if (TryDeaggro())
             {

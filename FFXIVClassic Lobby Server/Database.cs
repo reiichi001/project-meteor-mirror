@@ -219,7 +219,7 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     MySqlCommand cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = String.Format("INSERT INTO characters_parametersave(characterId, hp, hpMax, mp, mpMax, mainSkill, mainSkillLevel) VALUES(@characterId, 1, 1, 1, 1, @mainSkill, 1);", CharacterCreatorUtils.GetClassNameForId((short)charaInfo.currentClass));
+                    cmd.CommandText = String.Format("INSERT INTO characters_parametersave(characterId, hp, hpMax, mp, mpMax, mainSkill, mainSkillLevel) VALUES(@characterId, 1900, 1000, 115, 115, @mainSkill, 1);", CharacterCreatorUtils.GetClassNameForId((short)charaInfo.currentClass));
                     cmd.Prepare();
 
                     cmd.Parameters.AddWithValue("@characterId", cid);

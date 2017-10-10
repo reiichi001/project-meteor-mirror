@@ -489,13 +489,14 @@ namespace FFXIVClassic_Map_Server.Actors
                     zoneId = actorId;
 
                 Npc npc;
-
                 if (isMob)
                     npc = new BattleNpc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
                 else
                     npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
 
                 npc.LoadEventConditions(actorClass.eventConditions);
+                npc.SetMaxHP(300);
+                npc.SetHP(300);
 
                 AddActorToZone(npc);
 

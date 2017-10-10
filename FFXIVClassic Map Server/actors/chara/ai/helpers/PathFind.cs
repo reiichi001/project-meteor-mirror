@@ -44,7 +44,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             var pos = new Vector3(owner.positionX, owner.positionY, owner.positionZ);
             var dest = new Vector3(x, y, z);
-            var zone = (Zone)owner.GetZone();
+
+            Zone zone;
+            if (owner.GetZone() is PrivateArea || owner.GetZone() is PrivateAreaContent)
+                zone = (Zone)((PrivateArea)owner.GetZone()).GetParentZone();
+            else
+                zone = (Zone)owner.GetZone();
+
             var sw = new System.Diagnostics.Stopwatch();
             sw.Start();
 
