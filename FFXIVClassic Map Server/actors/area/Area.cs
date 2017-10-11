@@ -472,7 +472,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0, bool isMob = true)
+        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0, bool isMob = false)
         {
             lock (mActorList)
             {

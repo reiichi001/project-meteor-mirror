@@ -45,6 +45,19 @@ namespace FFXIVClassic_Map_Server.Actors
         public const int CLASSID_THM = 22;
         public const int CLASSID_CNJ = 23;
 
+        public const int CLASSID_CRP = 29;
+        public const int CLASSID_BSM = 30;
+        public const int CLASSID_ARM = 31;
+        public const int CLASSID_GSM = 32;
+        public const int CLASSID_LTW = 33;
+        public const int CLASSID_WVR = 34;
+        public const int CLASSID_ALC = 35;
+        public const int CLASSID_CUL = 36;
+
+        public const int CLASSID_MIN = 39;
+        public const int CLASSID_BTN = 40;
+        public const int CLASSID_FSH = 41;
+
         public const int SIZE = 0;
         public const int COLORINFO = 1;
         public const int FACEINFO = 2;
@@ -347,7 +360,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public virtual bool IsValidTarget(Character target, ValidTarget validTarget)
         {
-            return true;
+            return !target.isStatic;
         }
 
         public virtual bool CanAttack()
@@ -752,6 +765,26 @@ namespace FFXIVClassic_Map_Server.Actors
         public bool IsAlly()
         {
             return this is Ally;
+        }
+
+        public bool IsDiscipleOfWar()
+        {
+            return currentJob < CLASSID_THM;
+        }
+
+        public bool IsDiscipleOfMagic()
+        {
+            return currentJob >= CLASSID_THM && currentJob < CLASSID_CRP;
+        }
+
+        public bool IsDiscipleOfHand()
+        {
+            return currentJob >= CLASSID_CRP && currentJob < CLASSID_MIN;
+        }
+
+        public bool IsDiscipleOfLand()
+        {
+            return currentJob >= CLASSID_MIN;
         }
         #endregion lua helpers
         #endregion ai stuff

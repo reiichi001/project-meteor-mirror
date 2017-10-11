@@ -127,7 +127,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             // todo:
         }
 
-        protected virtual void DoRoamTick(DateTime tick)
+        protected virtual void DoRoamTick(DateTime tick, List<Character> contentGroupCharas = null)
         {
             if (owner.hateContainer.GetHateList().Count > 0)
             {
@@ -159,6 +159,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                     owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
                     owner.aiContainer.pathFind.PathInRange(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 50.0f);
                 }
+                lua.LuaEngine.CallLuaBattleFunction(owner, "onRoam", owner, contentGroupCharas);
             }
 
 

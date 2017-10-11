@@ -31,19 +31,6 @@ namespace FFXIVClassic_Map_Server.Actors
 {
     class Player : Character
     {
-        public const int CLASSID_CRP = 29;
-        public const int CLASSID_BSM = 30;
-        public const int CLASSID_ARM = 31;
-        public const int CLASSID_GSM = 32;
-        public const int CLASSID_LTW = 33;
-        public const int CLASSID_WVR = 34;
-        public const int CLASSID_ALC = 35;
-        public const int CLASSID_CUL = 36;
-
-        public const int CLASSID_MIN = 39;
-        public const int CLASSID_BTN = 40;
-        public const int CLASSID_FSH = 41;
-
         public const int MAXSIZE_INVENTORY_NORMAL = 200;
         public const int MAXSIZE_INVENTORY_CURRANCY = 320;
         public const int MAXSIZE_INVENTORY_KEYITEMS = 500;

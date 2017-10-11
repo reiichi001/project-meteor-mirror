@@ -168,15 +168,14 @@ namespace FFXIVClassic_Map_Server.actors.area
         public override void Update(DateTime tick)
         {
             base.Update(tick);
+
             foreach (var a in privateAreas.Values)
                 foreach(var b in a.Values)
                     b.Update(tick);
 
             foreach (var a in contentAreas.Values)
                 foreach (var b in a)
-                {
                     b.Update(tick);
-                }
 
             // todo: again, this is retarded but debug stuff
             var diffTime = tick - lastUpdate;

@@ -593,8 +593,15 @@ namespace FFXIVClassic_Map_Server
 
                             // todo: add to private areas, set up immunity, mob linking,
                             // - load skill/spell/drop lists, set detection icon, load pool/family/group mods
+                            var allegiance = (CharacterTargetingAllegiance)reader.GetByte("allegiance");
+                            BattleNpc battleNpc = null;
 
-                            var battleNpc = new BattleNpc(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
+                            if (allegiance == CharacterTargetingAllegiance.Player)
+                                battleNpc = new Ally(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
+                                reader.GetString("scriptName"), area, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
+                                reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
+                            else
+                                battleNpc = new BattleNpc(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
                                 reader.GetString("scriptName"), area, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
                                 reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
                             

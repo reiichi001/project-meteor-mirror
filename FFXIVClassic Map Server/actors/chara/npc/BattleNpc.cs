@@ -365,7 +365,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     this.isMovingToSpawn = false;
                 }
-                lua.LuaEngine.CallLuaBattleFunction(this, "onRoam", this);
             }
         }
 
