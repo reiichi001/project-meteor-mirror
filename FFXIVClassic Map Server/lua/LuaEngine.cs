@@ -259,7 +259,7 @@ namespace FFXIVClassic_Map_Server.lua
             return -1;
         }
 
-        private static string GetScriptPath(Actor target)
+        public static string GetScriptPath(Actor target)
         {
             if (target is Player)
             {

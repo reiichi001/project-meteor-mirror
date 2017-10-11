@@ -136,7 +136,6 @@ namespace FFXIVClassic_Map_Server.Actors
             this.statusEffects = new StatusEffectContainer(this);
 
             // todo: move this somewhere more appropriate
-            ResetMoveSpeeds();
             // todo: base this on equip and shit
             SetMod((uint)Modifier.AttackRange, 3);
             SetMod((uint)Modifier.AttackDelay, (Program.Random.Next(30, 60) * 100));
@@ -277,22 +276,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void FollowTarget(Actor target, float stepSize = 1.2f, int maxPath = 25, float radius = 0.0f)
         {
-            var player = target as Player;
-
-            if (player != null)
-            {
-                if (this.target != player)
-                {
-                    this.target = target;
-                }
-                // todo: move this to own function thing
-                this.oldMoveState = this.moveState;
-                this.moveState = 2;
-                updateFlags |= ActorUpdateFlags.Position | ActorUpdateFlags.Speed;
-                //this.moveSpeeds = player.moveSpeeds;
-
-                PathTo(player.positionX, player.positionY, player.positionZ, stepSize, maxPath, radius);
-            }
+            if (target != null)
+                PathTo(target.positionX, target.positionY, target.positionZ, stepSize, maxPath, radius);
         }
 
         public Int64 GetMod(uint modifier)
@@ -654,8 +639,10 @@ namespace FFXIVClassic_Map_Server.Actors
             // todo: call onAttack/onDamageTaken
             target.DelHP(action.amount);
             if (target is BattleNpc)
+            {
                 ((BattleNpc)target).lastAttacker = this;
-
+                ((BattleNpc)target).hateContainer.UpdateHate(this, action.amount);
+            }
             AddTP(115);
             target.AddTP(100);
         }
@@ -754,7 +741,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public bool IsMonster()
         {
-            return this is BattleNpc && !IsAlly();
+            return this is BattleNpc;
         }
 
         public bool IsPet()

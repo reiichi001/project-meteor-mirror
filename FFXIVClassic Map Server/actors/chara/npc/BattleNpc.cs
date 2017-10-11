@@ -90,12 +90,7 @@ namespace FFXIVClassic_Map_Server.Actors
             spawnY = posY;
             spawnZ = posZ;
 
-            // todo: read these from db also
-            detectionType = DetectionType.Sight;
-            this.moveState = 2;
-            ResetMoveSpeeds();
             despawnTime = 10;
-            respawnTime = 30;
             CalculateBaseStats();
         }
 
@@ -245,19 +240,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (respawnTime > 0)
             {
-                base.Spawn(tick);
-
-                this.isMovingToSpawn = false;
-                this.ResetMoveSpeeds();
-                this.hateContainer.ClearHate();
-                zone.BroadcastPacketsAroundActor(this, GetSpawnPackets(null, 0x01));
-                zone.BroadcastPacketsAroundActor(this, GetInitPackets());
-                charaWork.parameterSave.hp = charaWork.parameterSave.hpMax;
-                charaWork.parameterSave.mp = charaWork.parameterSave.mpMax;
-                RecalculateStats();
-
-                OnSpawn();
-                updateFlags |= ActorUpdateFlags.AllNpc;
+                ForceRespawn();
             }
         }
 
@@ -266,7 +249,6 @@ namespace FFXIVClassic_Map_Server.Actors
             base.Spawn(Program.Tick);
 
             this.isMovingToSpawn = false;
-            this.ResetMoveSpeeds();
             this.hateContainer.ClearHate();
             zone.BroadcastPacketsAroundActor(this, GetSpawnPackets(null, 0x01));
             zone.BroadcastPacketsAroundActor(this, GetInitPackets());
@@ -316,8 +298,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
                 positionUpdates?.Clear();
                 aiContainer.InternalDie(tick, despawnTime);
-                this.ResetMoveSpeeds();
-
                 // todo: reset cooldowns
 
                 lua.LuaEngine.GetInstance().OnSignal("mobkill");

@@ -2188,6 +2188,7 @@ namespace FFXIVClassic_Map_Server.Actors
             // todo: should just make a thing that updates the one slot cause this is dumb as hell
             
             UpdateHotbarTimer(spell.id, spell.recastTimeSeconds);
+            LuaEngine.GetInstance().OnSignal("spellUse");
         }
 
         public override void OnWeaponSkill(State state, BattleAction[] actions, ref BattleAction[] errors)
@@ -2199,8 +2200,16 @@ namespace FFXIVClassic_Map_Server.Actors
             UpdateHotbarTimer(skill.id, skill.recastTimeSeconds);
             // todo: this really shouldnt be called on each ws?
             lua.LuaEngine.CallLuaBattleFunction(this, "onWeaponSkill", this, state.GetTarget(), skill);
+            LuaEngine.GetInstance().OnSignal("weaponskillUse");
         }
-        
+
+        public override void OnAbility(State state, BattleAction[] actions, ref BattleAction[] errors)
+        {
+            base.OnAbility(state, actions, ref errors);
+
+            LuaEngine.GetInstance().OnSignal("abilityUse");
+        }
+
         //Handles exp being added, does not handle figuring out exp bonus from buffs or skill/link chains or any of that
         public void AddExp(int exp, byte classId, int bonusPercent = 0)
         {            

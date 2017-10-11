@@ -36,21 +36,22 @@ end
 
 function allyGlobal.HelpPlayers(ally, contentGroupCharas, pickRandomTarget)
     if contentGroupCharas then
-        for _, chara in pairs(contentGroupCharas) do
+        print("assssss")
             if chara then
                 -- probably a player, or another ally
                 -- todo: queue support actions, heal, try pull hate off player etc
-                if chara.IsPlayer() then
+                if chara:IsPlayer() then
                     -- do stuff
-                    if not ally.IsEngaged() then
-                        if chara.IsEngaged() then
+                    if not ally:IsEngaged() then
+                        if chara:IsEngaged() then
+                            print("ass")
                             allyGlobal.EngageTarget(ally, chara.target, nil)
+                            return true
                         end
                     end
-                elseif chara.IsMonster() and chara.IsEngaged() then
-                    if not ally.IsEngaged() then
-                        allyGlobal.EngageTarget(ally, chara.target, nil)
-                    end
+                elseif chara:IsMonster() and chara:IsEngaged() then
+                    allyGlobal.EngageTarget(ally, chara, nil)
+                    return true
                 end
             end
         end
@@ -67,14 +68,15 @@ end
 
 function allyGlobal.EngageTarget(ally, target, contentGroupCharas)
     if contentGroupCharas then
-        for _, chara in pairs(contentGroupCharas) do
+        for chara in contentGroupCharas do
             if chara.IsMonster() then
                 if chara.allegiance ~= ally.allegiance then
-                    ally.Engage(chara)
+                    ally:Engage(chara)
                 end
             end
         end
     elseif target then
-        ally.Engage(target)
+        ally:Engage(target)
+        ally.hateContainer:AddBaseHate(target);
     end
 end
