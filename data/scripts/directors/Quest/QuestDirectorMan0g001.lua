@@ -13,10 +13,10 @@ end
 function onCreateContentArea(players, director, contentArea, contentGroup)
 
     local worldManager = GetWorldManager();
-    
-    yda = GetWorldManager().SpawnBattleNpcById(6, contentArea);
-    papalymo = GetWorldManager().SpawnBattleNpcById(7, contentArea);
-    
+    --[[
+    --yda = GetWorldManager().SpawnBattleNpcById(6, contentArea);
+    --papalymo = GetWorldManager().SpawnBattleNpcById(7, contentArea);
+    --yda:ChangeState(2);
     mob1 = GetWorldManager().SpawnBattleNpcById(3, contentArea);
     mob2 = GetWorldManager().SpawnBattleNpcById(4, contentArea);
     mob3 = GetWorldManager().SpawnBattleNpcById(5, contentArea);
@@ -47,7 +47,6 @@ function onCreateContentArea(players, director, contentArea, contentGroup)
         print("shittttt2");
         director:AddMember(player)
         print("shittttt1");
-        --GetWorldManager():DoZoneChangeContent(player, contentArea, 362.4087, 4, -703.8168, 1.5419, 16);
     end;
     print("shit")
     director:AddMember(director);
@@ -58,7 +57,7 @@ function onCreateContentArea(players, director, contentArea, contentGroup)
     print("shit6")
     director:AddMember(mob3);
     print("dicks")
-
+]]
 	director:StartContentGroup();
 end
 

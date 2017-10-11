@@ -603,7 +603,6 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (GetMod((uint)Modifier.Hp) != 0)
             {
-                
             }
             // todo: recalculate stats and crap
             updateFlags |= ActorUpdateFlags.HpTpMp;

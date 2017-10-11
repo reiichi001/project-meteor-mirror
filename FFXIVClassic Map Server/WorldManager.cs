@@ -640,7 +640,8 @@ namespace FFXIVClassic_Map_Server
                             battleNpc.dropListId = reader.GetUInt32("dropListId");
                             battleNpc.spellListId = reader.GetUInt32("spellListId");
                             battleNpc.skillListId = reader.GetUInt32("skillListId");
-
+                            battleNpc.SetMaxHP(1000);
+                            battleNpc.SetHP(1000);
                             battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
                             battleNpc.CalculateBaseStats();
                             battleNpc.RecalculateStats();

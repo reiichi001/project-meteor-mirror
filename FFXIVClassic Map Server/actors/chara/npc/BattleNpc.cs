@@ -82,7 +82,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             //charaWork.property[2] = 1;
             //npcWork.hateType = 1;
-
+            
             this.hateContainer = new HateContainer(this);
             this.allegiance = CharacterTargetingAllegiance.BattleNpcs;
 
