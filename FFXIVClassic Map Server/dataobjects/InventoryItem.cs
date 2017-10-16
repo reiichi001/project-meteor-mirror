@@ -5,11 +5,17 @@ namespace FFXIVClassic_Map_Server.dataobjects
 {
     class InventoryItem
     {
+        public const byte DEALINGMODE_NONE = 0;
+        public const byte DEALINGMODE_ATTACHED = 1;
+        public const byte DEALINGMODE_PRICE = 2;
+
         public ulong uniqueId;
         public uint itemId;
         public int quantity = 1;
         public ushort slot;
 
+        public byte dealingVal       = 0;
+        public byte dealingMode      = DEALINGMODE_NONE;
         public uint dealingAttached1 = 0;
         public uint dealingAttached2 = 0;
         public uint dealingAttached3 = 0;
@@ -154,8 +160,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
                     binWriter.Write((UInt32)itemId);
                     binWriter.Write((UInt16)slot);
 
-                    binWriter.Write((Byte)0x01);
-                    binWriter.Write((Byte)0x00);
+                    binWriter.Write((Byte)dealingVal);
+                    binWriter.Write((Byte)dealingMode);
 
                     binWriter.Write((UInt32)dealingAttached1);
                     binWriter.Write((UInt32)dealingAttached2);

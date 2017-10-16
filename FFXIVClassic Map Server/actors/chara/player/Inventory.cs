@@ -154,7 +154,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             //New item that spilled over
             while (quantityCount > 0)
             {
-                InventoryItem addedItem = Database.CreateItem(itemId, Math.Min(quantityCount, gItem.maxStack), quality, gItem.isExclusive ? (byte)0x3 : (byte)0x0, gItem.durability);
+                byte[] tags = new byte[4];
+                byte[] values = new byte[4];
+
+                if (gItem.isExclusive)
+                    tags[1] = 3;
+
+                InventoryItem.ItemModifier modifiers = null;
+                if (gItem.durability != 0)
+                {
+                    modifiers = new InventoryItem.ItemModifier();
+                    modifiers.durability = (uint)gItem.durability;
+                }
+                
+                InventoryItem addedItem = Database.CreateItem(itemId, Math.Min(quantityCount, gItem.maxStack), tags, values, quality, modifiers);
                 addedItem.slot = (ushort)endOfListIndex;
                 isDirty[endOfListIndex] = true;
                 list[endOfListIndex++] = addedItem;                

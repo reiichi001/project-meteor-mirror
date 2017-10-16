@@ -1225,7 +1225,7 @@ namespace FFXIVClassic_Map_Server
                                     SELECT
                                     serverItemId,
                                     itemId,
-                                    modifierId,
+                                    server_items_modifiers.id AS modifierId,
                                     quantity,
                                     quality,
 
@@ -1246,7 +1246,7 @@ namespace FFXIVClassic_Map_Server
 
                                     FROM characters_inventory
                                     INNER JOIN server_items ON serverItemId = server_items.id
-                                    LEFT JOIN server_items_modifiers ON server_items.modifierId = server_items_modifiers.id
+                                    LEFT JOIN server_items_modifiers ON server_items.id = server_items_modifiers.id
                                     WHERE characterId = @charId AND inventoryType = @type";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -1304,7 +1304,7 @@ namespace FFXIVClassic_Map_Server
                                     SELECT
                                     serverItemId,
                                     itemId,
-                                    modifierId,
+                                    server_items_modifiers.id AS modifierId,
                                     quantity,
                                     quality,
 
@@ -1325,7 +1325,7 @@ namespace FFXIVClassic_Map_Server
 
                                     FROM retainers_inventory
                                     INNER JOIN server_items ON serverItemId = server_items.id
-                                    LEFT JOIN server_items_modifiers ON server_items.modifierId = server_items_modifiers.id
+                                    LEFT JOIN server_items_modifiers ON server_items.id = server_items_modifiers.id
                                     WHERE characterId = @charId AND inventoryType = @type";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -1370,7 +1370,7 @@ namespace FFXIVClassic_Map_Server
             return items;
         }
 
-        public static InventoryItem CreateItem(uint itemId, int quantity, byte quality, byte itemType, int durability)
+        public static InventoryItem CreateItem(uint itemId, int quantity, byte[] tags, byte[] values, byte quality, InventoryItem.ItemModifier modifiers)
         {
             InventoryItem insertedItem = null;
 
@@ -1384,21 +1384,32 @@ namespace FFXIVClassic_Map_Server
 
                     string query = @"
                                     INSERT INTO server_items                                    
-                                    (itemId, quality, itemType, durability)
+                                    (itemId, quality)
                                     VALUES
-                                    (@itemId, @quality, @itemType, @durability); 
+                                    (@itemId, @quality);                                    
+                                    ";
+
+                    string query2 = @"
+                                    INSERT INTO server_items_modifiers                                    
+                                    (id, durability)
+                                    VALUES
+                                    (@id, @durability); 
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-
                     cmd.Parameters.AddWithValue("@itemId", itemId);
                     cmd.Parameters.AddWithValue("@quality", quality);
-                    cmd.Parameters.AddWithValue("@itemType", itemType);
-                    cmd.Parameters.AddWithValue("@durability", durability);
-
                     cmd.ExecuteNonQuery();
 
-                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, new byte[4], new byte[4], quality, new InventoryItem.ItemModifier());
+                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, tags, values, quality, modifiers);
+
+                    if (modifiers != null)
+                    {
+                        MySqlCommand cmd2 = new MySqlCommand(query2, conn);
+                        cmd2.Parameters.AddWithValue("@id", insertedItem.uniqueId);
+                        cmd2.Parameters.AddWithValue("@durability", modifiers.durability);
+                        cmd2.ExecuteNonQuery();
+                    }
                 }
                 catch (MySqlException e)
                 {
