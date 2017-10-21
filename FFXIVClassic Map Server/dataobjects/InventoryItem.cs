@@ -6,8 +6,17 @@ namespace FFXIVClassic_Map_Server.dataobjects
     class InventoryItem
     {
         public const byte DEALINGMODE_NONE = 0;
-        public const byte DEALINGMODE_ATTACHED = 1;
-        public const byte DEALINGMODE_PRICE = 2;
+        public const byte DEALINGMODE_REFERENCED = 1;
+        public const byte DEALINGMODE_PRICED = 2;
+
+        public const byte TAG_EXCLUSIVE = 0x3;
+        public const byte TAG_DEALING = 0xC9;
+        public const byte TAG_ATTACHED = 0xCA;
+
+        public const byte TYPE_SINGLE = 12;
+        public const byte TYPE_STACK = 13;
+        public const byte TYPE_SEEK_ITEM = 20;
+        public const byte TYPE_SEEK_REPAIR = 30;
 
         public ulong uniqueId;
         public uint itemId;
@@ -29,17 +38,17 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public class ItemModifier
         {
-            public uint durability;
+            public uint durability = 0;
             public ushort use = 0;
             public uint materiaId = 0;
             public uint materiaLife = 0;
-            public byte mainQuality;
+            public byte mainQuality = 0;
             public byte[] subQuality = new byte[3];
-            public uint polish;
-            public uint param1;
-            public uint param2;
-            public uint param3;
-            public ushort spiritbind;
+            public uint polish = 0;
+            public uint param1 = 0;
+            public uint param2 = 0;
+            public uint param3 = 0;
+            public ushort spiritbind = 0;
             public byte[] materiaType = new byte[5];
             public byte[] materiaGrade = new byte[5];
 
@@ -184,6 +193,43 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
             return data;        
         }
+
+        public void SetExclusive(bool isExclusive)
+        {
+            tags[0] = isExclusive ? TAG_EXCLUSIVE : (byte)0;
+        }
+
+        public void SetHasAttached(bool isAttached)
+        {
+            tags[0] = isAttached ? TAG_ATTACHED : (byte)0;
+        }
+
+        public void SetDealing(byte mode, uint price)
+        {
+            if (tags[0] == TAG_EXCLUSIVE)
+                return;
+                      
+            tags[0] = TAG_DEALING;
+            tagValues[0] = mode;      
+            
+            if (dealingMode != DEALINGMODE_REFERENCED)
+            {
+                dealingVal = 1;
+                dealingMode = DEALINGMODE_PRICED;
+                dealingAttached1 = 1;
+                dealingAttached2 = itemId;
+                dealingAttached3 = price; 
+            }
+        }
+
+        public void SetAttachedToSlot(ushort package, ushort slot)
+        {
+            dealingVal = 1;
+            dealingMode = DEALINGMODE_REFERENCED;
+            dealingAttached1 = (uint)((ushort)package << 16) | slot;
+            dealingAttached2 = 0;
+            dealingAttached3 = 0;
+        }        
 
     }
 }
