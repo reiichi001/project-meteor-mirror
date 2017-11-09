@@ -18,6 +18,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.npc
         {
             aiContainer = new AIContainer(this, new AllyController(this), new PathFind(this), new TargetFind(this));
             this.allegiance = CharacterTargetingAllegiance.Player;
+            this.isAutoAttackEnabled = true;
+            this.isMovingToSpawn = false;
         }
     }
 }

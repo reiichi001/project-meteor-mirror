@@ -224,7 +224,7 @@ namespace FFXIVClassic_Map_Server.lua
                     Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction [{functionName}] {e.Message}");
                 }
                 DynValue res = new DynValue();
-
+                
                 if (!script.Globals.Get(functionName).IsNil())
                 {
                     res = script.Call(script.Globals.Get(functionName), args);
@@ -234,12 +234,32 @@ namespace FFXIVClassic_Map_Server.lua
             }
             else
             {
-                Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction [{command.name}] Unable to find script {path}");
+                path = $"./scripts/commands/{folder}/default.lua";
+                //Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction [{command.name}] Unable to find script {path}");
+                var script = LoadGlobals();
+
+                try
+                {
+                    script.DoFile(path);
+                }
+                catch (Exception e)
+                {
+                    Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction [{functionName}] {e.Message}");
+                }
+                DynValue res = new DynValue();
+                DynValue r = script.Globals.Get(functionName);
+
+                if (!script.Globals.Get(functionName).IsNil())
+                {
+                    res = script.Call(script.Globals.Get(functionName), args);
+                    if (res != null)
+                        return (int)res.Number;
+                }
             }
             return -1;
         }
 
-        private static string GetScriptPath(Actor target)
+        public static string GetScriptPath(Actor target)
         {
             if (target is Player)
             {
@@ -461,6 +481,7 @@ namespace FFXIVClassic_Map_Server.lua
                     Coroutine coroutine = script.CreateCoroutine(script.Globals[funcName]).Coroutine;
                     DynValue value = coroutine.Resume(args2);
                     ResolveResume(player, coroutine, value);
+                    
                 }
                 else
                 {

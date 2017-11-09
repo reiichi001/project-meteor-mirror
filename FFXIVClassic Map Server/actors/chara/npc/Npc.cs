@@ -80,7 +80,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.parameterSave.hpMax[0] = 80;
             }
             for (int i = 0; i < 32; i++ )
-                charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);            
+                charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);
 
             npcWork.pushCommand = actorClass.pushCommand;
             npcWork.pushCommandSub = actorClass.pushCommandSub;

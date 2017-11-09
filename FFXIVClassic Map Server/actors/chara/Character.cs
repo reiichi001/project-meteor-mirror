@@ -45,6 +45,19 @@ namespace FFXIVClassic_Map_Server.Actors
         public const int CLASSID_THM = 22;
         public const int CLASSID_CNJ = 23;
 
+        public const int CLASSID_CRP = 29;
+        public const int CLASSID_BSM = 30;
+        public const int CLASSID_ARM = 31;
+        public const int CLASSID_GSM = 32;
+        public const int CLASSID_LTW = 33;
+        public const int CLASSID_WVR = 34;
+        public const int CLASSID_ALC = 35;
+        public const int CLASSID_CUL = 36;
+
+        public const int CLASSID_MIN = 39;
+        public const int CLASSID_BTN = 40;
+        public const int CLASSID_FSH = 41;
+
         public const int SIZE = 0;
         public const int COLORINFO = 1;
         public const int FACEINFO = 2;
@@ -123,7 +136,6 @@ namespace FFXIVClassic_Map_Server.Actors
             this.statusEffects = new StatusEffectContainer(this);
 
             // todo: move this somewhere more appropriate
-            ResetMoveSpeeds();
             // todo: base this on equip and shit
             SetMod((uint)Modifier.AttackRange, 3);
             SetMod((uint)Modifier.AttackDelay, (Program.Random.Next(30, 60) * 100));
@@ -264,22 +276,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void FollowTarget(Actor target, float stepSize = 1.2f, int maxPath = 25, float radius = 0.0f)
         {
-            var player = target as Player;
-
-            if (player != null)
-            {
-                if (this.target != player)
-                {
-                    this.target = target;
-                }
-                // todo: move this to own function thing
-                this.oldMoveState = this.moveState;
-                this.moveState = 2;
-                updateFlags |= ActorUpdateFlags.Position | ActorUpdateFlags.Speed;
-                //this.moveSpeeds = player.moveSpeeds;
-
-                PathTo(player.positionX, player.positionY, player.positionZ, stepSize, maxPath, radius);
-            }
+            if (target != null)
+                PathTo(target.positionX, target.positionY, target.positionZ, stepSize, maxPath, radius);
         }
 
         public Int64 GetMod(uint modifier)
@@ -347,7 +345,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public virtual bool IsValidTarget(Character target, ValidTarget validTarget)
         {
-            return true;
+            return !target.isStatic;
         }
 
         public virtual bool CanAttack()
@@ -401,6 +399,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     aiContainer.Engage(zone.FindActorInArea<Character>(targid));
                 }
             }
+
             return false;
         }
 
@@ -470,7 +469,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public bool IsAlive()
         {
-            return !aiContainer.IsDead() && GetHP() > 0;
+            return !aiContainer.IsDead();// && GetHP() > 0;
         }
 
         public short GetHP()
@@ -511,7 +510,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public byte GetHPP()
         {
-            return (byte)((charaWork.parameterSave.hp[0] / charaWork.parameterSave.hpMax[0]) * 100);
+            return (byte)(charaWork.parameterSave.hp[0] == 0 ? 0 : (charaWork.parameterSave.hp[0] / charaWork.parameterSave.hpMax[0]) * 100);
         }
 
         public void SetHP(uint hp)
@@ -570,7 +569,11 @@ namespace FFXIVClassic_Map_Server.Actors
         public void AddTP(int tp)
         {
             charaWork.parameterTemp.tp = (short)((charaWork.parameterTemp.tp + tp).Clamp(0, 3000));
+            tpBase = (ushort) charaWork.parameterTemp.tp;
             updateFlags |= ActorUpdateFlags.HpTpMp;
+
+            if (tpBase >= 1000)
+                lua.LuaEngine.GetInstance().OnSignal("tpOver1000");
         }
 
         public void DelHP(int hp)
@@ -598,7 +601,6 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (GetMod((uint)Modifier.Hp) != 0)
             {
-                
             }
             // todo: recalculate stats and crap
             updateFlags |= ActorUpdateFlags.HpTpMp;
@@ -637,7 +639,12 @@ namespace FFXIVClassic_Map_Server.Actors
             // todo: call onAttack/onDamageTaken
             target.DelHP(action.amount);
             if (target is BattleNpc)
+            {
                 ((BattleNpc)target).lastAttacker = this;
+                ((BattleNpc)target).hateContainer.UpdateHate(this, action.amount);
+            }
+            AddTP(115);
+            target.AddTP(100);
         }
 
         public virtual void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
@@ -734,7 +741,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public bool IsMonster()
         {
-            return this is BattleNpc && !IsAlly();
+            return this is BattleNpc;
         }
 
         public bool IsPet()
@@ -745,6 +752,26 @@ namespace FFXIVClassic_Map_Server.Actors
         public bool IsAlly()
         {
             return this is Ally;
+        }
+
+        public bool IsDiscipleOfWar()
+        {
+            return currentJob < CLASSID_THM;
+        }
+
+        public bool IsDiscipleOfMagic()
+        {
+            return currentJob >= CLASSID_THM && currentJob < CLASSID_CRP;
+        }
+
+        public bool IsDiscipleOfHand()
+        {
+            return currentJob >= CLASSID_CRP && currentJob < CLASSID_MIN;
+        }
+
+        public bool IsDiscipleOfLand()
+        {
+            return currentJob >= CLASSID_MIN;
         }
         #endregion lua helpers
         #endregion ai stuff

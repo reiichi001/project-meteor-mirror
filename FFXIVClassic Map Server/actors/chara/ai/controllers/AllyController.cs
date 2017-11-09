@@ -34,5 +34,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             }
             base.DoCombatTick(tick, contentGroupCharas);
         }
+        protected override void DoRoamTick(DateTime tick, List<Character> contentGroupCharas = null)
+        {
+            if (owner.currentContentGroup != null)
+            {
+                contentGroupCharas = new List<Character>(owner.currentContentGroup.GetMemberCount());
+                foreach (var charaId in owner.currentContentGroup.GetMembers())
+                {
+                    var chara = owner.zone.FindActorInArea<Character>(charaId);
+
+                    if (chara != null)
+                        contentGroupCharas.Add(chara);
+                }
+            }
+            base.DoRoamTick(tick, contentGroupCharas);
+        }
     }
 }

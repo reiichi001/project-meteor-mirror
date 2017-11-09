@@ -40,6 +40,7 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<ulong, Party> currentPlayerParties = new Dictionary<ulong, Party>(); //GroupId, Party object
         private Dictionary<uint, StatusEffect> statusEffectList = new Dictionary<uint, StatusEffect>();
         private Dictionary<ushort, BattleCommand> battleCommandList = new Dictionary<ushort, BattleCommand>();
+        private Dictionary<Tuple<byte, short>, List<uint>> battleCommandIdByLevel = new Dictionary<Tuple<byte, short>, List<uint>>();//Holds battle command ids keyed by class id and level (in that order)
         private Dictionary<uint, ModifierList> battleNpcGenusMods = new Dictionary<uint, ModifierList>();
         private Dictionary<uint, ModifierList> battleNpcPoolMods = new Dictionary<uint, ModifierList>();
         private Dictionary<uint, ModifierList> battleNpcSpawnMods = new Dictionary<uint, ModifierList>();
@@ -592,8 +593,15 @@ namespace FFXIVClassic_Map_Server
 
                             // todo: add to private areas, set up immunity, mob linking,
                             // - load skill/spell/drop lists, set detection icon, load pool/family/group mods
+                            var allegiance = (CharacterTargetingAllegiance)reader.GetByte("allegiance");
+                            BattleNpc battleNpc = null;
 
-                            var battleNpc = new BattleNpc(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
+                            if (allegiance == CharacterTargetingAllegiance.Player)
+                                battleNpc = new Ally(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
+                                reader.GetString("scriptName"), area, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
+                                reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
+                            else
+                                battleNpc = new BattleNpc(actorId, Server.GetWorldManager().GetActorClass(reader.GetUInt32("actorClassId")),
                                 reader.GetString("scriptName"), area, reader.GetFloat("positionX"), reader.GetFloat("positionY"), reader.GetFloat("positionZ"), reader.GetFloat("rotation"),
                                 reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
                             
@@ -639,7 +647,8 @@ namespace FFXIVClassic_Map_Server
                             battleNpc.dropListId = reader.GetUInt32("dropListId");
                             battleNpc.spellListId = reader.GetUInt32("spellListId");
                             battleNpc.skillListId = reader.GetUInt32("skillListId");
-
+                            battleNpc.SetMaxHP(1000);
+                            battleNpc.SetHP(1000);
                             battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
                             battleNpc.CalculateBaseStats();
                             battleNpc.RecalculateStats();
@@ -1290,7 +1299,9 @@ namespace FFXIVClassic_Map_Server
             {
                 Program.Tick = DateTime.Now;
                 foreach (Zone zone in zoneList.Values)
+                {                    
                     zone.Update(Program.Tick);
+                }
                 Program.LastTick = Program.Tick;
             }            
         }
@@ -1424,13 +1435,19 @@ namespace FFXIVClassic_Map_Server
 
         public void LoadBattleCommands()
         {
-            battleCommandList = Database.LoadGlobalBattleCommandList();
+            Database.LoadGlobalBattleCommandList(battleCommandList, battleCommandIdByLevel);
         }
 
         public BattleCommand GetBattleCommand(uint id)
         {
             BattleCommand battleCommand;
             return battleCommandList.TryGetValue((ushort)id, out battleCommand) ? battleCommand.Clone() : null;
+        }
+
+        public List<uint> GetBattleCommandIdByLevel(byte classId, short level)
+        {
+            List<uint> ids;
+            return battleCommandIdByLevel.TryGetValue(Tuple.Create(classId, level), out ids) ? ids : new List<uint>();
         }
     }
 }

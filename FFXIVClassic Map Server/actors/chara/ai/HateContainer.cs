@@ -39,15 +39,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             if (!HasHateForTarget(target))
                 hateList.Add(target, new HateEntry(target, 1, 0, true));
-            else
-                Program.Log.Error($"{target.actorName} is already on [{owner.actorId}]{owner.actorName}'s hate list!");
         }
 
         public void UpdateHate(Character target, int damage)
         {
-            if (!HasHateForTarget(target))
-                AddBaseHate(target);
-
+            AddBaseHate(target);
             //hateList[target].volatileEnmity += (uint)damage;
             hateList[target].cumulativeEnmity += (uint)damage;
         }
@@ -55,13 +51,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public void ClearHate(Character target = null)
         {
             if (target != null)
-            {
                 hateList.Remove(target);
-            }
             else
-            {
                 hateList.Clear();
-            }
         }
 
         private void UpdateHate(HateEntry entry)

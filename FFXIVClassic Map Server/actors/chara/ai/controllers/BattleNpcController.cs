@@ -102,8 +102,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             owner.aiContainer.pathFind.PreparePath(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 10);
             neutralTime = lastActionTime;
             owner.hateContainer.ClearHate();
-            owner.ResetMoveSpeeds();
-            owner.moveState = 1;
             lua.LuaEngine.CallLuaBattleFunction(owner, "onDisengage", owner, target, Utils.UnixTimeStampUTC(lastUpdate));
         }
 
@@ -127,7 +125,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             // todo:
         }
 
-        protected virtual void DoRoamTick(DateTime tick)
+        protected virtual void DoRoamTick(DateTime tick, List<Character> contentGroupCharas = null)
         {
             if (owner.hateContainer.GetHateList().Count > 0)
             {
@@ -159,6 +157,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                     owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
                     owner.aiContainer.pathFind.PathInRange(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 50.0f);
                 }
+                lua.LuaEngine.CallLuaBattleFunction(owner, "onRoam", owner, contentGroupCharas);
             }
 
 
@@ -194,7 +193,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         protected virtual void DoCombatTick(DateTime tick, List<Character> contentGroupCharas = null)
         {
             HandleHate();
-
             // todo: magic/attack/ws cooldowns etc
             if (TryDeaggro())
             {
@@ -203,7 +201,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             }
 
             Move();
-            lua.LuaEngine.CallLuaBattleFunction(owner, "onCombatTick", owner, owner.target, Utils.UnixTimeStampUTC(tick), contentGroupCharas);
+            if ((tick - lastCombatTickScript).TotalSeconds > 2)
+            {
+                lua.LuaEngine.CallLuaBattleFunction(owner, "onCombatTick", owner, owner.target, Utils.UnixTimeStampUTC(tick), contentGroupCharas);
+                lastCombatTickScript = tick;
+            }
         }
 
         protected virtual void Move()

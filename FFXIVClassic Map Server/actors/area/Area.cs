@@ -421,6 +421,11 @@ namespace FFXIVClassic_Map_Server.Actors
             return GetAllActors<BattleNpc>();
         }
 
+        public virtual List<Ally> GetAllies()
+        {
+            return GetAllActors<Ally>();
+        }
+
         public void BroadcastPacketsAroundActor(Actor actor, List<SubPacket> packets)
         {
             foreach (SubPacket packet in packets)
@@ -472,7 +477,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0, bool isMob = true)
+        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0, bool isMob = false)
         {
             lock (mActorList)
             {
@@ -489,13 +494,14 @@ namespace FFXIVClassic_Map_Server.Actors
                     zoneId = actorId;
 
                 Npc npc;
-
                 if (isMob)
                     npc = new BattleNpc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
                 else
                     npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
 
                 npc.LoadEventConditions(actorClass.eventConditions);
+                npc.SetMaxHP(300);
+                npc.SetHP(300);
 
                 AddActorToZone(npc);
 
@@ -661,11 +667,14 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             lock (mActorList)
             {
-                foreach (Actor a in mActorList.Values)
+                foreach (Actor a in mActorList.Values.ToList())
                     a.Update(tick);
 
-                var deltaTime = (tick - Program.LastTick).TotalMilliseconds;
-                LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, deltaTime, this);
+                if ((tick - lastUpdateScript).TotalMilliseconds > 1500)
+                {
+                    LuaEngine.GetInstance().CallLuaFunctionForReturn(LuaEngine.GetScriptPath(this), "onUpdate", true, this, tick);
+                    lastUpdateScript = tick;
+                }
             }
         }
 

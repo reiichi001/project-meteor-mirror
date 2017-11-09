@@ -1,11 +1,10 @@
 require ("global")
-
 require ("ally")
 
 function onSpawn(ally)
-    ally.isAutoAttackEnabled = false
-end
-
-function onCombatTick(ally, target, tick, contentGroupCharas)	
-    allyGlobal.onCombatTick(ally, target, tick, contentGroupCharas)
+    ally:SetMaxHP(69420)
+    ally:SetHP(ally:GetMaxHP())
+    ally.isAutoAttackEnabled = false;
+    ally.neutral = false
+    ally:SetMod(modifiersGlobal.Speed, 0)
 end

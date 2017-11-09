@@ -103,7 +103,7 @@ namespace FFXIVClassic_Map_Server.actors.director
 
             List<LuaParam> lparams = CallLuaScript("init", args2);
             
-            if (lparams.Count >= 1 && lparams[0].value is string)
+            if (lparams != null && lparams.Count >= 1 && lparams[0].value is string)
             {
                 classPath = (string)lparams[0].value;
                 className = classPath.Substring(classPath.LastIndexOf("/") + 1);
@@ -270,6 +270,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         {
             if (directorScript != null)
             {
+                directorScript = LuaEngine.LoadScript(String.Format(LuaEngine.FILEPATH_DIRECTORS, directorScriptPath));
                 if (!directorScript.Globals.Get(funcName).IsNil())
                 {
                     DynValue result = directorScript.Call(directorScript.Globals[funcName], args);

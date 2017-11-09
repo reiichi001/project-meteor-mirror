@@ -49,7 +49,7 @@ namespace FFXIVClassic_Map_Server.actors.group
         {
             if (actor == null)
                 return;
-
+            
             members.Add(actor.actorId);
 
             if (actor is Character)            

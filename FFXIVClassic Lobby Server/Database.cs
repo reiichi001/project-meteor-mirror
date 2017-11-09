@@ -219,7 +219,7 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     MySqlCommand cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = String.Format("INSERT INTO characters_parametersave(characterId, hp, hpMax, mp, mpMax, mainSkill, mainSkillLevel) VALUES(@characterId, 1, 1, 1, 1, @mainSkill, 1);", CharacterCreatorUtils.GetClassNameForId((short)charaInfo.currentClass));
+                    cmd.CommandText = String.Format("INSERT INTO characters_parametersave(characterId, hp, hpMax, mp, mpMax, mainSkill, mainSkillLevel) VALUES(@characterId, 1900, 1000, 115, 115, @mainSkill, 1);", CharacterCreatorUtils.GetClassNameForId((short)charaInfo.currentClass));
                     cmd.Prepare();
 
                     cmd.Parameters.AddWithValue("@characterId", cid);
@@ -231,15 +231,51 @@ namespace FFXIVClassic_Lobby_Server
                 catch (MySqlException e)
                 {
                     Program.Log.Error(e.ToString());
-                   
+                    conn.Dispose();
+                    return;
+                }
 
+                //Create Hotbar
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand();
+                    cmd.Connection = conn;
+                    cmd.CommandText = "SELECT id FROM server_battle_commands WHERE classJob = @classjob AND lvl = 1 ORDER BY id DESC";
+                    cmd.Prepare();
+
+                    cmd.Parameters.AddWithValue("@classJob", charaInfo.currentClass);
+                    List<uint> defaultActions = new List<uint>();
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while(reader.Read())
+                        {
+                            defaultActions.Add(reader.GetUInt32("id"));
+                        }
+                    }
+                    MySqlCommand cmd2 = new MySqlCommand();
+                    cmd2.Connection = conn;
+                    cmd2.CommandText = "INSERT INTO characters_hotbar (characterId, classId, hotbarSlot, commandId, recastTime) VALUES (@characterId, @classId, @hotbarSlot, @commandId, 0)";
+                    cmd2.Prepare();
+                    cmd2.Parameters.AddWithValue("@characterId", cid);
+                    cmd2.Parameters.AddWithValue("@classId", charaInfo.currentClass);
+                    cmd2.Parameters.Add("@hotbarSlot", MySqlDbType.Int16);
+                    cmd2.Parameters.Add("@commandId", MySqlDbType.Int16);
+
+                    for(int i = 0; i < defaultActions.Count; i++)
+                    {
+                        cmd2.Parameters["@hotbarSlot"].Value = i;
+                        cmd2.Parameters["@commandId"].Value = defaultActions[i];
+                        cmd2.ExecuteNonQuery();
+                    }
+                }
+                catch(MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
                     conn.Dispose();
                 }
-
-                
             }
 
             Program.Log.Debug("[SQL] CID={0} state updated to active(2).", cid);

@@ -11,6 +11,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
     {
         protected Character owner;
 
+        protected DateTime lastCombatTickScript;
         protected DateTime lastUpdate;
         public bool canUpdate = true;
         protected bool autoAttackEnabled = true;

@@ -43,11 +43,11 @@ LOCK TABLES `server_battlenpc_spawn_locations` WRITE;
 set autocommit=0;
 INSERT INTO `server_battlenpc_spawn_locations` VALUES (1,'test',1,25.584,200,-450,-2.514);
 INSERT INTO `server_battlenpc_spawn_locations` VALUES (2,'test',1,20,200,-444,-3.14);
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (3,'bloodthirsty_wolf',2,-3.02,17.35,14.24,-2.81);
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (4,'bloodthirsty_wolf',2,0.02,17.35,14.24,-2.81);
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (5,'bloodthirsty_wolf',2,-6.02,17.35,14.24,-2.81);
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (6,'yshtola',3,-8,16.35,6,0.5);
-INSERT INTO `server_battlenpc_spawn_locations` VALUES (7,'papalymo',4,0,16.35,22,3);
+INSERT INTO `server_battlenpc_spawn_locations` VALUES (3,'bloodthirsty_wolf',2,374.427,4.4,-698.711,-1.942);
+INSERT INTO `server_battlenpc_spawn_locations` VALUES (4,'bloodthirsty_wolf',2,375.377,4.4,-700.247,-1.992);
+INSERT INTO `server_battlenpc_spawn_locations` VALUES (5,'bloodthirsty_wolf',2,375.125,4.4,-703.591,-1.54);
+INSERT INTO `server_battlenpc_spawn_locations` VALUES (6,'yda',3,365.266,4.122,-700.73,1.5659);
+INSERT INTO `server_battlenpc_spawn_locations` VALUES (7,'papalymo',4,365.89,4.0943,-706.72,-0.718);
 /*!40000 ALTER TABLE `server_battlenpc_spawn_locations` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;
@@ -61,4 +61,4 @@ commit;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-16  2:43:52
+-- Dump completed on 2017-10-11 14:47:29

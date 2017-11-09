@@ -11,71 +11,54 @@ function init()
 end
 
 function onCreateContentArea(players, director, contentArea, contentGroup)
-
-    local worldManager = GetWorldManager();
-    
-	yshtola = GetWorldManager().SpawnBattleNpcById(6, contentArea);
-	stahlmann = GetWorldManager().SpawnBattleNpcById(7, contentArea);
-	
-	mob1 = GetWorldManager().SpawnBattleNpcById(3, contentArea);
-	mob2 = GetWorldManager().SpawnBattleNpcById(4, contentArea);
-	mob3 = GetWorldManager().SpawnBattleNpcById(5, contentArea);
-	
-    local added = false;
-    for i = 0, players.Count do
-        local player = players[i];
-		print("asses "..players.Count)
-        if player.currentParty and not added then
-			print("shitness")
-            player.currentParty.members:Add(yshtola.actorId);
-            print("cunt")
-            player.currentParty.members:Add(stahlmann.actorId);
-            print("dickbag")
-            added = true;
-        end;
-        -- dont let player die
-        player:SetMod(modifiersGlobal.MinimumHpLock, 1);
-		contentGroup:AddMember(player)
-        print("shittttt")
-		break
-    end;
-    print("shit")
-	contentGroup:AddMember(director);
-    print("shit2");
-	contentGroup:AddMember(yshtola);
-    print("shit3")
-	contentGroup:AddMember(stahlmann);
-	print("shit4")
-    contentGroup:AddMember(mob1);
-	print("shit5")
-    contentGroup:AddMember(mob2);
-	print("shit6")
-    contentGroup:AddMember(mob3);
-    print("dicks")
+	director:StartContentGroup();
 end
 
-function onEventStarted(player, actor, triggerName)	
-
+function onEventStarted(player, actor, triggerName)
 	man0g0Quest = player:GetQuest("Man0g0");
 	startTutorialMode(player);
 	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl001", nil, nil, nil);
 	player:EndEvent();
 	waitForSignal("playerActive");
-	wait(2); --If this isn't here, the scripts bugs out. TODO: Find a better alternative.
+	wait(1); --If this isn't here, the scripts bugs out. TODO: Find a better alternative.
 	kickEventContinue(player, actor, "noticeEvent", "noticeEvent");	
 	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl002", nil, nil, nil);
 	player:EndEvent();
-    
+	waitForSignal("playerAttack");
 	closeTutorialWidget(player);
+	showTutorialSuccessWidget(player, 9055); --Open TutorialSuccessWidget for attacking enemy
 	wait(3);
-    
-    man0g0Quest:NextPhase(5);
 	openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_TP);
-    wait(5);
-	
-    man0g0Quest:NextPhase(6);
+	waitForSignal("tpOver1000");
 	closeTutorialWidget(player);
-	print("ass")
+	openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_WEAPONSKILLS);
+
+	if player:IsDiscipleOfWar() then
+		waitForSignal("weaponskillUsed"); --Should be wait for weaponskillUsed signal
+	elseif player:IsDiscipleOfMagic() then
+		waitForSignal("spellUsed")
+	elseif player:IsDiscipleOfHand() then
+		waitForSignal("abilityUsed")
+	elseif player:IsDiscipleOfLand() then
+		waitForSignal("abilityUsed")
+	end
+	closeTutorialWidget(player);
+	showTutorialSuccessWidget(player, 9065); --Open TutorialSuccessWidget for weapon skill
+	
+	waitForSignal("mobkill"); --Should be wait for mobkill
+	waitForSignal("mobkill");
+	waitForSignal("mobkill");
+	worldMaster = GetWorldMaster();
+	player:SendDataPacket("attention", worldMaster, "", 51073, 2);
+	wait(7);
+	player:ChangeMusic(7);
+	player:ChangeState(0); 
+	kickEventContinue(player, actor, "noticeEvent", "noticeEvent");
+	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processEvent020_1", nil, nil, nil);
+	
+	player:GetZone():ContentFinished();
+    player:EndEvent();
+    GetWorldManager():DoZoneChange(player, 155, "PrivateAreaMasterPast", 1, 15, 175.38, -1.21, -1156.51, -2.1);
 	--[[
 	IF DoW:
 		OpenWidget (TP)
@@ -97,7 +80,6 @@ function onEventStarted(player, actor, triggerName)
 end
 
 function onUpdate(deltaTime, area)
-    print("fuck")
 end
 
 function onTalkEvent(player, npc)
@@ -118,7 +100,5 @@ function onCommand(player, command)
 end
 
 function main(director, contentGroup)
-    print("shitstain")
     onCreateContentArea(director:GetPlayerMembers(), director, director:GetZone(), contentGroup);
-    player:EndEvent();
 end;

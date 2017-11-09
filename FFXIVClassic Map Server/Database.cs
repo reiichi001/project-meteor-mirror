@@ -785,6 +785,62 @@ namespace FFXIVClassic_Map_Server
                         }
                     }
 
+                    //Get class experience
+                    query = @"
+                        SELECT 
+                        pug,
+                        gla,
+                        mrd,
+                        arc,
+                        lnc,
+
+                        thm,
+                        cnj,
+
+                        crp,
+                        bsm,
+                        arm,
+                        gsm,
+                        ltw,
+                        wvr,
+                        alc,
+                        cul,
+
+                        min,
+                        btn,
+                        fsh
+                        FROM characters_class_exp WHERE characterId = @charId";
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_PUG - 1] = reader.GetInt32("pug");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_GLA - 1] = reader.GetInt32("gla");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_MRD - 1] = reader.GetInt32("mrd");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_ARC - 1] = reader.GetInt32("arc");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_LNC - 1] = reader.GetInt32("lnc");
+                            
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_THM - 1] = reader.GetInt32("thm");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_CNJ - 1] = reader.GetInt32("cnj");
+                            
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_CRP - 1] = reader.GetInt32("crp");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_BSM - 1] = reader.GetInt32("bsm");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_ARM - 1] = reader.GetInt32("arm");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_GSM - 1] = reader.GetInt32("gsm");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_LTW - 1] = reader.GetInt32("ltw");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_WVR - 1] = reader.GetInt32("wvr");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_ALC - 1] = reader.GetInt32("alc");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_CUL - 1] = reader.GetInt32("cul");
+                            
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_MIN - 1] = reader.GetInt32("min");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_BTN - 1] = reader.GetInt32("btn");
+                            player.charaWork.battleSave.skillPoint[Player.CLASSID_FSH - 1] = reader.GetInt32("fsh");
+                        }
+                    }
+
                     //Load Saved Parameters
                     query = @"
                         SELECT 
@@ -1218,7 +1274,7 @@ namespace FFXIVClassic_Map_Server
             }
 
         }
-        public static void EquipAbility(Player player, ushort hotbarSlot, uint commandId, uint recastTime)
+        public static void EquipAbility(Player player, byte classId, ushort hotbarSlot, uint commandId, uint recastTime)
         {
             //2700083201 is where abilities start. 2700083200 is for unequipping abilities. Trying to put this in the hotbar will crash the game, need to put 0 instead
             if (commandId > 2700083200)
@@ -1245,7 +1301,7 @@ namespace FFXIVClassic_Map_Server
 
                         cmd = new MySqlCommand(query, conn);
                         cmd.Parameters.AddWithValue("@charId", player.actorId);
-                        cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
+                        cmd.Parameters.AddWithValue("@classId", classId);
                         cmd.Parameters.AddWithValue("@commandId", commandId);
                         cmd.Parameters.AddWithValue("@hotbarSlot", hotbarSlot);
                         cmd.Parameters.AddWithValue("@recastTime", recastTime);
@@ -1327,7 +1383,7 @@ namespace FFXIVClassic_Map_Server
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
-                    cmd.Parameters.AddWithValue("@classId", player.charaWork.parameterSave.state_mainSkill[0]);
+                    cmd.Parameters.AddWithValue("@classId", player.GetCurrentClassOrJob());
 
                     player.charaWork.commandBorder = 32;                 
 
@@ -1358,6 +1414,57 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public static ushort FindFirstCommandSlot(Player player, byte classId)
+        {
+            ushort slot = 0;
+            using (MySqlConnection conn = new MySqlConnection(
+                String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}",
+                ConfigConstants.DATABASE_HOST,
+                ConfigConstants.DATABASE_PORT,
+                ConfigConstants.DATABASE_NAME,
+                ConfigConstants.DATABASE_USERNAME,
+                ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd;
+                    string query = "";
+
+                    //Drop
+                    List<Tuple<ushort, uint>> hotbarList = new List<Tuple<ushort, uint>>();
+                    query = @"
+                        SELECT hotbarSlot
+                        FROM characters_hotbar
+                        WHERE characterId = @charId AND classId = @classId
+                        ORDER BY hotbarSlot
+                        ";
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@classId", classId);
+                   
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            if (slot != reader.GetUInt16("hotbarSlot"))
+                                return slot;
+
+                            slot++;
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return slot;
+        }
         public static List<InventoryItem> GetInventory(Player player, uint slotOffset, uint type)
         {
             List<InventoryItem> items = new List<InventoryItem>();
@@ -2146,10 +2253,8 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public static Dictionary<ushort, BattleCommand> LoadGlobalBattleCommandList()
+        public static void LoadGlobalBattleCommandList(Dictionary<ushort, BattleCommand> battleCommandDict, Dictionary<Tuple<byte, short>, List<uint>> battleCommandIdByLevel)
         {
-            var battleCommands = new Dictionary<ushort, BattleCommand>();
-
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
@@ -2195,7 +2300,18 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.battleAnimation = reader.GetUInt32("battleAnimation");
                             battleCommand.validUser = (BattleCommandValidUser)reader.GetByte("validUser");
                             
-                            battleCommands.Add(id, battleCommand);
+                            battleCommandDict.Add(id, battleCommand);
+
+                            Tuple<byte, short> tuple = Tuple.Create<byte, short>(battleCommand.job, battleCommand.level);
+                            if (battleCommandIdByLevel.ContainsKey(tuple))
+                            {
+                                battleCommandIdByLevel[tuple].Add(id | 0xA0F00000);
+                            }
+                            else
+                            {
+                                List<uint> list = new List<uint>() { id | 0xA0F00000 };
+                                battleCommandIdByLevel.Add(tuple, list);
+                            }
                         }
                     }
                 }
@@ -2208,7 +2324,72 @@ namespace FFXIVClassic_Map_Server
                     conn.Dispose();
                 }
             }
-            return battleCommands;
+        }
+
+        public static void SetExp(Player player, byte classId, int exp)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    var query = String.Format(@"
+                    UPDATE characters_class_exp
+                    SET
+                    {0} = @exp
+                    WHERE
+                    characterId = @characterId", CharacterUtils.GetClassNameForId(classId));
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Prepare();
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@characterId", player.actorId);
+                    cmd.Parameters.AddWithValue("@exp", exp);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void SetLevel(Player player, byte classId, short level)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    var query = String.Format(@"
+                    UPDATE characters_class_levels
+                    SET
+                    {0} = @lvl
+                    WHERE
+                    characterId = @characterId", CharacterUtils.GetClassNameForId(classId));
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    cmd.Prepare();
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@characterId", player.actorId);
+                    cmd.Parameters.AddWithValue("@lvl", level);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
         }
     }
 

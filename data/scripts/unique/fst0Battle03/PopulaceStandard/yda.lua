@@ -7,9 +7,10 @@ end
 
 function onEventStarted(player, npc, triggerName)
 	man0g0Quest = player:GetQuest("Man0g0");
-	
+	print("hi");
 	if (man0g0Quest ~= nil) then	
-	
+		
+		print("hi2");
 		if (triggerName == "pushDefault") then
 			callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrNomal002", nil, nil, nil);			
 		elseif (triggerName == "talkDefault") then		
@@ -22,6 +23,7 @@ function onEventStarted(player, npc, triggerName)
 				man0g0Quest:SaveData();
 				player:GetDirector("OpeningDirector"):onTalkEvent(player, npc);
 			--Was she talked to after papalymo?
+			print("hi3");
 			else
 				if (man0g0Quest:GetQuestFlag(MAN0G0_FLAG_MINITUT_DONE1) == true) then				
 
@@ -41,6 +43,7 @@ function onEventStarted(player, npc, triggerName)
 					player:KickEvent(director, "noticeEvent", true);
 					player:SetLoginDirector(director);		
 					
+					print("hi5");
 					GetWorldManager():DoZoneChangeContent(player, contentArea, 362.4087, 4, -703.8168, 1.5419, 16);
 					return;
 				else

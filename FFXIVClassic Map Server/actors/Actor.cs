@@ -61,7 +61,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public List<LuaParam> classParams;
 
         public List<Vector3> positionUpdates;
-        public DateTime lastMoveUpdate;
+        protected DateTime lastUpdateScript;
         protected DateTime lastUpdate;
         public Actor target;
 
@@ -438,6 +438,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 updateFlags = ActorUpdateFlags.None;
                 zone.BroadcastPacketsAroundActor(this, packets);
+
+                SetActorPropetyPacket hpInfo = new SetActorPropetyPacket("charaWork/exp");
+                hpInfo.AddTarget();
             }
         }
 
