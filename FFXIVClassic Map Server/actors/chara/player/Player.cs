@@ -1070,14 +1070,14 @@ namespace FFXIVClassic_Map_Server.Actors
         public void CheckBazaarFlags()
         {
             bool isDealing = false, isRepairing = false, seekingItem = false;
-            lock (GetInventory(Inventory.BAZAAR))
+            lock (GetItemPackage(Inventory.BAZAAR))
             {
-                foreach (InventoryItem item in GetInventory(Inventory.BAZAAR).GetRawList())
+                foreach (InventoryItem item in GetItemPackage(Inventory.BAZAAR).GetRawList())
                 {
                     if (item == null)
                         break;
 
-                    if (item.GetBazaarMode() == InventoryItem.TYPE_SINGLE || item.GetBazaarMode() == InventoryItem.TYPE_STACK)
+                    if (item.GetBazaarMode() == InventoryItem.TYPE_SINGLE || item.GetBazaarMode() == InventoryItem.TYPE_MULTI || item.GetBazaarMode() == InventoryItem.TYPE_STACK)
                         isDealing = true;
                     if (item.GetBazaarMode() == InventoryItem.TYPE_SEEK_REPAIR)
                         isRepairing = true;
@@ -1091,27 +1091,19 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.eventTemp.bazaarRetail = isDealing;
             charaWork.eventTemp.bazaarRepair = isRepairing;
-            charaWork.eventTemp.bazaarMateria = GetInventory(Inventory.MELDREQUEST).GetCount() == 0;
+            charaWork.eventTemp.bazaarMateria = GetItemPackage(Inventory.MELDREQUEST).GetCount() == 0;
 
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/bazaar", this);
             propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRetail");
             propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRepair");
             propPacketUtil.AddProperty("charaWork.eventTemp.bazaarMateria");
             QueuePackets(propPacketUtil.Done());
-        }
-
-        public Inventory GetInventory(ushort type)
-        {
-            if (itemPackages.ContainsKey(type))
-                return itemPackages[type];
-            else
-                return null;
-        }
+        }        
 
         public int GetCurrentGil()
         {
-            if (GetInventory(Inventory.CURRENCY_CRYSTALS).HasItem(1000001))
-                return GetInventory(Inventory.CURRENCY_CRYSTALS).GetItemByCatelogId(1000001).quantity;
+            if (HasItem(1000001))
+                return GetItemPackage(Inventory.CURRENCY_CRYSTALS).GetItemByCatelogId(1000001).quantity;
             else
                 return 0;
         }

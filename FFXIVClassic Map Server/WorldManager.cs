@@ -1054,21 +1054,30 @@ namespace FFXIVClassic_Map_Server
             bool succ = Database.CreateBazaarEntry(player, reward, seek, rewardAmount, seekAmount, bazaarMode);
 
             if (succ)
-            {
-                if (reward.GetItemData().IsMoney())
-                    player.RemoveItem(1000001, rewardAmount);
+            {                
+                if (bazaarMode != InventoryItem.TYPE_SINGLE && bazaarMode != InventoryItem.TYPE_MULTI && bazaarMode != InventoryItem.TYPE_STACK)
+                {
+                    reward.SetDealingAttached(bazaarMode, seek.uniqueId);
+                    player.GetItemPackage(Inventory.BAZAAR).StartSendUpdate();
+                    player.GetItemPackage(Inventory.BAZAAR).AddItem(reward);
+                    player.GetItemPackage(Inventory.BAZAAR).AddItem(seek);
+
+                    reward.SetAttachedIndex(Inventory.BAZAAR, seek.slot);
+                    seek.SetHasAttached(true);
+
+                    player.GetItemPackage(Inventory.BAZAAR).DoneSendUpdate();
+                }
                 else
-                    player.RemoveItem(reward, rewardAmount);
-
-                if (!reward.GetItemData().IsMoney())
-                    player.RemoveItem(seek, seekAmount);
-
-                player.GetInventory(Inventory.BAZAAR).StartSendUpdate();
-                player.GetInventory(Inventory.BAZAAR).AddItem(reward);
-                player.GetInventory(Inventory.BAZAAR).AddItem(seek);
-                player.GetInventory(Inventory.BAZAAR).DoneSendUpdate();
+                {
+                    reward.SetDealing(bazaarMode, seekAmount);
+                    player.GetItemPackage(Inventory.BAZAAR).StartSendUpdate();
+                    player.GetItemPackage(Inventory.BAZAAR).AddItem(reward);
+                    player.GetItemPackage(Inventory.BAZAAR).DoneSendUpdate();
+                }
+                
             }
         }
+
         /*
         public void RemoveFromBazaar(Player player, ushort position)
         {

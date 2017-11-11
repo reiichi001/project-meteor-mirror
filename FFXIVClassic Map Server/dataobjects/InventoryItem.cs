@@ -13,7 +13,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public const byte TAG_DEALING = 0xC9;
         public const byte TAG_ATTACHED = 0xCA;
 
-        public const byte TYPE_SINGLE = 12;
+        public const byte TYPE_SINGLE = 11;
+        public const byte TYPE_MULTI = 12;
         public const byte TYPE_STACK = 13;
         public const byte TYPE_SEEK_ITEM = 20;
         public const byte TYPE_SEEK_REPAIR = 30;
@@ -212,18 +213,18 @@ namespace FFXIVClassic_Map_Server.dataobjects
             tags[0] = isAttached ? TAG_ATTACHED : (byte)0;
         }
 
-        public void SetDealing(byte mode, uint price)
+        public void SetDealing(byte mode, int price)
         {                             
             tags[0] = TAG_DEALING;
             tagValues[0] = mode;
 
-            if (mode == TYPE_SINGLE || mode == TYPE_STACK)
+            if (mode == TYPE_SINGLE || mode == TYPE_MULTI || mode == TYPE_STACK)
             {
                 dealingVal = 1;
                 dealingMode = DEALINGMODE_PRICED;
                 dealingAttached1 = 1;
-                dealingAttached2 = 1000001;
-                dealingAttached3 = price; 
+                dealingAttached2 = (uint) price;
+                dealingAttached3 = 0; 
             }
         }
 

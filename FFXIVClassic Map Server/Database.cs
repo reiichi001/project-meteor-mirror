@@ -1075,12 +1075,12 @@ namespace FFXIVClassic_Map_Server
                         }
                     }
 
-                    player.GetInventory(Inventory.NORMAL).InitList(GetInventory(player, 0, Inventory.NORMAL));
-                    player.GetInventory(Inventory.KEYITEMS).InitList(GetInventory(player, 0, Inventory.KEYITEMS));
-                    player.GetInventory(Inventory.CURRENCY_CRYSTALS).InitList(GetInventory(player, 0, Inventory.CURRENCY_CRYSTALS));
-                    player.GetInventory(Inventory.BAZAAR).InitList(GetBazaar(player));
-                    player.GetInventory(Inventory.MELDREQUEST).InitList(GetInventory(player, 0, Inventory.MELDREQUEST));
-                    player.GetInventory(Inventory.LOOT).InitList(GetInventory(player, 0, Inventory.LOOT));
+                    player.GetItemPackage(Inventory.NORMAL).InitList(GetItemPackage(player, 0, Inventory.NORMAL));
+                    player.GetItemPackage(Inventory.KEYITEMS).InitList(GetItemPackage(player, 0, Inventory.KEYITEMS));
+                    player.GetItemPackage(Inventory.CURRENCY_CRYSTALS).InitList(GetItemPackage(player, 0, Inventory.CURRENCY_CRYSTALS));
+                    player.GetItemPackage(Inventory.BAZAAR).InitList(GetBazaar(player));
+                    player.GetItemPackage(Inventory.MELDREQUEST).InitList(GetItemPackage(player, 0, Inventory.MELDREQUEST));
+                    player.GetItemPackage(Inventory.LOOT).InitList(GetItemPackage(player, 0, Inventory.LOOT));
 
                     player.GetEquipment().SetEquipment(GetEquipment(player, player.charaWork.parameterSave.state_mainSkill[0]));
                 }
@@ -1123,7 +1123,7 @@ namespace FFXIVClassic_Map_Server
                         {
                             ushort equipSlot = reader.GetUInt16(0);
                             ulong uniqueItemId = reader.GetUInt16(1);
-                            InventoryItem item = player.GetInventory(Inventory.NORMAL).GetItemByUniqueId(uniqueItemId);
+                            InventoryItem item = player.GetItemPackage(Inventory.NORMAL).GetItemByUniqueId(uniqueItemId);
                             equipment[equipSlot] = item;
                         }
                     }
@@ -1211,7 +1211,7 @@ namespace FFXIVClassic_Map_Server
 
         }
 
-        public static List<InventoryItem> GetInventory(Player player, uint slotOffset, uint type)
+        public static List<InventoryItem> GetItemPackage(Player player, uint slotOffset, uint type)
         {
             List<InventoryItem> items = new List<InventoryItem>();
 
@@ -1425,12 +1425,12 @@ namespace FFXIVClassic_Map_Server
 
                             InventoryItem item = new InventoryItem(uniqueId, Server.GetItemGamedata(itemId), quantity, qualityNumber, modifier);                           
 
-                            byte bazaarMode = reader.GetByte("bazaarMode");                            
+                            byte bazaarMode = reader.GetByte("bazaarMode");
 
-                            if (bazaarMode == InventoryItem.TYPE_SINGLE || bazaarMode == InventoryItem.TYPE_STACK)
+                            if (bazaarMode == InventoryItem.TYPE_SINGLE || bazaarMode == InventoryItem.TYPE_MULTI || bazaarMode == InventoryItem.TYPE_STACK)
                             {
                                 uint price = (uint) reader.GetInt32("sellPrice");
-                                item.SetDealing(bazaarMode, price);
+                                item.SetDealing(bazaarMode, (int) price);
                             }
                             else
                             {

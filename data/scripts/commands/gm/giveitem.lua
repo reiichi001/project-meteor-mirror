@@ -40,7 +40,7 @@ function onTrigger(player, argc, item, qty, location, name, lastName)
             location = INVENTORY_NORMAL;
         end;
         
-        local added = player:getInventory(location):addItem(item, qty, 1);
+        local added = player:getItemPackage(location):addItem(item, qty, 1);
         
         if added then
             message = string.format("Added item %u of kind %u to %s", item, location, player:GetName());

@@ -32,8 +32,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         };
 
         private Character owner;
-        private ushort inventoryCapacity;
-        private ushort inventoryCode;
+        private ushort itemPackageCapacity;
+        private ushort itemPackageCode;
         private bool isTemporary;
         private InventoryItem[] list;
         private bool[] isDirty;
@@ -44,8 +44,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         public Inventory(Character ownerPlayer, ushort capacity, ushort code, bool temporary = false)
         {
             owner = ownerPlayer;
-            inventoryCapacity = capacity;
-            inventoryCode = code;
+            itemPackageCapacity = capacity;
+            itemPackageCode = code;
             isTemporary = temporary;
             list = new InventoryItem[capacity];
             isDirty = new bool[capacity];
@@ -101,17 +101,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             return AddItem(itemId, 1, 1);
         }
 
-        public void AddItem(uint[] itemId)
-        {
-            for (int i = 0; i < itemId.Length; i++)
-                AddItem(itemId[i]);
-        }
-
         public INV_ERROR AddItem(uint itemId, int quantity)
         {
             return AddItem(itemId, quantity, 1);
         }
-
 
         public INV_ERROR AddItem(InventoryItem itemRef)
         {
@@ -126,7 +119,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return INV_ERROR.SYSTEM_ERROR;
             }
 
-            itemRef.RefreshPositioning(inventoryCode, (ushort) endOfListIndex);
+            itemRef.RefreshPositioning(itemPackageCode, (ushort) endOfListIndex);
 
             isDirty[endOfListIndex] = true;
             list[endOfListIndex++] = itemRef;
@@ -200,7 +193,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             return INV_ERROR.SUCCESS;
         }
 
-        public void AddItemSpecial(ushort slot, InventoryItem item)
+        public void SetItem(ushort slot, InventoryItem item)
         {
             list[slot] = item;
             SendUpdatePackets();
@@ -304,7 +297,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             else
             {
                 list[slot].quantity -= quantity;
-                //DoDatabaseUpdateQuantity(toDelete.uniqueId);
+                DoDatabaseQuantity(list[slot].uniqueId, list[slot].quantity);
             }
             
             isDirty[slot] = true;
@@ -387,7 +380,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         #region Packet Functions
         public void SendFullInventory(Player player)
         {
-            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, itemPackageCapacity, itemPackageCode));
             SendInventoryPackets(player, 0);
             player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
         }
@@ -483,21 +476,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public void RefreshItem(Player player, InventoryItem item)
         {
-            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, itemPackageCapacity, itemPackageCode));
             SendInventoryPackets(player, item);
             player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
         }
 
         public void RefreshItem(Player player, params InventoryItem[] items)
         {
-            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, itemPackageCapacity, itemPackageCode));
             SendInventoryPackets(player, items.ToList());
             player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
         }
 
         public void RefreshItem(Player player, List<InventoryItem> items)
         {
-            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, itemPackageCapacity, itemPackageCode));
             SendInventoryPackets(player, items);
             player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
         }
@@ -512,9 +505,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return;
 
             if (owner is Player)            
-                Database.AddItem((Player)owner, addedItem, inventoryCode);            
+                Database.AddItem((Player)owner, addedItem, itemPackageCode);            
             else if (owner is Retainer)
-                Database.AddItem((Retainer)owner, addedItem, inventoryCode);
+                Database.AddItem((Retainer)owner, addedItem, itemPackageCode);
         }
 
         private void DoDatabaseQuantity(ulong itemDBId, int quantity)
@@ -523,9 +516,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return;
 
             if (owner is Player)            
-                Database.SetQuantity((Player)owner, itemDBId, inventoryCode);            
+                Database.SetQuantity((Player)owner, itemDBId, itemPackageCode);            
             else if (owner is Retainer)
-                Database.SetQuantity((Retainer)owner, itemDBId, inventoryCode);
+                Database.SetQuantity((Retainer)owner, itemDBId, itemPackageCode);
         }
 
         private void DoDatabaseRemove(ulong itemDBId)
@@ -570,7 +563,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 DoneSendUpdate();
 
             player.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
-            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));                        
+            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, itemPackageCapacity, itemPackageCode));                        
             //Send Updated Slots
             SendInventoryPackets(player, items);
             //Send Remove packets for tail end
@@ -596,7 +589,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public bool IsFull()
         {
-            return endOfListIndex >= inventoryCapacity;
+            return endOfListIndex >= itemPackageCapacity;
         }
         
         public bool IsSpaceForAdd(uint itemId, int quantity, int quality)

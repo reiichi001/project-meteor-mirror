@@ -61,7 +61,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         //Inventory        
         protected Dictionary<ushort, Inventory> itemPackages = new Dictionary<ushort, Inventory>();
-        private Equipment equipment;
+        protected Equipment equipment;
 
         public Character(uint actorID) : base(actorID)
         {            
@@ -157,7 +157,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (itemPackages.ContainsKey(itemPackage))
             {
-                itemPackages[itemPackage].AddItemSpecial(slot, item);
+                itemPackages[itemPackage].SetItem(slot, item);
             }
         }
 
@@ -252,6 +252,14 @@ namespace FFXIVClassic_Map_Server.Actors
                 return itemPackages[reference.itemPackage].GetItemAtSlot(reference.slot);
             }
             return null;
+        }
+
+        public Inventory GetItemPackage(ushort package)
+        {
+            if (itemPackages.ContainsKey(package))
+                return itemPackages[package];
+            else
+                return null;
         }
 
         public ushort GetPackageForItem(uint catalogID)
