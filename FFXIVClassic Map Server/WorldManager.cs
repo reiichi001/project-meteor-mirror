@@ -23,6 +23,7 @@ using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
 using System.Threading;
 using System.Diagnostics;
 using FFXIVClassic_Map_Server.actors.director;
+using FFXIVClassic_Map_Server.actors.chara.player;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -1042,6 +1043,117 @@ namespace FFXIVClassic_Map_Server
                 }
             }
         }
+
+        public InventoryItem CreateItem(uint itemId, int amount, byte quality = 1)
+        {
+            return Database.CreateItem(itemId, amount, quality);
+        }
+
+        public void AddToBazaarRewardGil(Player player, InventoryItem seek, int seekAmount, int gilAmount, byte bazaarMode)
+        {       
+            bool succ = Database.CreateBazaarEntry(player, gilReward, seek, gilAmount, seekAmount, bazaarMode);
+
+            if (succ)
+            {                
+                player.GetInventory(Inventory.CURRENCY_CRYSTALS).RemoveItem(1000001, gilAmount);
+                player.GetInventory(Inventory.BAZAAR).StartSendUpdate();
+                player.GetInventory(Inventory.BAZAAR).AddItem(gilReward);
+                player.GetInventory(Inventory.BAZAAR).AddItem(seek);
+                player.GetInventory(Inventory.BAZAAR).DoneSendUpdate();
+            }
+        }
+
+        public void AddToBazaarSeekGil(Player player, InventoryItem reward, int rewardAmount, int gilAmount,  byte bazaarMode)
+        {
+            InventoryItem gilSeek = Database.CreateItem(1000001, gilAmount, 1);
+            bool succ = false;
+
+            if (bazaarMode == InventoryItem.TYPE_SINGLE || bazaarMode == InventoryItem.TYPE_STACK)
+                succ = Database.CreateBazaarEntry(player, reward, gilSeek, rewardAmount, 0, bazaarMode, gilAmount);
+            else            
+                succ = Database.CreateBazaarEntry(player, reward, gilSeek, rewardAmount, gilAmount, bazaarMode);
+
+            if (succ)
+            {
+                player.GetInventory(Inventory.NORMAL).RemoveItem(reward);
+                player.GetInventory(Inventory.BAZAAR).StartSendUpdate();
+                player.GetInventory(Inventory.BAZAAR).AddItem(reward);
+                player.GetInventory(Inventory.BAZAAR).AddItem(gilSeek);
+                player.GetInventory(Inventory.BAZAAR).DoneSendUpdate();
+            }
+        }
+
+        public void AddToBazaar(Player player, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount, byte bazaarMode)
+        {
+            bool succ = Database.CreateBazaarEntry(player, reward, seek, rewardAmount, seekAmount, bazaarMode);
+
+            if (succ)
+            {
+                if (reward.GetItemData().IsMoney())
+
+                player.GetInventory(Inventory.NORMAL).RemoveItem(reward);
+                player.GetInventory(Inventory.NORMAL).RemoveItem(seek);
+                player.GetInventory(Inventory.BAZAAR).StartSendUpdate();
+                player.GetInventory(Inventory.BAZAAR).AddItem(reward);
+                player.GetInventory(Inventory.BAZAAR).AddItem(seek);
+                player.GetInventory(Inventory.BAZAAR).DoneSendUpdate();
+            }
+        }
+        /*
+        public void RemoveFromBazaar(Player player, ushort position)
+        {
+            InventoryItem reward = player.GetInventory(Inventory.BAZAAR).GetItemAtSlot(position);
+            InventoryItem seek = null;
+
+            seek = player.GetInventory(Inventory.BAZAAR).
+
+            Database.ClearBazaarEntry(player, reward);
+
+            player.GetInventory(Inventory.BAZAAR).RemoveItem(reward);
+            player.GetInventory(Inventory.BAZAAR).RemoveItem(seek);
+
+            player.GetInventory(Inventory.NORMAL).StartSendUpdate();
+            player.GetInventory(Inventory.CURRENCY_CRYSTALS).StartSendUpdate();
+
+            if (reward.itemId == 1000001)            
+                player.GetInventory(Inventory.CURRENCY_CRYSTALS).AddItem(reward.itemId, reward.quantity);            
+            else
+                player.GetInventory(Inventory.NORMAL).AddItem(reward);
+
+            if (reward.itemId == 1000001)
+                player.GetInventory(Inventory.CURRENCY_CRYSTALS).AddItem(seek.itemId, seek.quantity);
+            else
+                player.GetInventory(Inventory.NORMAL).AddItem(seek);
+
+            player.GetInventory(Inventory.NORMAL).DoneSendUpdate();
+            player.GetInventory(Inventory.CURRENCY_CRYSTALS).DoneSendUpdate();            
+        }
+
+        public void TransactionBazaar(Player owner, Player other, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount)
+        {
+            Database.ClearBazaarEntry(owner, reward, seek);
+
+            //Remove Bazaar Items from owner
+            owner.GetInventory(Inventory.BAZAAR).RemoveItem(reward);
+            owner.GetInventory(Inventory.BAZAAR).RemoveItem(seek);
+
+            //Remove Seek item from other
+            if (seek.GetItemData().IsMoney())
+                other.GetInventory(Inventory.CURRENCY_CRYSTALS).RemoveItem(seek.itemId, seekAmount);
+            else
+                other.GetInventory(Inventory.NORMAL).RemoveItem(seek.itemId, seekAmount);
+
+            //Add reward to other, seek to owner
+            if (reward.GetItemData().IsMoney())
+                other.GetInventory(Inventory.CURRENCY_CRYSTALS).AddItem(reward.itemId, rewardAmount);
+            else
+                other.GetInventory(Inventory.NORMAL).AddItem(reward);
+
+            if (seek.GetItemData().IsMoney())
+                owner.GetInventory(Inventory.CURRENCY_CRYSTALS).AddItem(seek.itemId, seekAmount);
+            else
+                other.GetInventory(Inventory.NORMAL).AddItem(seek);
+        }*/
 
         public bool SendGroupInit(Session session, ulong groupId)
         {

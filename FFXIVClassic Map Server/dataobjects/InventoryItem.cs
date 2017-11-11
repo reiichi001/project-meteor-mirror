@@ -34,7 +34,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public byte quality = 1;
 
+        private ulong attachedTo = 0;
+
         public ItemModifier modifiers;
+
+        public readonly ItemData itemData;
 
         public class ItemModifier
         {
@@ -115,10 +119,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
         }
 
         //Bare Minimum
-        public InventoryItem(uint id, uint itemId)
+        public InventoryItem(uint id, ItemData data)
         {
             this.uniqueId = id;
-            this.itemId = itemId;
+            this.itemId = data.catalogID;
+            this.itemData = data;
             this.quantity = 1;
 
             ItemData gItem = Server.GetItemGamedata(itemId);
@@ -129,6 +134,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public InventoryItem(InventoryItem item, ushort equipSlot)
         {
             this.uniqueId = item.uniqueId;
+            this.itemData = item.itemData;
             this.itemId = item.itemId;
             this.quantity = item.quantity;
             this.slot = equipSlot;
@@ -141,17 +147,12 @@ namespace FFXIVClassic_Map_Server.dataobjects
             this.modifiers = item.modifiers;
         }
 
-        public InventoryItem(uint uniqueId, uint itemId, int quantity, byte[] tags, byte[] tagValues, byte qualityNumber, ItemModifier modifiers = null)
+        public InventoryItem(uint uniqueId, ItemData itemData, int quantity, byte qualityNumber, ItemModifier modifiers = null)
         {
             this.uniqueId = uniqueId;
-            this.itemId = itemId;
+            this.itemId = itemData.catalogID;
+            this.itemData = itemData;
             this.quantity = quantity;
-            
-            if (tags != null)
-                this.tags = tags;
-            if (tagValues != null)
-                this.tagValues = tagValues;
-
             this.quality = qualityNumber;
             this.modifiers = modifiers;
         }
@@ -196,7 +197,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void SetExclusive(bool isExclusive)
         {
-            tags[0] = isExclusive ? TAG_EXCLUSIVE : (byte)0;
+            tags[1] = isExclusive ? TAG_EXCLUSIVE : (byte)0;
         }
 
         public void SetHasAttached(bool isAttached)
@@ -205,31 +206,55 @@ namespace FFXIVClassic_Map_Server.dataobjects
         }
 
         public void SetDealing(byte mode, uint price)
-        {
-            if (tags[0] == TAG_EXCLUSIVE)
-                return;
-                      
+        {                             
             tags[0] = TAG_DEALING;
-            tagValues[0] = mode;      
-            
-            if (dealingMode != DEALINGMODE_REFERENCED)
+            tagValues[0] = mode;
+
+            if (mode == TYPE_SINGLE || mode == TYPE_STACK)
             {
                 dealingVal = 1;
                 dealingMode = DEALINGMODE_PRICED;
                 dealingAttached1 = 1;
-                dealingAttached2 = itemId;
+                dealingAttached2 = 1000001;
                 dealingAttached3 = price; 
             }
         }
 
-        public void SetAttachedToSlot(ushort package, ushort slot)
+        public void SetDealingAttached(byte mode, ulong attached)
+        {
+            tags[0] = TAG_DEALING;
+            tagValues[0] = mode;
+            attachedTo = attached;
+        }
+
+        public ulong GetAttached()
+        {
+            return attachedTo;
+        }
+
+        public void SetAttachedIndex(ushort package, ushort index)
         {
             dealingVal = 1;
             dealingMode = DEALINGMODE_REFERENCED;
-            dealingAttached1 = (uint)((ushort)package << 16) | slot;
+            dealingAttached1 = (uint)((package << 16) | index);
             dealingAttached2 = 0;
-            dealingAttached3 = 0;
-        }        
+            dealingAttached3 = 0; 
+        }
 
+        public ItemData GetItemData()
+        {
+            return itemData;
+        }
+
+        public byte GetBazaarMode()
+        {
+            for (int i = 0; i < tags.Length; i++)
+            {
+                if (tags[i] == 0xC9)
+                    return tagValues[i];
+            }
+
+            return 0;
+        }
     }
 }

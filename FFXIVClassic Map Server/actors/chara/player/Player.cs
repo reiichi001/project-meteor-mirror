@@ -141,6 +141,13 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint homepoint = 0;
         public byte homepointInn = 0;
 
+        //Nameplate Stuff
+        public uint currentLSPlate = 0;
+        public bool isBazaarRetail = false;
+        public bool isBazaarRepair = false;
+        public bool isMateriaRequest = false;
+        public byte repairType = 0;
+
         //Retainer
         RetainerMeetingRelationGroup retainerMeetingGroup = null;
         public Retainer currentSpawnedRetainer = null;
@@ -501,7 +508,17 @@ namespace FFXIVClassic_Map_Server.Actors
                     propPacketUtil.AddProperty(String.Format("work.guildleveChecked[{0}]", i));
             }
 
-            //NPC Linkshell
+            //Bazaar
+            if (charaWork.eventSave.repairType != 0)
+                propPacketUtil.AddProperty("charaWork.eventSave.repairType");
+            if (charaWork.eventTemp.bazaarRetail)
+                propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRetail");
+            if (charaWork.eventTemp.bazaarRepair)
+                propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRepair");
+            if (charaWork.eventTemp.bazaarMateria)
+                propPacketUtil.AddProperty("charaWork.eventTemp.bazaarMateria");
+
+            //NPC Linkshell            
             for (int i = 0; i < playerWork.npcLinkshellChatCalling.Length; i++)
             {
                 if (playerWork.npcLinkshellChatCalling[i] != false)
@@ -1044,6 +1061,47 @@ namespace FFXIVClassic_Map_Server.Actors
 
             Database.SavePlayerAppearance(this);
             BroadcastPacket(CreateAppearancePacket(), true);
+        }
+
+        public void SetRepairRequest(byte type)
+        {
+            charaWork.eventSave.repairType = type;
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/bazaar", this);
+            propPacketUtil.AddProperty("charaWork.eventSave.repairType");
+            QueuePackets(propPacketUtil.Done());
+        }
+
+        public void CheckBazaarFlags()
+        {
+            bool isDealing = false, isRepairing = false, seekingItem = false;
+            lock (GetInventory(Inventory.BAZAAR))
+            {
+                foreach (InventoryItem item in GetInventory(Inventory.BAZAAR).GetRawList())
+                {
+                    if (item == null)
+                        break;
+
+                    if (item.GetBazaarMode() == InventoryItem.TYPE_SINGLE || item.GetBazaarMode() == InventoryItem.TYPE_STACK)
+                        isDealing = true;
+                    if (item.GetBazaarMode() == InventoryItem.TYPE_SEEK_REPAIR)
+                        isRepairing = true;
+                    if (item.GetBazaarMode() == InventoryItem.TYPE_SEEK_ITEM)
+                        seekingItem = true;
+
+                    if (isDealing && isRepairing && seekingItem)
+                        break;
+                }
+            }
+
+            charaWork.eventTemp.bazaarRetail = isDealing;
+            charaWork.eventTemp.bazaarRepair = isRepairing;
+            charaWork.eventTemp.bazaarMateria = GetInventory(Inventory.MELDREQUEST).GetCount() == 0;
+
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/bazaar", this);
+            propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRetail");
+            propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRepair");
+            propPacketUtil.AddProperty("charaWork.eventTemp.bazaarMateria");
+            QueuePackets(propPacketUtil.Done());
         }
 
         public Inventory GetInventory(ushort type)

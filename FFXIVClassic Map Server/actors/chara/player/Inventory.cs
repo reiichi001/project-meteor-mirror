@@ -112,6 +112,29 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             return AddItem(itemId, quantity, 1);
         }
 
+
+        public INV_ERROR AddItem(InventoryItem itemRef)
+        {
+            if (!IsSpaceForAdd(itemRef.itemId, itemRef.quantity, itemRef.quality))
+                return INV_ERROR.INVENTORY_FULL;
+
+            ItemData gItem = Server.GetItemGamedata(itemRef.itemId);
+
+            if (gItem == null)
+            {
+                Program.Log.Error("Inventory.AddItem: unable to find item %u", itemRef.itemId);
+                return INV_ERROR.SYSTEM_ERROR;
+            }
+
+            isDirty[endOfListIndex] = true;
+            list[endOfListIndex++] = itemRef;
+            DoDatabaseAdd(itemRef);
+
+            SendUpdatePackets();
+
+            return INV_ERROR.SUCCESS;
+        }
+
         public INV_ERROR AddItem(uint itemId, int quantity, byte quality)
         {
             if (!IsSpaceForAdd(itemId, quantity, quality))
@@ -154,12 +177,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             //New item that spilled over
             while (quantityCount > 0)
             {
-                byte[] tags = new byte[4];
-                byte[] values = new byte[4];
-
-                if (gItem.isExclusive)
-                    tags[1] = 3;
-
                 InventoryItem.ItemModifier modifiers = null;
                 if (gItem.durability != 0)
                 {
@@ -167,7 +184,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     modifiers.durability = (uint)gItem.durability;
                 }
                 
-                InventoryItem addedItem = Database.CreateItem(itemId, Math.Min(quantityCount, gItem.maxStack), tags, values, quality, modifiers);
+                InventoryItem addedItem = Database.CreateItem(itemId, Math.Min(quantityCount, gItem.maxStack), quality, modifiers);
                 addedItem.slot = (ushort)endOfListIndex;
                 isDirty[endOfListIndex] = true;
                 list[endOfListIndex++] = addedItem;                
@@ -244,6 +261,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             DoRealign();
             SendUpdatePackets();
+        }
+
+        public void RemoveItem(InventoryItem item)
+        {
+            RemoveItemByUniqueId(item.uniqueId);
         }
 
         public void RemoveItemByUniqueId(ulong itemDBId)
@@ -643,5 +665,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         #endregion
 
+
+        public int GetCount()
+        {
+            return endOfListIndex;
+        }
     }
 }
