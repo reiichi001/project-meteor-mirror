@@ -1049,40 +1049,6 @@ namespace FFXIVClassic_Map_Server
             return Database.CreateItem(itemId, amount, quality);
         }
 
-        public void AddToBazaarRewardGil(Player player, InventoryItem seek, int seekAmount, int gilAmount, byte bazaarMode)
-        {       
-            bool succ = Database.CreateBazaarEntry(player, gilReward, seek, gilAmount, seekAmount, bazaarMode);
-
-            if (succ)
-            {                
-                player.GetInventory(Inventory.CURRENCY_CRYSTALS).RemoveItem(1000001, gilAmount);
-                player.GetInventory(Inventory.BAZAAR).StartSendUpdate();
-                player.GetInventory(Inventory.BAZAAR).AddItem(gilReward);
-                player.GetInventory(Inventory.BAZAAR).AddItem(seek);
-                player.GetInventory(Inventory.BAZAAR).DoneSendUpdate();
-            }
-        }
-
-        public void AddToBazaarSeekGil(Player player, InventoryItem reward, int rewardAmount, int gilAmount,  byte bazaarMode)
-        {
-            InventoryItem gilSeek = Database.CreateItem(1000001, gilAmount, 1);
-            bool succ = false;
-
-            if (bazaarMode == InventoryItem.TYPE_SINGLE || bazaarMode == InventoryItem.TYPE_STACK)
-                succ = Database.CreateBazaarEntry(player, reward, gilSeek, rewardAmount, 0, bazaarMode, gilAmount);
-            else            
-                succ = Database.CreateBazaarEntry(player, reward, gilSeek, rewardAmount, gilAmount, bazaarMode);
-
-            if (succ)
-            {
-                player.GetInventory(Inventory.NORMAL).RemoveItem(reward);
-                player.GetInventory(Inventory.BAZAAR).StartSendUpdate();
-                player.GetInventory(Inventory.BAZAAR).AddItem(reward);
-                player.GetInventory(Inventory.BAZAAR).AddItem(gilSeek);
-                player.GetInventory(Inventory.BAZAAR).DoneSendUpdate();
-            }
-        }
-
         public void AddToBazaar(Player player, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount, byte bazaarMode)
         {
             bool succ = Database.CreateBazaarEntry(player, reward, seek, rewardAmount, seekAmount, bazaarMode);
@@ -1090,9 +1056,13 @@ namespace FFXIVClassic_Map_Server
             if (succ)
             {
                 if (reward.GetItemData().IsMoney())
+                    player.RemoveItem(1000001, rewardAmount);
+                else
+                    player.RemoveItem(reward, rewardAmount);
 
-                player.GetInventory(Inventory.NORMAL).RemoveItem(reward);
-                player.GetInventory(Inventory.NORMAL).RemoveItem(seek);
+                if (!reward.GetItemData().IsMoney())
+                    player.RemoveItem(seek, seekAmount);
+
                 player.GetInventory(Inventory.BAZAAR).StartSendUpdate();
                 player.GetInventory(Inventory.BAZAAR).AddItem(reward);
                 player.GetInventory(Inventory.BAZAAR).AddItem(seek);

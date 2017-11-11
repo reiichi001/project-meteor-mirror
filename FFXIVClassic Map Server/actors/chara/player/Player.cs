@@ -104,10 +104,6 @@ namespace FFXIVClassic_Map_Server.Actors
         public bool isGM = false;
         public bool isZoneChanging = true;
 
-        //Inventory        
-        private Dictionary<ushort, Inventory> inventories = new Dictionary<ushort, Inventory>();
-        private Equipment equipment;
-
         //Trading
         private Player otherTrader = null;
         private Inventory myOfferings;
@@ -172,14 +168,14 @@ namespace FFXIVClassic_Map_Server.Actors
             moveSpeeds[2] = SetActorSpeedPacket.DEFAULT_RUN;
             moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_ACTIVE;
 
-            inventories[Inventory.NORMAL] = new Inventory(this, MAXSIZE_INVENTORY_NORMAL, Inventory.NORMAL);
-            inventories[Inventory.KEYITEMS] = new Inventory(this, MAXSIZE_INVENTORY_KEYITEMS, Inventory.KEYITEMS);
-            inventories[Inventory.CURRENCY_CRYSTALS] = new Inventory(this, MAXSIZE_INVENTORY_CURRANCY, Inventory.CURRENCY_CRYSTALS);
-            inventories[Inventory.MELDREQUEST] = new Inventory(this, MAXSIZE_INVENTORY_MELDREQUEST, Inventory.MELDREQUEST);
-            inventories[Inventory.BAZAAR] = new Inventory(this, MAXSIZE_INVENTORY_BAZAAR, Inventory.BAZAAR);
-            inventories[Inventory.LOOT] = new Inventory(this, MAXSIZE_INVENTORY_LOOT, Inventory.LOOT);
+            itemPackages[Inventory.NORMAL] = new Inventory(this, MAXSIZE_INVENTORY_NORMAL, Inventory.NORMAL);
+            itemPackages[Inventory.KEYITEMS] = new Inventory(this, MAXSIZE_INVENTORY_KEYITEMS, Inventory.KEYITEMS);
+            itemPackages[Inventory.CURRENCY_CRYSTALS] = new Inventory(this, MAXSIZE_INVENTORY_CURRANCY, Inventory.CURRENCY_CRYSTALS);
+            itemPackages[Inventory.MELDREQUEST] = new Inventory(this, MAXSIZE_INVENTORY_MELDREQUEST, Inventory.MELDREQUEST);
+            itemPackages[Inventory.BAZAAR] = new Inventory(this, MAXSIZE_INVENTORY_BAZAAR, Inventory.BAZAAR);
+            itemPackages[Inventory.LOOT] = new Inventory(this, MAXSIZE_INVENTORY_LOOT, Inventory.LOOT);
 
-            equipment = new Equipment(this, inventories[Inventory.NORMAL], MAXSIZE_INVENTORY_EQUIPMENT, Inventory.EQUIPMENT);
+            equipment = new Equipment(this, itemPackages[Inventory.NORMAL], MAXSIZE_INVENTORY_EQUIPMENT, Inventory.EQUIPMENT);
 
             //Set the Skill level caps of all FFXIV (classes)skills to 50
             for (int i = 0; i < charaWork.battleSave.skillLevelCap.Length; i++)
@@ -559,12 +555,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
             #region Inventory & Equipment
             QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
-            inventories[Inventory.NORMAL].SendFullInventory(this);
-            inventories[Inventory.CURRENCY_CRYSTALS].SendFullInventory(this);
-            inventories[Inventory.KEYITEMS].SendFullInventory(this);
-            inventories[Inventory.BAZAAR].SendFullInventory(this);
-            inventories[Inventory.MELDREQUEST].SendFullInventory(this);
-            inventories[Inventory.LOOT].SendFullInventory(this);
+            itemPackages[Inventory.NORMAL].SendFullInventory(this);
+            itemPackages[Inventory.CURRENCY_CRYSTALS].SendFullInventory(this);
+            itemPackages[Inventory.KEYITEMS].SendFullInventory(this);
+            itemPackages[Inventory.BAZAAR].SendFullInventory(this);
+            itemPackages[Inventory.MELDREQUEST].SendFullInventory(this);
+            itemPackages[Inventory.LOOT].SendFullInventory(this);
             equipment.SendFullEquipment(false);   
             playerSession.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
             #endregion
@@ -1106,8 +1102,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public Inventory GetInventory(ushort type)
         {
-            if (inventories.ContainsKey(type))
-                return inventories[type];
+            if (itemPackages.ContainsKey(type))
+                return itemPackages[type];
             else
                 return null;
         }
@@ -1891,7 +1887,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (!IsTrading())
                 return;
 
-            InventoryItem mine = inventories[Inventory.NORMAL].GetItemAtSlot(linkedSlot);
+            InventoryItem mine = itemPackages[Inventory.NORMAL].GetItemAtSlot(linkedSlot);
 
             InventoryItem tradeItem = new InventoryItem(mine, slot);
 
@@ -1947,7 +1943,6 @@ namespace FFXIVClassic_Map_Server.Actors
             myOfferings = null;
             otherTrader = null;
         }
-
 
         public void Test()
         {

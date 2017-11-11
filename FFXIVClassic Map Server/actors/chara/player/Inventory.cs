@@ -126,6 +126,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return INV_ERROR.SYSTEM_ERROR;
             }
 
+            itemRef.RefreshPositioning(inventoryCode, (ushort) endOfListIndex);
+
             isDirty[endOfListIndex] = true;
             list[endOfListIndex++] = itemRef;
             DoDatabaseAdd(itemRef);
@@ -265,10 +267,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public void RemoveItem(InventoryItem item)
         {
-            RemoveItemByUniqueId(item.uniqueId);
+            RemoveItemByUniqueId(item.uniqueId, 1);
         }
 
-        public void RemoveItemByUniqueId(ulong itemDBId)
+        public void RemoveItem(InventoryItem item, int quantity)
+        {
+            RemoveItemByUniqueId(item.uniqueId, quantity);
+        }
+
+        public void RemoveItemByUniqueId(ulong itemDBId, int quantity)
         {
             ushort slot = 0;
             InventoryItem toDelete = null;
@@ -288,10 +295,18 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             if (toDelete == null)
                 return;
-            
-            DoDatabaseRemove(toDelete.uniqueId);
 
-            list[slot] = null;
+            if (quantity >= toDelete.quantity)
+            {
+                DoDatabaseRemove(toDelete.uniqueId);
+                list[slot] = null;
+            }
+            else
+            {
+                list[slot].quantity -= quantity;
+                //DoDatabaseUpdateQuantity(toDelete.uniqueId);
+            }
+            
             isDirty[slot] = true;
 
             DoRealign();

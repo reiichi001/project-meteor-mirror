@@ -21,7 +21,6 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public ulong uniqueId;
         public uint itemId;
         public int quantity = 1;
-        public ushort slot;
 
         public byte dealingVal       = 0;
         public byte dealingMode      = DEALINGMODE_NONE;
@@ -39,6 +38,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public ItemModifier modifiers;
 
         public readonly ItemData itemData;
+        public ushort slot;
+        public ushort itemPackage;
 
         public class ItemModifier
         {
@@ -193,6 +194,12 @@ namespace FFXIVClassic_Map_Server.dataobjects
             }
 
             return data;        
+        }
+
+        public void RefreshPositioning(ushort itemPackage, ushort slot)
+        {
+            this.itemPackage = itemPackage;
+            this.slot = slot;
         }
 
         public void SetExclusive(bool isExclusive)

@@ -12,19 +12,19 @@ namespace FFXIVClassic_Map_Server
     class LuaUtils
     {
     
-        public class Type7Param
+        public class ItemRefParam
         {
             public uint actorId;
             public byte unknown;
             public byte slot;
-            public byte inventoryType;
+            public byte itemPackage;
 
-            public Type7Param(uint actorId, byte unknown, byte slot, byte inventoryType)
+            public ItemRefParam(uint actorId, byte unknown, byte slot, byte itemPackage)
             {
                 this.actorId = actorId;
                 this.unknown = unknown;
                 this.slot = slot;
-                this.inventoryType = inventoryType;
+                this.itemPackage = itemPackage;
             }
         }
 
@@ -86,7 +86,7 @@ namespace FFXIVClassic_Map_Server
                         byte type7Unknown = reader.ReadByte();
                         byte type7Slot = reader.ReadByte();
                         byte type7InventoryType = reader.ReadByte();
-                        value = new Type7Param(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
+                        value = new ItemRefParam(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
                         break;  
                     case 0x9: //Two Longs (only storing first one)
                         value = new Type9Param(Utils.SwapEndian(reader.ReadUInt64()), Utils.SwapEndian(reader.ReadUInt64()));
@@ -146,11 +146,11 @@ namespace FFXIVClassic_Map_Server
                         writer.Write((UInt32)Utils.SwapEndian((UInt32)l.value));
                         break;
                     case 0x7: //Weird one used for inventory
-                        Type7Param type7 = (Type7Param)l.value;
+                        ItemRefParam type7 = (ItemRefParam)l.value;
                         writer.Write((UInt32)Utils.SwapEndian((UInt32)type7.actorId));
                         writer.Write((Byte)type7.unknown);
                         writer.Write((Byte)type7.slot);
-                        writer.Write((Byte)type7.inventoryType);
+                        writer.Write((Byte)type7.itemPackage);
                         break;
                     case 0x9: //Two Longs (only storing first one)
                         writer.Write((UInt64)Utils.SwapEndian(((Type9Param)l.value).item1));
@@ -220,7 +220,7 @@ namespace FFXIVClassic_Map_Server
                                 byte type7Unknown = reader.ReadByte();
                                 byte type7Slot = reader.ReadByte();
                                 byte type7InventoryType = reader.ReadByte();
-                                value = new Type7Param(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
+                                value = new ItemRefParam(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
                                 break;
                             case 0x9: //Two Longs (only storing first one)
                                 value = new Type9Param(Utils.SwapEndian(reader.ReadUInt64()), Utils.SwapEndian(reader.ReadUInt64()));
@@ -353,9 +353,9 @@ namespace FFXIVClassic_Map_Server
             {
                 luaParams.Add(new LuaParam(0x6, ((Actor)o).actorId));
             }
-            else if (o is Type7Param)
+            else if (o is ItemRefParam)
             {
-                luaParams.Add(new LuaParam(0x7, (Type7Param)o)); 
+                luaParams.Add(new LuaParam(0x7, (ItemRefParam)o)); 
             }
             else if (o is Type9Param)
             {
@@ -410,8 +410,8 @@ namespace FFXIVClassic_Map_Server
                         dumpString += String.Format("0x{0:X}", (uint)lParams[i].value);
                         break;
                     case 0x7: //Weird one used for inventory
-                        Type7Param type7Param = ((Type7Param)lParams[i].value);
-                        dumpString += String.Format("Type7 Param: (0x{0:X}, 0x{1:X}, 0x{2:X}, 0x{3:X})", type7Param.actorId, type7Param.unknown, type7Param.slot, type7Param.inventoryType);
+                        ItemRefParam type7Param = ((ItemRefParam)lParams[i].value);
+                        dumpString += String.Format("Type7 Param: (0x{0:X}, 0x{1:X}, 0x{2:X}, 0x{3:X})", type7Param.actorId, type7Param.unknown, type7Param.slot, type7Param.itemPackage);
                         break;
                     case 0xC: //Byte
                         dumpString += String.Format("0x{0:X}", (byte)lParams[i].value);
