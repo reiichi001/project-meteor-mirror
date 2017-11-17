@@ -17,8 +17,7 @@ namespace FFXIVClassic_Map_Server.packets.send.search
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    binWriter.Write(Encoding.ASCII.GetBytes(sender), 0, Encoding.ASCII.GetByteCount(sender) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(sender));
-
+                   
                 }
             }
             return new SubPacket(OPCODE, sourceActorId, data);
