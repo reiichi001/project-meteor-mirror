@@ -25,6 +25,7 @@ Actorclass Id - 1500295 : Lalaroon, Ul'dah
 --]]
 
 require ("global")
+require ("shop")
 
 shopInfo = { -- [ index ] = { itemId, gilPrice, sealPrice, city, itemCategory }
 [1001] = {3020202, 100, 10000, 1, 1},
@@ -121,7 +122,7 @@ function processGilShop(player)
                     location = INVENTORY_NORMAL;  
                 end
                 
-                purchaseItem(player, shopInfo[buyResult][1], 1, 1, shopInfo[buyResult][3], gilCurrency, location);  
+                purchaseItem(player, location, shopInfo[buyResult][1], 1, 1, shopInfo[buyResult][3], gilCurrency);  
             end
         end   
     end
@@ -150,44 +151,9 @@ function processSealShop(player)
                     location = INVENTORY_NORMAL;  
                 end
             
-                purchaseItem(player, shopInfo[buyResult][1], 1, 1, shopInfo[buyResult][2], playerGCSeal, location);  
+                purchaseItem(player, location, shopInfo[buyResult][1], 1, 1, shopInfo[buyResult][2], playerGCSeal);  
             end
         end   
     end
 end
 
-function purchaseItem(player, itemId, quantity, quality, price, currency, location)
-    
-    local worldMaster = GetWorldMaster();
-    local cost = quantity * price;        
-    local gItemData = GetItemGamedata(itemId);    
-    local isUnique = gItemData.isRare;
-    
-    if player:GetInventory(location):HasItem(itemId) and isUnique then
-        -- You cannot have more than one <itemId> <quality> in your possession at any given time.
-        player:SendGameMessage(player, worldMaster, 40279, MESSAGE_TYPE_SYSTEM, itemId, quality);
-        return;
-    end
-    
-    if (not player:GetInventory(location):IsFull() or player:GetInventory(location):IsSpaceForAdd(itemId, quantity)) then
-        if player:GetInventory(INVENTORY_CURRENCY):HasItem(currency, cost) then
-            player:GetInventory(INVENTORY_CURRENCY):removeItem(currency, cost) 
-            player:GetInventory(location):AddItem(itemId, quantity, quality); 
-            if currency == 1000001 then
-                -- You purchase <quantity> <itemId> <quality> for <cost> gil.
-                player:SendGameMessage(player, worldMaster, 25061, MESSAGE_TYPE_SYSTEM, itemId, quality, quantity, cost); 
-            elseif currency == 1000201 or currency == 1000202 or currency == 1000203 then 
-                -- You exchange <quantity> <GC seals> for <quantity> <itemId> <quality>.
-                player:SendGameMessage(player, GetWorldMaster(), 25275, MESSAGE_TYPE_SYSTEM, itemId, quality, quantity, price, player.gcCurrent);
-            
-            end
-        else
-            -- You do not have enough gil.  (Should never see this aside from packet injection, since client prevents buying if not enough currency)
-            player:SendGameMessage(player, worldMaster, 25065, MESSAGE_TYPE_SYSTEM);
-        end
-    else
-        -- Your inventory is full.
-        player:SendGameMessage(player, worldMaster, 60022, MESSAGE_TYPE_SYSTEM);
-    end
-    return
-end

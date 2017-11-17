@@ -69,7 +69,7 @@ function onEventStarted(player, actor, triggerName, emoteId, unknownArg1, arg2, 
 		targetId = 0;
 	end
 
-	if (player:GetState() == 0) then	
+	if (player:GetState() == 0 or player:GetState() == 11 or player:GetState() == 13) then	
 		emote = emoteTable[emoteId];		
 		if (emote ~= nil) then
 			player:doEmote(targetId, emote.animId, emote.descId);

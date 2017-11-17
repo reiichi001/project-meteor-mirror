@@ -94,7 +94,30 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             return null;
         }
 
-        public INV_ERROR AddItem(uint itemId)
+
+        public int GetItemQuantity(uint itemId)
+        {
+            return GetItemQuantity(itemId, 1);
+        }
+
+        public int GetItemQuantity(uint itemId, uint quality)
+        {
+            int count = 0;
+
+            for (int i = endOfListIndex - 1; i >= 0; i--)
+            {
+                InventoryItem item = list[i];
+
+                if (item.itemId == itemId && item.quality == quality)
+                    count += item.quantity;
+
+            }
+
+            return count;
+        }
+
+
+        public int AddItem(uint itemId)
         {
             return AddItem(itemId, 1, 1);
         }
@@ -105,22 +128,22 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 AddItem(itemId[i]);
         }
 
-        public INV_ERROR AddItem(uint itemId, int quantity)
+        public int AddItem(uint itemId, int quantity)
         {
             return AddItem(itemId, quantity, 1);
         }
 
-        public INV_ERROR AddItem(uint itemId, int quantity, byte quality)
+        public int AddItem(uint itemId, int quantity, byte quality)
         {
             if (!IsSpaceForAdd(itemId, quantity, quality))
-                return INV_ERROR.INVENTORY_FULL;
+                return (int)INV_ERROR.INVENTORY_FULL;
 
             ItemData gItem = Server.GetItemGamedata(itemId);
           
             if (gItem == null)
             {
                 Program.Log.Error("Inventory.AddItem: unable to find item %u", itemId);
-                return INV_ERROR.SYSTEM_ERROR;
+                return (int)INV_ERROR.SYSTEM_ERROR;
             }
 
             //Check if item id exists 
@@ -146,8 +169,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             }
                   
             //If it's unique, abort
-            if (quantityCount > 0 && gItem.isExclusive)
-                return INV_ERROR.ALREADY_HAS_UNIQUE;
+            if (HasItem(itemId) && gItem.isRare)
+                return (int)INV_ERROR.ALREADY_HAS_UNIQUE;
 
             //New item that spilled over
             while (quantityCount > 0)
@@ -161,9 +184,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 DoDatabaseAdd(addedItem);
             }
 
-            SendUpdatePackets();           
+            SendUpdatePackets();
 
-            return INV_ERROR.SUCCESS;
+            return (int)INV_ERROR.SUCCESS;
         }
 
         public void RemoveItem(uint itemId)
