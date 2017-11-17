@@ -3,7 +3,7 @@ using System.Text;
 
 using FFXIVClassic.Common;
 
-namespace FFXIVClassic_Map_Server.packets.send.social
+namespace FFXIVClassic_Map_Server.packets.send.search
 {
     class ItemSearchResultsEndPacket
     {

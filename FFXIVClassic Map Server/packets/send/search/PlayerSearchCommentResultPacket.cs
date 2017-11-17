@@ -3,9 +3,8 @@ using System.Text;
 
 using FFXIVClassic.Common;
 using System;
-using FFXIVClassic_Map_Server.packets.send.search;
 
-namespace FFXIVClassic_Map_Server.packets.send.social
+namespace FFXIVClassic_Map_Server.packets.send.search
 {
     class PlayerSearchCommentResultPacket
     {

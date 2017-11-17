@@ -2,10 +2,9 @@
 using System.Text;
 using System;
 using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.packets.send.search;
 using System.Collections.Generic;
 
-namespace FFXIVClassic_Map_Server.packets.send.social
+namespace FFXIVClassic_Map_Server.packets.send.search
 {
     class ItemSearchResultsBodyPacket
     {
