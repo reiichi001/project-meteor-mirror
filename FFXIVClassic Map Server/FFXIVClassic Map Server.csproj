@@ -265,9 +265,6 @@
     <Compile Include="packets\send\recruitment\RecruiterStatePacket.cs" />
     <Compile Include="packets\send\recruitment\StartRecruitingResponse.cs" />
     <Compile Include="packets\send\search\ItemSearchClosePacket.cs" />
-    <Compile Include="packets\send\search\RetainerResultEndPacket.cs" />
-    <Compile Include="packets\send\search\RetainerResultUpdatePacket.cs" />
-    <Compile Include="packets\send\search\RetainerResultBodyPacket.cs" />
     <Compile Include="packets\send\search\PlayerSearchResult.cs" />
     <Compile Include="packets\send\search\ItemSearchResult.cs" />
     <Compile Include="packets\send\search\PlayerSearchCommentResultPacket.cs" />
