@@ -39,8 +39,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public ItemModifier modifiers;
 
         public readonly ItemData itemData;
-        public ushort slot;
-        public ushort itemPackage;
+        public ushort slot = 0xFFFF;
+        public ushort itemPackage = 0xFFFF;
 
         public class ItemModifier
         {
@@ -213,6 +213,24 @@ namespace FFXIVClassic_Map_Server.dataobjects
             tags[0] = isAttached ? TAG_ATTACHED : (byte)0;
         }
 
+        public void SetNormal()
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                if (tags[i] == TAG_DEALING || tags[i] == TAG_ATTACHED)
+                {
+                    tags[i] = 0;
+                    tagValues[i] = 0;
+                    attachedTo = 0;
+                    dealingVal = 0;
+                    dealingMode = 0;
+                    dealingAttached1 = 0;
+                    dealingAttached2 = 0;
+                    dealingAttached3 = 0;
+                }
+            }
+        }
+
         public void SetDealing(byte mode, int price)
         {                             
             tags[0] = TAG_DEALING;
@@ -263,6 +281,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
             }
 
             return 0;
+        }
+
+        public bool IsSelling()
+        {
+            return GetBazaarMode() == TYPE_SINGLE || GetBazaarMode() == TYPE_MULTI || GetBazaarMode() == TYPE_STACK;
         }
     }
 }

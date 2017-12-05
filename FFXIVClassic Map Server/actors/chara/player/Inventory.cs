@@ -56,7 +56,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             int i = 0;
             foreach (InventoryItem item in itemsFromDB)
+            {
+                item.RefreshPositioning(itemPackageCode, (ushort) i);
                 list[i++] = item;
+            }
             endOfListIndex = i;
         }
 
@@ -107,7 +110,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         }
 
         public INV_ERROR AddItem(InventoryItem itemRef)
-        {
+        {            
+            //If it isn't a single item (ie: armor) just add like normal (not valid for BAZAAR)
+            if (itemPackageCode != BAZAAR && itemRef.GetItemData().maxStack > 1)
+                return AddItem(itemRef.itemId, itemRef.quantity, itemRef.quality);
+
             if (!IsSpaceForAdd(itemRef.itemId, itemRef.quantity, itemRef.quality))
                 return INV_ERROR.INVENTORY_FULL;
 
@@ -136,7 +143,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return INV_ERROR.INVENTORY_FULL;
 
             ItemData gItem = Server.GetItemGamedata(itemId);
-          
+
+            //If it's unique, abort
+            if (HasItem(itemId) && gItem.isExclusive)
+                return INV_ERROR.ALREADY_HAS_UNIQUE;
+
             if (gItem == null)
             {
                 Program.Log.Error("Inventory.AddItem: unable to find item %u", itemId);
@@ -164,10 +175,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                         break;
                 }
             }
-                  
-            //If it's unique, abort
-            if (quantityCount > 0 && gItem.isExclusive)
-                return INV_ERROR.ALREADY_HAS_UNIQUE;
 
             //New item that spilled over
             while (quantityCount > 0)
@@ -180,9 +187,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 }
                 
                 InventoryItem addedItem = Database.CreateItem(itemId, Math.Min(quantityCount, gItem.maxStack), quality, modifiers);
-                addedItem.slot = (ushort)endOfListIndex;
+                addedItem.RefreshPositioning(itemPackageCode, (ushort)endOfListIndex);
                 isDirty[endOfListIndex] = true;
-                list[endOfListIndex++] = addedItem;                
+                list[endOfListIndex++] = addedItem;
                 quantityCount -= gItem.maxStack;
 
                 DoDatabaseAdd(addedItem);
@@ -197,6 +204,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             list[slot] = item;
             SendUpdatePackets();
+            item.RefreshPositioning(itemPackageCode, slot);
         }
 
         public void RemoveItem(uint itemId)
@@ -260,7 +268,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public void RemoveItem(InventoryItem item)
         {
-            RemoveItemByUniqueId(item.uniqueId, 1);
+            RemoveItemByUniqueId(item.uniqueId, item.quantity);
         }
 
         public void RemoveItem(InventoryItem item, int quantity)
@@ -272,7 +280,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             ushort slot = 0;
             InventoryItem toDelete = null;
-            for (int i = endOfListIndex - 1; i >= 0; i--)
+            for (int i = 0; i < endOfListIndex; i++)
             {
                 InventoryItem item = list[i];
 
@@ -292,6 +300,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (quantity >= toDelete.quantity)
             {
                 DoDatabaseRemove(toDelete.uniqueId);
+                list[slot].RefreshPositioning(0xFFFF, 0xFFFF);
                 list[slot] = null;
             }
             else
@@ -313,6 +322,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             DoDatabaseRemove(list[slot].uniqueId);
 
+            list[slot].RefreshPositioning(0xFFFF, 0xFFFF);
             list[slot] = null;
             isDirty[slot] = true;
             
@@ -333,6 +343,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 {
                     DoDatabaseRemove(list[slot].uniqueId);
 
+                    list[slot].RefreshPositioning(0xFFFF, 0xFFFF);
                     list[slot] = null;
                     DoRealign();
                 }
@@ -348,6 +359,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             for (int i = 0; i < endOfListIndex; i++)
             {
+                list[i].RefreshPositioning(0xFFFF, 0xFFFF);
                 list[i] = null;
                 isDirty[i] = true;
             }
@@ -504,6 +516,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (isTemporary)
                 return;
 
+            if (itemPackageCode == BAZAAR)
+                return;
+
             if (owner is Player)            
                 Database.AddItem((Player)owner, addedItem, itemPackageCode);            
             else if (owner is Retainer)
@@ -513,6 +528,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         private void DoDatabaseQuantity(ulong itemDBId, int quantity)
         {
             if (isTemporary)
+                return;
+
+
+            if (itemPackageCode == BAZAAR)
                 return;
 
             if (owner is Player)            
@@ -526,6 +545,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (isTemporary)
                 return;
 
+            if (itemPackageCode == BAZAAR)
+                return;
+
             if (owner is Player)            
                 Database.RemoveItem((Player)owner, itemDBId);            
             else if (owner is Retainer)
@@ -534,7 +556,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         private void SendUpdatePackets()
         {
-            if (owner is Player)
+            if (owner is Player && !holdingUpdates)
             {
                 SendUpdatePackets((Player)owner);
             }                
@@ -560,7 +582,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             }
 
             if (!holdingUpdates)
-                DoneSendUpdate();
+                Array.Clear(isDirty, 0, isDirty.Length);
 
             player.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
             player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, itemPackageCapacity, itemPackageCode));                        
@@ -580,6 +602,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         public void DoneSendUpdate()
         {
             holdingUpdates = false;
+            SendUpdatePackets();
             Array.Clear(isDirty, 0, isDirty.Length);
         }
 

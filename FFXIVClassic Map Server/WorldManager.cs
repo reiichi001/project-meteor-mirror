@@ -1044,27 +1044,30 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public InventoryItem CreateItem(uint itemId, int amount, byte quality = 1)
+        public InventoryItem CreateItem(uint itemId, int amount, byte quality = 1, InventoryItem.ItemModifier modifiers = null)
         {
-            return Database.CreateItem(itemId, amount, quality);
+            return Database.CreateItem(itemId, amount, quality, modifiers);
         }
 
         public void AddToBazaar(Player player, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount, byte bazaarMode)
         {
-            bool succ = Database.CreateBazaarEntry(player, reward, seek, rewardAmount, seekAmount, bazaarMode);
+            bool succ = false;
+
+            if (bazaarMode == InventoryItem.TYPE_SINGLE || bazaarMode == InventoryItem.TYPE_MULTI || bazaarMode == InventoryItem.TYPE_STACK)
+                succ = Database.CreateBazaarEntry(player, reward, seek, rewardAmount, 0, bazaarMode, seekAmount);
+            else
+                succ = Database.CreateBazaarEntry(player, reward, seek, rewardAmount, seekAmount, bazaarMode);
 
             if (succ)
             {                
                 if (bazaarMode != InventoryItem.TYPE_SINGLE && bazaarMode != InventoryItem.TYPE_MULTI && bazaarMode != InventoryItem.TYPE_STACK)
                 {
                     reward.SetDealingAttached(bazaarMode, seek.uniqueId);
+                    seek.SetHasAttached(true);
                     player.GetItemPackage(Inventory.BAZAAR).StartSendUpdate();
                     player.GetItemPackage(Inventory.BAZAAR).AddItem(reward);
                     player.GetItemPackage(Inventory.BAZAAR).AddItem(seek);
-
                     reward.SetAttachedIndex(Inventory.BAZAAR, seek.slot);
-                    seek.SetHasAttached(true);
-
                     player.GetItemPackage(Inventory.BAZAAR).DoneSendUpdate();
                 }
                 else
@@ -1078,36 +1081,33 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        /*
-        public void RemoveFromBazaar(Player player, ushort position)
+        
+        public void RemoveFromBazaar(Player player, InventoryItem rewardRef)
         {
-            InventoryItem reward = player.GetInventory(Inventory.BAZAAR).GetItemAtSlot(position);
-            InventoryItem seek = null;
+            ushort attachedItemPackage = (ushort)((rewardRef.dealingAttached1 >> 16) & 0xFF);
+            ushort attachedSlot = (ushort) (rewardRef.dealingAttached1 & 0xFF);
 
-            seek = player.GetInventory(Inventory.BAZAAR).
+            InventoryItem seekRef = rewardRef.IsSelling() ? null : player.GetItemPackage(attachedItemPackage).GetItemAtSlot(attachedSlot);           
 
-            Database.ClearBazaarEntry(player, reward);
+            Database.ClearBazaarEntry(player, rewardRef);
 
-            player.GetInventory(Inventory.BAZAAR).RemoveItem(reward);
-            player.GetInventory(Inventory.BAZAAR).RemoveItem(seek);
+            player.GetItemPackage(Inventory.BAZAAR).RemoveItem(rewardRef);
 
-            player.GetInventory(Inventory.NORMAL).StartSendUpdate();
-            player.GetInventory(Inventory.CURRENCY_CRYSTALS).StartSendUpdate();
+            bool isSelling = rewardRef.IsSelling();
+            rewardRef.SetNormal();
 
-            if (reward.itemId == 1000001)            
-                player.GetInventory(Inventory.CURRENCY_CRYSTALS).AddItem(reward.itemId, reward.quantity);            
-            else
-                player.GetInventory(Inventory.NORMAL).AddItem(reward);
+            if (seekRef != null)
+                player.GetItemPackage(Inventory.BAZAAR).RemoveItem(seekRef);
 
-            if (reward.itemId == 1000001)
-                player.GetInventory(Inventory.CURRENCY_CRYSTALS).AddItem(seek.itemId, seek.quantity);
-            else
-                player.GetInventory(Inventory.NORMAL).AddItem(seek);
+            player.AddItem(rewardRef);
 
-            player.GetInventory(Inventory.NORMAL).DoneSendUpdate();
-            player.GetInventory(Inventory.CURRENCY_CRYSTALS).DoneSendUpdate();            
+            if (!isSelling)
+            {
+                seekRef.SetNormal();
+                player.AddItem(seekRef);
+            }
         }
-
+        /*
         public void TransactionBazaar(Player owner, Player other, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount)
         {
             Database.ClearBazaarEntry(owner, reward, seek);

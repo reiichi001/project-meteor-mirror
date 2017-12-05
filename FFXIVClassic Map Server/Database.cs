@@ -1272,8 +1272,6 @@ namespace FFXIVClassic_Map_Server
                                  modifier = new InventoryItem.ItemModifier(reader);                           
 
                             InventoryItem item = new InventoryItem(uniqueId, Server.GetItemGamedata(itemId), quantity, qualityNumber, modifier);
-                            item.slot = slot;
-                            slot++;
                             items.Add(item);
                         }
                     }
@@ -1471,7 +1469,7 @@ namespace FFXIVClassic_Map_Server
                                     FROM characters_inventory_bazaar
                                     INNER JOIN server_items ON seekId = server_items.id
                                     LEFT JOIN server_items_modifiers ON server_items.id = server_items_modifiers.id
-                                    WHERE characterId = @charaId";
+                                    WHERE characterId = @charaId and bazaarMode != 11 and bazaarMode != 12 and bazaarMode != 13";
 
                     MySqlCommand cmd2 = new MySqlCommand(query2, conn);
                     cmd2.Parameters.AddWithValue("@charaId", player.actorId);
@@ -1595,8 +1593,6 @@ namespace FFXIVClassic_Map_Server
                                 modifier = new InventoryItem.ItemModifier(reader);
 
                             InventoryItem item = new InventoryItem(uniqueId, Server.GetItemGamedata(itemId), quantity, qualityNumber, modifier);
-                            item.slot = slot;
-                            slot++;
                             items.Add(item);
                         }
                     }
@@ -1678,9 +1674,9 @@ namespace FFXIVClassic_Map_Server
 
                     string query = @"
                                     INSERT INTO characters_inventory
-                                    (characterId, itemPackage, serverItemId, quantity)
+                                    (characterId, itemPackage, serverItemId)
                                     VALUES
-                                    (@charId, @itemPackage, @serverItemId, @quantity)                                    
+                                    (@charId, @itemPackage, @serverItemId)                                    
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -1688,7 +1684,6 @@ namespace FFXIVClassic_Map_Server
                     cmd.Parameters.AddWithValue("@serverItemId", addedItem.uniqueId);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@itemPackage", type);
-                    cmd.Parameters.AddWithValue("@quantity", addedItem.quantity);
 
                     cmd.ExecuteNonQuery();                                      
                 }

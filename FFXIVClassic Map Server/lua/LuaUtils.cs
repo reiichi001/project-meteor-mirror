@@ -28,6 +28,24 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public class ItemOfferParam
+        {
+            public uint actorId;
+            public ushort offerSlot;
+            public ushort unknown1;
+            public ushort seekSlot;
+            public ushort unknown2;
+
+            public ItemOfferParam(uint actorId, ushort unknown1, ushort offerSlot, ushort seekSlot, ushort unknown2)
+            {
+                this.actorId = actorId;
+                this.unknown1 = unknown1;
+                this.offerSlot = offerSlot;
+                this.seekSlot = seekSlot;
+                this.unknown2 = unknown2;
+            }
+        }
+
         public class Type9Param
         {
             public ulong item1;
@@ -81,13 +99,25 @@ namespace FFXIVClassic_Map_Server
                     case 0x6: //Actor (By Id)
                         value = Utils.SwapEndian(reader.ReadUInt32());
                         break;
-                    case 0x7: //Weird one used for inventory
-                        uint type7ActorId = Utils.SwapEndian(reader.ReadUInt32());
-                        byte type7Unknown = reader.ReadByte();
-                        byte type7Slot = reader.ReadByte();
-                        byte type7InventoryType = reader.ReadByte();
-                        value = new ItemRefParam(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
+                    case 0x7: //Item Reference to Inventory Spot
+                        {
+                            uint type7ActorId = Utils.SwapEndian(reader.ReadUInt32());
+                            byte type7Unknown = reader.ReadByte();
+                            byte type7Slot = reader.ReadByte();
+                            byte type7InventoryType = reader.ReadByte();
+                            value = new ItemRefParam(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
+                        }
                         break;  
+                    case 0x8: //Used for offering
+                        {
+                            uint actorId = Utils.SwapEndian(reader.ReadUInt32());
+                            ushort unk1 = Utils.SwapEndian(reader.ReadUInt16());
+                            ushort offerSlot = Utils.SwapEndian(reader.ReadUInt16());
+                            ushort seekSlot = Utils.SwapEndian(reader.ReadUInt16());
+                            ushort unk2 = Utils.SwapEndian(reader.ReadUInt16());
+                            value = new ItemOfferParam(actorId, unk1, offerSlot, seekSlot, unk2);
+                        }
+                        break;
                     case 0x9: //Two Longs (only storing first one)
                         value = new Type9Param(Utils.SwapEndian(reader.ReadUInt64()), Utils.SwapEndian(reader.ReadUInt64()));
                         break;
@@ -105,7 +135,13 @@ namespace FFXIVClassic_Map_Server
                 if (isDone)
                     break;
 
-                if (value != null)
+                //Special case cause fuck Type8
+                if (value != null && value is ItemOfferParam)
+                {
+                    luaParams.Add(new LuaParam(code, value));
+                    luaParams.Add(new LuaParam(5, null));
+                }
+                else if (value != null)
                     luaParams.Add(new LuaParam(code, value));
                 else if (wasNil)
                     luaParams.Add(new LuaParam(code, value));
@@ -355,7 +391,11 @@ namespace FFXIVClassic_Map_Server
             }
             else if (o is ItemRefParam)
             {
-                luaParams.Add(new LuaParam(0x7, (ItemRefParam)o)); 
+                luaParams.Add(new LuaParam(0x7, (ItemRefParam)o));
+            }
+            else if (o is ItemOfferParam)
+            {
+                luaParams.Add(new LuaParam(0x8, (ItemOfferParam)o));
             }
             else if (o is Type9Param)
             {
@@ -413,13 +453,17 @@ namespace FFXIVClassic_Map_Server
                         ItemRefParam type7Param = ((ItemRefParam)lParams[i].value);
                         dumpString += String.Format("Type7 Param: (0x{0:X}, 0x{1:X}, 0x{2:X}, 0x{3:X})", type7Param.actorId, type7Param.unknown, type7Param.slot, type7Param.itemPackage);
                         break;
-                    case 0xC: //Byte
-                        dumpString += String.Format("0x{0:X}", (byte)lParams[i].value);
+                    case 0x8: //Weird one used for inventory
+                        ItemOfferParam itemOfferParam = ((ItemOfferParam)lParams[i].value);
+                        dumpString += String.Format("Type8 Param: (0x{0:X}, 0x{1:X}, 0x{2:X}, 0x{3:X}, 0x{4:X})", itemOfferParam.actorId, itemOfferParam.unknown1, itemOfferParam.offerSlot, itemOfferParam.seekSlot, itemOfferParam.unknown2);
                         break;
                     case 0x9: //Long (+ 8 bytes ignored)
                         Type9Param type9Param = ((Type9Param)lParams[i].value);
                         dumpString += String.Format("Type9 Param: (0x{0:X}, 0x{1:X})", type9Param.item1, type9Param.item2);
                         break;
+                    case 0xC: //Byte
+                        dumpString += String.Format("0x{0:X}", (byte)lParams[i].value);
+                        break;                   
                     case 0x1B: //Short?
                         dumpString += String.Format("0x{0:X}", (ushort)lParams[i].value);
                         break;

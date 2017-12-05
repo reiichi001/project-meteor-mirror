@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
-    class Character:Actor
+    class Character : Actor
     {
         public const int SIZE = 0;
         public const int COLORINFO = 1;
@@ -63,8 +63,9 @@ namespace FFXIVClassic_Map_Server.Actors
         protected Dictionary<ushort, Inventory> itemPackages = new Dictionary<ushort, Inventory>();
         protected Equipment equipment;
 
-        public Character(uint actorID) : base(actorID)
-        {            
+        public Character(uint actorID)
+            : base(actorID)
+        {
             //Init timer array to "notimer"
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
                 charaWork.statusShownTime[i] = 0xFFFFFFFF;
@@ -78,7 +79,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public SubPacket CreateInitStatusPacket()
         {
-            return (SetActorStatusAllPacket.BuildPacket(actorId, charaWork.status));                      
+            return (SetActorStatusAllPacket.BuildPacket(actorId, charaWork.status));
         }
 
         public SubPacket CreateSetActorIconPacket()
@@ -106,13 +107,13 @@ namespace FFXIVClassic_Map_Server.Actors
             currentContentGroup = group;
 
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/currentContentGroup", this);
-            propPacketUtil.AddProperty("charaWork.currentContentGroup");            
+            propPacketUtil.AddProperty("charaWork.currentContentGroup");
             zone.BroadcastPacketsAroundActor(this, propPacketUtil.Done());
 
-        }     
-   
+        }
+
         public void PlayAnimation(uint animId, bool onlySelf = false)
-        {            
+        {
             if (onlySelf)
             {
                 if (this is Player)
@@ -121,7 +122,7 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
         }
-        
+
         #region Inventory
 
         public void AddItem(uint catalogID)
@@ -148,7 +149,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             ushort itemPackage = GetPackageForItem(item.GetItemData().catalogID);
             if (itemPackages.ContainsKey(itemPackage))
-            {                
+            {
                 itemPackages[itemPackage].AddItem(item);
             }
         }
@@ -169,9 +170,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 return;
 
             itemPackages[sourcePackage].RemoveItem(item);
-            itemPackages[destinationPackage].AddItem(item);            
+            itemPackages[destinationPackage].AddItem(item);
         }
-        
+
         public void RemoveItem(uint catalogID)
         {
             RemoveItem(catalogID, 1);
@@ -187,7 +188,7 @@ namespace FFXIVClassic_Map_Server.Actors
             ushort itemPackage = GetPackageForItem(catalogID);
             if (itemPackages.ContainsKey(itemPackage))
             {
-                itemPackages[itemPackage].RemoveItem(catalogID, quantity, quantity);
+                itemPackages[itemPackage].RemoveItem(catalogID, quantity, quality);
             }
         }
 
@@ -269,7 +270,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (data == null)
                 return Inventory.NORMAL;
             else
-            {                
+            {
                 if (data.IsMoney())
                     return Inventory.CURRENCY_CRYSTALS;
                 else if (data.IsImportant())
