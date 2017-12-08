@@ -1,4 +1,5 @@
 require ("global")
+require ("modifiers")
 require ("ally")
 
 function onSpawn(ally)

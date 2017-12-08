@@ -48,7 +48,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
             if(owner.aiContainer.IsEngaged())
             {
-                DoCombatTick(tick);
+                //DoCombatTick(tick);
             }
 
             //Only move if owner isn't dead and is either too far away from their spawn point or is meant to roam
@@ -143,8 +143,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             owner.aiContainer.pathFind.PreparePath(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 10);
             neutralTime = lastActionTime;
             owner.hateContainer.ClearHate();
-            owner.ResetMoveSpeeds();
-            owner.moveState = 1;
             lua.LuaEngine.CallLuaBattleFunction(owner, "onDisengage", owner, target, Utils.UnixTimeStampUTC(lastUpdate));
         }
 
@@ -215,6 +213,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
 
             Move();
+
+            if ((tick - lastCombatTickScript).TotalSeconds > 2)
+            {
+                lua.LuaEngine.CallLuaBattleFunction(owner, "onCombatTick", owner, owner.target, Utils.UnixTimeStampUTC(tick), contentGroupCharas);
+                lastCombatTickScript = tick;
+            }
         }
 
         protected virtual void Move()

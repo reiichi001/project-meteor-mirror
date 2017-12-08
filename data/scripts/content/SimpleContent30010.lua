@@ -1,4 +1,5 @@
 require ("global")
+require ("ally")
 require ("modifiers")
 
 function onCreate(starterPlayer, contentArea, director)
@@ -31,6 +32,42 @@ function onCreate(starterPlayer, contentArea, director)
 	
 	--director:StartContentGroup();
 	
+end
+
+function onUpdate(area, tick)
+	local players = area:GetPlayers()
+	local mobs = area:GetMonsters()
+	local allies = area:GetAllies()
+	local resumeChecks = true
+	for player in players do
+		if player then
+			local exitLoop = false
+			for ally in allies do
+				if ally then
+					if not ally:IsEngaged() then
+						if player:IsEngaged() then
+							ally.neutral = false
+							ally.isAutoAttackEnabled = true
+							ally:SetMod(modifiersGlobal.Speed, 8)
+							allyGlobal.EngageTarget(ally, player.target)
+							exitLoop = true
+							break
+						-- todo: support scripted paths
+						elseif ally:GetSpeed() > 0 then
+							
+						end
+					end
+				end
+			end
+			if exitLoop then
+				resumeChecks = false
+				break
+			end
+		end
+	end
+	if not resumeChecks then
+		return
+	end
 end
 
 function onDestroy()

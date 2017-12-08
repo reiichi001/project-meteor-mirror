@@ -38,7 +38,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
             if (target == null || target.IsDead())
             {
-                if (owner is BattleNpc)
+                if (owner.IsMonster() || owner.IsAlly())
                     target = ((BattleNpc)owner).hateContainer.GetMostHatedTarget();
             }
             else
@@ -129,6 +129,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         private bool CanAttack()
         {
+            return false;
             if (!owner.isAutoAttackEnabled)
             {
                 return false;
@@ -141,7 +142,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             // todo: shouldnt need to check if owner is dead since all states would be cleared
             if (owner.IsDead() || target.IsDead())
             {
-                if (owner is BattleNpc)
+                if (owner.IsMonster() || owner.IsAlly())
                     ((BattleNpc)owner).hateContainer.ClearHate(target);
 
                 owner.aiContainer.ChangeTarget(null);

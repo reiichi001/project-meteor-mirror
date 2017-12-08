@@ -90,12 +90,7 @@ namespace FFXIVClassic_Map_Server.Actors
             spawnY = posY;
             spawnZ = posZ;
 
-            // todo: read these from db also
-            detectionType = DetectionType.Sight;
-            this.moveState = 2;
-            ResetMoveSpeeds();
             despawnTime = 10;
-            respawnTime = 30;
             CalculateBaseStats();
         }
 
@@ -245,19 +240,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (respawnTime > 0)
             {
-                base.Spawn(tick);
-
-                this.isMovingToSpawn = false;
-                this.ResetMoveSpeeds();
-                this.hateContainer.ClearHate();
-                zone.BroadcastPacketsAroundActor(this, GetSpawnPackets(null, 0x01));
-                zone.BroadcastPacketsAroundActor(this, GetInitPackets());
-                charaWork.parameterSave.hp = charaWork.parameterSave.hpMax;
-                charaWork.parameterSave.mp = charaWork.parameterSave.mpMax;
-                RecalculateStats();
-
-                OnSpawn();
-                updateFlags |= ActorUpdateFlags.AllNpc;
+                ForceRespawn();
             }
         }
 
@@ -266,7 +249,6 @@ namespace FFXIVClassic_Map_Server.Actors
             base.Spawn(Program.Tick);
 
             this.isMovingToSpawn = false;
-            this.ResetMoveSpeeds();
             this.hateContainer.ClearHate();
             zone.BroadcastPacketsAroundActor(this, GetSpawnPackets(null, 0x01));
             zone.BroadcastPacketsAroundActor(this, GetInitPackets());
@@ -302,7 +284,7 @@ namespace FFXIVClassic_Map_Server.Actors
                             // onDeath(monster, player, killer)
                             lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, partyMember, lastAttacker);
                             
-                            if(partyMember is Player)
+                            if (partyMember is Player)
                                 ((Player)partyMember).AddExp(1500, (byte)partyMember.GetClass(), 5);                            
                         }
                     }
@@ -315,7 +297,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
                 positionUpdates?.Clear();
                 aiContainer.InternalDie(tick, despawnTime);
-                this.ResetMoveSpeeds();
+                //this.ResetMoveSpeeds();
                 // todo: reset cooldowns
 
                 lua.LuaEngine.GetInstance().OnSignal("mobkill");
@@ -379,9 +361,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (GetMobMod((uint)MobModifier.AttackScript) != 0)
                 lua.LuaEngine.CallLuaBattleFunction(this, "onAttack", this, state.GetTarget(), action.amount);
-
-            if (target is BattleNpc)
-                ((BattleNpc)target).hateContainer.UpdateHate(this, action.amount);
         }
 
         public override void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
@@ -391,19 +370,6 @@ namespace FFXIVClassic_Map_Server.Actors
             if (GetMobMod((uint)MobModifier.SpellScript) != 0)
                 foreach (var action in actions)
                     lua.LuaEngine.CallLuaBattleFunction(this, "onCast", this, zone.FindActorInArea<Character>(action.targetId), ((MagicState)state).GetSpell(), action);
-
-            foreach (BattleAction action in actions)
-            {
-                if (zone.FindActorInArea<Character>(action.targetId) is Character chara)
-                {
-                    if (chara is BattleNpc)
-                    {
-                        ((BattleNpc)chara).hateContainer.UpdateHate(this, action.amount);
-                        ((BattleNpc)chara).lastAttacker = this;
-                    }
-                    BattleUtils.DamageTarget(this, chara, action);
-                }
-            }
         }
 
         public override void OnAbility(State state, BattleAction[] actions, ref BattleAction[] errors)

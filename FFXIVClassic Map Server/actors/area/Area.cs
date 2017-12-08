@@ -667,11 +667,14 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             lock (mActorList)
             {
-                foreach (Actor a in mActorList.Values)
+                foreach (Actor a in mActorList.Values.ToList())
                     a.Update(tick);
 
-                var deltaTime = (tick - Program.LastTick).TotalMilliseconds;
-                //LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, this, deltaTime);
+                if ((tick - lastUpdateScript).TotalMilliseconds > 1500)
+                {
+                    //LuaEngine.GetInstance().CallLuaFunctionForReturn(LuaEngine.GetScriptPath(this), "onUpdate", true, this, tick);
+                    lastUpdateScript = tick;
+                }
             }
         }
 

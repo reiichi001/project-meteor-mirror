@@ -61,7 +61,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public List<LuaParam> classParams;
 
         public List<Vector3> positionUpdates;
-        public DateTime lastMoveUpdate;
+        protected DateTime lastUpdateScript;
         protected DateTime lastUpdate;
         public Actor target;
 

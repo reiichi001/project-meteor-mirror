@@ -41,14 +41,14 @@ function allyGlobal.HelpPlayers(ally, contentGroupCharas, pickRandomTarget)
             if chara then
                 -- probably a player, or another ally
                 -- todo: queue support actions, heal, try pull hate off player etc
-                if chara.IsPlayer() then
+                if chara:IsPlayer() then
                     -- do stuff
                     if not ally.IsEngaged() then
                         if chara.IsEngaged() then
                             allyGlobal.EngageTarget(ally, chara.target, nil);
                             break;
                         end
-                    end                    
+                    end
                 elseif chara.IsMonster() and chara.IsEngaged() then
                     if not ally.IsEngaged() then
                         allyGlobal.EngageTarget(ally, chara, nil);

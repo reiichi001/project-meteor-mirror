@@ -104,7 +104,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
             // todo: this is fuckin stupid, probably only need *one* error packet, not an error for each action
             var errors = (BattleAction[])actions.Clone();
-            owner.OnWeaponSkill(this, actions, ref errors);            
+            owner.OnWeaponSkill(this, actions, ref errors);
             owner.DoBattleAction(skill.id, skill.battleAnimation, actions);
         }
 
