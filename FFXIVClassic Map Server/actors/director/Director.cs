@@ -161,6 +161,9 @@ namespace FFXIVClassic_Map_Server.actors.director
             {
                 members.Add(actor);
 
+                if (actor is Player)
+                    ((Player)actor).AddDirector(this);
+
                 if (contentGroup != null)
                     contentGroup.AddMember(actor);
             }

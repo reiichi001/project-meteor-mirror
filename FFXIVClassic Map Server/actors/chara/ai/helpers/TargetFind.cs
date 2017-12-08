@@ -159,6 +159,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         /// </summary>
         public void FindWithinArea(Character target, ValidTarget flags, TargetFindAOETarget aoeTarget)
         {
+            targets.Clear();
             validTarget = flags;
             // are we creating aoe circles around target or self
             if (aoeTarget == TargetFindAOETarget.Self)
@@ -174,59 +175,63 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (masterTarget != null)
                 targets.Add(masterTarget);
 
-            if (IsPlayer(owner))
+            if (aoeType != TargetFindAOEType.None)
             {
-                if (masterTarget is Player)
+                if (IsPlayer(owner))
                 {
-                    findType = TargetFindCharacterType.PlayerToPlayer;
-
-                    if (masterTarget.currentParty != null)
+                    if (masterTarget is Player)
                     {
-                        if ((validTarget & (ValidTarget.Ally | ValidTarget.PartyMember)) != 0)
-                            AddAllInAlliance(masterTarget, withPet);
+                        findType = TargetFindCharacterType.PlayerToPlayer;
+
+                        if (masterTarget.currentParty != null)
+                        {
+                            if ((validTarget & (ValidTarget.Ally | ValidTarget.PartyMember)) != 0)
+                                AddAllInAlliance(masterTarget, withPet);
+                            else
+                                AddAllInParty(masterTarget, withPet);
+                        }
                         else
-                            AddAllInParty(masterTarget, withPet);
+                        {
+                            AddTarget(masterTarget, withPet);
+                        }
                     }
                     else
                     {
-                        AddTarget(masterTarget, withPet);
+                        findType = TargetFindCharacterType.PlayerToBattleNpc;
+                        AddAllBattleNpcs(masterTarget, false);
                     }
                 }
                 else
                 {
-                    findType = TargetFindCharacterType.PlayerToBattleNpc;
-                    AddAllBattleNpcs(masterTarget, false);
-                }
-            }
-            else
-            {
-                // todo: this needs checking..
-                if (masterTarget is Player || owner.allegiance == CharacterTargetingAllegiance.Player)
-                    findType = TargetFindCharacterType.BattleNpcToPlayer;
-                else
-                    findType = TargetFindCharacterType.BattleNpcToBattleNpc;
-
-                // todo: configurable pet aoe buff
-                if (findType == TargetFindCharacterType.BattleNpcToBattleNpc && TryGetMasterTarget(target) != null)
-                    withPet = true;
-
-                // todo: does ffxiv have call for help flag?
-                //if ((findFlags & ValidTarget.HitAll) != 0)
-                //{
-                //    AddAllInZone(masterTarget, withPet);
-                //}
-
-                AddAllInAlliance(target, withPet);
-
-                if (findType == TargetFindCharacterType.BattleNpcToPlayer)
-                {
-                    if (owner.allegiance == CharacterTargetingAllegiance.Player)
-                        AddAllInZone(masterTarget, withPet);
+                    // todo: this needs checking..
+                    if (masterTarget is Player || owner.allegiance == CharacterTargetingAllegiance.Player)
+                        findType = TargetFindCharacterType.BattleNpcToPlayer;
                     else
-                        AddAllInHateList();
+                        findType = TargetFindCharacterType.BattleNpcToBattleNpc;
+
+                    // todo: configurable pet aoe buff
+                    if (findType == TargetFindCharacterType.BattleNpcToBattleNpc && TryGetMasterTarget(target) != null)
+                        withPet = true;
+
+                    // todo: does ffxiv have call for help flag?
+                    //if ((findFlags & ValidTarget.HitAll) != 0)
+                    //{
+                    //    AddAllInZone(masterTarget, withPet);
+                    //}
+
+                    AddAllInAlliance(target, withPet);
+
+                    if (findType == TargetFindCharacterType.BattleNpcToPlayer)
+                    {
+                        if (owner.allegiance == CharacterTargetingAllegiance.Player)
+                            AddAllInZone(masterTarget, withPet);
+                        else
+                            AddAllInHateList();
+                    }
                 }
             }
-            
+            if(targets.Count > 16)
+                targets.RemoveRange(16, targets.Count - 16);
         }
 
         /// <summary>
@@ -288,7 +293,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         private void AddAllBattleNpcs(Character target, bool withPet)
         {
-            var actors = owner.zone.GetActorsAroundActor<BattleNpc>(owner, 50);
+            int dist = (int)maxDistance;
+            var actors = owner.zone.GetActorsAroundActor<BattleNpc>(target, dist);
 
             foreach (BattleNpc actor in actors)
             {
@@ -375,12 +381,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private bool IsWithinCircle(Character target, float maxDistance)
         {
             // todo: make y diff modifiable?
-            if (Math.Abs(owner.positionX - target.positionY) > 6.0f)
-                return false;
+                        
+            //if (Math.Abs(owner.positionX - target.positionY) > 6.0f)
+               // return false;
 
             if (this.targetPosition == null)
                 this.targetPosition = aoeTarget == TargetFindAOETarget.Self ? owner.GetPosAsVector3() : masterTarget.GetPosAsVector3();
-            return target.GetPosAsVector3().IsWithinCircle(targetPosition, param);
+            return target.GetPosAsVector3().IsWithinCircle(targetPosition, maxDistance);
         }
 
         private bool IsPlayer(Character target)

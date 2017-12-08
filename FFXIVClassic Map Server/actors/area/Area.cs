@@ -421,6 +421,11 @@ namespace FFXIVClassic_Map_Server.Actors
             return GetAllActors<BattleNpc>();
         }
 
+        public virtual List<Ally> GetAllies()
+        {
+            return GetAllActors<Ally>();
+        }
+
         public void BroadcastPacketsAroundActor(Actor actor, List<SubPacket> packets)
         {
             foreach (SubPacket packet in packets)
@@ -495,8 +500,8 @@ namespace FFXIVClassic_Map_Server.Actors
                     npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
 
                 npc.LoadEventConditions(actorClass.eventConditions);
-                npc.SetMaxHP(300);
-                npc.SetHP(300);
+                //npc.SetMaxHP(30000);
+                //npc.SetHP(30000);
 
                 AddActorToZone(npc);
 
@@ -666,7 +671,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     a.Update(tick);
 
                 var deltaTime = (tick - Program.LastTick).TotalMilliseconds;
-                LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, deltaTime, this);
+                //LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, this, deltaTime);
             }
         }
 

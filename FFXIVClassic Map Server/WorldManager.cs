@@ -511,7 +511,6 @@ namespace FFXIVClassic_Map_Server
                                 battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"));
                                 battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"));
 
-
                                 battleNpc.dropListId = reader.GetUInt32("dropListId");
                                 battleNpc.spellListId = reader.GetUInt32("spellListId");
                                 battleNpc.skillListId = reader.GetUInt32("skillListId");
@@ -644,12 +643,48 @@ namespace FFXIVClassic_Map_Server
                             battleNpc.SetMod((uint)Modifier.Defense, reader.GetUInt32("def"));
                             battleNpc.SetMod((uint)Modifier.Evasion, reader.GetUInt32("eva"));
 
+                            if (battleNpc.poolMods != null)
+                            {
+                                foreach (var a in battleNpc.poolMods.mobModList)
+                                {
+                                    battleNpc.SetMobMod(a.Value.id, (long)(a.Value.value));
+                                }
+                                foreach (var a in battleNpc.poolMods.modList)
+                                {
+                                    battleNpc.SetMod(a.Key, (long)(a.Value.value));
+                                }
+                            }
+
+                            if (battleNpc.genusMods != null)
+                            {
+                                foreach (var a in battleNpc.genusMods.mobModList)
+                                {
+                                    battleNpc.SetMobMod(a.Key, (long)(a.Value.value));
+                                }
+                                foreach (var a in battleNpc.genusMods.modList)
+                                {
+                                    battleNpc.SetMod(a.Key, (long)(a.Value.value));
+                                }
+                            }
+
+                            if(battleNpc.spawnMods != null)
+                            {
+                                foreach (var a in battleNpc.spawnMods.mobModList)
+                                {
+                                    battleNpc.SetMobMod(a.Key, (long)(a.Value.value));
+                                }
+
+                                foreach (var a in battleNpc.spawnMods.modList)
+                                {
+                                    battleNpc.SetMod(a.Key, (long)(a.Value.value));
+                                }
+                            }
+
                             battleNpc.dropListId = reader.GetUInt32("dropListId");
                             battleNpc.spellListId = reader.GetUInt32("spellListId");
                             battleNpc.skillListId = reader.GetUInt32("skillListId");
-                            battleNpc.SetMaxHP(1000);
-                            battleNpc.SetHP(1000);
                             battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
+                            battleNpc.SetRespawnTime(reader.GetUInt32("respawnTime"));
                             battleNpc.CalculateBaseStats();
                             battleNpc.RecalculateStats();
                             //battleNpc.SetMod((uint)Modifier.ResistFire, )
@@ -679,7 +714,7 @@ namespace FFXIVClassic_Map_Server
                 try
                 {
                     conn.Open();
-                    var query = $"SELECT {primaryKey}, modId, modVal, isMobMod FROM {tableName} GROUP BY {primaryKey};";
+                    var query = $"SELECT {primaryKey}, modId, modVal, isMobMod FROM {tableName}";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -688,9 +723,9 @@ namespace FFXIVClassic_Map_Server
                         while (reader.Read())
                         {
                             var id = reader.GetUInt32(primaryKey);
-                            ModifierList modList = new ModifierList(id);
+                            ModifierList modList = list.TryGetValue(id, out modList) ? modList : new ModifierList(id);
                             modList.SetModifier(reader.GetUInt16("modId"), reader.GetInt64("modVal"), reader.GetBoolean("isMobMod"));
-                            list.Add(id, modList);
+                            list[id] = modList;
                         }
                     }
                 }

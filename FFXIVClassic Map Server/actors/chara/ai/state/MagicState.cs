@@ -110,16 +110,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             var i = 0;
             foreach (var chara in targets)
             {
-                var action = new BattleAction(target.actorId, spell.worldMasterTextId, spell.battleAnimation, 0, (byte)HitDirection.None, 1);
+                var action = new BattleAction(chara.actorId, spell.worldMasterTextId, spell.battleAnimation, 0, (byte)HitDirection.None, 1);
                 action.amount = (ushort)lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onMagicFinish", owner, chara, spell, action);
                 actions[i++] = action;
             }
 
             // todo: this is fuckin stupid, probably only need *one* error packet, not an error for each action
             var errors = (BattleAction[])actions.Clone();
-
             owner.OnCast(this, actions, ref errors);
             owner.DoBattleAction(spell.id, spell.battleAnimation, actions);
+
         }
 
         public override void TryInterrupt()

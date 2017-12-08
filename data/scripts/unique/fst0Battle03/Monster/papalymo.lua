@@ -20,3 +20,8 @@ function onRoam(ally, contentGroupCharas)
     ally.animationId = 0
     allyGlobal.onCombatTick(ally, nil, nil, contentGroupCharas)
 end
+
+
+function tryAggro(ally, contentGroupCharas)
+    allyGlobal.tryAggro(ally, contentGroupCharas)
+end

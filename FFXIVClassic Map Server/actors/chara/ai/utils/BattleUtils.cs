@@ -78,16 +78,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 
         public static void DamageTarget(Character attacker, Character defender, BattleAction action)
         {
-            // todo: other stuff too
-            if (defender is BattleNpc)
+            if (defender != null)
             {
-                if (!((BattleNpc)defender).hateContainer.HasHateForTarget(attacker))
+                // todo: other stuff too
+                if (defender is BattleNpc)
                 {
-                    ((BattleNpc)defender).hateContainer.AddBaseHate(attacker);
+                    if (!((BattleNpc)defender).hateContainer.HasHateForTarget(attacker))
+                    {
+                        ((BattleNpc)defender).hateContainer.AddBaseHate(attacker);
+                    }
+                    ((BattleNpc)defender).hateContainer.UpdateHate(attacker, action.amount);
                 }
-                ((BattleNpc)defender).hateContainer.UpdateHate(attacker, action.amount);
+                defender.DelHP((short)action.amount);
             }
-            defender.DelHP((short)action.amount);
         }
 
         public static int CalculateSpellDamage(Character attacker, Character defender, BattleCommand spell)

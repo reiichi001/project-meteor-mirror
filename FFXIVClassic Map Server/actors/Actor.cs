@@ -438,9 +438,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 updateFlags = ActorUpdateFlags.None;
                 zone.BroadcastPacketsAroundActor(this, packets);
-
-                SetActorPropetyPacket hpInfo = new SetActorPropetyPacket("charaWork/exp");
-                hpInfo.AddTarget();
             }
         }
 

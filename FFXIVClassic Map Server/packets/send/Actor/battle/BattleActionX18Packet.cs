@@ -35,33 +35,33 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
                     binWriter.Write((UInt16)commandId);
                     binWriter.Write((UInt16)0x810); //?
 
-                    binWriter.Seek(0x58, SeekOrigin.Begin);
+                    binWriter.Seek(0x28, SeekOrigin.Begin);
                     for (int i = 0; i < max; i++)
                         binWriter.Write((UInt32)actionList[listOffset + i].targetId);
                     
-                    binWriter.Seek(0xA0, SeekOrigin.Begin);
+                    binWriter.Seek(0x70, SeekOrigin.Begin);
                     for (int i = 0; i < max; i++)
                         binWriter.Write((UInt16)actionList[listOffset + i].amount);
 
-                    binWriter.Seek(0xC4, SeekOrigin.Begin);
+                    binWriter.Seek(0x94, SeekOrigin.Begin);
                     for (int i = 0; i < max; i++)
                         binWriter.Write((UInt16)actionList[listOffset + i].worldMasterTextId);
 
-                    binWriter.Seek(0xE8, SeekOrigin.Begin);
+                    binWriter.Seek(0xB8, SeekOrigin.Begin);
                     for (int i = 0; i < max; i++)
                         binWriter.Write((UInt32)actionList[listOffset + i].effectId);
 
-                    binWriter.Seek(0x130, SeekOrigin.Begin);
+                    binWriter.Seek(0x100, SeekOrigin.Begin);
                     for (int i = 0; i < max; i++)
                         binWriter.Write((Byte)actionList[listOffset + i].param);
 
-                    binWriter.Seek(0x142, SeekOrigin.Begin);
+                    binWriter.Seek(0x112, SeekOrigin.Begin);
                     for (int i = 0; i < max; i++)
                         binWriter.Write((Byte)actionList[listOffset + i].unknown);
 
                     listOffset += max;
                 }
-            }            
+            }
 
             return new SubPacket(OPCODE, sourceActorId, data);
         }

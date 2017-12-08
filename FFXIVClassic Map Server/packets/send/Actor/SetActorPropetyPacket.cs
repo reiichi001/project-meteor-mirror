@@ -112,7 +112,6 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor
         {
             string[] split = name.Split('.');
             int arrayIndex = 0;
-
             if (!(split[0].Equals("work") || split[0].Equals("charaWork") || split[0].Equals("playerWork") || split[0].Equals("npcWork") || split[0].Equals("guildleveWork")))
                 return false;
 

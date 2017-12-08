@@ -557,6 +557,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (currentContentGroup != null)
                 currentContentGroup.SendGroupPackets(playerSession);
+
+            if (currentParty != null)
+                currentParty.SendGroupPackets(playerSession);
         }
 
         private void SendRemoveInventoryPackets(List<ushort> slots)
@@ -1625,7 +1628,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //Update Instance
             List<Actor> aroundMe = new List<Actor>();
 
-            if (zone != null)                
+            if (zone != null)
                 aroundMe.AddRange(zone.GetActorsAroundActor(this, 50));
             if (zone2 != null)
                 aroundMe.AddRange(zone2.GetActorsAroundActor(this, 50));
@@ -1714,6 +1717,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //currentParty.members.Remove(this);
             if (partyGroup.members.Count == 0)
                 Server.GetWorldManager().NoMembersInParty((Party)currentParty);
+            
             currentParty = null;
         }
         
@@ -1755,7 +1759,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
             {
-                var propPacketUtil = new ActorPropertyPacketUtil("charaWork.parameterSave", this);
+                var propPacketUtil = new ActorPropertyPacketUtil("charaWork/stateAtQuicklyForAll", this);
 
                 // todo: should this be using job as index?
                 propPacketUtil.AddProperty($"charaWork.parameterSave.hp[{0}]");
@@ -1768,9 +1772,6 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             base.PostUpdate(tick, packets);
-            SetActorPropetyPacket hpInfo = new SetActorPropetyPacket("charaWork/exp");
-            hpInfo.AddTarget();
-            QueuePacket(hpInfo.BuildPacket(actorId));
         }
 
         public override void Die(DateTime tick)
@@ -1801,7 +1802,6 @@ namespace FFXIVClassic_Map_Server.Actors
         public void UpdateHotbarCommands(List<ushort> slotsToUpdate)
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/command", this);
-            ActorPropertyPacketUtil compatibiltyUtil = new ActorPropertyPacketUtil("charaWork/commandDetailForSelf", this);
             foreach (ushort slot in slotsToUpdate)
             {
                 propPacketUtil.AddProperty($"charaWork.command[{slot}]");
@@ -2184,9 +2184,9 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             // todo: update hotbar timers to skill's recast time (also needs to be done on class change or equip crap)
             base.OnCast(state, actions, ref errors);
+
             var spell = ((MagicState)state).GetSpell();
-            // todo: should just make a thing that updates the one slot cause this is dumb as hell
-            
+            // todo: should just make a thing that updates the one slot cause this is dumb as hell            
             UpdateHotbarTimer(spell.id, spell.recastTimeSeconds);
         }
 
@@ -2300,27 +2300,23 @@ namespace FFXIVClassic_Map_Server.Actors
             Database.LoadHotbar(this);
         }
 
+        //Gets the id of the player's current job. If they aren't a job, gets the id of their class
         public byte GetCurrentClassOrJob()
         {
             if (currentJob != 0)
                 return (byte) currentJob;
-
             return charaWork.parameterSave.state_mainSkill[0];
         }
 
         public void hpstuff(uint hp)
         {
             SetMaxHP(hp);
-            SetHP(hp);
+            SetHP(hp);            
             mpMaxBase = (ushort)hp;
             charaWork.parameterSave.mpMax = (short)hp;
             charaWork.parameterSave.mp = (short)hp;
-            AddTP(0);
-            //SendCharaExpInfo();
-            //ActorPropertyPacketUtil exp = new ActorPropertyPacketUtil("charaWork/exp", this);
-            SetActorPropetyPacket hpInfo = new SetActorPropetyPacket("charaWork/exp");
-            hpInfo.AddTarget();
-            QueuePacket(hpInfo.BuildPacket(actorId));
+            AddTP(3000);
+            updateFlags |= ActorUpdateFlags.HpTpMp;
         }
         
     }

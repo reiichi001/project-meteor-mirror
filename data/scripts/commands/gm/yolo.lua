@@ -152,8 +152,11 @@ function onTrigger(player, argc, skillName, level)
         --local x, y, z = player.GetPos();
         for i = 1, 1 do
         
-        local actor = player.GetZone().SpawnActor(2207303, 'ass', x, y, z, rot, 0, 0, true );
+        local actor = player.GetZone().SpawnActor(2104001, 'ass', x, y, z, rot, 0, 0, true );
         
+        if player.currentContentGroup then
+            player.currentContentGroup:AddMember(actor.actorId)
+        end
         --actor.FollowTarget(player, 3.2);
         end;
         return;

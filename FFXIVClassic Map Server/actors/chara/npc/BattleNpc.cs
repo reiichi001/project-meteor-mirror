@@ -177,7 +177,7 @@ namespace FFXIVClassic_Map_Server.Actors
             packets = new List<SubPacket>();
             if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
             {
-                var propPacketUtil = new ActorPropertyPacketUtil("charaWork.parameterSave", this);
+                var propPacketUtil = new ActorPropertyPacketUtil("charaWork/stateAtQuicklyForAll", this);
 
                 propPacketUtil.AddProperty("charaWork.parameterSave.hp[0]");
                 propPacketUtil.AddProperty("charaWork.parameterSave.hpMax[0]");
@@ -290,6 +290,10 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if (lastAttacker is Player)
                 {
+                    //I think this is, or should be odne in DoBattleAction. Packet capture had the message in the same packet as an attack
+                    // <actor> defeat/defeats <target>
+                    //((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
+
                     if (lastAttacker.currentParty != null && lastAttacker.currentParty is Party)
                     {
                         foreach (var memberId in ((Party)lastAttacker.currentParty).members)
@@ -297,14 +301,9 @@ namespace FFXIVClassic_Map_Server.Actors
                             var partyMember = zone.FindActorInArea<Player>(memberId);
                             // onDeath(monster, player, killer)
                             lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, partyMember, lastAttacker);
-                            // <actor> defeat/defeats <target>
-
-                            if (lastAttacker is Player)
-                                ((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
-
-                            if(partyMember is Player)
-                                ((Player)partyMember).AddExp(1500, (byte)partyMember.GetJob(), 5);
                             
+                            if(partyMember is Player)
+                                ((Player)partyMember).AddExp(1500, (byte)partyMember.GetClass(), 5);                            
                         }
                     }
                     else
@@ -317,7 +316,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 positionUpdates?.Clear();
                 aiContainer.InternalDie(tick, despawnTime);
                 this.ResetMoveSpeeds();
-
                 // todo: reset cooldowns
 
                 lua.LuaEngine.GetInstance().OnSignal("mobkill");
@@ -381,6 +379,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (GetMobMod((uint)MobModifier.AttackScript) != 0)
                 lua.LuaEngine.CallLuaBattleFunction(this, "onAttack", this, state.GetTarget(), action.amount);
+
+            if (target is BattleNpc)
+                ((BattleNpc)target).hateContainer.UpdateHate(this, action.amount);
         }
 
         public override void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
@@ -390,6 +391,19 @@ namespace FFXIVClassic_Map_Server.Actors
             if (GetMobMod((uint)MobModifier.SpellScript) != 0)
                 foreach (var action in actions)
                     lua.LuaEngine.CallLuaBattleFunction(this, "onCast", this, zone.FindActorInArea<Character>(action.targetId), ((MagicState)state).GetSpell(), action);
+
+            foreach (BattleAction action in actions)
+            {
+                if (zone.FindActorInArea<Character>(action.targetId) is Character chara)
+                {
+                    if (chara is BattleNpc)
+                    {
+                        ((BattleNpc)chara).hateContainer.UpdateHate(this, action.amount);
+                        ((BattleNpc)chara).lastAttacker = this;
+                    }
+                    BattleUtils.DamageTarget(this, chara, action);
+                }
+            }
         }
 
         public override void OnAbility(State state, BattleAction[] actions, ref BattleAction[] errors)
