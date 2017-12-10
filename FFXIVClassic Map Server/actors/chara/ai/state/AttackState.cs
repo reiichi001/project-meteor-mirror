@@ -129,6 +129,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         private bool CanAttack()
         {
+            return false;
             if (!owner.isAutoAttackEnabled)
             {
                 return false;

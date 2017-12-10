@@ -478,10 +478,18 @@ namespace FFXIVClassic_Map_Server.lua
             {
                 if (!script.Globals.Get(funcName).IsNil())
                 {
-                    Coroutine coroutine = script.CreateCoroutine(script.Globals[funcName]).Coroutine;
-                    DynValue value = coroutine.Resume(args2);
-                    ResolveResume(player, coroutine, value);
-                    
+                    try
+                    {
+                        Coroutine coroutine = script.CreateCoroutine(script.Globals[funcName]).Coroutine;
+                        DynValue value = coroutine.Resume(args2);
+                        ResolveResume(player, coroutine, value);
+                    }
+                    catch(Exception e)
+                    {
+                        player.SendMessage(0x20, "", e.Message);
+                        player.EndEvent();
+
+                    }
                 }
                 else
                 {

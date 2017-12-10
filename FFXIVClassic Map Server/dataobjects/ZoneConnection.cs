@@ -24,7 +24,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void FlushQueuedSendPackets()
         {
-            if (!socket.Connected)
+            if (socket == null || !socket.Connected)
                 return;
 
             while (SendPacketQueue.Count > 0)

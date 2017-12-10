@@ -172,7 +172,7 @@ namespace FFXIVClassic_Map_Server.Actors
             packets = new List<SubPacket>();
             if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
             {
-                var propPacketUtil = new ActorPropertyPacketUtil("charaWork.parameterSave", this);
+                var propPacketUtil = new ActorPropertyPacketUtil("charaWork/stateAtQuicklyForAll", this);
 
                 propPacketUtil.AddProperty("charaWork.parameterSave.hp[0]");
                 propPacketUtil.AddProperty("charaWork.parameterSave.hpMax[0]");
@@ -272,6 +272,10 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if (lastAttacker is Player)
                 {
+                    //I think this is, or should be odne in DoBattleAction. Packet capture had the message in the same packet as an attack
+                    // <actor> defeat/defeats <target>
+                    //((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
+
                     if (lastAttacker.currentParty != null && lastAttacker.currentParty is Party)
                     {
                         foreach (var memberId in ((Party)lastAttacker.currentParty).members)
@@ -279,14 +283,9 @@ namespace FFXIVClassic_Map_Server.Actors
                             var partyMember = zone.FindActorInArea<Player>(memberId);
                             // onDeath(monster, player, killer)
                             lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, partyMember, lastAttacker);
-                            // <actor> defeat/defeats <target>
-
-                            if (lastAttacker is Player)
-                                ((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
-
-                            if(partyMember is Player)
-                                ((Player)partyMember).AddExp(1500, (byte)partyMember.GetJob(), 5);
                             
+                            if (partyMember is Player)
+                                ((Player)partyMember).AddExp(1500, (byte)partyMember.GetClass(), 5);                            
                         }
                     }
                     else
@@ -298,6 +297,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
                 positionUpdates?.Clear();
                 aiContainer.InternalDie(tick, despawnTime);
+                //this.ResetMoveSpeeds();
                 // todo: reset cooldowns
 
                 lua.LuaEngine.GetInstance().OnSignal("mobkill");

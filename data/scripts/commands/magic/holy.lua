@@ -10,7 +10,7 @@ function onMagicStart(caster, target, spell)
 end;
 
 function onMagicFinish(caster, target, spell, action)
-    local damage = math.random(10, 100);
+    local damage = math.random(1000, 2500);
     
     -- todo: populate a global script with statuses and modifiers
     action.worldMasterTextId = 0x765D;

@@ -19,6 +19,9 @@ function onMagicFinish(caster, target, spell, action)
     -- magic.HandleAttackMagic(caster, target, spell, action)
     -- action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
     action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
-
+    
+    if target.hateContainer then
+        target.hateContainer.UpdateHate(caster, damage);
+    end;
     return damage;
 end;

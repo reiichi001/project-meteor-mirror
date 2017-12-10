@@ -63,12 +63,24 @@ namespace FFXIVClassic_Map_Server.actors.group
             List<GroupMember> groupMembers = new List<GroupMember>();
             groupMembers.Add(new GroupMember(id, -1, 0, false, true, Server.GetWorldManager().GetActorInWorld(id).customDisplayName));
             foreach (uint charaId in members)
-            {
-                if (charaId != id)
-                    groupMembers.Add(new GroupMember(charaId, -1, 0, false, true, Server.GetWorldManager().GetActorInWorld(charaId).customDisplayName));
+            {                
+                var chara = Server.GetWorldManager().GetActorInWorld(charaId);
+                if (charaId != id && chara != null)
+                    groupMembers.Add(new GroupMember(charaId, -1, 0, false, true, chara.customDisplayName));
             }
             return groupMembers;
         }
 
+        public void AddMember(uint memberId)
+        {
+            members.Add(memberId);
+            SendGroupPacketsAll(members);
+        }
+
+        public void RemoveMember(uint memberId)
+        {
+            members.Remove(memberId);
+            SendGroupPacketsAll(members);
+        }
     }
 }

@@ -132,6 +132,18 @@ namespace FFXIVClassic_Map_Server.actors.area
                                 return actor;
                         }
                     }
+
+                    foreach (List<PrivateAreaContent> paList in contentAreas.Values)
+                    {
+                        foreach (PrivateArea pa in paList)
+                        {
+                            Actor actor = pa.FindActorInArea(id);
+                            if (actor != null)
+                                return actor;
+                        }
+                    }
+
+
                     return null;
                 }
                 else
@@ -184,7 +196,7 @@ namespace FFXIVClassic_Map_Server.actors.area
             {
                 if (this.pathCalls > 0)
                 {
-                    Program.Log.Debug("Number of pathfinding calls {0} average time {1}ms", pathCalls, (float)(pathCallTime / pathCalls));
+                   Program.Log.Debug("Number of pathfinding calls {0} average time {1}ms", pathCalls, (float)(pathCallTime / pathCalls));
                 }
                 lastUpdate = tick;
             }

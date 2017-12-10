@@ -39,12 +39,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         public override void Update(DateTime tick)
         {
             lastUpdate = tick;
+
             // todo: handle aggro/deaggro and other shit here
-            if (owner.aiContainer.IsEngaged())
+            if (!owner.aiContainer.IsEngaged())
             {
-                DoCombatTick(tick);
+                TryAggro(tick);
             }
-            else if (!owner.IsDead())
+
+            if(owner.aiContainer.IsEngaged())
+            {
+                //DoCombatTick(tick);
+            }
+
+            //Only move if owner isn't dead and is either too far away from their spawn point or is meant to roam
+            if (!owner.IsDead() && (owner.isMovingToSpawn || owner.GetMobMod((uint) MobModifier.Roams) > 0))
             {
                 DoRoamTick(tick);
             }
@@ -63,6 +71,38 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             return false;
         }
 
+        //If the owner isn't moving to spawn, iterate over nearby enemies and 
+        //aggro the first one that is within 10 levels and can be detected, then engage
+        protected virtual void TryAggro(DateTime tick)
+        {
+            if (tick >= neutralTime && !owner.isMovingToSpawn)
+            {
+                if (!owner.neutral && owner.IsAlive())
+                {
+                    foreach (var chara in owner.zone.GetActorsAroundActor<Character>(owner, 50))
+                    {
+                        if (owner.allegiance == chara.allegiance)
+                            continue;
+
+                        if (owner.aiContainer.pathFind.AtPoint() && owner.detectionType != DetectionType.None)
+                        {
+                            uint levelDifference = (uint)Math.Abs(owner.GetLevel() - chara.GetLevel());
+
+                            if (levelDifference <= 10 || (owner.detectionType & DetectionType.IgnoreLevelDifference) != 0 && CanAggroTarget(chara))
+                            {
+                                owner.hateContainer.AddBaseHate(chara);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (owner.hateContainer.GetHateList().Count > 0)
+            {
+                Engage(owner.hateContainer.GetMostHatedTarget());
+            }
+        }
         public override bool Engage(Character target)
         {
             var canEngage = this.owner.aiContainer.InternalEngage(target);
@@ -77,6 +117,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                     owner.ChangeState(SetActorStatePacket.MAIN_STATE_ACTIVE);
 
                 owner.moveState = 2;
+                //owner.SetMod((uint)Modifier.Speed, 5);
                 lastActionTime = DateTime.Now;
                 battleStartTime = lastActionTime;
                 // todo: adjust cooldowns with modifiers
@@ -127,12 +168,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         protected virtual void DoRoamTick(DateTime tick, List<Character> contentGroupCharas = null)
         {
-            if (owner.hateContainer.GetHateList().Count > 0)
-            {
-                Engage(owner.hateContainer.GetMostHatedTarget());
-                return;
-            }
-
             if (tick >= waitTime)
             {
                 neutralTime = tick.AddSeconds(5);
@@ -148,7 +183,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                         
                     }
                 }
-                waitTime = tick.AddSeconds(10);
+                waitTime = tick.AddSeconds(owner.GetMobMod((uint) MobModifier.RoamDelay));
                 owner.OnRoam(tick);
 
                 if (CanMoveForward(0.0f) && !owner.aiContainer.pathFind.IsFollowingPath())
@@ -157,31 +192,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                     owner.aiContainer.pathFind.SetPathFlags(PathFindFlags.None);
                     owner.aiContainer.pathFind.PathInRange(owner.spawnX, owner.spawnY, owner.spawnZ, 1.5f, 50.0f);
                 }
-                lua.LuaEngine.CallLuaBattleFunction(owner, "onRoam", owner, contentGroupCharas);
-            }
-
-
-            if (tick >= neutralTime)
-            {
-                if (!owner.neutral && owner.IsAlive())
-                {
-                    foreach (var chara in owner.zone.GetActorsAroundActor<Character>(owner, 50))
-                    {
-                        if (owner.allegiance == chara.allegiance)
-                            continue;
-
-                        if (!owner.isMovingToSpawn && owner.aiContainer.pathFind.AtPoint() && owner.detectionType != DetectionType.None)
-                        {
-                            uint levelDifference = (uint)Math.Abs(owner.GetLevel() - chara.GetLevel());
-
-                            if (levelDifference <= 10 || (owner.detectionType & DetectionType.IgnoreLevelDifference) != 0 && CanAggroTarget(chara))
-                            {
-                                owner.hateContainer.AddBaseHate(chara);
-                                break;
-                            }
-                        }
-                    }
-                }
+                //lua.LuaEngine.CallLuaBattleFunction(owner, "onRoam", owner, contentGroupCharas);
             }
 
             if (owner.aiContainer.pathFind.IsFollowingPath() && owner.aiContainer.CanFollowPath())
@@ -200,7 +211,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 return;
             }
 
+
             Move();
+
             if ((tick - lastCombatTickScript).TotalSeconds > 2)
             {
                 lua.LuaEngine.CallLuaBattleFunction(owner, "onCombatTick", owner, owner.target, Utils.UnixTimeStampUTC(tick), contentGroupCharas);

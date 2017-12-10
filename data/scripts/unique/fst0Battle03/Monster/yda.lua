@@ -8,3 +8,19 @@ function onSpawn(ally)
     ally.neutral = false
     ally:SetMod(modifiersGlobal.Speed, 0)
 end
+
+function onCombatTick(ally, target, tick, contentGroupCharas)	
+    allyGlobal.onCombatTick(ally, target, tick, contentGroupCharas)
+end
+
+function tryAggro(ally, contentGroupCharas)
+    allyGlobal.tryAggro(ally, contentGroupCharas)
+end
+
+function onRoam(ally, contentGroupCharas)
+    ally.detectionType = 0xFF
+    ally.isMovingToSpawn = false
+    ally.neutral = false
+    ally.animationId = 0
+    --allyGlobal.onCombatTick(ally, contentGroupCharas)
+end

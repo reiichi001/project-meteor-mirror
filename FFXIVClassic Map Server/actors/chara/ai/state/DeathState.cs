@@ -15,7 +15,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             : base(owner, null)
         {
             owner.Disengage();
-            owner.ChangeState(SetActorStatePacket.MAIN_STATE_DEAD2);
+            //owner.ChangeState(SetActorStatePacket.MAIN_STATE_DEAD2);
+            var deathStatePacket = SetActorStatePacket.BuildPacket(owner.actorId, SetActorStatePacket.MAIN_STATE_DEAD, owner.currentSubState);
+            owner.zone.BroadcastPacketAroundActor(owner, deathStatePacket);
             canInterrupt = false;
             startTime = tick;
             despawnTime = startTime.AddSeconds(timeToFadeOut);

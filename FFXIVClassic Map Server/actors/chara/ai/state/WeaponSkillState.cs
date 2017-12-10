@@ -88,7 +88,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         {
             skill.targetFind.FindWithinArea(target, skill.validTarget, skill.aoeTarget);
             isCompleted = true;
-
             var targets = skill.targetFind.GetTargets();
 
             BattleAction[] actions = new BattleAction[targets.Count];
@@ -100,11 +99,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 // evasion, miss, dodge, etc to be handled in script, calling helpers from scripts/weaponskills.lua
                 action.amount = (ushort)lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillFinish", owner, target, skill, action);
                 actions[i++] = action;
+                chara.Engage(chara.actorId, 1);
             }
 
             // todo: this is fuckin stupid, probably only need *one* error packet, not an error for each action
             var errors = (BattleAction[])actions.Clone();
-
             owner.OnWeaponSkill(this, actions, ref errors);
             owner.DoBattleAction(skill.id, skill.battleAnimation, actions);
         }

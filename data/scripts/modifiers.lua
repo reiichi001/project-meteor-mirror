@@ -74,4 +74,6 @@ mobModifiersGlobal =
         AbilityScript     = 21, -- call my script's onAbility whenever i finish using an ability
         CallForHelp       = 22, -- actor with this id outside of target's party with this can attack me
         FreeForAll        = 23, -- any actor can attack me
+        Roams             = 24, -- Do I walk around?
+        RoamDelay         = 25  -- What is the delay between roam ticks
 }

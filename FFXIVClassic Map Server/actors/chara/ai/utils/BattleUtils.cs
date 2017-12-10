@@ -76,18 +76,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             return damage;
         }
 
-        public static void DamageTarget(Character attacker, Character defender, BattleAction action)
+        public static void DamageTarget(Character attacker, Character defender, BattleAction action, DamageTakenType type)
         {
-            // todo: other stuff too
-            if (defender is BattleNpc)
+            if (defender != null)
             {
-                if (!((BattleNpc)defender).hateContainer.HasHateForTarget(attacker))
+                // todo: other stuff too
+                if (defender is BattleNpc)
                 {
-                    ((BattleNpc)defender).hateContainer.AddBaseHate(attacker);
+                    var bnpc = defender as BattleNpc;
+                    if (!bnpc.hateContainer.HasHateForTarget(attacker))
+                    {
+                        bnpc.hateContainer.AddBaseHate(attacker);
+                    }
+                    bnpc.hateContainer.UpdateHate(attacker, action.amount);
+                    bnpc.lastAttacker = attacker;
                 }
-                ((BattleNpc)defender).hateContainer.UpdateHate(attacker, action.amount);
+                defender.DelHP((short)action.amount);
+                defender.OnDamageTaken(attacker, action, type);
             }
-            defender.DelHP((short)action.amount);
         }
 
         public static int CalculateSpellDamage(Character attacker, Character defender, BattleCommand spell)

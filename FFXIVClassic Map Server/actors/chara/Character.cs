@@ -229,10 +229,10 @@ namespace FFXIVClassic_Map_Server.Actors
         public void DoBattleAction(ushort commandId, uint animationId, BattleAction[] actions)
         {
             int currentIndex = 0;
-
+            //AoE abilities only ever hit 16 people, so we probably won't need this loop anymore
             while (true)
             {
-                if (actions.Length - currentIndex >= 18)
+                if (actions.Length - currentIndex >= 10)
                     zone.BroadcastPacketAroundActor(this, BattleActionX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
                 else if (actions.Length - currentIndex > 1)
                     zone.BroadcastPacketAroundActor(this, BattleActionX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
@@ -243,7 +243,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
                 else
                     break;
-                animationId = 0; //If more than one packet is sent out, only send the animation once to avoid double playing.
+                
+                //I think aoe effects play on all hit enemies. Firaga does at least
+                //animationId = 0; //If more than one packet is sent out, only send the animation once to avoid double playing.
             }
         }
 
@@ -298,7 +300,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public virtual void OnPath(Vector3 point)
         {
-            lua.LuaEngine.CallLuaBattleFunction(this, "onPath", this, point);
+            //lua.LuaEngine.CallLuaBattleFunction(this, "onPath", this, point);
 
             updateFlags |= ActorUpdateFlags.Position;
             this.isAtSpawn = false;
@@ -332,7 +334,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
                 {
-                    var propPacketUtil = new ActorPropertyPacketUtil("charaWork.parameterSave", this);
+                    var propPacketUtil = new ActorPropertyPacketUtil("charaWork/stateAtQuicklyForAll", this);
                     
                     propPacketUtil.AddProperty("charaWork.parameterSave.mp");
                     propPacketUtil.AddProperty("charaWork.parameterSave.mpMax");
@@ -455,6 +457,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             // todo: actual despawn timer
             aiContainer.InternalDie(tick, 10);
+            ChangeSpeed(0.0f, 0.0f, 0.0f, 0.0f);
         }
 
         public virtual void Despawn(DateTime tick)
@@ -528,6 +531,20 @@ namespace FFXIVClassic_Map_Server.Actors
             updateFlags |= ActorUpdateFlags.HpTpMp;
         }
 
+        public void SetMP(uint mp)
+        {
+            charaWork.parameterSave.mpMax = (short)mp;
+            if (mp > charaWork.parameterSave.hpMax[0])
+                SetMaxMP(mp);
+
+            updateFlags |= ActorUpdateFlags.HpTpMp;
+        }
+
+        public void SetMaxMP(uint mp)
+        {
+            charaWork.parameterSave.mp = (short)mp;
+            updateFlags |= ActorUpdateFlags.HpTpMp;
+        }
         // todo: the following functions are virtuals since we want to check hidden item bonuses etc on player for certain conditions
         public virtual void AddHP(int hp)
         {
@@ -547,7 +564,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public short GetJob()
+        public short GetClass()
         {
             return charaWork.parameterSave.state_mainSkill[0];
         }
@@ -599,8 +616,30 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void RecalculateStats()
         {
-            if (GetMod((uint)Modifier.Hp) != 0)
+            uint hpMod = (uint) GetMod((uint)Modifier.Hp);
+            if (hpMod != 0)
             {
+                SetMaxHP(hpMod);
+                uint hpp = (uint) GetMod((uint) Modifier.HpPercent);
+                uint hp = hpMod;
+                if(hpp != 0)
+                {
+                    hp = (uint) Math.Ceiling(((float)hpp / 100.0f) * hpMod);
+                }
+                SetHP(hp);
+            }
+
+            uint mpMod = (uint)GetMod((uint)Modifier.Mp);
+            if (mpMod != 0)
+            {
+                SetMaxMP(mpMod);
+                uint mpp = (uint)GetMod((uint)Modifier.MpPercent);
+                uint mp = mpMod;
+                if (mpp != 0)
+                {
+                    mp = (uint)Math.Ceiling(((float)mpp / 100.0f) * mpMod);
+                }
+                SetMP(mp);
             }
             // todo: recalculate stats and crap
             updateFlags |= ActorUpdateFlags.HpTpMp;
@@ -635,14 +674,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 //var packet = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
             }
 
-            target.OnDamageTaken(this, action, DamageTakenType.Ability);
             // todo: call onAttack/onDamageTaken
-            target.DelHP(action.amount);
-            if (target is BattleNpc)
-            {
-                ((BattleNpc)target).lastAttacker = this;
-                ((BattleNpc)target).hateContainer.UpdateHate(this, action.amount);
-            }
+            BattleUtils.DamageTarget(this, target, action, DamageTakenType.Attack);
             AddTP(115);
             target.AddTP(100);
         }
@@ -651,13 +684,14 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             var spell = ((MagicState)state).GetSpell();
             // damage is handled in script
-            this.DelMP(spell.mpCost); // mpCost can be set in script e.g. if caster has something for free spells
+            var spellCost = spell.CalculateCost((uint)this.GetLevel());
+            this.DelMP(spellCost); // mpCost can be set in script e.g. if caster has something for free spells
 
-            foreach (var action in actions)
-                zone.FindActorInArea<Character>(action.targetId).OnDamageTaken(this, action, DamageTakenType.Magic);
+            foreach (BattleAction action in actions)
+                if (zone.FindActorInArea<Character>(action.targetId) is Character chara)
+                    BattleUtils.DamageTarget(this, chara, action, DamageTakenType.Magic);
 
-            if (target is BattleNpc)
-                ((BattleNpc)target).lastAttacker = this;
+            lua.LuaEngine.GetInstance().OnSignal("spellUsed");
         }
 
         public virtual void OnWeaponSkill(State state, BattleAction[] actions, ref BattleAction[] errors)
@@ -666,11 +700,11 @@ namespace FFXIVClassic_Map_Server.Actors
             // damage is handled in script
             this.DelTP(skill.tpCost);
 
-            foreach (var action in actions)
-                zone.FindActorInArea<BattleNpc>(action.targetId)?.OnDamageTaken(this, action, DamageTakenType.Weaponskill);
+            foreach (BattleAction action in actions)
+                if (zone.FindActorInArea<Character>(action.targetId) is Character chara)
+                    BattleUtils.DamageTarget(this, chara, action, DamageTakenType.Weaponskill);
 
-            if (target is BattleNpc)
-                ((BattleNpc)target).lastAttacker = this;
+            lua.LuaEngine.GetInstance().OnSignal("weaponskillUsed");
         }
 
         public virtual void OnAbility(State state, BattleAction[] actions, ref BattleAction[] errors)
@@ -756,22 +790,22 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public bool IsDiscipleOfWar()
         {
-            return currentJob < CLASSID_THM;
+            return GetClass() < CLASSID_THM;
         }
 
         public bool IsDiscipleOfMagic()
         {
-            return currentJob >= CLASSID_THM && currentJob < CLASSID_CRP;
+            return GetClass() >= CLASSID_THM && currentJob < CLASSID_CRP;
         }
 
         public bool IsDiscipleOfHand()
         {
-            return currentJob >= CLASSID_CRP && currentJob < CLASSID_MIN;
+            return GetClass() >= CLASSID_CRP && currentJob < CLASSID_MIN;
         }
 
         public bool IsDiscipleOfLand()
         {
-            return currentJob >= CLASSID_MIN;
+            return GetClass() >= CLASSID_MIN;
         }
         #endregion lua helpers
         #endregion ai stuff
