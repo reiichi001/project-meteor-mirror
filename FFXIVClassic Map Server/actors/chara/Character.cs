@@ -335,7 +335,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
                 {
                     var propPacketUtil = new ActorPropertyPacketUtil("charaWork/stateAtQuicklyForAll", this);
-                    
+                    propPacketUtil.AddProperty("charaWork.parameterSave.hp[0]");
+                    propPacketUtil.AddProperty("charaWork.parameterSave.hpMax[0]");
                     propPacketUtil.AddProperty("charaWork.parameterSave.mp");
                     propPacketUtil.AddProperty("charaWork.parameterSave.mpMax");
                     propPacketUtil.AddProperty("charaWork.parameterTemp.tp");

@@ -106,6 +106,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             var errors = (BattleAction[])actions.Clone();
             owner.OnWeaponSkill(this, actions, ref errors);
             owner.DoBattleAction(skill.id, skill.battleAnimation, actions);
+            
+
         }
 
         public override void TryInterrupt()

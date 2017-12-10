@@ -173,9 +173,6 @@ namespace FFXIVClassic_Map_Server.Actors
             if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
             {
                 var propPacketUtil = new ActorPropertyPacketUtil("charaWork/stateAtQuicklyForAll", this);
-
-                propPacketUtil.AddProperty("charaWork.parameterSave.hp[0]");
-                propPacketUtil.AddProperty("charaWork.parameterSave.hpMax[0]");
                 propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[0]");
                 propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
 
@@ -283,7 +280,6 @@ namespace FFXIVClassic_Map_Server.Actors
                             var partyMember = zone.FindActorInArea<Player>(memberId);
                             // onDeath(monster, player, killer)
                             lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, partyMember, lastAttacker);
-                            
                             if (partyMember is Player)
                                 ((Player)partyMember).AddExp(1500, (byte)partyMember.GetClass(), 5);                            
                         }

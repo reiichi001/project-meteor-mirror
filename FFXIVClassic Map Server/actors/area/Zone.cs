@@ -26,6 +26,7 @@ namespace FFXIVClassic_Map_Server.actors.area
         public SharpNav.NavMeshQuery navMeshQuery;
 
         public Int64 pathCalls;
+        public Int64 prevPathCalls = 0;
         public Int64 pathCallTime;
 
         public Zone(uint id, string zoneName, ushort regionId, string classPath, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid, bool loadNavMesh = false)
@@ -196,7 +197,8 @@ namespace FFXIVClassic_Map_Server.actors.area
             {
                 if (this.pathCalls > 0)
                 {
-                   Program.Log.Debug("Number of pathfinding calls {0} average time {1}ms", pathCalls, (float)(pathCallTime / pathCalls));
+                    Program.Log.Debug("Number of pathfinding calls {0} average time {1}ms. {2} this tick", pathCalls, (float)(pathCallTime / pathCalls), pathCalls - prevPathCalls);
+                    prevPathCalls = pathCalls;
                 }
                 lastUpdate = tick;
             }
