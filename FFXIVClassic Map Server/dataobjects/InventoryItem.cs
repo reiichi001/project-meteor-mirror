@@ -236,12 +236,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void RefreshPositioning(Character owner, ushort itemPackage, ushort slot)
         {
-            lock (owner.GetItemPackage(itemPackage))
-            {
-                this.owner = owner;
-                this.itemPackage = itemPackage;
-                this.slot = slot;
-            }
+            this.owner = owner;
+            this.itemPackage = itemPackage;
+            this.slot = slot;            
         }
 
         public void SetExclusive(bool isExclusive)

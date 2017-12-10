@@ -1073,6 +1073,8 @@ namespace FFXIVClassic_Map_Server
                 buyer.GetItemPackage(Inventory.CURRENCY_CRYSTALS).RemoveItem(1000001, cost);
             }
 
+            bazaar.CheckBazaarFlags();
+
             return true;
         }
 

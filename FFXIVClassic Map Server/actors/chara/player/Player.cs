@@ -552,7 +552,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
 
             #region Inventory & Equipment
-            QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
+            QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
             itemPackages[Inventory.NORMAL].SendFullInventory(this);
             itemPackages[Inventory.CURRENCY_CRYSTALS].SendFullInventory(this);
             itemPackages[Inventory.KEYITEMS].SendFullInventory(this);
@@ -1630,7 +1630,9 @@ namespace FFXIVClassic_Map_Server.Actors
         public void SendMyTradeToPlayer(Player player)
         {
             Inventory tradeInventory = new Inventory(this, 4, Inventory.TRADE);
+            player.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
             tradeInventory.SendFullInventory(player);
+            player.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
         }
 
         public void SendDataPacket(params object[] parameters)
@@ -1815,16 +1817,6 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             Database.ChangePlayerChocoboAppearance(this, appearanceId);
             chocoboAppearance = appearanceId;
-        }
-
-        public void SendItemPackage(Player player, uint id)
-        {
-            if (!itemPackages.ContainsKey((ushort)id))
-                return;
-
-            player.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
-            itemPackages[(ushort)id].SendFullInventory(player);
-            player.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
         }
 
         public Retainer SpawnMyRetainer(Npc bell, int retainerIndex)

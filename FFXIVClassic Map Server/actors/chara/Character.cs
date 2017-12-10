@@ -5,6 +5,7 @@ using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.utils;
 using System.Collections.Generic;
 
@@ -124,6 +125,16 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         #region Inventory
+
+        public void SendItemPackage(Player player, uint id)
+        {
+            if (!itemPackages.ContainsKey((ushort)id))
+                return;
+
+            player.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
+            itemPackages[(ushort)id].SendFullInventory(player);
+            player.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
+        }
 
         public void AddItem(uint catalogID)
         {
