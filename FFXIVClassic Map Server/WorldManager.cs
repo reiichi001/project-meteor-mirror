@@ -1049,6 +1049,33 @@ namespace FFXIVClassic_Map_Server
             return Database.CreateItem(itemId, amount, quality, modifiers);
         }
 
+        public bool BazaarPurchaseOperation(Player bazaar, Player buyer, InventoryItem itemToBuy, int quantity, int cost)
+        {
+            if (bazaar == null || buyer == null || itemToBuy == null)
+                return false;
+
+            if (quantity <= 0)
+                return false;
+
+            if (cost < 0)
+                return false;
+
+            if (itemToBuy.GetBazaarMode() == InventoryItem.TYPE_STACK)
+            {
+                itemToBuy.ChangeQuantity(-quantity);
+                buyer.AddItemStack(itemToBuy.itemId, quantity, itemToBuy.quality);
+                buyer.GetItemPackage(Inventory.CURRENCY_CRYSTALS).RemoveItem(1000001, cost);
+            }
+            else
+            {
+                itemToBuy.ChangeQuantity(-quantity);
+                buyer.AddItem(itemToBuy.itemId, quantity, itemToBuy.quality);
+                buyer.GetItemPackage(Inventory.CURRENCY_CRYSTALS).RemoveItem(1000001, cost);
+            }
+
+            return true;
+        }
+
         public void AddToBazaar(Player player, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount, byte bazaarMode)
         {
             bool succ = false;
@@ -1079,6 +1106,8 @@ namespace FFXIVClassic_Map_Server
                 }
                 
             }
+
+            player.CheckBazaarFlags();
         }
 
         
@@ -1106,6 +1135,8 @@ namespace FFXIVClassic_Map_Server
                 seekRef.SetNormal();
                 player.AddItem(seekRef);
             }
+
+            player.CheckBazaarFlags();
         }
         /*
         public void TransactionBazaar(Player owner, Player other, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount)

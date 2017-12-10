@@ -139,9 +139,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
         //Nameplate Stuff
         public uint currentLSPlate = 0;
-        public bool isBazaarRetail = false;
-        public bool isBazaarRepair = false;
-        public bool isMateriaRequest = false;
         public byte repairType = 0;
 
         //Retainer
@@ -505,6 +502,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             //Bazaar
+            CheckBazaarFlags(true);
             if (charaWork.eventSave.repairType != 0)
                 propPacketUtil.AddProperty("charaWork.eventSave.repairType");
             if (charaWork.eventTemp.bazaarRetail)
@@ -1067,7 +1065,7 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePackets(propPacketUtil.Done());
         }
 
-        public void CheckBazaarFlags()
+        public void CheckBazaarFlags(bool noUpdate = false)
         {
             bool isDealing = false, isRepairing = false, seekingItem = false;
             lock (GetItemPackage(Inventory.BAZAAR))
@@ -1089,15 +1087,26 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
             }
 
+            bool doUpdate = false;
+
+            if (charaWork.eventTemp.bazaarRetail != isDealing || charaWork.eventTemp.bazaarRepair != isRepairing || charaWork.eventTemp.bazaarMateria != (GetItemPackage(Inventory.MELDREQUEST).GetCount() != 0))
+                doUpdate = true;
+
             charaWork.eventTemp.bazaarRetail = isDealing;
             charaWork.eventTemp.bazaarRepair = isRepairing;
             charaWork.eventTemp.bazaarMateria = GetItemPackage(Inventory.MELDREQUEST).GetCount() == 0;
 
-            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/bazaar", this);
-            propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRetail");
-            propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRepair");
-            propPacketUtil.AddProperty("charaWork.eventTemp.bazaarMateria");
-            QueuePackets(propPacketUtil.Done());
+            if (noUpdate)
+                return;
+
+            if (doUpdate)
+            {
+                ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/bazaar", this);
+                propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRetail");
+                propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRepair");
+                propPacketUtil.AddProperty("charaWork.eventTemp.bazaarMateria");
+                QueuePackets(propPacketUtil.Done());
+            }
         }        
 
         public int GetCurrentGil()
@@ -1806,6 +1815,16 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             Database.ChangePlayerChocoboAppearance(this, appearanceId);
             chocoboAppearance = appearanceId;
+        }
+
+        public void SendItemPackage(Player player, uint id)
+        {
+            if (!itemPackages.ContainsKey((ushort)id))
+                return;
+
+            player.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
+            itemPackages[(ushort)id].SendFullInventory(player);
+            player.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
         }
 
         public Retainer SpawnMyRetainer(Npc bell, int retainerIndex)

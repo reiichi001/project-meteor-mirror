@@ -240,6 +240,12 @@ namespace FFXIVClassic_Map_Server
                         if (paramRequest.paramName.Equals("charaWork/exp"))
                             session.GetActor().SendCharaExpInfo();
                         break;
+                    //Item Package Request
+                    case 0x0131:
+                        UpdateItemPackagePacket packageRequest = new UpdateItemPackagePacket(subpacket.data);
+                        if (Server.GetWorldManager().GetPCInWorld(packageRequest.actorID) != null)
+                            Server.GetWorldManager().GetPCInWorld(packageRequest.actorID).SendItemPackage(session.GetActor(), packageRequest.packageId);
+                        break;
                     //Group Created Confirm
                     case 0x0133:
                         GroupCreatedPacket groupCreated = new GroupCreatedPacket(subpacket.data);

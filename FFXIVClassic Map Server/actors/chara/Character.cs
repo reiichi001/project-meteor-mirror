@@ -145,6 +145,16 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public void AddItemStack(uint catalogID, int quantity, byte quality)
+        {
+            ItemData itemData = Server.GetItemGamedata(catalogID);
+            if (itemData != null)
+            {
+                int totalQuantity = itemData.maxStack * quantity;
+                AddItem(catalogID, totalQuantity, quality);
+            }
+        }
+
         public void AddItem(InventoryItem item)
         {
             ushort itemPackage = GetPackageForItem(item.GetItemData().catalogID);
@@ -228,7 +238,7 @@ namespace FFXIVClassic_Map_Server.Actors
             ushort itemPackage = GetPackageForItem(catalogID);
             if (itemPackages.ContainsKey(itemPackage))
             {
-                itemPackages[itemPackage].HasItem(catalogID, minQuantity, quality);
+                return itemPackages[itemPackage].HasItem(catalogID, minQuantity, quality);
             }
             return false;
         }

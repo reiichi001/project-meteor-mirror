@@ -1698,7 +1698,9 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public static void SetQuantity(Player player, ulong serverItemId, int quantity)
+
+
+        public static void SetQuantity(ulong serverItemId, int quantity)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -1707,13 +1709,12 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
 
                     string query = @"
-                                    UPDATE characters_inventory
+                                    UPDATE server_items
                                     SET quantity = @quantity
-                                    WHERE characterId = @charId and serverItemId = @serverItemId;
+                                    WHERE id = @serverItemId;
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
                     cmd.Parameters.AddWithValue("@quantity", quantity);
                     cmd.ExecuteNonQuery();
@@ -1794,39 +1795,6 @@ namespace FFXIVClassic_Map_Server
                     conn.Dispose();
                 }
             }
-        }
-
-        public static void SetQuantity(Retainer retainer, ulong serverItemId, int quantity)
-        {
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                try
-                {
-                    conn.Open();
-
-                    string query = @"
-                                    UPDATE retainers_inventory
-                                    SET quantity = @quantity
-                                    WHERE retainerId = @retainerId and serverItemId = @serverItemId;
-                                    ";
-
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
-                    cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
-                    cmd.Parameters.AddWithValue("@quantity", quantity);
-                    cmd.ExecuteNonQuery();
-
-                }
-                catch (MySqlException e)
-                {
-                    Program.Log.Error(e.ToString());
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-            }
-
         }
 
         public static void RemoveItem(Retainer retainer, ulong serverItemId)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FFXIVClassic_Map_Server.Actors;
+using System;
 using System.IO;
 
 namespace FFXIVClassic_Map_Server.dataobjects
@@ -39,6 +40,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public ItemModifier modifiers;
 
         public readonly ItemData itemData;
+        public Character owner = null;
         public ushort slot = 0xFFFF;
         public ushort itemPackage = 0xFFFF;
 
@@ -197,10 +199,49 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return data;        
         }
 
-        public void RefreshPositioning(ushort itemPackage, ushort slot)
+        public void SetQuantity(uint quantity)
         {
-            this.itemPackage = itemPackage;
-            this.slot = slot;
+            lock (owner.GetItemPackage(itemPackage))
+            {
+                this.quantity = (int)quantity;
+                if (quantity < 0)
+                    quantity = 0;
+                Database.SetQuantity(uniqueId, this.quantity);
+
+                if (owner != null && owner is Player)
+                    owner.GetItemPackage(itemPackage).RefreshItem((Player)owner, this);
+            }
+        }
+
+        public void ChangeQuantity(int quantityDelta)
+        {
+            lock (owner.GetItemPackage(itemPackage))
+            {
+                this.quantity += quantityDelta;
+                if (quantity < 0)
+                    quantity = 0;
+
+                if (quantity == 0)
+                {
+                    owner.RemoveItem(this);
+                    return;
+                }
+
+                Database.SetQuantity(uniqueId, this.quantity);
+
+                if (owner != null && owner is Player)
+                    owner.GetItemPackage(itemPackage).RefreshItem((Player)owner, this);
+            }
+        }
+
+        public void RefreshPositioning(Character owner, ushort itemPackage, ushort slot)
+        {
+            lock (owner.GetItemPackage(itemPackage))
+            {
+                this.owner = owner;
+                this.itemPackage = itemPackage;
+                this.slot = slot;
+            }
         }
 
         public void SetExclusive(bool isExclusive)
