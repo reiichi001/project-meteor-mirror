@@ -39,22 +39,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         public override void Update(DateTime tick)
         {
             lastUpdate = tick;
-
-            // todo: handle aggro/deaggro and other shit here
-            if (!owner.aiContainer.IsEngaged())
+            if (!owner.IsDead())
             {
-                TryAggro(tick);
-            }
+                // todo: handle aggro/deaggro and other shit here
+                if (!owner.aiContainer.IsEngaged())
+                {
+                    TryAggro(tick);
+                }
 
-            if(owner.aiContainer.IsEngaged())
-            {
-                //DoCombatTick(tick);
-            }
+                if (owner.aiContainer.IsEngaged())
+                {
+                    DoCombatTick(tick);
+                }
 
-            //Only move if owner isn't dead and is either too far away from their spawn point or is meant to roam
-            if (!owner.IsDead() && (owner.isMovingToSpawn || owner.GetMobMod((uint) MobModifier.Roams) > 0))
-            {
-                DoRoamTick(tick);
+                //Only move if owner isn't dead and is either too far away from their spawn point or is meant to roam
+                else if (!owner.IsDead() && (owner.isMovingToSpawn || owner.GetMobMod((uint)MobModifier.Roams) > 0))
+                {
+                    DoRoamTick(tick);
+                }
             }
         }
 
@@ -103,6 +105,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 Engage(owner.hateContainer.GetMostHatedTarget());
             }
         }
+
         public override bool Engage(Character target)
         {
             var canEngage = this.owner.aiContainer.InternalEngage(target);

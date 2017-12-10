@@ -19,6 +19,10 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void QueuePacket(SubPacket subpacket)
         {
+            //Temporary fix for r0
+            if(SendPacketQueue.Count == 1000)
+                FlushQueuedSendPackets();
+
             SendPacketQueue.Add(subpacket);
         }
 
