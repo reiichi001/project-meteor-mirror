@@ -36,7 +36,6 @@ namespace FFXIVClassic_Map_Server.lua
 
         private Timer luaTimer;
 
-
         private LuaEngine()
         {
             UserData.RegistrationPolicy = InteropRegistrationPolicy.Automatic;
@@ -108,25 +107,25 @@ namespace FFXIVClassic_Map_Server.lua
             }
         }
 
-        public void OnEventUpdate(Player player, List<LuaParam> args)
+        public void OnEventUpdate(GameEvent gEvent, List<LuaParam> args)
         {
-            if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
+            if (mSleepingOnPlayerEvent.ContainsKey(gEvent.GetUniqueEventId()))
             {
                 try
                 {
-                    Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];
-                    mSleepingOnPlayerEvent.Remove(player.actorId);
+                    Coroutine coroutine = mSleepingOnPlayerEvent[gEvent.GetUniqueEventId()];
+                    mSleepingOnPlayerEvent.Remove(gEvent.GetUniqueEventId());
                     DynValue value = coroutine.Resume(LuaUtils.CreateLuaParamObjectList(args));
-                    ResolveResume(player, coroutine, value);
+                    ResolveResume(gEvent.GetPlayerActor(), coroutine, value);
                 }
                 catch (ScriptRuntimeException e)
                 {
-                    LuaEngine.SendError(player, String.Format("OnEventUpdated: {0}", e.DecoratedMessage));
-                    player.EndEvent();
+                    LuaEngine.SendError(gEvent.GetPlayerActor(), String.Format("OnEventUpdated: {0}", e.DecoratedMessage));
+                    gEvent.GetPlayerActor().EndEvent();
                 }
             }
             else
-                player.EndEvent();
+                gEvent.GetPlayerActor().EndEvent();
         }
 
         private static string GetScriptPath(Actor target)
@@ -365,14 +364,15 @@ namespace FFXIVClassic_Map_Server.lua
             }            
         }
 
-        public void EventStarted(Player player, Actor target, EventStartPacket eventStart)
+        public void EventStarted(GameEvent gEvent, EventStartPacket eventStart)
         {
             List<LuaParam> lparams = eventStart.luaParams;
             lparams.Insert(0, new LuaParam(2, eventStart.triggerName));
-            if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
+
+            if (mSleepingOnPlayerEvent.ContainsKey(gEvent.GetUniqueEventId()))
             {
-                Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];                
-                mSleepingOnPlayerEvent.Remove(player.actorId);
+                Coroutine coroutine = mSleepingOnPlayerEvent[gEvent.GetUniqueEventId()];
+                mSleepingOnPlayerEvent.Remove(gEvent.GetUniqueEventId());
 
                 try{
                     DynValue value = coroutine.Resume();
@@ -380,16 +380,16 @@ namespace FFXIVClassic_Map_Server.lua
                 }
                 catch (ScriptRuntimeException e)
                 {
-                    LuaEngine.SendError(player, String.Format("OnEventStarted: {0}", e.DecoratedMessage));
-                    player.EndEvent();
+                    LuaEngine.SendError(gEvent.GetPlayerActor(), String.Format("OnEventStarted: {0}", e.DecoratedMessage));
+                    gEvent.GetPlayerActor().EndEvent();
                 }                
             }
             else
             {
-                if (target is Director)                
-                    ((Director)target).OnEventStart(player, LuaUtils.CreateLuaParamObjectList(lparams));
+                if (gEvent.GetOwnerActor() is Director)
+                    ((Director)gEvent.GetOwnerActor()).OnEventStart(gEvent.GetPlayerActor(), LuaUtils.CreateLuaParamObjectList(lparams));
                 else
-                    CallLuaFunction(player, target, "onEventStarted", false, LuaUtils.CreateLuaParamObjectList(lparams));
+                    CallLuaFunction(gEvent.GetPlayerActor(), gEvent.GetOwnerActor(), "onEventStarted", false, LuaUtils.CreateLuaParamObjectList(lparams));
             }                
         }
 
@@ -611,7 +611,7 @@ namespace FFXIVClassic_Map_Server.lua
                 return;
             List<SubPacket> SendError = new List<SubPacket>();
             player.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", message);
-            player.QueuePacket(EndEventPacket.BuildPacket(player.actorId, player.currentEventOwner, player.currentEventName));
+            player.EndEvent();
         }
         
     }

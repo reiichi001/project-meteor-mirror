@@ -88,10 +88,7 @@ namespace FFXIVClassic_Map_Server.Actors
                                      74000, 78000, 81000, 85000, 89000, 92000, 96000, 100000, 100000, 110000};   //Level <= 50
 
         //Event Related
-        public uint currentEventOwner = 0;
-        public string currentEventName = "";
-
-        public Coroutine currentEventRunning;
+        private Stack<GameEvent> runningEvents = new Stack<GameEvent>();
 
         //Player Info
         public uint destinationZone;
@@ -1645,12 +1642,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void StartEvent(Actor owner, EventStartPacket start)
         {
-            LuaEngine.GetInstance().EventStarted(this, owner, start);
+            GameEvent startedEvent = new GameEvent(start.triggerName, this, owner);
+            runningEvents.Push(startedEvent);
+            LuaEngine.GetInstance().EventStarted(startedEvent, start);
         }
 
         public void UpdateEvent(EventUpdatePacket update)
         {
-            LuaEngine.GetInstance().OnEventUpdate(this, update.luaParams);            
+            GameEvent updateEvent = runningEvents.Peek();
+            LuaEngine.GetInstance().OnEventUpdate(updateEvent, update.luaParams);            
         } 
 
         public void KickEvent(Actor actor, string conditionName, params object[] parameters)
@@ -1683,20 +1683,17 @@ namespace FFXIVClassic_Map_Server.Actors
         public void RunEventFunction(string functionName, params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
-            SubPacket spacket = RunEventFunctionPacket.BuildPacket(actorId, currentEventOwner, currentEventName, functionName, lParams);
+            SubPacket spacket = RunEventFunctionPacket.BuildPacket(actorId, runningEvents.Peek().GetOwnerActorId(), runningEvents.Peek().GetEventName(), functionName, lParams);
             spacket.DebugPrintSubPacket();
             QueuePacket(spacket);
         }
 
         public void EndEvent()
         {
-            SubPacket p = EndEventPacket.BuildPacket(actorId, currentEventOwner, currentEventName);
+            GameEvent endingEvent = runningEvents.Pop();
+            SubPacket p = EndEventPacket.BuildPacket(actorId, endingEvent.GetOwnerActorId(), endingEvent.GetEventName());
             p.DebugPrintSubPacket();
             QueuePacket(p);
-
-            currentEventOwner = 0;
-            currentEventName = "";
-            currentEventRunning = null;
         }
         
         public void SendInstanceUpdate()

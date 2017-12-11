@@ -1624,9 +1624,9 @@ namespace FFXIVClassic_Map_Server
 
                     string query = @"
                                     INSERT INTO server_items                                    
-                                    (itemId, quality)
+                                    (itemId, quantity, quality)
                                     VALUES
-                                    (@itemId, @quality);                                    
+                                    (@itemId, @quantity, @quality);                                    
                                     ";
 
                     string query2 = @"
@@ -1638,6 +1638,7 @@ namespace FFXIVClassic_Map_Server
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@itemId", itemId);
+                    cmd.Parameters.AddWithValue("@quantity", quantity);
                     cmd.Parameters.AddWithValue("@quality", quality);
                     cmd.ExecuteNonQuery();
 

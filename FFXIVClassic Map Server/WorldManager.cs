@@ -1060,18 +1060,15 @@ namespace FFXIVClassic_Map_Server
             if (cost < 0)
                 return false;
 
-            if (itemToBuy.GetBazaarMode() == InventoryItem.TYPE_STACK)
-            {
-                itemToBuy.ChangeQuantity(-quantity);
-                buyer.AddItemStack(itemToBuy.itemId, quantity, itemToBuy.quality);
-                buyer.GetItemPackage(Inventory.CURRENCY_CRYSTALS).RemoveItem(1000001, cost);
-            }
-            else
+            if (itemToBuy.GetBazaarMode() == InventoryItem.TYPE_SINGLE || itemToBuy.GetBazaarMode() == InventoryItem.TYPE_MULTI || itemToBuy.GetBazaarMode() == InventoryItem.TYPE_STACK)
             {
                 itemToBuy.ChangeQuantity(-quantity);
                 buyer.AddItem(itemToBuy.itemId, quantity, itemToBuy.quality);
                 buyer.GetItemPackage(Inventory.CURRENCY_CRYSTALS).RemoveItem(1000001, cost);
             }
+           
+            if (itemToBuy.quantity == 0)
+                Database.ClearBazaarEntry(bazaar, itemToBuy);
 
             bazaar.CheckBazaarFlags();
 

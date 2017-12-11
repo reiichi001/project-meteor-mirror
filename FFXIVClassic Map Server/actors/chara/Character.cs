@@ -151,18 +151,7 @@ namespace FFXIVClassic_Map_Server.Actors
             ushort itemPackage = GetPackageForItem(catalogID);
             if (itemPackages.ContainsKey(itemPackage))
             {
-                InventoryItem item = Server.GetWorldManager().CreateItem(catalogID, quantity, quality);
-                itemPackages[itemPackage].AddItem(item);
-            }
-        }
-
-        public void AddItemStack(uint catalogID, int quantity, byte quality)
-        {
-            ItemData itemData = Server.GetItemGamedata(catalogID);
-            if (itemData != null)
-            {
-                int totalQuantity = itemData.maxStack * quantity;
-                AddItem(catalogID, totalQuantity, quality);
+                itemPackages[itemPackage].AddItem(catalogID, quantity, quality);
             }
         }
 
