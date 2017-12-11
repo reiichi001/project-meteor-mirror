@@ -1049,7 +1049,7 @@ namespace FFXIVClassic_Map_Server
             return Database.CreateItem(itemId, amount, quality, modifiers);
         }
 
-        public bool BazaarPurchaseOperation(Player bazaar, Player buyer, InventoryItem itemToBuy, int quantity, int cost)
+        public bool BazaarBuyOperation(Player bazaar, Player buyer, InventoryItem itemToBuy, int quantity, int cost)
         {
             if (bazaar == null || buyer == null || itemToBuy == null)
                 return false;
@@ -1069,6 +1069,30 @@ namespace FFXIVClassic_Map_Server
            
             if (itemToBuy.quantity == 0)
                 Database.ClearBazaarEntry(bazaar, itemToBuy);
+
+            bazaar.CheckBazaarFlags();
+
+            return true;
+        }
+
+        public bool BazaarSellOperation(Player bazaar, Player buyer, InventoryItem reward, int rewardQuantity, InventoryItem seek, int seekQuantity)
+        {
+            if (bazaar == null || buyer == null || reward == null || seek == null)
+                return false;
+
+            if (rewardQuantity <= 0 || seekQuantity <= 0)
+                return false;
+
+            if (reward.GetBazaarMode() == InventoryItem.TYPE_SEEK_ITEM)
+            {
+                bazaar.RemoveItem(reward, rewardQuantity);
+                buyer.RemoveItem(seek, seekQuantity);
+
+                bazaar.AddItem(seek);
+                bazaar.AddItem(reward);
+            }
+
+            Database.ClearBazaarEntry(bazaar, reward);
 
             bazaar.CheckBazaarFlags();
 

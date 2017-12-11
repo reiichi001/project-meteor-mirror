@@ -653,6 +653,33 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public void BroadcastPackets(List<SubPacket> packets, bool sendToSelf)
+        {
+            foreach (SubPacket packet in packets)
+            {
+                if (sendToSelf)
+                {
+
+                    SubPacket clonedPacket = new SubPacket(packet, actorId);
+                    QueuePacket(clonedPacket);
+                }
+
+                foreach (Actor a in playerSession.actorInstanceList)
+                {
+                    if (a is Player)
+                    {
+                        Player p = (Player)a;
+
+                        if (p.Equals(this))
+                            continue;
+
+                        SubPacket clonedPacket = new SubPacket(packet, a.actorId);
+                        p.QueuePacket(clonedPacket);
+                    }
+                }
+            }
+        }
+
         public void BroadcastPacket(SubPacket packet, bool sendToSelf)
         {
             if (sendToSelf)
@@ -1086,24 +1113,30 @@ namespace FFXIVClassic_Map_Server.Actors
 
             bool doUpdate = false;
 
-            if (charaWork.eventTemp.bazaarRetail != isDealing || charaWork.eventTemp.bazaarRepair != isRepairing || charaWork.eventTemp.bazaarMateria != (GetItemPackage(Inventory.MELDREQUEST).GetCount() != 0))
-                doUpdate = true;
-
-            charaWork.eventTemp.bazaarRetail = isDealing;
-            charaWork.eventTemp.bazaarRepair = isRepairing;
-            charaWork.eventTemp.bazaarMateria = GetItemPackage(Inventory.MELDREQUEST).GetCount() == 0;
-
-            if (noUpdate)
-                return;
-
-            if (doUpdate)
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/bazaar", this);            
+            if (charaWork.eventTemp.bazaarRetail != isDealing)
             {
-                ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/bazaar", this);
+                charaWork.eventTemp.bazaarRetail = isDealing;
                 propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRetail");
-                propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRepair");
-                propPacketUtil.AddProperty("charaWork.eventTemp.bazaarMateria");
-                QueuePackets(propPacketUtil.Done());
+                doUpdate = true;
             }
+
+            if (charaWork.eventTemp.bazaarRepair != isRepairing)
+            {
+                charaWork.eventTemp.bazaarRepair = isRepairing;
+                propPacketUtil.AddProperty("charaWork.eventTemp.bazaarRepair");
+                doUpdate = true;
+            }
+
+            if (charaWork.eventTemp.bazaarMateria != (GetItemPackage(Inventory.MELDREQUEST).GetCount() != 0))
+            {
+                charaWork.eventTemp.bazaarMateria = GetItemPackage(Inventory.MELDREQUEST).GetCount() != 0;
+                propPacketUtil.AddProperty("charaWork.eventTemp.bazaarMateria");
+                doUpdate = true;
+            }
+            
+            if (!noUpdate && doUpdate)            
+                BroadcastPackets(propPacketUtil.Done(), true);            
         }        
 
         public int GetCurrentGil()
