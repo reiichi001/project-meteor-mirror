@@ -1104,7 +1104,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     if (item.GetBazaarMode() == InventoryItem.TYPE_SEEK_REPAIR)
                         isRepairing = true;
                     if (item.GetBazaarMode() == InventoryItem.TYPE_SEEK_ITEM)
-                        seekingItem = true;
+                        isDealing = true;
 
                     if (isDealing && isRepairing && seekingItem)
                         break;
@@ -1113,7 +1113,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             bool doUpdate = false;
 
-            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/bazaar", this);            
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/bazaar", this);
             if (charaWork.eventTemp.bazaarRetail != isDealing)
             {
                 charaWork.eventTemp.bazaarRetail = isDealing;

@@ -1085,11 +1085,14 @@ namespace FFXIVClassic_Map_Server
 
             if (reward.GetBazaarMode() == InventoryItem.TYPE_SEEK_ITEM)
             {
+                InventoryItem seekBazaar = bazaar.GetItemPackage(Inventory.BAZAAR).GetItemAttachedTo(reward);
                 bazaar.RemoveItem(reward, rewardQuantity);
-                buyer.RemoveItem(seek, seekQuantity);
+                bazaar.RemoveItem(seekBazaar, seekQuantity);
+                bazaar.AddItem(seekBazaar);
+                bazaar.AddItem(seek.itemId, seekQuantity, seek.quality);
 
-                bazaar.AddItem(seek);
-                bazaar.AddItem(reward);
+                buyer.RemoveItem(seek, seekQuantity);
+                buyer.AddItem(reward);
             }
 
             Database.ClearBazaarEntry(bazaar, reward);
