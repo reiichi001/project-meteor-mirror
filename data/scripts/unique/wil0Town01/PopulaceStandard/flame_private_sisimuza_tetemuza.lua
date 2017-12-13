@@ -1,7 +1,7 @@
 require ("global")
 
 function onEventStarted(player, npc)
-    defaultWil = GetStaticActor("DftWil");
-	callClientFunction(player, "delegateEvent", player, defaultWil, "defaultTalkWithFlameprivatesisimuzatetemuza_001", nil, nil, nil);
+    Spl = GetStaticActor("Spl000");
+	callClientFunction(player, "delegateEvent", player, Spl, "processEventSISIMUZA");
 	player:endEvent();
 end
