@@ -22,8 +22,14 @@ function doItemTrade(player, retainer)
 	callClientFunction(player, "eventTalkRetainerItemTrade", 1);
 	
 	while (true) do
-		resultCode, type7Param, un1, quantity, itemId, quality = callClientFunction(player, "eventTalkRetainerItemTrade", 2);
+		resultCode, type7Param, un1, quantity, itemId, quality = callClientFunction(player, "eventTalkRetainerItemTrade", 2);		
 		
+		player:SendMessage(0x20, "", "" .. tostring(resultCode));
+		player:SendMessage(0x20, "", "" .. tostring(un1));
+		player:SendMessage(0x20, "", "" .. tostring(quantity));
+		player:SendMessage(0x20, "", "" .. tostring(itemId));
+		player:SendMessage(0x20, "", "" .. tostring(quality));
+	
 		--Retreieve
 		if (resultCode == 31) then		
 			retainer:GetInventory(type7Param.inventoryType):RemoveItemAtSlot(type7Param.slot, quantity);

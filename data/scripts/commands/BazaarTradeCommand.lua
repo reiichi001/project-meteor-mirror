@@ -21,6 +21,7 @@ function onEventStarted(player, actor, triggerName, rewardItem, seekItemOrCost, 
 	
 	--Abort if no actor
 	if (bazaarActor == nil) then
+		player:SendGameMessage(player, worldMaster, 25111, 0x20);
 		player:EndEvent();
 		return;
 	end
@@ -30,17 +31,18 @@ function onEventStarted(player, actor, triggerName, rewardItem, seekItemOrCost, 
 		if (player:GetCurrentGil() >= seekItemOrCost) then
 			if (GetWorldManager():BazaarBuyOperation(bazaarActor, player, bazaarActor:GetItem(rewardItem), rewardAmount, seekItemOrCost)) then			
 			else
+				player:SendGameMessage(player, worldMaster, 25111, 0x20);
 			end
 		else
-			--Show no gil error
+			player:SendGameMessage(player, worldMaster, 40252, 0x20);
 		end	
 	else --Else we are fufilling a sought out item (ExecuteBazaarSell)
-		local rewardItem = player:GetItem(rewardItem);
+		local rewardItem = bazaarActor:GetItem(rewardItem);
 		local seekItem = player:GetItem(seekItemOrCost);
-		
 		if (rewardItem ~= nil and seekItem ~= nil) then
 			if (GetWorldManager():BazaarSellOperation(bazaarActor, player, rewardItem, rewardAmount, seekItem, seekAmount)) then			
 			else
+				player:SendGameMessage(player, worldMaster, 25111, 0x20);
 			end
 		else
 		end
