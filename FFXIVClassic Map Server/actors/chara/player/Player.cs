@@ -1694,7 +1694,7 @@ namespace FFXIVClassic_Map_Server.Actors
             runningEvents.Pop();
 
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
-            SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, 0x75dc1, conditionName, lParams);
+            SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, 0x75dc1705, conditionName, lParams);
             spacket.DebugPrintSubPacket();
             QueuePacket(spacket);
         }
@@ -1883,6 +1883,11 @@ namespace FFXIVClassic_Map_Server.Actors
                 retainerMeetingGroup.SendDeletePacket(playerSession);
                 retainerMeetingGroup = null;
             }
+        }
+
+        public Retainer GetSpawnedRetainer()
+        {
+            return currentSpawnedRetainer;
         }
 
         public void StartTradeTransaction(Player otherPlayer)

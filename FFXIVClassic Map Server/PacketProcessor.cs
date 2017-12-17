@@ -238,8 +238,13 @@ namespace FFXIVClassic_Map_Server
                     //Item Package Request
                     case 0x0131:
                         UpdateItemPackagePacket packageRequest = new UpdateItemPackagePacket(subpacket.data);
-                        if (Server.GetWorldManager().GetPCInWorld(packageRequest.actorID) != null)
-                            Server.GetWorldManager().GetPCInWorld(packageRequest.actorID).SendItemPackage(session.GetActor(), packageRequest.packageId);
+                        if (Server.GetWorldManager().GetActorInWorld(packageRequest.actorID) != null)
+                        {
+                            ((Character)Server.GetWorldManager().GetActorInWorld(packageRequest.actorID)).SendItemPackage(session.GetActor(), packageRequest.packageId);
+                            break;
+                        }
+                        if (session.GetActor().GetSpawnedRetainer() != null && session.GetActor().GetSpawnedRetainer().actorId == packageRequest.actorID)
+                            session.GetActor().GetSpawnedRetainer().SendItemPackage(session.GetActor(), packageRequest.packageId);
                         break;
                     //Group Created Confirm
                     case 0x0133:

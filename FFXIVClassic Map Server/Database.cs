@@ -1548,6 +1548,7 @@ namespace FFXIVClassic_Map_Server
                                     itemId,
                                     server_items_modifiers.id AS modifierId,
                                     quantity,
+                                    isExclusive,
                                     quality,
 
                                     durability,
@@ -1568,10 +1569,10 @@ namespace FFXIVClassic_Map_Server
                                     FROM retainers_inventory
                                     INNER JOIN server_items ON serverItemId = server_items.id
                                     LEFT JOIN server_items_modifiers ON server_items.id = server_items_modifiers.id
-                                    WHERE characterId = @charId AND itemPackage = @type";
+                                    WHERE characterId = @retainerId AND itemPackage = @type";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
+                    cmd.Parameters.AddWithValue("@retainerId", retainer.GetRetainerId());
                     cmd.Parameters.AddWithValue("@type", type);
 
                     ushort slot = 0;
@@ -1583,10 +1584,9 @@ namespace FFXIVClassic_Map_Server
                             uint itemId = reader.GetUInt32("itemId");
                             int quantity = reader.GetInt32("quantity");
 
-                            byte itemType = reader.GetByte("itemType");
                             byte qualityNumber = reader.GetByte("quality");
 
-                            bool hasModifier = reader.IsDBNull(reader.GetOrdinal("modifierId"));
+                            bool hasModifier = !reader.IsDBNull(reader.GetOrdinal("modifierId"));
                             InventoryItem.ItemModifier modifier = null;
 
                             if (hasModifier)
@@ -1781,7 +1781,7 @@ namespace FFXIVClassic_Map_Server
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
                     cmd.Parameters.AddWithValue("@serverItemId", addedItem.uniqueId);
-                    cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
+                    cmd.Parameters.AddWithValue("@retainerId", retainer.GetRetainerId());
                     cmd.Parameters.AddWithValue("@itemPackage", type);
                     cmd.Parameters.AddWithValue("@quantity", addedItem.quantity);
 
@@ -1812,7 +1812,7 @@ namespace FFXIVClassic_Map_Server
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
+                    cmd.Parameters.AddWithValue("@retainerId", retainer.GetRetainerId());
                     cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
                     cmd.ExecuteNonQuery();
 
