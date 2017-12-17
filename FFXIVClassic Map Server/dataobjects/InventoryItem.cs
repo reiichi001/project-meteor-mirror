@@ -1,4 +1,5 @@
 ﻿using FFXIVClassic_Map_Server.Actors;
+using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using System;
 using System.IO;
 
@@ -230,7 +231,12 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 Database.SetQuantity(uniqueId, this.quantity);
 
                 if (owner != null && owner is Player)
+                {
+
+                    ((Player)owner).QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId, false));
                     owner.GetItemPackage(itemPackage).RefreshItem((Player)owner, this);
+                    ((Player)owner).QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
+                }
             }
         }
 
