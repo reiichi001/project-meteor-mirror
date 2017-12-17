@@ -1691,6 +1691,8 @@ namespace FFXIVClassic_Map_Server.Actors
             if (actor == null)
                 return;
 
+            runningEvents.Pop();
+
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
             SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, 0x75dc1, conditionName, lParams);
             spacket.DebugPrintSubPacket();
@@ -1701,6 +1703,8 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (actor == null)
                 return;
+
+            runningEvents.Pop();
 
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
             SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, unknown, conditionName, lParams);
