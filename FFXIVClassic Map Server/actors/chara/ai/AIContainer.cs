@@ -35,9 +35,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             actionQueue = new ActionQueue(owner);
         }
 
-        public void UpdateLastActionTime()
+        public void UpdateLastActionTime(uint delay = 0)
         {
-            lastActionTime = DateTime.Now;
+            lastActionTime = DateTime.Now.AddSeconds(delay);
         }
 
         public DateTime GetLastActionTime()
@@ -62,6 +62,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 controller.Update(tick);
 
             State top;
+
             while (states.Count > 0 && (top = states.Peek()).Update(tick))
             {
                 if (top == GetCurrentState())
@@ -330,7 +331,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             if (CanChangeState())
             {
-                
+                ChangeState(new AbilityState(owner, target, (ushort)abilityId));
             }
         }
 

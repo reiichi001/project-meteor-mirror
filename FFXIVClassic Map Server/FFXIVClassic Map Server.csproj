@@ -95,6 +95,7 @@
     <Compile Include="actors\chara\ai\HateContainer.cs" />
     <Compile Include="actors\chara\ai\helpers\PathFind.cs" />
     <Compile Include="actors\chara\ai\BattleCommand.cs" />
+    <Compile Include="actors\chara\ai\state\AbilityState.cs" />
     <Compile Include="actors\chara\ai\state\AttackState.cs" />
     <Compile Include="actors\chara\ai\state\DeathState.cs" />
     <Compile Include="actors\chara\ai\state\DespawnState.cs" />

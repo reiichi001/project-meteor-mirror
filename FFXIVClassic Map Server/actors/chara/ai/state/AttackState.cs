@@ -82,7 +82,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnComplete()
         {
-            BattleAction action = new BattleAction(target.actorId, 0x765D, (uint) HitEffect.Hit, 0, (byte) HitDirection.None);
+            //BattleAction action = new BattleAction(target.actorId, 0x765D, (uint) HitEffect.Hit, 0, (byte) HitDirection.None);
             errorResult = null;
 
             // todo: implement auto attack damage bonus in Character.OnAttack
@@ -99,16 +99,35 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
               * The above damage bonus also applies to “Shot” attacks by archers.
              */
             // handle paralyze/intimidate/sleep/whatever in Character.OnAttack
-            owner.OnAttack(this, action, ref errorResult);
-            owner.DoBattleAction((ushort)BattleActionX01PacketCommand.Attack, action.animation, errorResult == null ? action : errorResult);            
+
+
+            List<BattleAction> actions = new List<BattleAction>();
+            
+            var i = 0;
+            for (int hitNum = 0; hitNum < owner.GetMod((uint) Modifier.HitCount); hitNum++)
+            {
+                BattleAction action = new BattleAction(target.actorId, 0x765D, (uint)HitEffect.Hit, 100, (byte)HitDirection.None, (byte) hitNum);
+                action.battleActionType = BattleActionType.AttackPhysical;
+                // evasion, miss, dodge, etc to be handled in script, calling helpers from scripts/weaponskills.lua
+                // temporary evade/miss/etc function to test hit effects
+                utils.BattleUtils.CalcHitType(owner, target, null, action);
+                actions.AddRange(action.GetAllActions());
+            }
+
+            // todo: this is fuckin stupid, probably only need *one* error packet, not an error for each action
+            BattleAction[] errors = (BattleAction[])actions.ToArray().Clone();
+
+            owner.OnAttack(this, actions[0], ref errorResult);
+            owner.DoBattleAction(22104, 0x19001000, actions);
+            target.SetMod((uint) Modifier.MinimumHpLock, 0);
         }
 
         public override void TryInterrupt()
         {
-            if (owner.statusEffects.HasStatusEffectsByFlag((uint)StatusEffectFlags.PreventAction))
+            if (owner.statusEffects.HasStatusEffectsByFlag((uint)StatusEffectFlags.PreventAttack))
             {
                 // todo: sometimes paralyze can let you attack, calculate proc rate
-                var list = owner.statusEffects.GetStatusEffectsByFlag((uint)StatusEffectFlags.PreventAction);
+                var list = owner.statusEffects.GetStatusEffectsByFlag((uint)StatusEffectFlags.PreventAttack);
                 uint statusId = 0;
                 if (list.Count > 0)
                 {
@@ -124,7 +143,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         private bool IsAttackReady()
         {
             // todo: this enforced delay should really be changed if it's not retail..
-            return Program.Tick >= attackTime && Program.Tick >= owner.aiContainer.GetLastActionTime().AddSeconds(1);
+            return Program.Tick >= attackTime && Program.Tick >= owner.aiContainer.GetLastActionTime();
         }
 
         private bool CanAttack()

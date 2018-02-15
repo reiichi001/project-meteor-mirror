@@ -479,7 +479,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public readonly short craftMagicProcessing;
         public readonly short harvestPotency;
         public readonly short harvestLimit;
-        public readonly byte frequency;
+        public readonly byte frequency; // hit count, 2 for h2h weapons
         public readonly short rate;
         public readonly short magicRate;
         public readonly short craftProcessControl;
@@ -488,7 +488,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public readonly short magicCritical;
         public readonly short parry;
 
-        public readonly int damageAttributeType1;
+        public readonly int damageAttributeType1; // 1 slashing, 2 piercing, 3 blunt, 4 projectile
         public readonly float damageAttributeValue1;
         public readonly int damageAttributeType2;
         public readonly float damageAttributeValue2;
@@ -498,6 +498,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public readonly short damagePower;
         public readonly float damageInterval;
         public readonly short ammoVirtualDamagePower;
+        public readonly float dps;
 
         public WeaponItem(MySqlDataReader reader)
             : base(reader)
@@ -534,6 +535,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             damagePower = reader.GetInt16("damagePower");
             damageInterval = reader.GetFloat("damageInterval");
             ammoVirtualDamagePower = reader.GetInt16("ammoVirtualDamagePower");
+            dps = damagePower / damageInterval;// this is wrong for bows, might need to store this in db because dps is used for weaponskill damage
         }
     }
 

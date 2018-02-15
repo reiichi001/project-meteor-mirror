@@ -81,6 +81,8 @@ namespace FFXIVClassic_Map_Server.actors.group
         {
             members.Remove(memberId);
             SendGroupPacketsAll(members);
+            if (members.Count == 0)
+                Server.GetWorldManager().NoMembersInParty(this);
         }
     }
 }

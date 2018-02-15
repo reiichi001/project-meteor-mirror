@@ -964,7 +964,7 @@ namespace FFXIVClassic_Map_Server
                             var effect = Server.GetWorldManager().GetStatusEffect(id);
                             if (effect != null)
                             {
-                                effect.SetDurationMs(duration);
+                                effect.SetDuration(duration);
                                 effect.SetMagnitude(magnitude);
                                 effect.SetTickMs(tick);
                                 effect.SetTier(tier);
@@ -1276,8 +1276,7 @@ namespace FFXIVClassic_Map_Server
         }
         public static void EquipAbility(Player player, byte classId, ushort hotbarSlot, uint commandId, uint recastTime)
         {
-            //2700083201 is where abilities start. 2700083200 is for unequipping abilities. Trying to put this in the hotbar will crash the game, need to put 0 instead
-            if (commandId > 2700083200)
+            if (commandId > 0)
             {
                 using (MySqlConnection conn = new MySqlConnection(
                     String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}",
@@ -1321,7 +1320,7 @@ namespace FFXIVClassic_Map_Server
                 UnequipAbility(player, hotbarSlot);
         }
 
-        //Unequipping is done by sending an equip packet with 2700083200 as the ability and the hotbar slot of the action being unequipped
+        //Unequipping is done by sending an equip packet with 0xA0F00000 as the ability and the hotbar slot of the action being unequipped
         public static void UnequipAbility(Player player, ushort hotbarSlot)
         {
             using (MySqlConnection conn = new MySqlConnection(
@@ -1338,8 +1337,6 @@ namespace FFXIVClassic_Map_Server
                     MySqlCommand cmd;
                     string query = "";
 
-                    //Drop
-                    List<Tuple<ushort, uint>> hotbarList = new List<Tuple<ushort, uint>>();
                     query = @"
                                 DELETE FROM characters_hotbar
                                 WHERE characterId = @charId AND classId = @classId AND hotbarSlot = @hotbarSlot
@@ -1377,7 +1374,7 @@ namespace FFXIVClassic_Map_Server
                         SELECT 
                         hotbarSlot,
                         commandId,
-                        recastTime                
+                        recastTime
                         FROM characters_hotbar WHERE characterId = @charId AND classId = @classId
                         ORDER BY hotbarSlot";
 
@@ -1385,7 +1382,7 @@ namespace FFXIVClassic_Map_Server
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@classId", player.GetCurrentClassOrJob());
 
-                    player.charaWork.commandBorder = 32;                 
+                    player.charaWork.commandBorder = 32;
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
@@ -1393,13 +1390,13 @@ namespace FFXIVClassic_Map_Server
                         {
                             int hotbarSlot = reader.GetUInt16("hotbarSlot");
                             uint commandId = reader.GetUInt32("commandId");
-                            player.charaWork.command[hotbarSlot + player.charaWork.commandBorder] = commandId | 0xA0F00000;
+                            player.charaWork.command[hotbarSlot + player.charaWork.commandBorder] = 0xA0F00000 | commandId;
                             player.charaWork.commandCategory[hotbarSlot + player.charaWork.commandBorder] = 1;
                             player.charaWork.parameterSave.commandSlot_recastTime[hotbarSlot] = reader.GetUInt32("recastTime");
 
                             //Recast timer
                             BattleCommand ability = Server.GetWorldManager().GetBattleCommand((ushort)(commandId));
-                            player.charaWork.parameterTemp.maxCommandRecastTime[hotbarSlot] = (ushort) (ability != null ? ability.recastTimeSeconds : 1);                            
+                            player.charaWork.parameterTemp.maxCommandRecastTime[hotbarSlot] = (ushort) (ability != null ? ability.maxRecastTimeSeconds : 1);
                         }
                     }
                 }
@@ -1448,7 +1445,7 @@ namespace FFXIVClassic_Map_Server
                         while (reader.Read())
                         {
                             if (slot != reader.GetUInt16("hotbarSlot"))
-                                return slot;
+                                break;
 
                             slot++;
                         }
@@ -1550,7 +1547,7 @@ namespace FFXIVClassic_Map_Server
 
 
                     string query = @"
-                                    INSERT INTO server_items                                    
+                                    INSERT INTO server_items
                                     (itemId, quality, itemType, durability)
                                     VALUES
                                     (@itemId, @quality, @itemType, @durability); 
@@ -1804,7 +1801,7 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
 
                     string query = @"
-                                    INSERT INTO server_linkshells                                    
+                                    INSERT INTO server_linkshells
                                     (name, master, crest)
                                     VALUES
                                     (@lsName, @master, @crest)
@@ -2160,7 +2157,7 @@ namespace FFXIVClassic_Map_Server
                     SET
                     chocoboAppearance=@chocoboAppearance
                     WHERE
-                    characterId = @characterId";                    
+                    characterId = @characterId";
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@characterId", player.actorId);
@@ -2189,7 +2186,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Open();
 
-                    var query = @"SELECT id, name, flags, overwrite FROM server_statuseffects;";
+                    var query = @"SELECT id, name, flags, overwrite, tickMs FROM server_statuseffects;";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -2201,8 +2198,9 @@ namespace FFXIVClassic_Map_Server
                             var name = reader.GetString("name");
                             var flags = reader.GetUInt32("flags");
                             var overwrite = reader.GetByte("overwrite");
-
-                            var effect = new StatusEffect(id, name, flags, overwrite);
+                            var tickMs = reader.GetUInt32("tickMs");
+                            var effect = new StatusEffect(id, name, flags, overwrite, tickMs);
+                            lua.LuaEngine.LoadStatusEffectScript(effect);
                             effects.Add(id, effect);
                         }
                     }
@@ -2231,7 +2229,7 @@ namespace FFXIVClassic_Map_Server
                     string queries = "";
                     foreach (var effect in player.statusEffects.GetStatusEffects())
                     {
-                        var duration = effect.GetDurationMs() + effect.GetStartTime().Millisecond - Program.Tick.Millisecond;
+                        var duration = effect.GetDuration() + effect.GetStartTime().Second - Program.Tick.Second;
 
                         queries += Environment.NewLine + $"REPLACE INTO characters_statuseffect(characterId, statusId, magnitude, duration, tick, tier, extra) VALUES ({player.actorId}, {effect.GetStatusEffectId()}, {effect.GetMagnitude()}, {duration}, {effect.GetTickMs()}, {effect.GetTier()}, {effect.GetExtra()});";
                     }
@@ -2259,10 +2257,11 @@ namespace FFXIVClassic_Map_Server
             {
                 try
                 {
+                    int count = 0;
                     conn.Open();
 
-                    var query = ("SELECT `id`, name, classJob, lvl, requirements, validTarget, aoeType, aoeRange, aoeTarget, numHits, positionBonus, procRequirement, `range`, buffDuration, debuffDuration, " +
-                        "castType, castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, battleAnimation, validUser FROM server_battle_commands;");
+                    var query = ("SELECT `id`, name, classJob, lvl, requirements, mainTarget, validTarget, aoeType, aoeRange, aoeTarget, basePotency, numHits, positionBonus, procRequirement, `range`, statusId, statusDuration, statusChance, " +
+                        "castType, castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, battleAnimation, validUser, comboId1, comboId2, comboStep, accuracyMod, worldMasterTextId FROM server_battle_commands;");
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -2277,17 +2276,21 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.job = reader.GetByte("classJob");
                             battleCommand.level = reader.GetByte("lvl");
                             battleCommand.requirements = (BattleCommandRequirements)reader.GetUInt16("requirements");
+                            battleCommand.mainTarget = (ValidTarget)reader.GetByte("mainTarget");
                             battleCommand.validTarget = (ValidTarget)reader.GetByte("validTarget");
                             battleCommand.aoeType = (TargetFindAOEType)reader.GetByte("aoeType");
+                            battleCommand.basePotency = reader.GetUInt16("basePotency");
                             battleCommand.numHits = reader.GetByte("numHits");
                             battleCommand.positionBonus = (BattleCommandPositionBonus)reader.GetByte("positionBonus");
                             battleCommand.procRequirement = (BattleCommandProcRequirement)reader.GetByte("procRequirement");
                             battleCommand.range = reader.GetInt32("range");
-                            battleCommand.debuffDurationSeconds = reader.GetUInt32("debuffDuration");
-                            battleCommand.buffDurationSeconds = reader.GetUInt32("buffDuration");
+                            battleCommand.statusId = reader.GetUInt32("statusId");
+                            battleCommand.statusDuration = reader.GetUInt32("statusDuration");
+                            battleCommand.statusChance = reader.GetFloat("statusChance");
                             battleCommand.castType = reader.GetByte("castType");
-                            battleCommand.castTimeSeconds = reader.GetUInt32("castTime");
-                            battleCommand.recastTimeSeconds = reader.GetUInt32("recastTime");
+                            battleCommand.castTimeMs = reader.GetUInt32("castTime");
+                            battleCommand.maxRecastTimeSeconds = reader.GetUInt32("recastTime");
+                            battleCommand.recastTimeMs = battleCommand.maxRecastTimeSeconds * 1000;
                             battleCommand.mpCost = reader.GetUInt16("mpCost");
                             battleCommand.tpCost = reader.GetUInt16("tpCost");
                             battleCommand.animationType = reader.GetByte("animationType");
@@ -2299,7 +2302,13 @@ namespace FFXIVClassic_Map_Server
 
                             battleCommand.battleAnimation = reader.GetUInt32("battleAnimation");
                             battleCommand.validUser = (BattleCommandValidUser)reader.GetByte("validUser");
-                            
+
+                            battleCommand.comboNextCommandId[0] = reader.GetInt32("comboId1");
+                            battleCommand.comboNextCommandId[1] = reader.GetInt32("comboId2");
+                            battleCommand.comboStep = reader.GetInt16("comboStep");
+                            battleCommand.accuracyModifier = reader.GetFloat("accuracyMod");
+                            battleCommand.worldMasterTextId = reader.GetUInt16("worldMasterTextId");
+                            lua.LuaEngine.LoadBattleCommandScript(battleCommand, "weaponskill");
                             battleCommandDict.Add(id, battleCommand);
 
                             Tuple<byte, short> tuple = Tuple.Create<byte, short>(battleCommand.job, battleCommand.level);
@@ -2312,8 +2321,11 @@ namespace FFXIVClassic_Map_Server
                                 List<uint> list = new List<uint>() { id | 0xA0F00000 };
                                 battleCommandIdByLevel.Add(tuple, list);
                             }
+                            count++;
                         }
                     }
+
+                    Program.Log.Info(String.Format("Loaded {0} battle commands.", count));
                 }
                 catch (MySqlException e)
                 {

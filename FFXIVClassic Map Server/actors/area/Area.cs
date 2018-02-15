@@ -141,29 +141,30 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void RemoveActorFromZone(Actor actor)
         {
-            lock (mActorList)
-            {
-                mActorList.Remove(actor.actorId);
+            if (actor != null)
+                lock (mActorList)
+                {
+                    mActorList.Remove(actor.actorId);
 
-                int gridX = (int)actor.positionX / boundingGridSize;
-                int gridY = (int)actor.positionZ / boundingGridSize;
+                    int gridX = (int)actor.positionX / boundingGridSize;
+                    int gridY = (int)actor.positionZ / boundingGridSize;
 
-                gridX += halfWidth;
-                gridY += halfHeight;
+                    gridX += halfWidth;
+                    gridY += halfHeight;
 
-                //Boundries
-                if (gridX < 0)
-                    gridX = 0;
-                if (gridX >= numXBlocks)
-                    gridX = numXBlocks - 1;
-                if (gridY < 0)
-                    gridY = 0;
-                if (gridY >= numYBlocks)
-                    gridY = numYBlocks - 1;
+                    //Boundries
+                    if (gridX < 0)
+                        gridX = 0;
+                    if (gridX >= numXBlocks)
+                        gridX = numXBlocks - 1;
+                    if (gridY < 0)
+                        gridY = 0;
+                    if (gridY >= numYBlocks)
+                        gridY = numYBlocks - 1;
 
-                lock (mActorBlock)
-                    mActorBlock[gridX, gridY].Remove(actor);
-            }
+                    lock (mActorBlock)
+                        mActorBlock[gridX, gridY].Remove(actor);
+                }
         }
 
         public void UpdateActorPosition(Actor actor)
@@ -487,7 +488,6 @@ namespace FFXIVClassic_Map_Server.Actors
                     return null;
 
                 uint zoneId;
-
                 if (this is PrivateArea)
                     zoneId = ((PrivateArea)this).GetParentZone().actorId;
                 else
@@ -500,8 +500,9 @@ namespace FFXIVClassic_Map_Server.Actors
                     npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
 
                 npc.LoadEventConditions(actorClass.eventConditions);
-                //npc.SetMaxHP(3000);
-                //npc.SetHP(3000);
+                npc.SetMaxHP(30000);
+                npc.SetHP(30000);
+                npc.ResetMoveSpeeds();
 
                 AddActorToZone(npc);
 

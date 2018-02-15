@@ -1,17 +1,17 @@
 -- todo: add enums for status effects in global.lua
 require("global")
-
-weaponskill =
-{
-    
-};
-
+require("battleutils")
 --[[
      statId - see BattleTemp.cs
      modifier - Modifier.Intelligence, Modifier.Mind (see Modifier.cs)
      multiplier - 
   ]]
-function weaponskill.HandleHealingSkill(caster, target, spell, action, statId, modifierId, multiplier, baseAmount)
+weaponskill = 
+{
+
+}
+
+function HandleHealingSkill(caster, target, skill, action, statId, modifierId, multiplier, baseAmount)
     potency = potency or 1.0;
     healAmount = baseAmount;
     
@@ -19,19 +19,14 @@ function weaponskill.HandleHealingSkill(caster, target, spell, action, statId, m
     local mind = caster.GetMod(Modifier.Mind);
 end;
 
-function weaponskill.HandleAttackSkill(caster, target, spell, action, statId, modifierId, multiplier, baseAmount)
+function HandleAttackSkill(caster, target, skill, action, statId, modifierId, multiplier, baseAmount)
     -- todo: actually handle this
     damage = baseAmount or math.random(1,10) * 10;
     
     return damage;
 end;
 
-function weaponskill.HandleEvasion(caster, target, spell, action, statId, modifierId)
-
-    return false;
-end;
-
-function weaponskill.HandleStoneskin(caster, target, spell, action, statId, modifierId, damage)
+function HandleStoneskin(caster, target, skill, action, statId, modifierId, damage)
     --[[
     if target.statusEffects.HasStatusEffect(StatusEffect.Stoneskin) then
         -- todo: damage reduction
@@ -39,4 +34,15 @@ function weaponskill.HandleStoneskin(caster, target, spell, action, statId, modi
     end;
     ]]
     return false;
+end;
+
+--The default onskillfinish for weaponskills.
+function weaponskill.onSkillFinish(caster, target, skill, action)
+    action.battleActionType = BattleActionType.AttackPhysical;
+    local damage = math.random(50, 150);
+    action.amount = damage;
+
+    action.CalcHitType(caster, target, skill);
+    action.TryStatus(caster, target, skill);
+    return action.amount;
 end;

@@ -17,8 +17,9 @@ namespace FFXIVClassic_Map_Server.actors.group
         public MonsterParty(ulong groupIndex, uint[] initialMonsterMembers)
             : base(groupIndex)
         {
-            for (int i = 0; i < initialMonsterMembers.Length; i++)
-                monsterMembers.Add(initialMonsterMembers[i]);
+            if(initialMonsterMembers != null)
+                for (int i = 0; i < initialMonsterMembers.Length; i++)
+                    monsterMembers.Add(initialMonsterMembers[i]);
         }
 
         public void AddMember(uint memberId)

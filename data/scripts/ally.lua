@@ -34,23 +34,27 @@ function allyGlobal.onDespawn(ally)
 
 end
 
---tryAggro serves the same purpose for now, keeping this around just in case
 function allyGlobal.HelpPlayers(ally, contentGroupCharas, pickRandomTarget)
+    print("helpPlayers");
     if contentGroupCharas and not ally.IsEngaged() then
+        print("contentGroup exists");
         for chara in contentGroupCharas do
+            print("looping");
             if chara then
                 -- probably a player, or another ally
                 -- todo: queue support actions, heal, try pull hate off player etc
-                if chara:IsPlayer() then
+                if chara.IsPlayer() then
+                    print("chara is a player");
                     -- do stuff
                     if not ally.IsEngaged() then
                         if chara.IsEngaged() then
                             allyGlobal.EngageTarget(ally, chara.target, nil);
                             break;
                         end
-                    end
+                    end                    
                 elseif chara.IsMonster() and chara.IsEngaged() then
                     if not ally.IsEngaged() then
+                        print("Engaging monster that is engaged");
                         allyGlobal.EngageTarget(ally, chara, nil);
                         break;
                     end
@@ -60,7 +64,6 @@ function allyGlobal.HelpPlayers(ally, contentGroupCharas, pickRandomTarget)
     end
 end
 
---Iterate over characters in contentGroup, if a player is in combat, assist them.
 function allyGlobal.tryAggro(ally, contentGroupCharas)
     local count = 0;
     if contentGroupCharas and not ally.IsEngaged() then
@@ -76,14 +79,12 @@ function allyGlobal.tryAggro(ally, contentGroupCharas)
                             break;
                         end
                     end
-
-                --[[
                 elseif contentGroupCharas[i].IsMonster() and contentGroupCharas[i].IsEngaged() then
                     if not ally.IsEngaged() then
                         print("Engaging monster that is engaged");
                         allyGlobal.EngageTarget(ally, contentGroupCharas[i], nil);
                         break;
-                    end]]
+                    end
                 end
             end
         end
@@ -109,6 +110,7 @@ function allyGlobal.EngageTarget(ally, target, contentGroupCharas)
             end
         end
     elseif target then
+        print("Engaging");
         ally.Engage(target)
         ally.hateContainer.AddBaseHate(target);
     end

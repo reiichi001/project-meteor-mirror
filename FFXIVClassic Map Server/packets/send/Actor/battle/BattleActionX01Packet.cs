@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
+namespace FFXIVClassic_Map_Server.packets.send.actor.battle
 {
     // see xtx_command
     enum BattleActionX01PacketCommand : ushort
@@ -25,7 +25,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
                     binWriter.Write((UInt32)sourceActorId);
-                    
+
                     binWriter.Write((UInt32)animationId);
 
                     //Missing... last value is float, string in here as well?
@@ -39,14 +39,14 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
 
                     binWriter.Write((UInt16)action.amount);
                     binWriter.Write((UInt16)action.worldMasterTextId);
+                    Program.Log.Info(action.worldMasterTextId);
 
                     binWriter.Write((UInt32)action.effectId);
-
                     binWriter.Write((Byte)action.param);
                     binWriter.Write((Byte)1); //?
                 }
             }
-
+            new SubPacket(OPCODE, sourceActorId, data).DebugPrintSubPacket();
             return new SubPacket(OPCODE, sourceActorId, data);
         }
     }

@@ -8,14 +8,11 @@ function onMagicStart(caster, target, spell)
     return 0;
 end;
 
-function onMagicFinish(caster, target, spell, action)
-    local damage = math.random(10, 100);
-    
-    action.worldMasterTextId = 0x765D;
-    
-    -- todo: populate a global script with statuses and modifiers
-    -- magic.HandleAttackMagic(caster, target, spell, action)
-    action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
+--Increased critical damage
+function onCombo(caster, target, spell)
+    spell.critDamageModifier = 1.5;
+end;
 
-    return damage;
+function onMagicFinish(caster, target, spell, action)
+    magic.onMagicFinish(caster, target, spell, action)
 end;

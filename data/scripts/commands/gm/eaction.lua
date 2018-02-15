@@ -11,7 +11,7 @@ Equips <commandid> in the first open slot without checking if you can.
 }
 
 function onTrigger(player, argc, commandid)
-    local sender = "[givegil] ";
+    local sender = "[eaction] ";
     
     print(commandid);
     if name then

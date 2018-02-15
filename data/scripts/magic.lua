@@ -1,5 +1,6 @@
 -- todo: add enums for status effects in global.lua
 require("global")
+require("battleutils")
 
 magic =
 {
@@ -39,4 +40,32 @@ function magic.HandleStoneskin(caster, target, spell, action, statId, modifierId
     end;
     ]]
     return false;
+end;
+
+function magic.onMagicFinish(caster, target, spell, action)
+    action.battleActionType = BattleActionType.AttackMagic;
+    local damage = math.random(50, 150);
+    action.amount = damage;
+    action.CalcHitType(caster, target, spell);
+    action.TryStatus(caster, target, spell, true);
+    return action.amount;
+end;
+
+--For healing magic
+function magic.onCureMagicFinish(caster, target, spell, action)
+    action.battleActionType = BattleActionType.Heal;
+    local amount = math.random(200, 450);
+    action.amount = amount;
+    action.CalcHitType(caster, target, spell);
+    action.TryStatus(caster, target, spell, true);
+    return action.amount;
+end;
+
+--For status magic
+function magic.onStatusMagicFinish(caster, target, spell, action)
+    action.battleActionType = BattleActionType.Status;
+    action.amount = 0;
+    action.CalcHitType(caster, target, spell);
+    action.TryStatus(caster, target, spell, false);
+    return action.amount;
 end;

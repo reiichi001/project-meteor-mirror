@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MoonSharp.Interpreter;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
@@ -322,24 +323,50 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
 
         // custom effects here
+        // status for having procs fall off
+        EvadeProc = 253003,
+        BlockProc = 253004,
+        ParryProc = 253005,
+        MissProc = 253006
     }
 
     [Flags]
     enum StatusEffectFlags : uint
     {
-        None = 0x00,
-        Silent = 0x01,             // dont display effect loss message
-        LoseOnDeath = 0x02,        // effects removed on death
-        LoseOnZoning = 0x04,       // effects removed on zoning
-        LoseOnEsuna = 0x08,        // effects which can be removed with esuna (debuffs)
-        LoseOnDispel = 0x10,       // some buffs which player might be able to dispel from mob
-        LoseOnLogout = 0x20,       // effects removed on logging out
-        LoseOnAttacking = 0x40,    // effects removed when owner attacks another entity
-        LoseOnCasting = 0x80,      // effects removed when owner starts casting
-        LoseOnDamageTaken = 0x100, // effects removed when owner takes damage
+        None = 0,
+        Silent =                1 << 0,     // dont display effect loss message
 
-        PreventAction = 0x200,     // effects which prevent actions such as sleep/paralyze/petrify
-        Stealth = 0x400,           // sneak/invis
+        //Loss flags
+        LoseOnDeath =           1 << 1,     // effects removed on death
+        LoseOnZoning =          1 << 2,     // effects removed on zoning
+        LoseOnEsuna =           1 << 3,     // effects which can be removed with esuna (debuffs)
+        LoseOnDispel =          1 << 4,     // some buffs which player might be able to dispel from mob
+        LoseOnLogout =          1 << 5,     // effects removed on logging out
+        LoseOnAttacking =       1 << 6,     // effects removed when owner attacks another entity
+        LoseOnCasting =         1 << 7,     // effects removed when owner starts casting
+        LoseOnDamageTaken =     1 << 8,     // effects removed when owner takes damage
+        LoseOnParry =           1 << 9,     // effects removed when owner parries an attack (foresight)
+        LoseOnEvade =           1 << 10,    // effects removed when owner evades an attack (decoy)
+        LoseOnCrit =            1 << 11,    // effects removed when owner deals a critical hit (excruciate)
+        LoseOnAggro =           1 << 12,    // effects removed when owner gains enmity (swiftsong)
+
+        //Activate flags, do we need the LoseOn flags if we have these? could just remove itself in the activate function
+        ActivateOnAttack =      1 << 13,
+        ActivateOnSpell =       1 << 14,
+        ActivateOnDamageTaken = 1 << 15,
+        ActivateOnBlock =       1 << 16,
+        ActivateOnMiss =        1 << 17,
+
+        //Prevent flags. Sleep/stun/petrify/etc combine these
+        PreventSpell=           1 << 18,    // effects which prevent using spells, such as silence
+        PreventWeaponSkill =    1 << 19,    // effects which prevent using weaponskills, such as pacification
+        PreventAbility =        1 << 20,    // effects which prevent using abilities, such as amnesia
+        PreventAttack =         1 << 21,    // effects which prevent basic attacks
+        PreventMovement =       1 << 22,    // effects which prevent movement such as bind, still allows turning in place
+        PreventTurn =           1 << 23,    // effects which prevent turning such as fixation, still allows movement and actions
+
+        Stealth =               1 << 24,    // sneak/invis
+        Stance =                1 << 25,    // effects that do not have a timer
     }
 
     enum StatusEffectOverwrite : byte
@@ -360,7 +387,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private string name;        // name of this effect
         private DateTime startTime; // when was this effect added
         private DateTime lastTick;  // when did this effect last tick
-        private uint durationMs;    // how long should this effect last in ms
+        private uint duration;    // how long should this effect last in seconds
         private uint tickMs;        // how often should this effect proc
         private UInt64 magnitude;   // a value specified by scripter which is guaranteed to be used by all effects
         private byte tier;          // same effect with higher tier overwrites this
@@ -368,17 +395,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private StatusEffectFlags flags;         // death/erase/dispel etc
         private StatusEffectOverwrite overwrite; // how to handle adding an effect with same id (see StatusEfectOverwrite)
         private bool silent = false;             // do i send a message on losing effect 
+        private bool hidden = false;
+        public LuaScript script;
 
         HitEffect animationEffect;
 
-        public StatusEffect(Character owner, uint id, UInt64 magnitude, uint tickMs, uint durationMs, byte tier = 0)
+        public StatusEffect(Character owner, uint id, UInt64 magnitude, uint tickMs, uint duration, byte tier = 0)
         {
             this.owner = owner;
             this.source = owner;
             this.id = (StatusEffectId)id;
             this.magnitude = magnitude;
             this.tickMs = tickMs;
-            this.durationMs = durationMs;
+            this.duration = duration;
             this.tier = tier;
 
             this.startTime = DateTime.Now;
@@ -392,7 +421,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.id = effect.id;
             this.magnitude = effect.magnitude;
             this.tickMs = effect.tickMs;
-            this.durationMs = effect.durationMs;
+            this.duration = effect.duration;
             this.tier = effect.tier;
             this.startTime = effect.startTime;
             this.lastTick = effect.lastTick;
@@ -401,14 +430,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.flags = effect.flags;
             this.overwrite = effect.overwrite;
             this.extra = effect.extra;
+            this.script = effect.script;
         }
 
-        public StatusEffect(uint id, string name, uint flags, uint overwrite)
+        public StatusEffect(uint id, string name, uint flags, uint overwrite, uint tickMs)
         {
             this.id = (StatusEffectId)id;
             this.name = name;
             this.flags = (StatusEffectFlags)flags;
             this.overwrite = (StatusEffectOverwrite)overwrite;
+            this.tickMs = tickMs;
         }
 
         // return true when duration has elapsed
@@ -420,11 +451,26 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 LuaEngine.CallLuaStatusEffectFunction(this.owner, this, "onTick", this.owner, this);
             }
 
-            if (durationMs != 0 && (tick - startTime).TotalMilliseconds >= durationMs)
+            if (duration != 0xFFFFFFFF && (tick - startTime).TotalSeconds >= duration)
             {
                 return true;
             }
             return false;
+        }
+
+        public int CallLuaFunction(Character chara, string functionName, params object[] args)
+        {
+
+            DynValue res = new DynValue();
+
+            if (!script.Globals.Get(functionName).IsNil())
+            {
+                res = script.Call(script.Globals.Get(functionName), args);
+                if (res != null)
+                    return (int)res.Number;
+            }
+
+            return -1;
         }
 
         public Character GetOwner()
@@ -457,9 +503,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return name;
         }
 
-        public uint GetDurationMs()
+        public uint GetDuration()
         {
-            return durationMs;
+            return duration;
         }
 
         public uint GetTickMs()
@@ -497,6 +543,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return silent;
         }
 
+        public bool GetHidden()
+        {
+            return hidden;
+        }
+
         public void SetStartTime(DateTime time)
         {
             this.startTime = time;
@@ -523,9 +574,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.magnitude = magnitude;
         }
 
-        public void SetDurationMs(uint durationMs)
+        public void SetDuration(uint duration)
         {
-            this.durationMs = durationMs;
+            this.duration = duration;
         }
 
         public void SetTickMs(uint tickMs)
@@ -556,6 +607,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public void SetSilent(bool silent)
         {
             this.silent = silent;
+        }
+
+        public void SetHidden(bool hidden)
+        {
+            this.hidden = hidden;
         }
 
         public void SetAnimation(uint hitEffect)

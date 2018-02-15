@@ -364,11 +364,13 @@ namespace FFXIVClassic_Map_Server.Actors
             return classParams;
         }
 
+        //character's newMainState kind of messes with this
         public void ChangeState(ushort newState)
         {
-            //if (newState != currentMainState)
+            if (newState != currentMainState)
             {
                 currentMainState = newState;
+
                 updateFlags |= (ActorUpdateFlags.State | ActorUpdateFlags.Position);
             }
         }
@@ -403,20 +405,23 @@ namespace FFXIVClassic_Map_Server.Actors
                     if (positionUpdates != null && positionUpdates.Count > 0)
                     {
                         var pos = positionUpdates[0];
-                        oldPositionX = positionX;
-                        oldPositionY = positionY;
-                        oldPositionZ = positionZ;
-                        oldRotation = rotation;
+                        if (pos != null)
+                        {
+                            oldPositionX = positionX;
+                            oldPositionY = positionY;
+                            oldPositionZ = positionZ;
+                            oldRotation = rotation;
 
-                        positionX = pos.X;
-                        positionY = pos.Y;
-                        positionZ = pos.Z;
+                            positionX = pos.X;
+                            positionY = pos.Y;
+                            positionZ = pos.Z;
 
-                        zone.UpdateActorPosition(this);
+                            zone.UpdateActorPosition(this);
 
-                        //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
-
+                            //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
+                        }
                         positionUpdates.Remove(pos);
+
                     }
                     packets.Add(CreatePositionUpdatePacket());
                 }

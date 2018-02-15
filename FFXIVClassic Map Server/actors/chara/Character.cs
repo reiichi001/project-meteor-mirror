@@ -125,13 +125,18 @@ namespace FFXIVClassic_Map_Server.Actors
         public ushort newMainState;
         public float spawnX, spawnY, spawnZ;
 
+        //I needed some values I could reuse for random stuff, delete later
+        public int extraInt;
+        public uint extraUint;
+        public float extraFloat;
+
         protected Dictionary<string, UInt64> tempVars = new Dictionary<string, UInt64>();
 
         public Character(uint actorID) : base(actorID)
         {
             //Init timer array to "notimer"
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
-                charaWork.statusShownTime[i] = 0xFFFFFFFF;
+                charaWork.statusShownTime[i] = 0;
 
             this.statusEffects = new StatusEffectContainer(this);
 
@@ -192,9 +197,12 @@ namespace FFXIVClassic_Map_Server.Actors
             var i = 0;
             foreach (var effect in statusEffects.GetStatusEffects())
             {
-                propPacketUtil.AddProperty($"charaWork.statusShownTime[{i}]");
-                propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
-                i++;
+                if (!effect.GetHidden())
+                {
+                    propPacketUtil.AddProperty($"charaWork.statusShownTime[{i}]");
+                    propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
+                    i++;
+                }
             }
             return propPacketUtil.Done();
         }
@@ -230,6 +238,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             int currentIndex = 0;
             //AoE abilities only ever hit 16 people, so we probably won't need this loop anymore
+            //Apparently aoe are limited to 8?
             while (true)
             {
                 if (actions.Length - currentIndex >= 10)
@@ -255,7 +264,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             while (true)
             {
-                if (actions.Count - currentIndex >= 18)
+                if (actions.Count - currentIndex >= 10)
                     zone.BroadcastPacketAroundActor(this, BattleActionX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
                 else if (actions.Count - currentIndex > 1)
                     zone.BroadcastPacketAroundActor(this, BattleActionX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
@@ -586,12 +595,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void AddTP(int tp)
         {
-            charaWork.parameterTemp.tp = (short)((charaWork.parameterTemp.tp + tp).Clamp(0, 3000));
-            tpBase = (ushort) charaWork.parameterTemp.tp;
-            updateFlags |= ActorUpdateFlags.HpTpMp;
+            if (IsAlive())
+            {
+                charaWork.parameterTemp.tp = (short)((charaWork.parameterTemp.tp + tp).Clamp(0, 3000));
+                tpBase = (ushort)charaWork.parameterTemp.tp;
+                updateFlags |= ActorUpdateFlags.HpTpMp;
 
-            if (tpBase >= 1000)
-                lua.LuaEngine.GetInstance().OnSignal("tpOver1000");
+                if (tpBase >= 1000)
+                    lua.LuaEngine.GetInstance().OnSignal("tpOver1000");
+            }
         }
 
         public void DelHP(int hp)
@@ -609,14 +621,9 @@ namespace FFXIVClassic_Map_Server.Actors
             AddTP(-tp);
         }
 
-        public void CalculateBaseStats()
+        virtual public void CalculateBaseStats()
         {
             // todo: apply mods and shit here, get race/level/job and shit
-
-        }
-
-        public void RecalculateStats()
-        {
             uint hpMod = (uint) GetMod((uint)Modifier.Hp);
             if (hpMod != 0)
             {
@@ -644,6 +651,14 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             // todo: recalculate stats and crap
             updateFlags |= ActorUpdateFlags.HpTpMp;
+
+
+            SetMod((uint)Modifier.HitCount, 1);
+        }
+
+        public void RecalculateStats()
+        {
+            //CalculateBaseStats();
         }
 
         public void SetStat(uint statId, uint val)
@@ -664,57 +679,65 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public virtual void OnAttack(State state, BattleAction action, ref BattleAction error)
         {
-            // todo: change animation based on equipped weapon
-            action.effectId |= (uint)HitEffect.HitVisual1; // melee
-
             var target = state.GetTarget();
+            // todo: change animation based on equipped weapon
             // todo: get hitrate and shit, handle protect effect and whatever
             if (BattleUtils.TryAttack(this, target, action, ref error))
             {
-                action.amount = BattleUtils.CalculateAttackDamage(this, target, action);
                 //var packet = BattleActionX01Packet.BuildPacket(owner.actorId, owner.actorId, target.actorId, (uint)0x19001000, (uint)0x8000604, (ushort)0x765D, (ushort)BattleActionX01PacketCommand.Attack, (ushort)damage, (byte)0x1);
             }
 
             // todo: call onAttack/onDamageTaken
             BattleUtils.DamageTarget(this, target, action, DamageTakenType.Attack);
-            AddTP(115);
+            AddTP(200);
             target.AddTP(100);
         }
 
-        public virtual void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
+        public virtual void OnCast(State state, BattleAction[] actions, BattleCommand spell, ref BattleAction[] errors)
         {
-            var spell = ((MagicState)state).GetSpell();
             // damage is handled in script
-            var spellCost = spell.CalculateCost((uint)this.GetLevel());
+            var spellCost = spell.CalculateMpCost(this);
             this.DelMP(spellCost); // mpCost can be set in script e.g. if caster has something for free spells
 
             foreach (BattleAction action in actions)
+            {
                 if (zone.FindActorInArea<Character>(action.targetId) is Character chara)
-                    BattleUtils.DamageTarget(this, chara, action, DamageTakenType.Magic);
-
+                {
+                    //BattleUtils.HandleHitType(this, chara, action);
+                    BattleUtils.DoAction(this, chara, action, DamageTakenType.Magic);
+                }
+            }
             lua.LuaEngine.GetInstance().OnSignal("spellUsed");
         }
 
-        public virtual void OnWeaponSkill(State state, BattleAction[] actions, ref BattleAction[] errors)
+        public virtual void OnWeaponSkill(State state, BattleAction[] actions, BattleCommand skill, ref BattleAction[] errors)
         {
-            var skill = ((WeaponSkillState)state).GetWeaponSkill();
             // damage is handled in script
-            this.DelTP(skill.tpCost);
 
             foreach (BattleAction action in actions)
+            {
+                //Should we just store the character insteado f having to find it again?
                 if (zone.FindActorInArea<Character>(action.targetId) is Character chara)
-                    BattleUtils.DamageTarget(this, chara, action, DamageTakenType.Weaponskill);
+                {
+                    BattleUtils.DoAction(this, chara, action, DamageTakenType.Weaponskill);
+                }
+            }
 
+            this.DelTP(skill.tpCost);
+            //Do procs reset on weaponskills?
+            ResetProcs();
             lua.LuaEngine.GetInstance().OnSignal("weaponskillUsed");
         }
 
-        public virtual void OnAbility(State state, BattleAction[] actions, ref BattleAction[] errors)
+        public virtual void OnAbility(State state, BattleAction[] actions, BattleCommand ability, ref BattleAction[] errors)
         {
-            if (target is BattleNpc)
-                ((BattleNpc)target).lastAttacker = this;
-
             foreach (var action in actions)
-                zone.FindActorInArea<BattleNpc>(action.targetId)?.OnDamageTaken(this, action, DamageTakenType.Ability);
+            {
+                if (zone.FindActorInArea<Character>(action.targetId) is Character chara)
+                {
+                    BattleUtils.DoAction(this, chara, action, DamageTakenType.Ability);
+                }
+            }
         }
 
         public virtual void OnSpawn()
@@ -810,6 +833,97 @@ namespace FFXIVClassic_Map_Server.Actors
         }
         #endregion lua helpers
         #endregion ai stuff
-    }
 
+        //Reset procs. Only send packet if any procs were actually reset. 
+        //This assumes you can't use weaponskills between getting a proc and using the procced ability
+        public void ResetProcs()
+        {
+            var propPacketUtil = new ActorPropertyPacketUtil("charaWork/timingCommand", this);
+            bool shouldSend = false;
+            for (int i = 0; i < 4; i++)
+            {
+                if (charaWork.battleTemp.timingCommandFlag[i])
+                {
+                    shouldSend = true;
+                    charaWork.battleTemp.timingCommandFlag[i] = false;
+                    propPacketUtil.AddProperty($"charaWork.battleTemp.timingCommandFlag[{i}]");
+                }
+            }
+
+            if (shouldSend && this is Player player)
+                player.QueuePackets(propPacketUtil.Done());
+        }
+
+        //Set given proc to true and send packet if this is a player
+        // todo: hidden status effects for timing when the procs fall off
+        public void SetProc(int procId, bool val = true)
+        {
+            charaWork.battleTemp.timingCommandFlag[procId] = val;
+            uint effectId = (uint)StatusEffectId.EvadeProc + (uint)procId;
+
+            //If a proc just occurred, add a hidden effect effect
+            if (val)
+            {
+                StatusEffect procEffect = Server.GetWorldManager().GetStatusEffect(effectId);
+                procEffect.SetDuration(5000);
+                statusEffects.AddStatusEffect(procEffect, this, true, true);
+
+                string procFunc = "";
+
+                //is there any reason we need this
+                switch(procId)
+                {
+                    case (0):
+                        procFunc = "onEvade";
+                        break;
+                    case (1):
+                        procFunc = "onBlock";
+                        break;
+                    case (2):
+                        procFunc = "onParry";
+                        break;
+                    case (3):
+                        procFunc = "onMiss";
+                        break;
+                }
+
+                //lua.LuaEngine.CallLuaBattleFunction(this, procFunc, this);
+            }
+            //Otherwise we're reseting a proc, remove the status
+            else
+            {
+                statusEffects.RemoveStatusEffect(statusEffects.GetStatusEffectById((uint)effectId));
+            }
+
+            if (this is Player player)
+            {
+                var propPacketUtil = new ActorPropertyPacketUtil("charaWork/timingCommand", this);
+                propPacketUtil.AddProperty($"charaWork.battleTemp.timingCommandFlag[{procId}]");
+                player.QueuePackets(propPacketUtil.Done());
+            }
+        }
+
+        public HitDirection GetHitDirection(Actor target)
+        {
+            //Get between taget's position and our position
+            double angle = Vector3.GetAngle(target.GetPosAsVector3(), GetPosAsVector3());
+            //Add to the target's rotation, mod by 2pi. This is the angle relative to where the target is looking
+            //Actor's rotation is 0 degrees on their left side, rotate it by 45 degrees so that quadrants line up with sides
+            angle = (angle + target.rotation - (.25 * Math.PI)) % (2 * Math.PI);
+            //Make positive
+            if (angle < 0)
+                angle = angle + (2 * Math.PI);
+
+            //Get the side we're on. 0 is front, 1 is right, 2 is rear, 3 is left
+            var side = (int) (angle / (.5 * Math.PI)) % 4;
+
+            return (HitDirection) (1 << side);
+        }
+
+        //Called when this character evades attacker's action
+        public void OnEvade(Character attacker, BattleAction action)
+        {
+        }
+
+    }
 }

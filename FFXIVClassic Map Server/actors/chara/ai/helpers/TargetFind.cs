@@ -177,61 +177,68 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             if (aoeType != TargetFindAOEType.None)
             {
-                if (IsPlayer(owner))
-                {
-                    if (masterTarget is Player)
-                    {
-                        findType = TargetFindCharacterType.PlayerToPlayer;
-
-                        if (masterTarget.currentParty != null)
-                        {
-                            if ((validTarget & (ValidTarget.Ally | ValidTarget.PartyMember)) != 0)
-                                AddAllInAlliance(masterTarget, withPet);
-                            else
-                                AddAllInParty(masterTarget, withPet);
-                        }
-                        else
-                        {
-                            AddTarget(masterTarget, withPet);
-                        }
-                    }
-                    else
-                    {
-                        findType = TargetFindCharacterType.PlayerToBattleNpc;
-                        AddAllBattleNpcs(masterTarget, false);
-                    }
-                }
-                else
-                {
-                    // todo: this needs checking..
-                    if (masterTarget is Player || owner.allegiance == CharacterTargetingAllegiance.Player)
-                        findType = TargetFindCharacterType.BattleNpcToPlayer;
-                    else
-                        findType = TargetFindCharacterType.BattleNpcToBattleNpc;
-
-                    // todo: configurable pet aoe buff
-                    if (findType == TargetFindCharacterType.BattleNpcToBattleNpc && TryGetMasterTarget(target) != null)
-                        withPet = true;
-
-                    // todo: does ffxiv have call for help flag?
-                    //if ((findFlags & ValidTarget.HitAll) != 0)
-                    //{
-                    //    AddAllInZone(masterTarget, withPet);
-                    //}
-
-                    AddAllInAlliance(target, withPet);
-
-                    if (findType == TargetFindCharacterType.BattleNpcToPlayer)
-                    {
-                        if (owner.allegiance == CharacterTargetingAllegiance.Player)
-                            AddAllInZone(masterTarget, withPet);
-                        else
-                            AddAllInHateList();
-                    }
-                }
+                AddAllInRange(target, withPet);
             }
-            if(targets.Count > 16)
-                targets.RemoveRange(16, targets.Count - 16);
+                /*
+                if (aoeType != TargetFindAOEType.None)
+                {
+                    if (IsPlayer(owner))
+                    {
+                        if (masterTarget is Player)
+                        {
+                            findType = TargetFindCharacterType.PlayerToPlayer;
+
+                            if (masterTarget.currentParty != null)
+                            {
+                                if ((validTarget & (ValidTarget.Ally | ValidTarget.PartyMember)) != 0)
+                                    AddAllInAlliance(masterTarget, withPet);
+                                else
+                                    AddAllInParty(masterTarget, withPet);
+                            }
+                            else
+                            {
+                                AddTarget(masterTarget, withPet);
+                            }
+                        }
+                        else
+                        {
+                            findType = TargetFindCharacterType.PlayerToBattleNpc;
+                            AddAllBattleNpcs(masterTarget, false);
+                        }
+                    }
+                    else
+                    {
+                        // todo: this needs checking..
+                        if (masterTarget is Player || owner.allegiance == CharacterTargetingAllegiance.Player)
+                            findType = TargetFindCharacterType.BattleNpcToPlayer;
+                        else
+                            findType = TargetFindCharacterType.BattleNpcToBattleNpc;
+
+                        // todo: configurable pet aoe buff
+                        if (findType == TargetFindCharacterType.BattleNpcToBattleNpc && TryGetMasterTarget(target) != null)
+                            withPet = true;
+
+                        // todo: does ffxiv have call for help flag?
+                        //if ((findFlags & ValidTarget.HitAll) != 0)
+                        //{
+                        //    AddAllInZone(masterTarget, withPet);
+                        //}
+
+                        AddAllInAlliance(target, withPet);
+
+                        if (findType == TargetFindCharacterType.BattleNpcToPlayer)
+                        {
+                            if (owner.allegiance == CharacterTargetingAllegiance.Player)
+                                AddAllInZone(masterTarget, withPet);
+                            else
+                                AddAllInHateList();
+                        }
+                    }
+                }*/
+
+
+                if (targets.Count > 16)
+                    targets.RemoveRange(16, targets.Count - 16);
         }
 
         /// <summary>
@@ -311,6 +318,18 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             }
         }
 
+        private void AddAllInRange(Character target, bool withPet)
+        {
+            int dist = (int)maxDistance;
+            var actors = owner.zone.GetActorsAroundActor<Character>(target, dist);
+
+            foreach (Character actor in actors)
+            {
+                AddTarget(actor, false);
+            }
+
+        }
+
         private void AddAllInHateList()
         {
             if (!(owner is BattleNpc))
@@ -340,6 +359,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 return false;
 
             if ((validTarget & ValidTarget.Enemy) != 0 && target.allegiance == owner.allegiance)
+                return false;
+
+            if ((validTarget & ValidTarget.PartyMember) == 0 && target.currentParty == owner.currentParty)
+                return false;
+
+            if ((validTarget & ValidTarget.PartyMember) != 0 && target.currentParty != owner.currentParty)
                 return false;
 
             if ((validTarget & ValidTarget.NPC) != 0 && target.isStatic)

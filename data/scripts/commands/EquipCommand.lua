@@ -145,6 +145,12 @@ function equipItem(player, equipSlot, item)
 		--Item Equipped message
 		player:SendGameMessage(player, worldMaster, 30601, 0x20, equipSlot+1, item.itemId, item.quality, 0, 0, 1); 
 		
+		--Load gearset for new class and begin class change
+		if (classId ~= nil) then			
+			loadGearset(player, classId);
+			player:DoClassChange(classId);
+		end
+
 		player:GetEquipment():Equip(equipSlot, item);		
 		
 		if 	   (equipSlot == EQUIPSLOT_MAINHAND and gItem:IsNailWeapon() == false) then graphicSlot = GRAPHICSLOT_MAINHAND;
@@ -170,14 +176,7 @@ function equipItem(player, equipSlot, item)
 		elseif (equipSlot == EQUIPSLOT_EARS) then
 			player:GraphicChange(GRAPHICSLOT_R_EAR, item);
 			player:GraphicChange(GRAPHICSLOT_L_EAR, item);
-		end
-	
-		--Load gearset for new class and begin class change
-		if (classId ~= nil) then			
-			loadGearset(player, classId);
-			player:DoClassChange(classId);
-		end
-		
+		end		
 	end
 end
 

@@ -21,11 +21,14 @@ function onTrigger(player, argc, slot, wId, eId, vId, cId)
     cId = tonumber(cId) or 0;
     
     if player and argc > 0 then
-        player:GraphicChange(slot, wId, eId, vId, cId);
+        if argc > 2 then
+            player:GraphicChange(slot, wId, eId, vId, cId);
+            player:SendMessage(messageID, sender,  string.format("Changing appearance on slot %u", slot));
+        else
+            player:GraphicChange(slot, wId);
+        end
         player:SendAppearance();
-        player:SendMessage(messageID, sender,  string.format("Changing appearance on slot %u", slot));
     else
         player:SendMessage(messageID, sender, "No parameters sent! Usage: "..properties.description);
     end;
-           
 end;

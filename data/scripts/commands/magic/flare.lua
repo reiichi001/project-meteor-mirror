@@ -10,15 +10,7 @@ function onMagicStart(caster, target, spell)
 end;
 
 function onMagicFinish(caster, target, spell, action)
-    local damage = math.random(1000, 2500);
-    
-    -- todo: populate a global script with statuses and modifiers
-    action.worldMasterTextId = 0x765D;
-    
-    -- todo: populate a global script with statuses and modifiers
-    -- magic.HandleAttackMagic(caster, target, spell, action)
-    -- action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
-    action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
-    
-    return damage;
+    --increase potency based on proximity to target
+
+    magic.onMagicFinish(caster, target, spell, action)
 end;

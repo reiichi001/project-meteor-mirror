@@ -194,8 +194,8 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateSpeedPacket());            
             subpackets.Add(CreateSpawnPositonPacket(0x0));
 
-            if (isMapObj)            
-                subpackets.Add(SetActorBGPropertiesPacket.BuildPacket(actorId, instance, layout));                        
+            if (isMapObj)
+                subpackets.Add(SetActorBGPropertiesPacket.BuildPacket(actorId, instance, layout));
             else
                 subpackets.Add(CreateAppearancePacket());
 
@@ -245,7 +245,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //Status Times
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
             {
-                if (charaWork.statusShownTime[i] != 0xFFFFFFFF)
+                if (charaWork.statusShownTime[i] != 0)
                     propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
             }
 

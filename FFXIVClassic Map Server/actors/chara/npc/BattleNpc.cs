@@ -118,34 +118,33 @@ namespace FFXIVClassic_Map_Server.Actors
             return subpackets;
         }
 
+        //This might need more work
+        //I think there migh be something that ties mobs to parties 
+        //and the client checks if any mobs are tied to the current party
+        //and bases the color on that. Adding mob to party obviously doesn't work
+        //Based on depictionjudge script:
+        //HATE_TYPE_NONE is for passive
+        //HATE_TYPE_ENGAGED is for aggroed mobs
+        //HATE_TYPE_ENGAGED_PARTY is for claimed mobs, client uses occupancy group to determine if mob is claimed by player's party
+        //for now i'm just going to assume that occupancygroup will be BattleNpc's currentparties when they're in combat, 
+        //so if party isn't null, they're claimed.
         public SubPacket GetHateTypePacket(Player player)
         {
-            npcWork.hateType = 1;
-
+            npcWork.hateType = NpcWork.HATE_TYPE_NONE;
             if (player != null)
             {
                 if (aiContainer.IsEngaged())
                 {
-                    npcWork.hateType = 2;
-                }
+                    npcWork.hateType = NpcWork.HATE_TYPE_ENGAGED;
 
-                if (player.actorId == this.currentLockedTarget)
-                {
-                    npcWork.hateType = NpcWork.HATE_TYPE_ENGAGED_PARTY;
-                }
-                else if (player.currentParty != null)
-                {
-                    foreach (var memberId in ((Party)player.currentParty).members)
+                    if (this.currentParty != null)
                     {
-                        if (this.currentLockedTarget == memberId)
-                        {
-                            npcWork.hateType = NpcWork.HATE_TYPE_ENGAGED_PARTY;
-                            break;
-                        }
+                        npcWork.hateType = NpcWork.HATE_TYPE_ENGAGED_PARTY;
                     }
                 }
             }
-            var propPacketUtil = new ActorPropertyPacketUtil("npcWork", this);
+            npcWork.hateType = 2;
+            var propPacketUtil = new ActorPropertyPacketUtil("npcWork/hate", this);
             propPacketUtil.AddProperty("npcWork.hateType");
             return propPacketUtil.Done()[0];
         }
@@ -198,7 +197,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public override bool CanWeaponSkill(Character target, BattleCommand skill)
         {
             // todo:
-            return false;
+            return true;
         }
 
         public override bool CanUseAbility(Character target, BattleCommand ability)
@@ -359,18 +358,18 @@ namespace FFXIVClassic_Map_Server.Actors
                 lua.LuaEngine.CallLuaBattleFunction(this, "onAttack", this, state.GetTarget(), action.amount);
         }
 
-        public override void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
+        public override void OnCast(State state, BattleAction[] actions, BattleCommand spell, ref BattleAction[] errors)
         {
-            base.OnCast(state, actions, ref errors);
+            base.OnCast(state, actions, spell, ref errors);
 
             if (GetMobMod((uint)MobModifier.SpellScript) != 0)
                 foreach (var action in actions)
                     lua.LuaEngine.CallLuaBattleFunction(this, "onCast", this, zone.FindActorInArea<Character>(action.targetId), ((MagicState)state).GetSpell(), action);
         }
 
-        public override void OnAbility(State state, BattleAction[] actions, ref BattleAction[] errors)
+        public override void OnAbility(State state, BattleAction[] actions, BattleCommand ability, ref BattleAction[] errors)
         {
-            base.OnAbility(state, actions, ref errors);
+            base.OnAbility(state, actions, ability, ref errors);
 
             /*
             if (GetMobMod((uint)MobModifier.AbilityScript) != 0)
@@ -379,9 +378,9 @@ namespace FFXIVClassic_Map_Server.Actors
             */
         }
 
-        public override void OnWeaponSkill(State state, BattleAction[] actions, ref BattleAction[] errors)
+        public override void OnWeaponSkill(State state, BattleAction[] actions, BattleCommand skill, ref BattleAction[] errors)
         {
-            base.OnWeaponSkill(state, actions, ref errors);
+            base.OnWeaponSkill(state, actions, skill, ref errors);
 
             if (GetMobMod((uint)MobModifier.WeaponSkillScript) != 0)
                 foreach (var action in actions)

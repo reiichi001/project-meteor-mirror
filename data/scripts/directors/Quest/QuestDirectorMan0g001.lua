@@ -10,7 +10,6 @@ function init()
 	return "/Director/Quest/QuestDirectorMan0g001";
 end
 
---Should we be using this to spawn mobs and drop Simplecontent?
 function onCreateContentArea(players, director, contentArea, contentGroup)
 	director:StartContentGroup();
 end
@@ -30,8 +29,10 @@ function onEventStarted(player, actor, triggerName)
 	player:SendMessage(0x20, "", "processTtrBtl002 called");
 	player:EndEvent();
 
-	--Combat portion of tutorial	
+	--Combat portion of tutorial
+	
 	if player:IsDiscipleOfWar() then
+		player:SendMessage(0x20, "", "Is DoW");
 		waitForSignal("playerAttack");
 		closeTutorialWidget(player);
 		showTutorialSuccessWidget(player, 9055); --Open TutorialSuccessWidget for attacking enemy
@@ -43,6 +44,7 @@ function onEventStarted(player, actor, triggerName)
 		closeTutorialWidget(player);
 		showTutorialSuccessWidget(player, 9065); --Open TutorialSuccessWidget for weapon skill
 	elseif player:IsDiscipleOfMagic() then
+		player:SendMessage(0x20, "", "Is DoM");
 		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_CASTING);
 		waitForSignal("spellUsed");
 		closeTutorialWidget(player);
@@ -52,27 +54,40 @@ function onEventStarted(player, actor, triggerName)
 		waitForSignal("abilityUsed");
 	end
 	
-	--Currently this requires the player to pass all the other signals first, need a way for signals to work out of order
+	player:SendMessage(0x20, "", "Waiting for mobkill1");
+	waitForSignal("mobkill"); --Should be wait for mobkill
+	player:SendMessage(0x20, "", "Waiting for mobkill2");
 	waitForSignal("mobkill");
-	waitForSignal("mobkill");
+	player:SendMessage(0x20, "", "Waiting for mobkill3");
 	waitForSignal("mobkill");
 	worldMaster = GetWorldMaster();
-	wait(5);--Debug waits, get rid of these later
-	player:Disengage(0x0000);
-	wait(5);
-	man0g0Quest:NextPhase(10);
-	wait(5);
-	--This doesn't work
-	player:RemoveFromCurrentPartyAndCleanup();
+	player:SendMessage(0x20, "", "Sending data packet 'attention'");
 	player:SendDataPacket("attention", worldMaster, "", 51073, 2);
 	wait(5);
+	player:SendMessage(0x20, "", "Disengaging");
+	player:Disengage(0x0000);
+	wait(5);
+	player:SendMessage(0x20, "", "NextPhase(10)");
+	man0g0Quest:NextPhase(10);	
+	wait(5);
+	player:SendMessage(0x20, "", "ProcessEvent020_1");
+	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processEvent020_1", nil, nil, nil);
+
+	wait(5);
+	
+	player:SendMessage(0x20, "", "Changing music");
 	player:ChangeMusic(7);
 	wait(5);
+	
+	player:SendMessage(0x20, "", "Kick notice event");
 	kickEventContinue(player, actor, "noticeEvent", "noticeEvent");
 	wait(5);
-	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processEvent020_1", nil, nil, nil);
-	wait(5);
+	
+	player:SendMessage(0x20, "", "ContentFinished");
 	player:GetZone():ContentFinished();	
+	wait(5);
+	player:SendMessage(0x20, "", "Remove from party");
+	player:RemoveFromCurrentPartyAndCleanup();
     --player:EndEvent();
     --GetWorldManager():DoZoneChange(player, 155, "PrivateAreaMasterPast", 1, 15, 175.38, -1.21, -1156.51, -2.1);
 	--[[
@@ -88,8 +103,10 @@ function onEventStarted(player, actor, triggerName)
 		OpenWidget (DEFEAT ENEMY)
 	]]
 	
-	player:EndEvent();
+	player:EndEvent();	
+	
 	wait(5);
+	player:SendMessage(0x20, "", "Zone change");
 	GetWorldManager():DoZoneChange(player, 155, "PrivateAreaMasterPast", 1, 15, 175.38, -1.21, -1156.51, -2.1);
 	
 end
