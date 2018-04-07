@@ -1075,12 +1075,12 @@ namespace FFXIVClassic_Map_Server
                         }
                     }
 
-                    player.GetItemPackage(Inventory.NORMAL).InitList(GetItemPackage(player, 0, Inventory.NORMAL));
-                    player.GetItemPackage(Inventory.KEYITEMS).InitList(GetItemPackage(player, 0, Inventory.KEYITEMS));
-                    player.GetItemPackage(Inventory.CURRENCY_CRYSTALS).InitList(GetItemPackage(player, 0, Inventory.CURRENCY_CRYSTALS));
-                    player.GetItemPackage(Inventory.BAZAAR).InitList(GetBazaar(player));
-                    player.GetItemPackage(Inventory.MELDREQUEST).InitList(GetItemPackage(player, 0, Inventory.MELDREQUEST));
-                    player.GetItemPackage(Inventory.LOOT).InitList(GetItemPackage(player, 0, Inventory.LOOT));
+                    player.GetItemPackage(ItemPackage.NORMAL).InitList(GetItemPackage(player, 0, ItemPackage.NORMAL));
+                    player.GetItemPackage(ItemPackage.KEYITEMS).InitList(GetItemPackage(player, 0, ItemPackage.KEYITEMS));
+                    player.GetItemPackage(ItemPackage.CURRENCY_CRYSTALS).InitList(GetItemPackage(player, 0, ItemPackage.CURRENCY_CRYSTALS));
+                    player.GetItemPackage(ItemPackage.BAZAAR).InitList(GetBazaar(player));
+                    player.GetItemPackage(ItemPackage.MELDREQUEST).InitList(GetItemPackage(player, 0, ItemPackage.MELDREQUEST));
+                    player.GetItemPackage(ItemPackage.LOOT).InitList(GetItemPackage(player, 0, ItemPackage.LOOT));
 
                     player.GetEquipment().SetEquipment(GetEquipment(player, player.charaWork.parameterSave.state_mainSkill[0]));
                 }
@@ -1123,7 +1123,7 @@ namespace FFXIVClassic_Map_Server
                         {
                             ushort equipSlot = reader.GetUInt16(0);
                             ulong uniqueItemId = reader.GetUInt16(1);
-                            InventoryItem item = player.GetItemPackage(Inventory.NORMAL).GetItemByUniqueId(uniqueItemId);
+                            InventoryItem item = player.GetItemPackage(ItemPackage.NORMAL).GetItemByUniqueId(uniqueItemId);
                             equipment[equipSlot] = item;
                         }
                     }

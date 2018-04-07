@@ -61,7 +61,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public ContentGroup currentContentGroup = null;
 
         //Inventory        
-        protected Dictionary<ushort, Inventory> itemPackages = new Dictionary<ushort, Inventory>();
+        protected Dictionary<ushort, ItemPackage> itemPackages = new Dictionary<ushort, ItemPackage>();
         protected Equipment equipment;
 
         public Character(uint actorID)
@@ -265,7 +265,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return null;
         }
 
-        public Inventory GetItemPackage(ushort package)
+        public ItemPackage GetItemPackage(ushort package)
         {
             if (itemPackages.ContainsKey(package))
                 return itemPackages[package];
@@ -278,15 +278,15 @@ namespace FFXIVClassic_Map_Server.Actors
             ItemData data = Server.GetItemGamedata(catalogID);
 
             if (data == null)
-                return Inventory.NORMAL;
+                return ItemPackage.NORMAL;
             else
             {
                 if (data.IsMoney())
-                    return Inventory.CURRENCY_CRYSTALS;
+                    return ItemPackage.CURRENCY_CRYSTALS;
                 else if (data.IsImportant())
-                    return Inventory.KEYITEMS;
+                    return ItemPackage.KEYITEMS;
                 else
-                    return Inventory.NORMAL;
+                    return ItemPackage.NORMAL;
             }
         }
 

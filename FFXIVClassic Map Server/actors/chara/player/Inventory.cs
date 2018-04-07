@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace FFXIVClassic_Map_Server.actors.chara.player
 {
-    class Inventory
+    class ItemPackage
     {       
         public const ushort NORMAL                  = 0; //Max 0xC8
         public const ushort UNKNOWN                 = 1; //Max 0x96
@@ -41,7 +41,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         private int endOfListIndex = 0;
 
-        public Inventory(Character ownerPlayer, ushort capacity, ushort code, bool temporary = false)
+        public ItemPackage(Character ownerPlayer, ushort capacity, ushort code, bool temporary = false)
         {
             owner = ownerPlayer;
             itemPackageCapacity = capacity;
@@ -703,7 +703,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         }
 
         #endregion
-
 
         public int GetCount()
         {

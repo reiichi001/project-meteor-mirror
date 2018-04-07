@@ -1064,7 +1064,7 @@ namespace FFXIVClassic_Map_Server
             {
                 itemToBuy.ChangeQuantity(-quantity);
                 buyer.AddItem(itemToBuy.itemId, quantity, itemToBuy.quality);
-                buyer.GetItemPackage(Inventory.CURRENCY_CRYSTALS).RemoveItem(1000001, cost);
+                buyer.GetItemPackage(ItemPackage.CURRENCY_CRYSTALS).RemoveItem(1000001, cost);
             }
            
             if (itemToBuy.quantity == 0)
@@ -1085,7 +1085,7 @@ namespace FFXIVClassic_Map_Server
 
             if (reward.GetBazaarMode() == InventoryItem.TYPE_SEEK_ITEM)
             {
-                InventoryItem seekBazaar = bazaar.GetItemPackage(Inventory.BAZAAR).GetItemAttachedTo(reward);
+                InventoryItem seekBazaar = bazaar.GetItemPackage(ItemPackage.BAZAAR).GetItemAttachedTo(reward);
                 bazaar.RemoveItem(reward, rewardQuantity);
                 bazaar.RemoveItem(seekBazaar, seekQuantity);
                 bazaar.AddItem(seekBazaar);
@@ -1117,18 +1117,18 @@ namespace FFXIVClassic_Map_Server
                 {
                     reward.SetDealingAttached(bazaarMode, seek.uniqueId);
                     seek.SetHasAttached(true);
-                    player.GetItemPackage(Inventory.BAZAAR).StartSendUpdate();
-                    player.GetItemPackage(Inventory.BAZAAR).AddItem(reward);
-                    player.GetItemPackage(Inventory.BAZAAR).AddItem(seek);
-                    reward.SetAttachedIndex(Inventory.BAZAAR, seek.slot);
-                    player.GetItemPackage(Inventory.BAZAAR).DoneSendUpdate();
+                    player.GetItemPackage(ItemPackage.BAZAAR).StartSendUpdate();
+                    player.GetItemPackage(ItemPackage.BAZAAR).AddItem(reward);
+                    player.GetItemPackage(ItemPackage.BAZAAR).AddItem(seek);
+                    reward.SetAttachedIndex(ItemPackage.BAZAAR, seek.slot);
+                    player.GetItemPackage(ItemPackage.BAZAAR).DoneSendUpdate();
                 }
                 else
                 {
                     reward.SetDealing(bazaarMode, seekAmount);
-                    player.GetItemPackage(Inventory.BAZAAR).StartSendUpdate();
-                    player.GetItemPackage(Inventory.BAZAAR).AddItem(reward);
-                    player.GetItemPackage(Inventory.BAZAAR).DoneSendUpdate();
+                    player.GetItemPackage(ItemPackage.BAZAAR).StartSendUpdate();
+                    player.GetItemPackage(ItemPackage.BAZAAR).AddItem(reward);
+                    player.GetItemPackage(ItemPackage.BAZAAR).DoneSendUpdate();
                 }
                 
             }
@@ -1146,13 +1146,13 @@ namespace FFXIVClassic_Map_Server
 
             Database.ClearBazaarEntry(player, rewardRef);
 
-            player.GetItemPackage(Inventory.BAZAAR).RemoveItem(rewardRef);
+            player.GetItemPackage(ItemPackage.BAZAAR).RemoveItem(rewardRef);
 
             bool isSelling = rewardRef.IsSelling();
             rewardRef.SetNormal();
 
             if (seekRef != null)
-                player.GetItemPackage(Inventory.BAZAAR).RemoveItem(seekRef);
+                player.GetItemPackage(ItemPackage.BAZAAR).RemoveItem(seekRef);
 
             player.AddItem(rewardRef);
 

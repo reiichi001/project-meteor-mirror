@@ -105,7 +105,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         //Trading
         private Player otherTrader = null;
-        private Inventory myOfferings;
+        private ItemPackage myOfferings;
         private bool isTradeAccepted = false;
         private bool isTradeLocked = false;
 
@@ -164,14 +164,14 @@ namespace FFXIVClassic_Map_Server.Actors
             moveSpeeds[2] = SetActorSpeedPacket.DEFAULT_RUN;
             moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_ACTIVE;
 
-            itemPackages[Inventory.NORMAL] = new Inventory(this, MAXSIZE_INVENTORY_NORMAL, Inventory.NORMAL);
-            itemPackages[Inventory.KEYITEMS] = new Inventory(this, MAXSIZE_INVENTORY_KEYITEMS, Inventory.KEYITEMS);
-            itemPackages[Inventory.CURRENCY_CRYSTALS] = new Inventory(this, MAXSIZE_INVENTORY_CURRANCY, Inventory.CURRENCY_CRYSTALS);
-            itemPackages[Inventory.MELDREQUEST] = new Inventory(this, MAXSIZE_INVENTORY_MELDREQUEST, Inventory.MELDREQUEST);
-            itemPackages[Inventory.BAZAAR] = new Inventory(this, MAXSIZE_INVENTORY_BAZAAR, Inventory.BAZAAR);
-            itemPackages[Inventory.LOOT] = new Inventory(this, MAXSIZE_INVENTORY_LOOT, Inventory.LOOT);
+            itemPackages[ItemPackage.NORMAL] = new ItemPackage(this, MAXSIZE_INVENTORY_NORMAL, ItemPackage.NORMAL);
+            itemPackages[ItemPackage.KEYITEMS] = new ItemPackage(this, MAXSIZE_INVENTORY_KEYITEMS, ItemPackage.KEYITEMS);
+            itemPackages[ItemPackage.CURRENCY_CRYSTALS] = new ItemPackage(this, MAXSIZE_INVENTORY_CURRANCY, ItemPackage.CURRENCY_CRYSTALS);
+            itemPackages[ItemPackage.MELDREQUEST] = new ItemPackage(this, MAXSIZE_INVENTORY_MELDREQUEST, ItemPackage.MELDREQUEST);
+            itemPackages[ItemPackage.BAZAAR] = new ItemPackage(this, MAXSIZE_INVENTORY_BAZAAR, ItemPackage.BAZAAR);
+            itemPackages[ItemPackage.LOOT] = new ItemPackage(this, MAXSIZE_INVENTORY_LOOT, ItemPackage.LOOT);
 
-            equipment = new Equipment(this, itemPackages[Inventory.NORMAL], MAXSIZE_INVENTORY_EQUIPMENT, Inventory.EQUIPMENT);
+            equipment = new Equipment(this, itemPackages[ItemPackage.NORMAL], MAXSIZE_INVENTORY_EQUIPMENT, ItemPackage.EQUIPMENT);
 
             //Set the Skill level caps of all FFXIV (classes)skills to 50
             for (int i = 0; i < charaWork.battleSave.skillLevelCap.Length; i++)
@@ -552,12 +552,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
             #region Inventory & Equipment
             QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
-            itemPackages[Inventory.NORMAL].SendFullInventory(this);
-            itemPackages[Inventory.CURRENCY_CRYSTALS].SendFullInventory(this);
-            itemPackages[Inventory.KEYITEMS].SendFullInventory(this);
-            itemPackages[Inventory.BAZAAR].SendFullInventory(this);
-            itemPackages[Inventory.MELDREQUEST].SendFullInventory(this);
-            itemPackages[Inventory.LOOT].SendFullInventory(this);
+            itemPackages[ItemPackage.NORMAL].SendFullInventory(this);
+            itemPackages[ItemPackage.CURRENCY_CRYSTALS].SendFullInventory(this);
+            itemPackages[ItemPackage.KEYITEMS].SendFullInventory(this);
+            itemPackages[ItemPackage.BAZAAR].SendFullInventory(this);
+            itemPackages[ItemPackage.MELDREQUEST].SendFullInventory(this);
+            itemPackages[ItemPackage.LOOT].SendFullInventory(this);
             equipment.SendFullEquipment(false);   
             playerSession.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
             #endregion
@@ -1094,9 +1094,9 @@ namespace FFXIVClassic_Map_Server.Actors
         public void CheckBazaarFlags(bool noUpdate = false)
         {
             bool isDealing = false, isRepairing = false, seekingItem = false;
-            lock (GetItemPackage(Inventory.BAZAAR))
+            lock (GetItemPackage(ItemPackage.BAZAAR))
             {
-                foreach (InventoryItem item in GetItemPackage(Inventory.BAZAAR).GetRawList())
+                foreach (InventoryItem item in GetItemPackage(ItemPackage.BAZAAR).GetRawList())
                 {
                     if (item == null)
                         break;
@@ -1130,9 +1130,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 doUpdate = true;
             }
 
-            if (charaWork.eventTemp.bazaarMateria != (GetItemPackage(Inventory.MELDREQUEST).GetCount() != 0))
+            if (charaWork.eventTemp.bazaarMateria != (GetItemPackage(ItemPackage.MELDREQUEST).GetCount() != 0))
             {
-                charaWork.eventTemp.bazaarMateria = GetItemPackage(Inventory.MELDREQUEST).GetCount() != 0;
+                charaWork.eventTemp.bazaarMateria = GetItemPackage(ItemPackage.MELDREQUEST).GetCount() != 0;
                 propPacketUtil.AddProperty("charaWork.eventTemp.bazaarMateria");
                 doUpdate = true;
             }
@@ -1144,7 +1144,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public int GetCurrentGil()
         {
             if (HasItem(1000001))
-                return GetItemPackage(Inventory.CURRENCY_CRYSTALS).GetItemByCatelogId(1000001).quantity;
+                return GetItemPackage(ItemPackage.CURRENCY_CRYSTALS).GetItemByCatelogId(1000001).quantity;
             else
                 return 0;
         }
@@ -1661,7 +1661,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendMyTradeToPlayer(Player player)
         {
-            Inventory tradeInventory = new Inventory(this, 4, Inventory.TRADE);
+            ItemPackage tradeInventory = new ItemPackage(this, 4, ItemPackage.TRADE);
             player.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
             tradeInventory.SendFullInventory(player);
             player.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
@@ -1892,8 +1892,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void StartTradeTransaction(Player otherPlayer)
         {
-            myOfferings = new Inventory(this, 4, Inventory.TRADE, true);
-            Inventory otherPlayerOfferings = new Inventory(otherPlayer, 4, Inventory.TRADE, true);
+            myOfferings = new ItemPackage(this, 4, ItemPackage.TRADE, true);
+            ItemPackage otherPlayerOfferings = new ItemPackage(otherPlayer, 4, ItemPackage.TRADE, true);
 
             myOfferings.StartSendUpdate();
             myOfferings.SendUpdatePackets(this);
@@ -1909,7 +1909,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return otherTrader;
         }
 
-        public Inventory GetTradeOfferings()
+        public ItemPackage GetTradeOfferings()
         {
             return myOfferings;
         }
@@ -1929,7 +1929,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (!IsTrading())
                 return;
 
-            InventoryItem mine = itemPackages[Inventory.NORMAL].GetItemAtSlot(linkedSlot);
+            InventoryItem mine = itemPackages[ItemPackage.NORMAL].GetItemAtSlot(linkedSlot);
 
             InventoryItem tradeItem = new InventoryItem(mine, slot);
 
@@ -1989,7 +1989,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void Test()
         {
             QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
-            QueuePacket(InventorySetBeginPacket.BuildPacket(actorId, 4, Inventory.TRADE));
+            QueuePacket(InventorySetBeginPacket.BuildPacket(actorId, 4, ItemPackage.TRADE));
 
             QueuePacket(InventoryRemoveX01Packet.BuildPacket(actorId, 1));
 
@@ -1999,7 +1999,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void Test2()
         {
             QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
-            QueuePacket(InventorySetBeginPacket.BuildPacket(actorId, 4, Inventory.TRADE));
+            QueuePacket(InventorySetBeginPacket.BuildPacket(actorId, 4, ItemPackage.TRADE));
 
             QueuePacket(EquipmentListX01Packet.BuildPacket(actorId, 1, 1));
 

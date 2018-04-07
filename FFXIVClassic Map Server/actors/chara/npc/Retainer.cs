@@ -26,13 +26,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.npc
             this.ownerPlayer = player;
             this.actorName = String.Format("_rtnre{0:x7}", actorId);
 
-            itemPackages[Inventory.NORMAL] = new Inventory(this, MAXSIZE_INVENTORY_NORMAL, Inventory.NORMAL);
-            itemPackages[Inventory.CURRENCY_CRYSTALS] = new Inventory(this, MAXSIZE_INVENTORY_CURRANCY, Inventory.CURRENCY_CRYSTALS);
-            itemPackages[Inventory.BAZAAR] = new Inventory(this, MAXSIZE_INVENTORY_BAZAAR, Inventory.BAZAAR);
+            itemPackages[ItemPackage.NORMAL] = new ItemPackage(this, MAXSIZE_INVENTORY_NORMAL, ItemPackage.NORMAL);
+            itemPackages[ItemPackage.CURRENCY_CRYSTALS] = new ItemPackage(this, MAXSIZE_INVENTORY_CURRANCY, ItemPackage.CURRENCY_CRYSTALS);
+            itemPackages[ItemPackage.BAZAAR] = new ItemPackage(this, MAXSIZE_INVENTORY_BAZAAR, ItemPackage.BAZAAR);
 
-            itemPackages[Inventory.NORMAL].InitList(Database.GetInventory(this, Inventory.NORMAL));
-            itemPackages[Inventory.CURRENCY_CRYSTALS].InitList(Database.GetInventory(this, Inventory.CURRENCY_CRYSTALS));
-            itemPackages[Inventory.BAZAAR].InitList(Database.GetInventory(this, Inventory.BAZAAR));
+            itemPackages[ItemPackage.NORMAL].InitList(Database.GetInventory(this, ItemPackage.NORMAL));
+            itemPackages[ItemPackage.CURRENCY_CRYSTALS].InitList(Database.GetInventory(this, ItemPackage.CURRENCY_CRYSTALS));
+            itemPackages[ItemPackage.BAZAAR].InitList(Database.GetInventory(this, ItemPackage.BAZAAR));
         }
 
         public uint GetRetainerId()

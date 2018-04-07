@@ -30,11 +30,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         private ushort inventoryCapacity;
         private ushort inventoryCode;
         private InventoryItem[] list;
-        private Inventory normalInventory;
+        private ItemPackage normalInventory;
 
         private bool writeToDB = true;
 
-        public Equipment(Player ownerPlayer, Inventory normalInventory, ushort capacity, ushort code)
+        public Equipment(Player ownerPlayer, ItemPackage normalInventory, ushort capacity, ushort code)
         {
             owner = ownerPlayer;
             inventoryCapacity = capacity;
@@ -63,7 +63,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 }
             }
 
-            toPlayer.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, 0x23, Inventory.EQUIPMENT_OTHERPLAYER));
+            toPlayer.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, 0x23, ItemPackage.EQUIPMENT_OTHERPLAYER));
             int currentIndex = 0;
 
             while (true)
