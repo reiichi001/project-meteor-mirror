@@ -88,7 +88,10 @@ namespace FFXIVClassic_Map_Server.Actors
                                      74000, 78000, 81000, 85000, 89000, 92000, 96000, 100000, 100000, 110000};   //Level <= 50
 
         //Event Related
-        private Stack<GameEvent> runningEvents = new Stack<GameEvent>();
+        public uint currentEventOwner = 0;
+        public string currentEventName = "";
+
+        public Coroutine currentEventRunning;
 
         //Player Info
         public uint destinationZone;
@@ -1675,23 +1678,18 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void StartEvent(Actor owner, EventStartPacket start)
         {
-            GameEvent startedEvent = new GameEvent(start.triggerName, this, owner);
-            runningEvents.Push(startedEvent);
-            LuaEngine.GetInstance().EventStarted(startedEvent, start);
+            LuaEngine.GetInstance().EventStarted(this, owner, start);
         }
 
         public void UpdateEvent(EventUpdatePacket update)
         {
-            GameEvent updateEvent = runningEvents.Peek();
-            LuaEngine.GetInstance().OnEventUpdate(updateEvent, update.luaParams);            
-        } 
+            LuaEngine.GetInstance().OnEventUpdate(this, update.luaParams);
+        }
 
         public void KickEvent(Actor actor, string conditionName, params object[] parameters)
         {
             if (actor == null)
                 return;
-
-            runningEvents.Pop();
 
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
             SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, 0x75dc1705, conditionName, lParams);
@@ -1704,8 +1702,6 @@ namespace FFXIVClassic_Map_Server.Actors
             if (actor == null)
                 return;
 
-            runningEvents.Pop();
-
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
             SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, unknown, conditionName, lParams);
             spacket.DebugPrintSubPacket();
@@ -1715,22 +1711,25 @@ namespace FFXIVClassic_Map_Server.Actors
         public void SetEventStatus(Actor actor, string conditionName, bool enabled, byte unknown)
         {
             QueuePacket(packets.send.actor.events.SetEventStatus.BuildPacket(actor.actorId, enabled, unknown, conditionName));
-        }
+        }       
 
         public void RunEventFunction(string functionName, params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
-            SubPacket spacket = RunEventFunctionPacket.BuildPacket(actorId, runningEvents.Peek().GetOwnerActorId(), runningEvents.Peek().GetEventName(), functionName, lParams);
+            SubPacket spacket = RunEventFunctionPacket.BuildPacket(actorId, currentEventOwner, currentEventName, functionName, lParams);
             spacket.DebugPrintSubPacket();
             QueuePacket(spacket);
         }
 
         public void EndEvent()
         {
-            GameEvent endingEvent = runningEvents.Pop();
-            SubPacket p = EndEventPacket.BuildPacket(actorId, endingEvent.GetOwnerActorId(), endingEvent.GetEventName());
+            SubPacket p = EndEventPacket.BuildPacket(actorId, currentEventOwner, currentEventName);
             p.DebugPrintSubPacket();
             QueuePacket(p);
+
+            currentEventOwner = 0;
+            currentEventName = "";
+            currentEventRunning = null;
         }
         
         public void SendInstanceUpdate()

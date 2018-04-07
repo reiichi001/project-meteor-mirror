@@ -36,6 +36,7 @@ namespace FFXIVClassic_Map_Server.lua
 
         private Timer luaTimer;
 
+
         private LuaEngine()
         {
             UserData.RegistrationPolicy = InteropRegistrationPolicy.Automatic;
@@ -101,31 +102,31 @@ namespace FFXIVClassic_Map_Server.lua
             }
 
             foreach (Coroutine key in mToAwake)
-            { 
+            {
                 DynValue value = key.Resume();
                 ResolveResume(null, key, value);
             }
         }
 
-        public void OnEventUpdate(GameEvent gEvent, List<LuaParam> args)
+        public void OnEventUpdate(Player player, List<LuaParam> args)
         {
-            if (mSleepingOnPlayerEvent.ContainsKey(gEvent.GetUniqueEventId()))
+            if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
             {
                 try
                 {
-                    Coroutine coroutine = mSleepingOnPlayerEvent[gEvent.GetUniqueEventId()];
-                    mSleepingOnPlayerEvent.Remove(gEvent.GetUniqueEventId());
+                    Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];
+                    mSleepingOnPlayerEvent.Remove(player.actorId);
                     DynValue value = coroutine.Resume(LuaUtils.CreateLuaParamObjectList(args));
-                    ResolveResume(gEvent.GetPlayerActor(), coroutine, value);
+                    ResolveResume(player, coroutine, value);
                 }
                 catch (ScriptRuntimeException e)
                 {
-                    LuaEngine.SendError(gEvent.GetPlayerActor(), String.Format("OnEventUpdated: {0}", e.DecoratedMessage));
-                    gEvent.GetPlayerActor().EndEvent();
+                    LuaEngine.SendError(player, String.Format("OnEventUpdated: {0}", e.DecoratedMessage));
+                    player.EndEvent();
                 }
             }
             else
-                gEvent.GetPlayerActor().EndEvent();
+                player.EndEvent();
         }
 
         private static string GetScriptPath(Actor target)
@@ -214,7 +215,7 @@ namespace FFXIVClassic_Map_Server.lua
 
         private void CallLuaFunctionNpc(Player player, Npc target, string funcName, bool optional, params object[] args)
         {
-            object[] args2 = new object[args.Length + (player == null ? 1:2)];
+            object[] args2 = new object[args.Length + (player == null ? 1 : 2)];
             Array.Copy(args, 0, args2, (player == null ? 1 : 2), args.Length);
             if (player != null)
             {
@@ -265,7 +266,7 @@ namespace FFXIVClassic_Map_Server.lua
                 catch (ScriptRuntimeException e)
                 {
                     SendError(player, e.DecoratedMessage);
-                }                
+                }
             }
         }
 
@@ -290,9 +291,9 @@ namespace FFXIVClassic_Map_Server.lua
             if (script != null)
             {
                 if (!script.Globals.Get(funcName).IsNil())
-                {                    
+                {
                     //Run Script
-                    DynValue result = script.Call(script.Globals[funcName], args2);                    
+                    DynValue result = script.Call(script.Globals[funcName], args2);
                     List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
                     return lparams;
                 }
@@ -322,7 +323,7 @@ namespace FFXIVClassic_Map_Server.lua
                     DynValue result = script.Call(script.Globals[funcName], args);
                     List<LuaParam> lparams = LuaUtils.CreateLuaParamList(result);
                     return lparams;
-                }               
+                }
             }
             return null;
         }
@@ -361,36 +362,36 @@ namespace FFXIVClassic_Map_Server.lua
             {
                 if (!(target is Area) && !optional)
                     SendError(player, String.Format("Could not find script for actor {0}.", target.GetName()));
-            }            
+            }
         }
 
-        public void EventStarted(GameEvent gEvent, EventStartPacket eventStart)
+        public void EventStarted(Player player, Actor target, EventStartPacket eventStart)
         {
             List<LuaParam> lparams = eventStart.luaParams;
             lparams.Insert(0, new LuaParam(2, eventStart.triggerName));
-
-            if (mSleepingOnPlayerEvent.ContainsKey(gEvent.GetUniqueEventId()))
+            if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
             {
-                Coroutine coroutine = mSleepingOnPlayerEvent[gEvent.GetUniqueEventId()];
-                mSleepingOnPlayerEvent.Remove(gEvent.GetUniqueEventId());
+                Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];
+                mSleepingOnPlayerEvent.Remove(player.actorId);
 
-                try{
+                try
+                {
                     DynValue value = coroutine.Resume();
-                    ResolveResume(null, coroutine, value);                  
+                    ResolveResume(null, coroutine, value);
                 }
                 catch (ScriptRuntimeException e)
                 {
-                    LuaEngine.SendError(gEvent.GetPlayerActor(), String.Format("OnEventStarted: {0}", e.DecoratedMessage));
-                    gEvent.GetPlayerActor().EndEvent();
-                }                
+                    LuaEngine.SendError(player, String.Format("OnEventStarted: {0}", e.DecoratedMessage));
+                    player.EndEvent();
+                }
             }
             else
             {
-                if (gEvent.GetOwnerActor() is Director)
-                    ((Director)gEvent.GetOwnerActor()).OnEventStart(gEvent.GetPlayerActor(), LuaUtils.CreateLuaParamObjectList(lparams));
+                if (target is Director)
+                    ((Director)target).OnEventStart(player, LuaUtils.CreateLuaParamObjectList(lparams));
                 else
-                    CallLuaFunction(gEvent.GetPlayerActor(), gEvent.GetOwnerActor(), "onEventStarted", false, LuaUtils.CreateLuaParamObjectList(lparams));
-            }                
+                    CallLuaFunction(player, target, "onEventStarted", false, LuaUtils.CreateLuaParamObjectList(lparams));
+            }
         }
 
         public DynValue ResolveResume(Player player, Coroutine coroutine, DynValue value)
@@ -399,8 +400,8 @@ namespace FFXIVClassic_Map_Server.lua
                 return value;
 
             if (player != null && value.String != null && value.String.Equals("_WAIT_EVENT"))
-            {                
-                GetInstance().AddWaitEventCoroutine(player, coroutine);      
+            {
+                GetInstance().AddWaitEventCoroutine(player, coroutine);
             }
             else if (value.Tuple != null && value.Tuple.Length >= 1 && value.Tuple[0].String != null)
             {
@@ -428,7 +429,7 @@ namespace FFXIVClassic_Map_Server.lua
         {
             bool playerNull = player == null;
             if (playerNull && param.Length >= 3)
-                player = Server.GetWorldManager().GetPCInWorld(param[1] + " " + param[2]);            
+                player = Server.GetWorldManager().GetPCInWorld(param[1] + " " + param[2]);
 
             // load from scripts/commands/gm/ directory
             var path = String.Format("./scripts/commands/gm/{0}.lua", cmd.ToLower());
@@ -611,9 +612,8 @@ namespace FFXIVClassic_Map_Server.lua
                 return;
             List<SubPacket> SendError = new List<SubPacket>();
             player.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", message);
-            player.EndEvent();
+            player.QueuePacket(EndEventPacket.BuildPacket(player.actorId, player.currentEventOwner, player.currentEventName));
         }
-        
+
     }
 }
- 

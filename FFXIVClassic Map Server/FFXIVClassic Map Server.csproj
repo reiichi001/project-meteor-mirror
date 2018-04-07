@@ -110,7 +110,6 @@
     <Compile Include="actors\quest\Quest.cs" />
     <Compile Include="actors\StaticActors.cs" />
     <Compile Include="actors\world\WorldMaster.cs" />
-    <Compile Include="dataobjects\GameEvent.cs" />
     <Compile Include="dataobjects\GuildleveData.cs" />
     <Compile Include="dataobjects\TradeTransaction.cs" />
     <Compile Include="dataobjects\ZoneConnection.cs" />
