@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 9/9/2017 2:30:28 PM
+Date: 12/17/2017 3:38:25 PM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -14,8 +14,11 @@ SET FOREIGN_KEY_CHECKS=0;
 CREATE TABLE `retainers_inventory` (
   `id` int(10) unsigned zerofill NOT NULL AUTO_INCREMENT,
   `retainerId` int(10) unsigned NOT NULL,
-  `inventoryType` smallint(5) unsigned NOT NULL DEFAULT '0',
+  `itemPackage` smallint(5) unsigned NOT NULL DEFAULT '0',
   `serverItemId` int(10) unsigned NOT NULL,
-  `quantity` int(10) unsigned NOT NULL DEFAULT '1',
   PRIMARY KEY (`id`,`retainerId`)
-) ENGINE=InnoDB AUTO_INCREMENT=333 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=345 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Records 
+-- ----------------------------
