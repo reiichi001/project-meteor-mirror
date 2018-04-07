@@ -19,6 +19,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void QueuePacket(SubPacket subpacket)
         {
+            if (SendPacketQueue.Count == SendPacketQueue.BoundedCapacity - 1)
+                FlushQueuedSendPackets();
+
             SendPacketQueue.Add(subpacket);
         }
 
