@@ -90,7 +90,6 @@ namespace FFXIVClassic_Map_Server.Actors
         //Event Related
         public uint currentEventOwner = 0;
         public string currentEventName = "";
-
         public Coroutine currentEventRunning;
 
         //Player Info
@@ -1678,6 +1677,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void StartEvent(Actor owner, EventStartPacket start)
         {
+            currentEventOwner = start.scriptOwnerActorID;
+            currentEventName = start.triggerName;
             LuaEngine.GetInstance().EventStarted(this, owner, start);
         }
 

@@ -349,6 +349,7 @@ namespace FFXIVClassic_Map_Server.lua
                 if (!script.Globals.Get(funcName).IsNil())
                 {
                     Coroutine coroutine = script.CreateCoroutine(script.Globals[funcName]).Coroutine;
+                    player.currentEventRunning = coroutine;
                     DynValue value = coroutine.Resume(args2);
                     ResolveResume(player, coroutine, value);
                 }
