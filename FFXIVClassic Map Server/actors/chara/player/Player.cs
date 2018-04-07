@@ -990,6 +990,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public void PrepareClassChange(byte classId)
         {            
             //If new class, init abilties and level
+            if (charaWork.battleSave.skillLevel[classId - 1] <= 0)
+                UpdateClassLevel(classId, 1);
 
             SendCharaExpInfo();
         }
@@ -1036,6 +1038,16 @@ namespace FFXIVClassic_Map_Server.Actors
                 BroadcastPacket(packet, true);
 
             Database.SavePlayerCurrentClass(this);
+        }
+
+        public void UpdateClassLevel(byte classId, short level)
+        {
+            Database.PlayerCharacterUpdateClassLevel(this, classId, level);
+            charaWork.battleSave.skillLevel[classId - 1] = level;
+            ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("charaWork/exp", this);
+            propertyBuilder.AddProperty(String.Format("charaWork.battleSave.skillLevel[{0}]", classId-1));
+            List<SubPacket> packets = propertyBuilder.Done();
+            QueuePackets(packets);
         }
 
         public void GraphicChange(int slot, InventoryItem invItem)
