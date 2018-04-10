@@ -146,6 +146,7 @@
     <Compile Include="Packets\WorldPackets\Receive\SessionEndConfirmPacket.cs" />
     <Compile Include="Packets\WorldPackets\Send\ErrorPacket.cs" />
     <Compile Include="Packets\WorldPackets\Send\Group\PartySyncPacket.cs" />
+    <Compile Include="Packets\WorldPackets\Send\LinkshellResultPacket.cs" />
     <Compile Include="Packets\WorldPackets\Send\SessionBeginPacket.cs" />
     <Compile Include="Packets\WorldPackets\Send\SessionEndPacket.cs" />
     <Compile Include="PartyManager.cs" />

@@ -20,6 +20,7 @@ namespace FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
                     binWriter.Write(Encoding.ASCII.GetBytes(name), 0, Encoding.ASCII.GetByteCount(name) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(name));
+                    binWriter.BaseStream.Seek(0x20, SeekOrigin.Begin);
                     binWriter.Write((UInt16)crest);
                     binWriter.Write((UInt32)master);
                 }

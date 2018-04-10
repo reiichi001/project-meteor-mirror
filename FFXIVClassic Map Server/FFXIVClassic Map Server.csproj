@@ -294,6 +294,7 @@
     <Compile Include="packets\receive\UpdatePlayerPositionPacket.cs" />
     <Compile Include="packets\WorldPackets\Receive\ErrorPacket.cs" />
     <Compile Include="packets\WorldPackets\Receive\PartySyncPacket.cs" />
+    <Compile Include="packets\WorldPackets\Receive\LinkshellResultPacket.cs" />
     <Compile Include="packets\WorldPackets\Receive\SessionEndPacket.cs" />
     <Compile Include="packets\WorldPackets\Receive\SessionBeginPacket.cs" />
     <Compile Include="packets\WorldPackets\Send\Group\CreateLinkshellPacket.cs" />

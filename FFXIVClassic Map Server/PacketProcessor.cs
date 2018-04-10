@@ -88,6 +88,11 @@ namespace FFXIVClassic_Map_Server
                         PartySyncPacket partySyncPacket = new PartySyncPacket(subpacket.data);
                         Server.GetWorldManager().PartyMemberListRecieved(partySyncPacket);
                         break;
+                    //World Server - Linkshell Creation Result
+                    case 0x1025:
+                        LinkshellResultPacket lsResult = new LinkshellResultPacket(subpacket.data);
+                        LuaEngine.GetInstance().OnSignal("ls_result", lsResult.resultCode);
+                        break;
                     //Ping
                     case 0x0001:
                         //subpacket.DebugPrintSubPacket();

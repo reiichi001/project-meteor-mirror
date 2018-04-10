@@ -91,7 +91,7 @@ namespace FFXIVClassic_Map_Server.lua
             }
         }
 
-        public void OnSignal(string signal)
+        public void OnSignal(string signal, params object[] args)
         {
             List<Coroutine> mToAwake = new List<Coroutine>();
 
@@ -103,7 +103,7 @@ namespace FFXIVClassic_Map_Server.lua
 
             foreach (Coroutine key in mToAwake)
             {
-                DynValue value = key.Resume();
+                DynValue value = key.Resume(args);
                 ResolveResume(null, key, value);
             }
         }
