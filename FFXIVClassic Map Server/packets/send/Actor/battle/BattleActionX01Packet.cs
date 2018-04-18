@@ -33,13 +33,12 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.battle
                     binWriter.Seek(0x20, SeekOrigin.Begin);
                     binWriter.Write((UInt32)1); //Num actions (always 1 for this)
                     binWriter.Write((UInt16)commandId);
-                    binWriter.Write((UInt16)0x810); //?
+                    binWriter.Write((UInt16)0x801); //?
 
                     binWriter.Write((UInt32)action.targetId);
 
                     binWriter.Write((UInt16)action.amount);
                     binWriter.Write((UInt16)action.worldMasterTextId);
-                    Program.Log.Info(action.worldMasterTextId);
 
                     binWriter.Write((UInt32)action.effectId);
                     binWriter.Write((Byte)action.param);

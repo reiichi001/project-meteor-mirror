@@ -64,6 +64,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                     lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onCombo", owner, target, spell);
                     spell.isCombo = true;
                 }
+
+                //Modify spell based on status effects. Need to do it here because they can modify cast times
+                List<StatusEffect> effects = owner.statusEffects.GetStatusEffectsByFlag((uint) (StatusEffectFlags.ActivateOnCastStart));
+
+                //modify skill based on status effects
+                foreach (var effect in effects)
+                    lua.LuaEngine.CallLuaStatusEffectFunction(owner, effect, "onMagicCast", owner, effect, spell);
+
                 if (!spell.IsInstantCast())
                 {
                 // command casting duration
@@ -124,50 +132,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             isCompleted = true;
             var targets = spell.targetFind.GetTargets();
 
-
-            List<BattleAction> actions = new List<BattleAction>();
-            if (targets.Count > 0)
-            {
-                List<StatusEffect> effects = owner.statusEffects.GetStatusEffectsByFlag((uint)StatusEffectFlags.ActivateOnSpell);
-
-                //modify skill based on status effects
-                foreach (var effect in effects)
-                    lua.LuaEngine.CallLuaStatusEffectFunction(owner, effect, "onWeaponSkill", owner, effect, spell);
-
-                //Now that combos and positionals bonuses are done, we can calculate hits/crits/etc and damage
-                foreach (var chara in targets)
-                {
-                    for (int hitNum = 0; hitNum < spell.numHits; hitNum++)
-                    {
-                        var action = new BattleAction(chara.actorId, spell.worldMasterTextId, 0, 0, (byte) hitDir, (byte) hitNum);
-                        lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onMagicFinish", owner, chara, spell, action);
-
-                        //if hit type isn't evade or miss
-                        if (action.hitType > HitType.Evade)
-                            hitTarget = true;
-                        
-                        actions.AddRange(action.GetAllActions());
-                    }
-                }
-            }
-            else
-            {
-                //No targets hit, cast failed
-                actions.Add(new BattleAction(target.actorId, 30202, (uint) (0)));
-            }
-
-
-            // todo: this is fuckin stupid, probably only need *one* error packet, not an error for each action
-            BattleAction[] errors = (BattleAction[])actions.ToArray().Clone();
-            owner.OnCast(this, actions.ToArray(), spell, ref errors);
-            owner.DoBattleAction(spell.id, spell.battleAnimation, actions);
-            owner.statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnCasting);
-            //Now that we know if we hit the target we can check if the combo continues
-            if (owner is Player player)
-                if (spell.isCombo && hitTarget)
-                    player.SetCombos(spell.comboNextCommandId);
-                else
-                    player.SetCombos();
+            owner.DoBattleCommand(spell, "magic");
         }
 
         public override void TryInterrupt()

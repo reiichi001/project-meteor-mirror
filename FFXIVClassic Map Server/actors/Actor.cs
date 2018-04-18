@@ -26,6 +26,9 @@ namespace FFXIVClassic_Map_Server.Actors
         Appearance = 0x10,
         Speed = 0x20,
         Work = 0x40,
+        Stats = 0x80,
+        Status = 0x100,
+        StatusTime = 0x200,
 
         AllNpc = 0x6F,
         AllPlayer = 0x9F
@@ -373,6 +376,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 updateFlags |= (ActorUpdateFlags.State | ActorUpdateFlags.Position);
             }
+        }
+
+        public void ModifySpeed(float mod)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                moveSpeeds[i] *= mod;
+            }
+            updateFlags |= ActorUpdateFlags.Speed;
         }
 
         public void ChangeSpeed(int type, float value)

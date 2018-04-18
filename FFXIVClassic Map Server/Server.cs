@@ -54,9 +54,10 @@ namespace FFXIVClassic_Map_Server
             mWorldManager.LoadActorClasses();
             mWorldManager.LoadSpawnLocations();
             mWorldManager.LoadBattleNpcs();
-            mWorldManager.SpawnAllActors();
             mWorldManager.LoadStatusEffects();
             mWorldManager.LoadBattleCommands();
+            mWorldManager.LoadBattleTraits();
+            mWorldManager.SpawnAllActors();
             mWorldManager.StartZoneThread();
 
             IPEndPoint serverEndPoint = new IPEndPoint(IPAddress.Parse(ConfigConstants.OPTIONS_BINDIP), int.Parse(ConfigConstants.OPTIONS_PORT));

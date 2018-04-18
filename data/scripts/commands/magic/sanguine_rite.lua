@@ -9,6 +9,7 @@ function onMagicStart(caster, target, spell)
     return 0;
 end;
 
-function onMagicFinish(caster, target, spell, action)
-    magic.onStatusMagicFinish(caster, target, spell, action)
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
 end;

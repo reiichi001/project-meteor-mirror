@@ -176,8 +176,7 @@ namespace FFXIVClassic_Map_Server.lua
         public static int CallLuaStatusEffectFunction(Character actor, StatusEffect effect, string functionName, params object[] args)
         {
             // todo: this is stupid, load the actual effect name from db table
-            var name = ((StatusEffectId)effect.GetStatusEffectId()).ToString().ToLower();
-            string path = $"./scripts/effects/{name}.lua";
+            string path = $"./scripts/effects/{effect.GetName()}.lua";
 
             if (File.Exists(path))
             {

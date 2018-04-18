@@ -13,7 +13,10 @@ function onCombo(caster, target, skill)
     skill.basePotency = skill.basePotency * 1.25;
 end;
 
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate ws damage
+    action.amount = skill.basePotency;
 
-function onSkillFinish(caster, target, skill, action)
-    return weaponskill.onSkillFinish(caster, target, skill, action);
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
 end;

@@ -27,3 +27,8 @@ function getDistanceBetweenActors(actor1, actor2)
 	
 	return math.sqrt(dx * dx + dy * dy + dz *dz);
 end
+
+function math.Clamp(val, lower, upper)
+    if lower > upper then lower, upper = upper, lower end -- swap if boundaries supplied the wrong way
+    return math.max(lower, math.min(upper, val))
+end

@@ -12,7 +12,7 @@ using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.packets.receive.supportdesk;
 using FFXIVClassic_Map_Server.actors.chara.ai;
-using FFXIVClassic_Map_Server.Actors.Chara;
+using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.actors.chara;
 
 namespace FFXIVClassic_Map_Server
@@ -2261,7 +2261,7 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
 
                     var query = ("SELECT `id`, name, classJob, lvl, requirements, mainTarget, validTarget, aoeType, aoeRange, aoeTarget, basePotency, numHits, positionBonus, procRequirement, `range`, statusId, statusDuration, statusChance, " +
-                        "castType, castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, battleAnimation, validUser, comboId1, comboId2, comboStep, accuracyMod, worldMasterTextId FROM server_battle_commands;");
+                        "castType, castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, battleAnimation, validUser, comboId1, comboId2, comboStep, accuracyMod, worldMasterTextId, commandType, actionType, actionProperty FROM server_battle_commands;");
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -2306,6 +2306,9 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.comboNextCommandId[0] = reader.GetInt32("comboId1");
                             battleCommand.comboNextCommandId[1] = reader.GetInt32("comboId2");
                             battleCommand.comboStep = reader.GetInt16("comboStep");
+                            battleCommand.commandType = (CommandType) reader.GetInt16("commandType");
+                            battleCommand.actionProperty = (ActionProperty)reader.GetInt16("actionProperty");
+                            battleCommand.actionType = (ActionType)reader.GetInt16("actionType");
                             battleCommand.accuracyModifier = reader.GetFloat("accuracyMod");
                             battleCommand.worldMasterTextId = reader.GetUInt16("worldMasterTextId");
                             lua.LuaEngine.LoadBattleCommandScript(battleCommand, "weaponskill");
@@ -2326,6 +2329,60 @@ namespace FFXIVClassic_Map_Server
                     }
 
                     Program.Log.Info(String.Format("Loaded {0} battle commands.", count));
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static void LoadGlobalBattleTraitList(Dictionary<ushort, BattleTrait> battleTraitDict, Dictionary<byte, List<ushort>> battleTraitJobDict)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    int count = 0;
+                    conn.Open();
+
+                    var query = ("SELECT `id`, name, classJob, lvl, modifier, bonus FROM server_battle_traits;");
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            var id = reader.GetUInt16("id");
+                            var name = reader.GetString("name");
+                            var job = reader.GetByte("classJob");
+                            var level = reader.GetByte("lvl");
+                            uint modifier = reader.GetUInt32("modifier");
+                            var bonus = reader.GetInt32("bonus");
+
+                            var trait = new BattleTrait(id, name, job, level, modifier, bonus);
+
+                            battleTraitDict.Add(id, trait);
+
+                            if(battleTraitJobDict.ContainsKey(job))
+                            {
+                                battleTraitJobDict[job].Add(id);
+                            }
+                            else
+                            {
+                                battleTraitJobDict[job] = new List<ushort>();
+                                battleTraitJobDict[job].Add(id);
+                            }
+
+                            count++;
+                        }
+                    }
+                    Program.Log.Info(String.Format("Loaded {0} battle traits.", count));
                 }
                 catch (MySqlException e)
                 {

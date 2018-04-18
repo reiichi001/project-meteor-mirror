@@ -5,11 +5,15 @@ function onMagicPrepare(caster, target, spell)
     return 0;
 end;
 
+--Idea: add way to sort list of targets by hp here?
 function onMagicStart(caster, target, spell)
     return 0;
 end;
 
---http://forum.square-enix.com/ffxiv/threads/41900-White-Mage-A-Guide read
-function onMagicFinish(caster, target, spell, action)
-    magic.onCureMagicFinish(caster, target, spell, action)
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate damage
+    action.amount = skill.basePotency;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
 end;

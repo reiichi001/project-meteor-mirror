@@ -9,13 +9,21 @@ function onMagicStart(caster, target, spell)
     return 0;
 end;
 
-function onMagicFinish(caster, target, spell, action)
-    spell.statusId = 228011;
-    spell.statusDuration = 25;
-    spell.statusChance = 1.0;
-    magic.onCureMagicFinish(caster, target, spell, action)
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    action.amount = skill.basePotency;
 
+    --8071401: Gallant Gauntlets: Enhances Holy Succor
+    if caster.GetEquipment().GetItemAtSlot(13).itemId == 8071401 then
+        action.amount = action.amount * 1.10;
+    end
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
+
+    --When cast on another player you also heal 50% of the amount restored.
     if caster != target then
-        action.AddHealAction(caster.actorId, (action.amount / 2));
+        caster.AddHP(action.amount / 2)
+        --33012: You recover [amount] HP.
+        actionContainer.AddHPAction(caster.actorId, 33012, (action.amount / 2));
     end
 end;

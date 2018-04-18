@@ -1,5 +1,6 @@
 require("global");
 require("magic");
+require("modifiers");
 
 function onMagicPrepare(caster, target, spell)
     return 0;
@@ -9,6 +10,15 @@ function onMagicStart(caster, target, spell)
     return 0;
 end;
 
-function onMagicFinish(caster, target, spell, action)
-    magic.onStatusMagicFinish(caster, target, spell, action)
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --Actual amount of def/mdef will be calculated in OnGain
+    skill.statusMagnitude = caster.GetMod(modifiersGlobal.MagicEnhancePotency);
+
+    --27365: Enhanced Protect: Increases magic defense gained from Protect.
+    if caster.HasTrait(27365) then
+        skill.statusTier = 2;
+    end
+    
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
 end;

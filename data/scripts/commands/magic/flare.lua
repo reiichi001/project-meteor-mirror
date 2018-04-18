@@ -9,8 +9,13 @@ function onMagicStart(caster, target, spell)
     return 0;
 end;
 
-function onMagicFinish(caster, target, spell, action)
-    --increase potency based on proximity to target
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate damage
+    action.amount = skill.basePotency;
 
-    magic.onMagicFinish(caster, target, spell, action)
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
+
+    --Try to apply status effect
+    action.TryStatus(caster, target, skill, actionContainer, true);
 end;

@@ -10,9 +10,13 @@ function onSkillStart(caster, target, skill)
 end;
 
 function onCombo(caster, target, skill)
-    skill.accuracyModifier = 1.5;
+    skill.accuracyModifier = 50;
 end;
 
-function onSkillFinish(caster, target, skill, action)
-    return weaponskill.onSkillFinish(caster, target, skill, action);
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate ws damage
+    skill.Potency = 100;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
 end;

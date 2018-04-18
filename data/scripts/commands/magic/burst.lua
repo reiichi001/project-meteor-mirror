@@ -14,6 +14,13 @@ function onCombo(caster, target, spell)
 
 end;
     
-function onMagicFinish(caster, target, spell, action)
-    magic.onMagicFinish(caster, target, spell, action)
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate damage
+    action.amount = skill.basePotency;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
+
+    --Try to apply status effect
+    action.TryStatus(caster, target, skill, actionContainer, true);
 end;

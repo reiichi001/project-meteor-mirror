@@ -172,7 +172,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             // todo: this is stupid
             bool withPet = (flags & ValidTarget.Ally) != 0 || masterTarget.allegiance != owner.allegiance;
 
-            if (masterTarget != null)
+            if (masterTarget != null && CanTarget(masterTarget))
                 targets.Add(masterTarget);
 
             if (aoeType != TargetFindAOEType.None)
@@ -237,8 +237,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 }*/
 
 
-                if (targets.Count > 16)
-                    targets.RemoveRange(16, targets.Count - 16);
+                if (targets.Count > 8)
+                    targets.RemoveRange(8, targets.Count - 8);
+
+            //Curaga starts with lowest health players, so the targets are definitely sorted at least for some abilities
+            //Other aoe abilities might be sorted by distance?
+            //Protect is random
+            targets.Sort(delegate (Character a, Character b) { return a.GetHP().CompareTo(b.GetHP()); });
         }
 
         /// <summary>
@@ -351,6 +356,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (target == null || !retarget && targets.Contains(target))
                 return false;
 
+            if ((validTarget & ValidTarget.Player) != 0 && target is Player)
+                return true;
+
+            if ((validTarget & ValidTarget.PartyMember) != 0 && target.currentParty == owner.currentParty)
+                return true;
+
             // cant target dead
             if ((validTarget & ValidTarget.Corpse) == 0 && target.IsDead())
                 return false;
@@ -361,7 +372,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if ((validTarget & ValidTarget.Enemy) != 0 && target.allegiance == owner.allegiance)
                 return false;
 
-            if ((validTarget & ValidTarget.PartyMember) == 0 && target.currentParty == owner.currentParty)
+            if (((validTarget & ValidTarget.PartyMember) == 0) && ((validTarget & ValidTarget.Self) == 0) && target.currentParty == owner.currentParty)
                 return false;
 
             if ((validTarget & ValidTarget.PartyMember) != 0 && target.currentParty != owner.currentParty)
@@ -382,6 +393,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 return false;
 
             if (validTarget == ValidTarget.Self && aoeType == TargetFindAOEType.None && owner != target)
+                return false;
+
+            if ((validTarget & ValidTarget.Self) == 0 && target == owner)
                 return false;
 
             // this is fuckin retarded, think of a better way l8r

@@ -48,7 +48,7 @@ namespace FFXIVClassic_Map_Server.actors.group
 
         public override void SendInitWorkValues(Session session)
         {
-            SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupIndex);            
+            SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupIndex);
             groupWork.setTarget("/_init");
 
             SubPacket test = groupWork.buildPacket(session.id, session.id);

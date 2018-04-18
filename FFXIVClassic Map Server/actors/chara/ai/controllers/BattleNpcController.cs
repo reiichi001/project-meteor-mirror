@@ -149,11 +149,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         public override void Cast(Character target, uint spellId)
         {
             // todo:
+            if(owner.aiContainer.CanChangeState())
+                owner.aiContainer.InternalCast(target, spellId);
         }
 
         public override void Ability(Character target, uint abilityId)
         {
             // todo:
+            if (owner.aiContainer.CanChangeState())
+                owner.aiContainer.InternalAbility(target, abilityId);
         }
 
         public override void RangedAttack(Character target)
@@ -211,7 +215,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 return;
             }
             owner.SetMod((uint)Modifier.Speed, 5);
-            if ((tick - lastCombatTickScript).TotalSeconds > 3)//Program.Random.Next(10, 15))
+            if ((tick - lastCombatTickScript).TotalSeconds > 3)
             {
                 Move();
                 //if (owner.aiContainer.CanChangeState())

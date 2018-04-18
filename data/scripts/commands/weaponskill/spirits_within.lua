@@ -11,13 +11,19 @@ end;
 
 --Increased enmity
 function onCombo(caster, target, skill)
-    skill.enmityModifier = 1.5;
+    skill.enmityModifier = 2.5;
 end;
 
-function onSkillFinish(caster, target, skill, action)
-    local damage = math.random(10, 100);
+function onSkillFinish(caster, target, skill, action, actionContainer)
     --Increased damage with higher hp
+    --random guess
     local potencyModifier = caster:GetHPP() + 25;
-    skill.basePotency = skill.basePotency * (potencyModifier / 100);
-    return weaponskill.onSkillFinish(caster, target, skill, action)
+
+    skill.basePotency = skill.basePotency * potencyModifier;
+
+    --calculate ws damage
+    action.amount = skill.basePotency;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
 end;

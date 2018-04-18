@@ -9,6 +9,9 @@ function onAbilityStart(caster, target, ability)
     return 0;
 end;
 
-function onAbilityFinish(caster, target, skill, action)
-    return onAttackAbilityFinish(caster, target, skill, action);
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    action.amount = skill.basePotency;
+    
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
 end;

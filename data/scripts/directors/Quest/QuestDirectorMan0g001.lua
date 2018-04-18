@@ -16,6 +16,7 @@ end
 
 function onEventStarted(player, actor, triggerName)
 	man0g0Quest = player:GetQuest("Man0g0");
+	player:SetMod(modifiersGlobal.MinimumHpLock, 1);
 	player:SendMessage(0x20, "", "Starting");
 	startTutorialMode(player);
 	callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrBtl001", nil, nil, nil);
@@ -38,9 +39,11 @@ function onEventStarted(player, actor, triggerName)
 		showTutorialSuccessWidget(player, 9055); --Open TutorialSuccessWidget for attacking enemy
 		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_TP);
 		waitForSignal("tpOver1000");
+		player:SetMod(modifiersGlobal.MinimumTpLock, 1000);
 		closeTutorialWidget(player);
 		openTutorialWidget(player, CONTROLLER_KEYBOARD, TUTORIAL_WEAPONSKILLS);
 		waitForSignal("weaponskillUsed");
+		player:SetMod(modifiersGlobal.MinimumTpLock, 0);
 		closeTutorialWidget(player);
 		showTutorialSuccessWidget(player, 9065); --Open TutorialSuccessWidget for weapon skill
 	elseif player:IsDiscipleOfMagic() then
@@ -61,6 +64,7 @@ function onEventStarted(player, actor, triggerName)
 	player:SendMessage(0x20, "", "Waiting for mobkill3");
 	waitForSignal("mobkill");
 	worldMaster = GetWorldMaster();
+	player:SetMod(modifiersGlobal.MinimumHpLock, 0);
 	player:SendMessage(0x20, "", "Sending data packet 'attention'");
 	player:SendDataPacket("attention", worldMaster, "", 51073, 2);
 	wait(5);

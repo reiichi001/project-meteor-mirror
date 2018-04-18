@@ -77,7 +77,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                         }
                     }
                 }
-
             }
         }
 
@@ -118,55 +117,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnComplete()
         {
-            bool hitTarget = false;
-
             skill.targetFind.FindWithinArea(target, skill.validTarget, skill.aoeTarget);
             isCompleted = true;
-            var targets = skill.targetFind.GetTargets();
 
-            //Need a variable size list of actions because status effects may add extra actions
-            //BattleAction[] actions = new BattleAction[targets.Count * skill.numHits];
-            List<BattleAction> actions = new List<BattleAction>();
-            List<StatusEffect> effects = owner.statusEffects.GetStatusEffectsByFlag((uint)StatusEffectFlags.ActivateOnAttack);
-
-            //modify skill based on status effects
-            foreach (var effect in effects)
-                effect.CallLuaFunction(owner, "onWeaponSkill", skill);
-
-            //Now that combos and positionals bonuses are done, we can calculate hits/crits/etc and damage for each action
-            foreach (var chara in targets)
-            {
-                for (int hitNum = 0; hitNum < skill.numHits; hitNum++)
-                {
-                    var action = new BattleAction(chara.actorId, skill.worldMasterTextId, 0, 0, (byte) hitDirection, 1);
-                    //For older versions this will need to be in the database for magic weaponskills
-                    action.battleActionType = BattleActionType.AttackPhysical;
-                    //uncached script
-                    lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillFinish", owner, target, skill, action);
-
-                    //cached script
-                    //skill.CallLuaFunction(owner, "onSkillFinish", owner, target, skill, action);
-                    action.hitNum = (byte)hitNum;
-
-                    if (action.hitType > HitType.Evade)
-                        hitTarget = true;
-
-                    actions.AddRange(action.GetAllActions());
-                }
-            }
-
-            // todo: this is fuckin stupid, probably only need *one* error packet, not an error for each action
-            BattleAction[] errors = (BattleAction[]) actions.ToArray().Clone();
-            owner.OnWeaponSkill(this, actions.ToArray(), skill, ref errors);
-            owner.DoBattleAction(skill.id, skill.battleAnimation, actions);
+            owner.DoBattleCommand(skill, "weaponskill");
             owner.statusEffects.RemoveStatusEffectsByFlags((uint) StatusEffectFlags.LoseOnAttacking);
 
-            //Now that we know if we hit the target we can check if the combo continues
-            if (owner is Player player)
-                if (skill.isCombo && hitTarget)
-                    player.SetCombos(skill.comboNextCommandId);
-                else
-                    player.SetCombos();
+            lua.LuaEngine.GetInstance().OnSignal("weaponskillUsed");
         }
 
         public override void TryInterrupt()

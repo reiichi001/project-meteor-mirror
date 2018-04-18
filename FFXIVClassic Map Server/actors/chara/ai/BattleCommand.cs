@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.actors.chara.ai.utils;
 using MoonSharp.Interpreter;
 
@@ -62,6 +62,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         SongMagic = 8
     }
 
+
+    //What type of command it is
+    [Flags]
+    public enum CommandType : ushort
+    {
+        //Type of action
+        None = 0,
+        AutoAttack = 1,
+        WeaponSkill = 2,
+        Ability =3,
+        Spell = 4
+    }
+
     class BattleCommand
     {
         public ushort id;
@@ -96,13 +109,22 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public int aoeRange;                                //size of aoe effect. (how will this work for box aoes?)
         public int[] comboNextCommandId = new int[2];       //next two skills in a combo
         public short comboStep;                             //Where in a combo string this skill is
+        public CommandType commandType;
+        public ActionProperty actionProperty;
+        public ActionType actionType;
 
 
-        public byte statusTier;                             //tief of status to put on target
+        public byte statusTier;                             //tier of status to put on target
+        public ulong statusMagnitude = 0;                   //magnitude of status to put on target
         public ushort basePotency;                          //damage variable
         public float enmityModifier;                        //multiples by damage done to get final enmity
         public float accuracyModifier;                      //modifies accuracy
+        public float bonusCritRate;                         //extra crit rate
         public bool isCombo;
+        public bool isRanged;
+
+        public bool actionCrit;                             //Whether any actions were critical hits, used for Excruciate
+
         public lua.LuaScript script;                        //cached script
 
         public TargetFind targetFind;
@@ -114,7 +136,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.name = name;
             this.range = 0;
             this.enmityModifier = 1;
-            this.accuracyModifier = 1;
+            this.accuracyModifier = 0;
             this.statusTier = 1;
             this.statusChance = 50;
             this.recastTimeMs = (uint) maxRecastTimeSeconds * 1000;
@@ -153,7 +175,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public bool IsValidMainTarget(Character user, Character target)
         {
             targetFind = new TargetFind(user);
-            
+
             if (aoeType == TargetFindAOEType.Box)
             {
                 targetFind.SetAOEBox(validTarget, aoeTarget, range, aoeRange);
@@ -162,7 +184,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 targetFind.SetAOEType(validTarget, aoeType, aoeTarget, range, aoeRange);
             }
-
 
             /*
             worldMasterTextId
@@ -191,7 +212,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 if (user is Player)
                     ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32527, 0x20, (uint)id);
-                return false;
+                //return false;
             }
 
             //Proc requirement
@@ -361,6 +382,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 return caster;
 
             return target;
+        }
+
+        public ushort GetCommandType()
+        {
+            return (ushort) commandType;
         }
     }
 }

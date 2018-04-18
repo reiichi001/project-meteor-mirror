@@ -21,22 +21,36 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private readonly Dictionary<uint, StatusEffect> effects;
         public static readonly int MAX_EFFECTS = 20;
         private bool sendUpdate = false;
+        private DateTime lastTick;// Do all effects tick at the same time like regen?
+        private List<SubPacket> statusSubpackets;
+        private ActorPropertyPacketUtil statusTimerPropPacketUtil;
 
         public StatusEffectContainer(Character owner)
         {
             this.owner = owner;
             this.effects = new Dictionary<uint, StatusEffect>();
+            statusSubpackets = new List<SubPacket>();
+            statusTimerPropPacketUtil = new ActorPropertyPacketUtil("charawork/Status", owner);
         }
 
         public void Update(DateTime tick)
         {
+            //Regen/Refresh/Regain effects tick every 3 seconds
+            if ((DateTime.Now - lastTick).Seconds >= 3)
+            {
+                RegenTick(tick);
+                lastTick = DateTime.Now;
+            }
             // list of effects to remove
+
+           // if (owner is Player) UpdateTimeAtIndex(4, 4294967295);
             var removeEffects = new List<StatusEffect>();
-            foreach (var effect in effects.Values)
+            for (int i = 0; i < effects.Values.Count; i++)
             {
                 // effect's update function returns true if effect has completed
-                if (effect.Update(tick))
-                    removeEffects.Add(effect);
+                if (effects.Values.ElementAt(i).Update(tick))
+                     removeEffects.Add(effects.Values.ElementAt(i));
+
             }
 
             // remove effects from this list
@@ -52,6 +66,31 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             }
         }
 
+        //regen/refresh/regain
+        public void RegenTick(DateTime tick)
+        {
+            ushort dotTick = (ushort) owner.GetMod(Modifier.RegenDown);
+            ushort regenTick = (ushort) owner.GetMod(Modifier.Regen);
+            ushort refreshtick = (ushort) owner.GetMod(Modifier.Refresh);
+            short regainTick = (short) owner.GetMod(Modifier.Regain);
+
+            //DoTs tick before regen and the full dot damage is displayed, even if some or all of it is nullified by regen. Only effects like stoneskin actually alter the number shown
+            if (dotTick > 0)
+            {
+                BattleAction action = new BattleAction(owner.actorId, 30331, (uint)(HitEffect.HitEffectType | HitEffect.Hit), dotTick);
+                utils.BattleUtils.HandleStoneskin(owner, action);
+                // todo: figure out how to make red numbers appear for enemies getting hurt by dots
+                owner.DelHP(action.amount);
+
+                owner.DoBattleAction(0, 0, action);
+            }
+
+            //DoTs are the only effect to show numbers, so that doesnt need to be handled for these
+            owner.AddHP(regenTick);
+            owner.AddMP(refreshtick);
+            owner.AddTP(regainTick);
+        }
+
         public bool HasStatusEffect(uint id)
         {
             return effects.ContainsKey(id);
@@ -62,7 +101,43 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return effects.ContainsKey((uint)id);
         }
 
-        public bool AddStatusEffect(uint id, UInt64 magnitude, uint tickMs, uint duration, byte tier = 0)
+        public BattleAction AddStatusForBattleAction(uint id, byte tier = 1)
+        {
+            BattleAction action = null;
+
+            if (AddStatusEffect(id, tier))
+                action = new BattleAction(owner.actorId, 30328, id | (uint)HitEffect.StatusEffectType);
+
+            return action;
+        }
+
+        public bool AddStatusEffect(uint id)
+        {
+            var se = Server.GetWorldManager().GetStatusEffect(id);
+
+            return AddStatusEffect(se, owner);
+        }
+
+        public bool AddStatusEffect(uint id, byte tier)
+        {
+            var se = Server.GetWorldManager().GetStatusEffect(id);
+
+            se.SetTier(tier);
+
+            return AddStatusEffect(se, owner);
+        }
+
+        public bool AddStatusEffect(uint id,  byte tier, UInt64 magnitude)
+        {
+            var se = Server.GetWorldManager().GetStatusEffect(id);
+
+            se.SetMagnitude(magnitude);
+            se.SetTier(tier);
+
+            return AddStatusEffect(se, owner);
+        }
+
+        public bool AddStatusEffect(uint id, byte tier, UInt64 magnitude, uint duration, int tickMs = 3000)
         {
             var se = Server.GetWorldManager().GetStatusEffect(id);
             if (se != null)
@@ -71,7 +146,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 se.SetStartTime(DateTime.Now);
                 se.SetOwner(owner);
             }
-            return AddStatusEffect(se ?? new StatusEffect(this.owner, id, magnitude, tickMs, duration, tier), owner);
+            return AddStatusEffect(se ?? new StatusEffect(this.owner, id, magnitude, 3000, duration, tier), owner);
         }
 
         public bool AddStatusEffect(StatusEffect newEffect, Character source, bool silent = false, bool hidden = false)
@@ -81,12 +156,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 32001 [@2B([@IF($E4($EB(1),$EB(2)),you,[@IF($E9(7),[@SHEETEN(xtx/displayName,2,$E9(7),1,1)],$EB(2))])])] [@IF($E4($EB(1),$EB(2)),resist,resists)] the effect of [@SHEET(xtx/status,$E8(11),3)].
                 32002 [@SHEET(xtx/status,$E8(11),3)] fails to take effect.
             */
-
-            if (HasStatusEffect(newEffect.GetStatusEffectId()) && (newEffect.GetFlags() & (uint)StatusEffectFlags.Stance) != 0)
-            {
-                RemoveStatusEffect(newEffect);
-                return false;
-            }
 
             var effect = GetStatusEffectById(newEffect.GetStatusEffectId());
 
@@ -112,6 +181,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                     effects.Remove(newEffect.GetStatusEffectId());
 
                 newEffect.SetStartTime(DateTime.Now);
+                newEffect.SetEndTime(DateTime.Now.AddSeconds(newEffect.GetDuration()));
                 newEffect.SetOwner(owner);
 
                 if (effects.Count < MAX_EFFECTS)
@@ -127,22 +197,22 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                     if (!newEffect.GetHidden())
                     {
                         int index = 0;
+
+                        //If effect is already in the list of statuses, get that index, otherwise find the first open index
                         if (owner.charaWork.status.Contains(newEffect.GetStatusId()))
                             index = Array.IndexOf(owner.charaWork.status, newEffect.GetStatusId());
                         else
                             index = Array.IndexOf(owner.charaWork.status, (ushort) 0);
 
-                        owner.charaWork.status[index] = newEffect.GetStatusId();
-
+                        //owner.charaWork.status[index] = newEffect.GetStatusId();
+                        SetStatusAtIndex(index, newEffect.GetStatusId());
                         //Stance statuses need their time set to an extremely high number so their icon doesn't flash
                         //Adding getduration with them doesn't work because it overflows
-                        uint time = (newEffect.GetFlags() & (uint) StatusEffectFlags.Stance) == 0 ? Utils.UnixTimeStampUTC() + (newEffect.GetDuration()) : 0xFFFFFFFF;
-                        owner.charaWork.statusShownTime[index] = time;
-                        this.owner.zone.BroadcastPacketAroundActor(this.owner, SetActorStatusPacket.BuildPacket(this.owner.actorId, (ushort)index, (ushort)newEffect.GetStatusId()));
-                    }
-
-                    {
-                        owner.zone.BroadcastPacketsAroundActor(owner, owner.GetActorStatusPackets());
+                        uint time = (newEffect.GetFlags() & (uint) StatusEffectFlags.Stance) == 0 ? Utils.UnixTimeStampUTC(newEffect.GetEndTime()) : 0xFFFFFFFF;
+                        SetTimeAtIndex(index, time);
+                        //owner.charaWork.statusShownTime[index] = time;
+                        //owner.zone.BroadcastPacketAroundActor(owner, SetActorStatusPacket.BuildPacket(owner.actorId, (ushort)index, newEffect.GetStatusId()));
+                        //owner.zone.BroadcastPacketsAroundActor(owner, owner.GetActorStatusPackets());
                     }
                     owner.RecalculateStats();
                 }
@@ -151,14 +221,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return false;
         }
 
-        public void RemoveStatusEffect(StatusEffect effect, bool silent = false)
+        public bool RemoveStatusEffect(StatusEffect effect, bool silent = false)
         {
-            if (effect != null && effects.ContainsKey(effect.GetStatusEffectId()) )
+            bool removedEffect = false;
+            if (effect != null && effects.ContainsKey(effect.GetStatusEffectId()))
             {
                 // send packet to client with effect remove message
-                if (!silent && !effect.GetSilent() || (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
+                if (!silent && !effect.GetSilent() && (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
                 {
-                    // todo: send packet to client with effect added message
+                    owner.DoBattleAction(0, 0, new BattleAction(owner.actorId, 30331, effect.GetStatusEffectId()));
                 }
 
                 //hidden effects not in charawork
@@ -178,25 +249,52 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                     LuaEngine.CallLuaStatusEffectFunction(this.owner, effect, "onLose", this.owner, effect);
                 owner.RecalculateStats();
                 sendUpdate = true;
+                removedEffect = true;
             }
+
+            return removedEffect;
         }
 
-        public void RemoveStatusEffect(uint effectId, bool silent = false)
+        public bool RemoveStatusEffect(uint effectId, bool silent = false)
         {
+            bool removedEffect = false;
             foreach (var effect in effects.Values)
             {
                 if (effect.GetStatusEffectId() == effectId)
                 {
                     RemoveStatusEffect(effect, effect.GetSilent() || silent);
+                    removedEffect = true;
                     break;
                 }
             }
+
+            return removedEffect;
+        }
+
+
+        //Remove status effect and return the battleaction message instead of sending it immediately
+        public BattleAction RemoveStatusEffectForBattleAction(uint effectId, ushort worldMasterTextId = 30331)
+        {
+            BattleAction action = null;
+            if (RemoveStatusEffect(effectId, true))
+                action = new BattleAction(owner.actorId, worldMasterTextId, effectId);
+
+            return action;
+        }
+
+        //Remove status effect and return the battleaction message instead of sending it immediately
+        public BattleAction RemoveStatusEffectForBattleAction(StatusEffect effect, ushort worldMasterTextId = 30331)
+        {
+            BattleAction action = null;
+            if (RemoveStatusEffect(effect, true))
+                action = new BattleAction(owner.actorId, worldMasterTextId, effect.GetStatusEffectId());
+            return action;
         }
 
         public StatusEffect CopyEffect(StatusEffect effect)
         {
-            var newEffect = new StatusEffect(this.owner, effect);
-            newEffect.SetOwner(this.owner);
+            var newEffect = new StatusEffect(owner, effect);
+            newEffect.SetOwner(owner);
             // todo: should source be copied too?
             return AddStatusEffect(newEffect, effect.GetSource()) ? newEffect : null;
         }
@@ -204,10 +302,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public bool RemoveStatusEffectsByFlags(uint flags, bool silent = false)
         {
             // build list of effects to remove
-            var removeEffects = new List<StatusEffect>();
-            foreach (var effect in effects.Values)
-                if ((effect.GetFlags() & flags) != 0)
-                    removeEffects.Add(effect);
+            var removeEffects = GetStatusEffectsByFlag(flags);
 
             // remove effects from main list
             foreach (var effect in removeEffects)
@@ -231,12 +326,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             var list = new List<StatusEffect>();
             foreach (var effect in effects.Values)
-            {
                 if ((effect.GetFlags() & flag) != 0)
-                {
                     list.Add(effect);
-                }
-            }
+
             return list;
         }
 
@@ -267,6 +359,89 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 Database.SavePlayerStatusEffects((Player)owner);
             }
+        }
+
+        public void CallLuaFunctionByFlag(uint flag, string function, params object[] args)
+        {
+            var effects = GetStatusEffectsByFlag(flag);
+
+            object[] argsWithEffect = new object[args.Length + 1];
+
+            for (int i = 0; i < args.Length; i++)
+                argsWithEffect[i + 1] = args[i];
+
+            foreach (var effect in effects)
+            {
+                argsWithEffect[0] = effect;
+                effect.CallLuaFunction(owner, function, argsWithEffect);
+            }
+        }
+
+        //Sets the status id at an index.
+        //Changing a status to another doesn't seem to work. If updating an index that already has an effect, set it to 0 first then to the correct status
+        public void SetStatusAtIndex(int index, ushort statusId)
+        {
+            owner.charaWork.status[index] = statusId;
+            //owner.zone.BroadcastPacketAroundActor(owner, SetActorStatusPacket.BuildPacket(owner.actorId, (ushort)index, statusId));
+
+            statusSubpackets.Add(SetActorStatusPacket.BuildPacket(owner.actorId, (ushort)index, statusId));
+            owner.updateFlags |= ActorUpdateFlags.Status;
+        }
+
+        public void SetTimeAtIndex(int index, uint time)
+        {
+            owner.charaWork.statusShownTime[index] = time;
+            statusTimerPropPacketUtil.AddProperty($"charaWork.statusShownTime[{index}]");
+            owner.updateFlags |= ActorUpdateFlags.StatusTime;
+        }
+
+        public List<SubPacket> GetStatusPackets()
+        {
+            return statusSubpackets;
+        }
+
+        public List<SubPacket> GetStatusTimerPackets()
+        {
+            return statusTimerPropPacketUtil.Done();
+        }
+
+        public void ResetPropPacketUtil()
+        {
+            statusTimerPropPacketUtil = new ActorPropertyPacketUtil("charaWork/status", owner);
+        }
+
+        //Overwrites effectToBeReplaced with a new status effect
+        //Returns the message of the new effect being added
+        //Doing this instead of simply calling remove then add so that the new effect is in the same slot as the old one
+        //There should be a better way to do this
+        //Currently causes the icons to blink whenb eing rpelaced
+        public BattleAction ReplaceEffect(StatusEffect effectToBeReplaced, uint newEffectId, byte tier, double magnitude, uint duration)
+        {
+            StatusEffect newEffect = Server.GetWorldManager().GetStatusEffect(newEffectId);
+            newEffect.SetTier(tier);
+            newEffect.SetMagnitude(magnitude);
+            newEffect.SetDuration(duration);
+            newEffect.SetOwner(effectToBeReplaced.GetOwner());
+            effectToBeReplaced.CallLuaFunction(owner, "onLose", owner, effectToBeReplaced);
+            newEffect.CallLuaFunction(owner, "onGain", owner, newEffect);
+            effects.Remove(effectToBeReplaced.GetStatusEffectId());
+
+            newEffect.SetStartTime(DateTime.Now);
+            newEffect.SetEndTime(DateTime.Now.AddSeconds(newEffect.GetDuration()));
+            uint time = (newEffect.GetFlags() & (uint)StatusEffectFlags.Stance) == 0 ? Utils.UnixTimeStampUTC(newEffect.GetEndTime()) : 0xFFFFFFFF;
+            int index = Array.IndexOf(owner.charaWork.status, effectToBeReplaced.GetStatusId());
+
+            //owner.charaWork.status[index] = newEffect.GetStatusId();
+            owner.charaWork.statusShownTime[index] = time;
+            effects[newEffectId] = newEffect;
+            
+            SetStatusAtIndex(index, 0);
+
+            //charawork/status
+            SetStatusAtIndex(index, (ushort) (newEffectId - 200000));
+            SetTimeAtIndex(index, time);
+
+            return new BattleAction(owner.actorId, 30328, (uint) HitEffect.StatusEffectType | newEffectId);
         }
     }
 }

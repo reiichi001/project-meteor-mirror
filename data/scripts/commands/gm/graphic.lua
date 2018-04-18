@@ -31,4 +31,5 @@ function onTrigger(player, argc, slot, wId, eId, vId, cId)
     else
         player:SendMessage(messageID, sender, "No parameters sent! Usage: "..properties.description);
     end;
+           
 end;

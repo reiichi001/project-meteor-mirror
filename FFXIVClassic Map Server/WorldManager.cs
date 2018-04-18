@@ -41,10 +41,12 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<uint, StatusEffect> statusEffectList = new Dictionary<uint, StatusEffect>();
         private Dictionary<ushort, BattleCommand> battleCommandList = new Dictionary<ushort, BattleCommand>();
         private Dictionary<Tuple<byte, short>, List<uint>> battleCommandIdByLevel = new Dictionary<Tuple<byte, short>, List<uint>>();//Holds battle command ids keyed by class id and level (in that order)
+        private Dictionary<ushort, BattleTrait> battleTraitList = new Dictionary<ushort, BattleTrait>();
+        private Dictionary<byte, List<ushort>> battleTraitIdsForClass = new Dictionary<byte, List<ushort>>();
         private Dictionary<uint, ModifierList> battleNpcGenusMods = new Dictionary<uint, ModifierList>();
         private Dictionary<uint, ModifierList> battleNpcPoolMods = new Dictionary<uint, ModifierList>();
         private Dictionary<uint, ModifierList> battleNpcSpawnMods = new Dictionary<uint, ModifierList>();
-        
+
         private Server mServer;
 
         private const int MILIS_LOOPTIME = 333;
@@ -1473,6 +1475,11 @@ namespace FFXIVClassic_Map_Server
             Database.LoadGlobalBattleCommandList(battleCommandList, battleCommandIdByLevel);
         }
 
+        public void LoadBattleTraits()
+        {
+            Database.LoadGlobalBattleTraitList(battleTraitList, battleTraitIdsForClass);
+        }
+
         public BattleCommand GetBattleCommand(uint id)
         {
             BattleCommand battleCommand;
@@ -1484,5 +1491,19 @@ namespace FFXIVClassic_Map_Server
             List<uint> ids;
             return battleCommandIdByLevel.TryGetValue(Tuple.Create(classId, level), out ids) ? ids : new List<uint>();
         }
+
+        public BattleTrait GetBattleTrait(ushort id)
+        {
+            BattleTrait battleTrait;
+            battleTraitList.TryGetValue(id, out battleTrait);
+            return battleTrait;
+        }
+
+        public List<ushort> GetAllBattleTraitIdsForClass(byte classId)
+        {
+            List<ushort> ids;
+            return battleTraitIdsForClass.TryGetValue(classId, out ids) ? ids : new List<ushort>();
+        }
+
     }
 }

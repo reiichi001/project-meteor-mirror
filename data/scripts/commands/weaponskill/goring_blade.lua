@@ -6,6 +6,7 @@ function onSkillPrepare(caster, target, skill)
 end;
 
 function onSkillStart(caster, target, skill)
+    skill.statusMagnitude = 25;--could probalby have a status magnitude value
     return 0;
 end;
 
@@ -15,10 +16,18 @@ function onPositional(caster, target, skill)
 end;
 
 --Increases bleed damage
+--Bleed damage seems like it's 25 with comboed being 38  (25 * 1.5 rounded up)
 function onCombo(caster, target, skill)
-    skill.statusTier = 2;
+    skill.statusMagnitude = 38;
 end;
 
-function onSkillFinish(caster, target, skill, action)
-    return weaponskill.onSkillFinish(caster, target, skill, action);
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate ws damage
+    action.amount = skill.basePotency;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
+
+    --Try to apply status effect
+    action.TryStatus(caster, target, skill, actionContainer, true);
 end;

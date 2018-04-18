@@ -104,7 +104,9 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
 
                     binWriter.Seek(0x78, SeekOrigin.Begin);
                     for (int i = 0; i < max; i++)
+                    {
                         binWriter.Write((UInt32)actionList[listOffset + i].effectId);
+                    }
 
                     binWriter.Seek(0xA0, SeekOrigin.Begin);
                     for (int i = 0; i < max; i++)

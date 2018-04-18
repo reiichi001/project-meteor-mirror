@@ -9,12 +9,18 @@ function onSkillStart(caster, target, skill)
     return 0;
 end;
 
---Inflicts additional damage when bleed ends
---Note for later, going to set bleed tier to 2, when bleed get scripted, check if tier is 2 and add additional damage at the end
+--Changes status to Bloodletter from Bloodletter2. Changes icon of dot and adds additional damage at the end.
 function onCombo(caster, target, skill)
-    skill.statusTier = 2;
+    skill.statusId = 223127;
 end;
 
-function onSkillFinish(caster, target, skill, action)
-    return weaponskill.onSkillFinish(caster, target, skill, action);
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate ws damage
+    action.amount = skill.basePotency;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
+
+    --Try to apply status effect
+    action.TryStatus(caster, target, skill, actionContainer, true);
 end;

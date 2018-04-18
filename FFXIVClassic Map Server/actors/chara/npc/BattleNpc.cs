@@ -143,7 +143,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     }
                 }
             }
-            npcWork.hateType = 2;
+            npcWork.hateType = 3;
             var propPacketUtil = new ActorPropertyPacketUtil("npcWork/hate", this);
             propPacketUtil.AddProperty("npcWork.hateType");
             return propPacketUtil.Done()[0];
@@ -191,7 +191,22 @@ namespace FFXIVClassic_Map_Server.Actors
         public override bool CanCast(Character target, BattleCommand spell)
         {
             // todo:
-            return false;
+            if (target == null)
+            {
+                // Target does not exist.
+                return false;
+            }
+            if (Utils.Distance(positionX, positionY, positionZ, target.positionX, target.positionY, target.positionZ) > spell.range)
+            {
+                // The target is out of range.
+                return false;
+            }
+            if (!IsValidTarget(target, spell.mainTarget) || !spell.IsValidMainTarget(this, target))
+            {
+                // error packet is set in IsValidTarget
+                return false;
+            }
+            return true;
         }
 
         public override bool CanWeaponSkill(Character target, BattleCommand skill)
@@ -256,7 +271,7 @@ namespace FFXIVClassic_Map_Server.Actors
             updateFlags |= ActorUpdateFlags.AllNpc;
         }
 
-        public override void Die(DateTime tick)
+        public override void Die(DateTime tick, BattleActionContainer actionContainer = null)
         {
             if (IsAlive())
             {
@@ -270,24 +285,25 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     //I think this is, or should be odne in DoBattleAction. Packet capture had the message in the same packet as an attack
                     // <actor> defeat/defeats <target>
-                    //((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
-
+                    actionContainer?.AddEXPAction(new BattleAction(actorId, 30108, 0));
                     if (lastAttacker.currentParty != null && lastAttacker.currentParty is Party)
                     {
                         foreach (var memberId in ((Party)lastAttacker.currentParty).members)
                         {
-                            var partyMember = zone.FindActorInArea<Player>(memberId);
+                            var partyMember = zone.FindActorInArea<Character>(memberId);
                             // onDeath(monster, player, killer)
                             lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, partyMember, lastAttacker);
-                            if (partyMember is Player)
-                                ((Player)partyMember).AddExp(1500, (byte)partyMember.GetClass(), 5);                            
+
+                            // todo: add actual experience calculation and exp bonus values.
+                            if (partyMember is Player player)
+                                BattleUtils.AddBattleBonusEXP(player, this, actionContainer);
                         }
                     }
                     else
                     {
                         // onDeath(monster, player, killer)
                         lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, lastAttacker, lastAttacker);
-                        ((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
+                        //((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
                     }
                 }
                 positionUpdates?.Clear();
@@ -413,6 +429,10 @@ namespace FFXIVClassic_Map_Server.Actors
             this.bnpcId = id;
         }
 
+        public Int64 GetMobMod(MobModifier mobMod)
+        {
+            return GetMobMod((uint)mobMod);
+        }
 
         public Int64 GetMobMod(uint mobModId)
         {
@@ -430,10 +450,11 @@ namespace FFXIVClassic_Map_Server.Actors
                 mobModifiers.Add((MobModifier)mobModId, val);
         }
 
-        public override void OnDamageTaken(Character attacker, BattleAction action, DamageTakenType damageTakenType)
+        public override void OnDamageTaken(Character attacker, BattleAction action,  BattleActionContainer actionContainer = null)
         {
             if (GetMobMod((uint)MobModifier.DefendScript) != 0)
-                lua.LuaEngine.CallLuaBattleFunction(this, "onDamageTaken", this, attacker, action.amount, (uint)damageTakenType);
+                lua.LuaEngine.CallLuaBattleFunction(this, "onDamageTaken", this, attacker, action.amount);
+            base.OnDamageTaken(attacker, action, actionContainer);
         }
     }
 }

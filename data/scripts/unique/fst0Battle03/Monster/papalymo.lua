@@ -24,4 +24,5 @@ end
 
 function tryAggro(ally, contentGroupCharas)
     allyGlobal.tryAggro(ally, contentGroupCharas)
+    
 end

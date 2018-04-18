@@ -9,6 +9,13 @@ function onMagicStart(caster, target, spell)
     return 0;
 end;
 
-function onMagicFinish(caster, target, spell, action)
-    magic.onCureMagicFinish(caster, target, spell, action)
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --http://forum.square-enix.com/ffxiv/threads/41900-White-Mage-A-Guide
+    --2.5 HP per Healing Magic Potency
+    --0.5 HP per MND
+    --this is WITH WHM AF chest, don't know formula without AF. AF seems to increase healing by 7-10%?
+    action.amount = 2.5 * caster.GetMod(modifiersGlobal.MagicHeal) + 0.5 * (caster.GetMod(modifiersGlobal.Mind));
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
 end;

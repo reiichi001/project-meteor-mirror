@@ -1,4 +1,5 @@
 require("global");
+require("modifiers");
 
 properties = {
     permissions = 0,
@@ -149,16 +150,18 @@ function onTrigger(player, argc, width, height, blockCount)
         local zone = pos[4];
         local w = tonumber(width) or 0;
         local h = tonumber(height) or 0;
+        local blocks = tonumber(blockCount) or 0;
         printf("%f %f %f", x, y, z);
         --local x, y, z = player.GetPos();
-        for i = 0, blockCount do
+        for i = 0, blocks do
             for i = 0, w do
                 for j = 0, h do
                     local actor = player.GetZone().SpawnActor(2104001, 'ass', x + (i - (w / 2) * 3), y, z + (j - (h / 2) * 3), rot, 0, 0, true);
-                    actor.ChangeNpcAppearance(1001149)
-                    actor.SetLevel(50);
+                    actor.ChangeNpcAppearance(1001149);
+                    actor.SetMaxHP(10000);
+                    actor.SetHP(10000);
+                    actor.SetMod(modifiersGlobal.HasShield, 1);
                 end 
-            --actor.FollowTarget(player, 3.2);
             end
 
             x = x + 500

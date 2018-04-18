@@ -500,8 +500,8 @@ namespace FFXIVClassic_Map_Server.Actors
                     npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
 
                 npc.LoadEventConditions(actorClass.eventConditions);
-                npc.SetMaxHP(30000);
-                npc.SetHP(30000);
+                npc.SetMaxHP(100);
+                npc.SetHP(100);
                 npc.ResetMoveSpeeds();
 
                 AddActorToZone(npc);

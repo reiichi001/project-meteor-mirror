@@ -610,7 +610,6 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 packet.ReplaceActorID(actorId);
                 var packets = packet.GetSubpackets();
-
                 QueuePackets(packets);
             }
             catch (Exception e)
@@ -1776,10 +1775,29 @@ namespace FFXIVClassic_Map_Server.Actors
 
             }
 
+
+            if ((updateFlags & ActorUpdateFlags.Stats) != 0)
+            {
+                var propPacketUtil = new ActorPropertyPacketUtil("charaWork/battleParameter", this);
+
+                for (uint i = 0; i < 35; i++)
+                {
+                    if (GetMod(i) != charaWork.battleTemp.generalParameter[i])
+                    {
+                        charaWork.battleTemp.generalParameter[i] = (short)GetMod(i);
+                        propPacketUtil.AddProperty($"charaWork.battleTemp.generalParameter[{i}]");
+                    }
+                }
+
+                QueuePackets(propPacketUtil.Done());
+
+            }
+
+
             base.PostUpdate(tick, packets);
         }
 
-        public override void Die(DateTime tick)
+        public override void Die(DateTime tick, BattleActionContainer actionContainer = null)
         {
             // todo: death timer
             aiContainer.InternalDie(tick, 60);
@@ -2219,17 +2237,20 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         //Handles exp being added, does not handle figuring out exp bonus from buffs or skill/link chains or any of that
-        public void AddExp(int exp, byte classId, int bonusPercent = 0)
-        {            
+        //Returns BattleActions that can be sent to display the EXP gained number and level ups
+        public List<BattleAction> AddExp(int exp, byte classId, byte bonusPercent = 0)
+        {
+            List<BattleAction> actionList = new List<BattleAction>();
             exp += (int) Math.Ceiling((exp * bonusPercent / 100.0f));
-            //You earn [exp](+[bonusPercent]%) experience point(s).
-            SendGameMessage(this, Server.GetWorldManager().GetActor(), 33934, 0x44, this, 0, 0, 0, 0, 0, 0, 0, 0, 0, exp, "", bonusPercent);
+
+            //33935: You earn [exp] (+[bonusPercent]%) experience points.
+            actionList.Add(new BattleAction(actorId, 33935, 0, (ushort)exp, bonusPercent));
+
             bool leveled = false;
             int diff = MAXEXP[GetLevel() - 1] - charaWork.battleSave.skillPoint[classId - 1];            
             //While there is enough experience to level up, keep leveling up, unlocking skills and removing experience from exp until we don't have enough to level up
             while (exp >= diff && GetLevel() < charaWork.battleSave.skillLevelCap[classId])
             {
-                
                 //Level up
                 LevelUp(classId);
                 leveled = true;
@@ -2263,9 +2284,12 @@ namespace FFXIVClassic_Map_Server.Actors
             
             QueuePackets(expPropertyPacket.Done());
             Database.SetExp(this, classId, charaWork.battleSave.skillPoint[classId - 1]);
+
+            return actionList;
         }
 
-        public void LevelUp(byte classId)
+        //Increaess level of current class and equips new abilities earned at that level
+        public void LevelUp(byte classId, List<BattleAction> actionList = null)
         {
             if (charaWork.battleSave.skillLevel[classId - 1] < charaWork.battleSave.skillLevelCap[classId])
             {
@@ -2273,8 +2297,10 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.battleSave.skillLevel[classId - 1]++;
                 charaWork.parameterSave.state_mainSkillLevel++;
 
-                SendGameMessage(this, Server.GetWorldManager().GetActor(), 33909, 0x44, this, 0, 0, 0, 0, 0, 0, 0, 0, 0, (int) GetLevel());
-                //If there's an ability that unlocks at this level, equip it.
+                //33909: You gain level [level]
+                actionList?.Add(new BattleAction(actorId, 33909, 0, (ushort) charaWork.battleSave.skillLevel[classId - 1]));
+
+                //If there's any abilites that unlocks at this level, equip them.
                 List<uint> commandIds = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, GetLevel());
                 foreach(uint commandId in commandIds)
                 {
@@ -2282,6 +2308,9 @@ namespace FFXIVClassic_Map_Server.Actors
                     byte jobId = ConvertClassIdToJobId(classId);
                     if (jobId != classId)
                         EquipAbilityInFirstOpenSlot(jobId, commandId, false);
+
+                    //33926: You learn [command].
+                    actionList?.Add(new BattleAction(actorId, 33926, commandId));
                 }
             }
         }
@@ -2392,11 +2421,52 @@ namespace FFXIVClassic_Map_Server.Actors
             SetMod((uint)Modifier.AttackType, damageAttribute);
             SetMod((uint)Modifier.AttackDelay, attackDelay);
             SetMod((uint)Modifier.HitCount, hitCount);
+
+            //These stats all correlate in a 3:2 fashion
+            //It seems these stats don't actually increase their respective stats. The magic stats do, however
+            AddMod((uint)Modifier.Attack, (long)(GetMod(Modifier.Strength) * 0.667));
+            AddMod((uint)Modifier.Accuracy, (long)(GetMod(Modifier.Dexterity) * 0.667));
+            AddMod((uint)Modifier.Defense, (long)(GetMod(Modifier.Vitality) * 0.667));
+
+            //These stats correlate in a 4:1 fashion. (Unsure if MND is accurate but it would make sense for it to be)
+            AddMod((uint)Modifier.MagicAttack, (long)((float)GetMod(Modifier.Intelligence) * 0.25));
+
+            AddMod((uint)Modifier.MagicAccuracy, (long)((float)GetMod(Modifier.Mind) * 0.25));
+            AddMod((uint)Modifier.MagicHeal, (long)((float)GetMod(Modifier.Mind) * 0.25));
+
+            AddMod((uint)Modifier.MagicEvasion, (long)((float)GetMod(Modifier.Piety) * 0.25));
+            AddMod((uint)Modifier.MagicEnfeeblingPotency, (long)((float)GetMod(Modifier.Piety) * 0.25));
+
+            //VIT correlates to HP in a 1:1 fashion
+            AddMod((uint)Modifier.Hp, (long)((float)Modifier.Vitality));
+
+            CalculateTraitMods();
         }
-        public void SetCurrentJob(ushort jobId)
+
+        public bool HasTrait(ushort id)
         {
-            currentJob = jobId;
-            BroadcastPacket(SetCurrentJobPacket.BuildPacket(actorId, jobId), true);
+            BattleTrait trait = Server.GetWorldManager().GetBattleTrait(id);
+
+            return HasTrait(trait);
+        }
+
+        public bool HasTrait(BattleTrait trait)
+        {
+            return (trait != null) && (trait.job == GetClass()) && (trait.level <= GetLevel());
+        }
+
+        public void CalculateTraitMods()
+        {
+            var traitIds = Server.GetWorldManager().GetAllBattleTraitIdsForClass((byte) GetClass());
+
+            foreach(var traitId in traitIds)
+            {
+                var trait = Server.GetWorldManager().GetBattleTrait(traitId);
+                if(HasTrait(trait))
+                {
+                    AddMod(trait.modifier, trait.bonus);
+                }
+            }
         }
     }
 }

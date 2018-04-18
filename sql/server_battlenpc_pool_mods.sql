@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.7.18, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 5.7.11, for Win64 (x86_64)
 --
 -- Host: localhost    Database: ffxiv_server
 -- ------------------------------------------------------
--- Server version	5.7.18-log
+-- Server version	5.7.11
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -40,6 +40,11 @@ LOCK TABLES `server_battlenpc_pool_mods` WRITE;
 set autocommit=0;
 INSERT INTO `server_battlenpc_pool_mods` VALUES (2,2,3,1);
 INSERT INTO `server_battlenpc_pool_mods` VALUES (2,3,3,1);
+INSERT INTO `server_battlenpc_pool_mods` VALUES (2,24,0,1);
+INSERT INTO `server_battlenpc_pool_mods` VALUES (3,24,0,1);
+INSERT INTO `server_battlenpc_pool_mods` VALUES (3,49,1,0);
+INSERT INTO `server_battlenpc_pool_mods` VALUES (4,24,0,1);
+INSERT INTO `server_battlenpc_pool_mods` VALUES (4,49,1,0);
 /*!40000 ALTER TABLE `server_battlenpc_pool_mods` ENABLE KEYS */;
 UNLOCK TABLES;
 commit;
@@ -53,4 +58,4 @@ commit;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-09-16  2:43:11
+-- Dump completed on 2018-04-18 14:54:09

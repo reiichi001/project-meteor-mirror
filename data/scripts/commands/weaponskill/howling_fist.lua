@@ -10,15 +10,19 @@ function onSkillStart(caster, target, skill)
 end;
 
 --Increased accuracy
-function onCombo(caster, target, skill)
-    skill.accuracyModifier = 1;
+function onPositional(caster, target, skill)
+    skill.accuracyModifier = 50;
 end;
     
 --Increased damage
 function onCombo(caster, target, skill)
-    skill.potency = skill.potency * 1.5;
+    skill.basePotency = skill.basePotency * 1.5;
 end;
 
-function onSkillFinish(caster, target, skill, action)
-    return weaponskill.onSkillFinish(caster, target, skill, action);
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate ws damage
+    action.amount = skill.basePotency;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
 end;

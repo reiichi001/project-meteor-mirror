@@ -15,13 +15,19 @@ function onCombo(caster, target, spell)
     spell.potency = spell.potency * 1.5;
 end;
 
-function onMagicFinish(caster, target, spell, action)
-    local damage = math.random(10, 100);
-    
+function onSkillFinish(caster, target, skill, action, actionContainer)
     --Dispels an effect on each target.
-    local effects = target.statusEffects.GetStatusEffectsByFlag(16); --lose on dispel
+    local effects = target.statusEffects.GetStatusEffectsByFlag2(16); --lose on dispel
     if effects != nil then
         target.statusEffects.RemoveStatusEffect(effects[0]);
     end;
-    return damage;
+    
+    --calculate damage
+    action.amount = skill.basePotency;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
+
+    --Try to apply status effect
+    action.TryStatus(caster, target, skill, actionContainer, true);
 end;

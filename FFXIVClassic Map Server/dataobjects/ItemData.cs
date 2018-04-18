@@ -535,7 +535,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             damagePower = reader.GetInt16("damagePower");
             damageInterval = reader.GetFloat("damageInterval");
             ammoVirtualDamagePower = reader.GetInt16("ammoVirtualDamagePower");
-            dps = damagePower / damageInterval;// this is wrong for bows, might need to store this in db because dps is used for weaponskill damage
+            dps = (damagePower + ammoVirtualDamagePower) / damageInterval;
         }
     }
 

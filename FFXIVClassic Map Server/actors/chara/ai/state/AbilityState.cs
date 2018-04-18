@@ -48,15 +48,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             else
             {
                 //owner.LookAt(target);
-
-                //If owner already has this status effect and it's a stance that gets removed on reuse, remove it and don't continue
-                var effect = owner.statusEffects.GetStatusEffectById(skill.statusId);
-                if (effect!= null && (effect.GetFlags() & (uint) StatusEffectFlags.Stance) != 0)
-                {
-                    owner.statusEffects.RemoveStatusEffect(effect);
-                    interrupt = true;
-                }
-
             }
         }
 
@@ -101,35 +92,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
             skill.targetFind.FindWithinArea(target, skill.validTarget, skill.aoeTarget);
             isCompleted = true;
-            var targets = skill.targetFind.GetTargets();
-            
-            List<BattleAction> actions = new List<BattleAction>();
-            List<StatusEffect> effects = owner.statusEffects.GetStatusEffectsByFlag((uint)StatusEffectFlags.ActivateOnAttack);
-            
-            foreach (var chara in targets)
-            {
-                for (int hitNum = 0; hitNum < skill.numHits; hitNum++)
-                {
-                    //30328 - Your [ability] grants you the effect of [status]
-                    //30320 - You use [ability]. You recover x HP.
-                    var action = new BattleAction(chara.actorId, skill.worldMasterTextId, 0, 0, 1, 1);
 
-                    //uncached
-                    lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "ability", "onAbilityFinish", owner, target, skill, action);
-                    //cached
-                    //skill.CallLuaFunction(owner, "onAbilityFinish", owner, target, skill, action);
-
-                    //if hit type isn't evade or miss
-                    if (((action.hitType & HitType.Evade) | (action.hitType & HitType.Miss)) == 0)
-                        hitTarget = true;
-                    
-                    actions.AddRange(action.GetAllActions());
-                }
-            }
-            // todo: this is fuckin stupid, probably only need *one* error packet, not an error for each action
-            BattleAction[] errors = (BattleAction[])actions.ToArray().Clone();
-            owner.OnAbility(this, actions.ToArray(), skill, ref errors);
-            owner.DoBattleAction(skill.id, skill.battleAnimation, actions);
+            owner.DoBattleCommand(skill, "ability");
         }
 
         public override void TryInterrupt()

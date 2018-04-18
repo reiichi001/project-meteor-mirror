@@ -106,7 +106,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 {
                     QueuePacket(RemoveActorPacket.BuildPacket(actorInstanceList[i].actorId));
                     actorInstanceList.RemoveAt(i);
-                }                
+                }
             }
 
             //Add new actors or move
@@ -123,7 +123,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 }
                 else
                 {   
-                    QueuePacket(actor.GetSpawnPackets(playerActor, 1));   
+                    QueuePacket(actor.GetSpawnPackets(playerActor, 1));
 
                     QueuePacket(actor.GetInitPackets());
                     QueuePacket(actor.GetSetEventStatusPackets());

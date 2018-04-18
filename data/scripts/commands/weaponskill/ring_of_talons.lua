@@ -11,9 +11,13 @@ end;
 
 --Increased critical hit rate
 function onCombo(caster, target, skill)
-    skill.critRateModifier = 1.5;
+    skill.bonusCritRate = 100;
 end;
 
-function onSkillFinish(caster, target, skill, action)
-    return weaponskill.onSkillFinish(caster, target, skill, action);
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate ws damage
+    action.amount = skill.basePotency;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
 end;
