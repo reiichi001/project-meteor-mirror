@@ -1,4 +1,5 @@
 require("global");
+require("weaponskill");
 
 function onSkillPrepare(caster, target, skill)
     return 0;
@@ -8,19 +9,18 @@ function onSkillStart(caster, target, skill)
     return 0;
 end;
 
-function onSkillFinish(caster, target, skill, action)
-    local damage = math.random(100, 200);
-    
-    -- todo: populate a global script with statuses and modifiers
-    action.worldMasterTextId = 0x765D;
-    
-    -- todo: populate a global script with statuses and modifiers
-    -- magic.HandleAttackMagic(caster, target, spell, action)
-    -- action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
-    --action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
-    
-    if target.hateContainer then
-        target.hateContainer.UpdateHate(caster, damage);
-    end;
-    return damage;
+--Increased crit rating from behind
+function onPositional(caster, target, skill)
+    skill.bonusCritRate = 200;
+end;
+
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate ws damage
+    action.amount = skill.basePotency;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
+
+    --Try to apply status effect
+    action.TryStatus(caster, target, skill, actionContainer, true);
 end;

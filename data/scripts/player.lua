@@ -2,6 +2,7 @@ local initClassItems, initRaceItems;
 
 function onBeginLogin(player)		
 	--New character, set the initial quest
+	--[[
 	if (player:GetPlayTime(false) == 0) then
 		initialTown = player:GetInitialTown();
 		
@@ -17,7 +18,7 @@ function onBeginLogin(player)
 		end		
 		
 	end
-			
+		]]	
 	--For Opening. Set Director and reset position incase d/c
 	if (player:HasQuest(110001) == true and player:GetZoneID() == 193) then
 		director = player:GetZone():CreateDirector("OpeningDirector", false);		

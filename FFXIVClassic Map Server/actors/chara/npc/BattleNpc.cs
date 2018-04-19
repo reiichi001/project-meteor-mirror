@@ -118,34 +118,33 @@ namespace FFXIVClassic_Map_Server.Actors
             return subpackets;
         }
 
+        //This might need more work
+        //I think there migh be something that ties mobs to parties 
+        //and the client checks if any mobs are tied to the current party
+        //and bases the color on that. Adding mob to party obviously doesn't work
+        //Based on depictionjudge script:
+        //HATE_TYPE_NONE is for passive
+        //HATE_TYPE_ENGAGED is for aggroed mobs
+        //HATE_TYPE_ENGAGED_PARTY is for claimed mobs, client uses occupancy group to determine if mob is claimed by player's party
+        //for now i'm just going to assume that occupancygroup will be BattleNpc's currentparties when they're in combat, 
+        //so if party isn't null, they're claimed.
         public SubPacket GetHateTypePacket(Player player)
         {
-            npcWork.hateType = 1;
-
+            npcWork.hateType = NpcWork.HATE_TYPE_NONE;
             if (player != null)
             {
                 if (aiContainer.IsEngaged())
                 {
-                    npcWork.hateType = 2;
-                }
+                    npcWork.hateType = NpcWork.HATE_TYPE_ENGAGED;
 
-                if (player.actorId == this.currentLockedTarget)
-                {
-                    npcWork.hateType = NpcWork.HATE_TYPE_ENGAGED_PARTY;
-                }
-                else if (player.currentParty != null)
-                {
-                    foreach (var memberId in ((Party)player.currentParty).members)
+                    if (this.currentParty != null)
                     {
-                        if (this.currentLockedTarget == memberId)
-                        {
-                            npcWork.hateType = NpcWork.HATE_TYPE_ENGAGED_PARTY;
-                            break;
-                        }
+                        npcWork.hateType = NpcWork.HATE_TYPE_ENGAGED_PARTY;
                     }
                 }
             }
-            var propPacketUtil = new ActorPropertyPacketUtil("npcWork", this);
+            npcWork.hateType = 3;
+            var propPacketUtil = new ActorPropertyPacketUtil("npcWork/hate", this);
             propPacketUtil.AddProperty("npcWork.hateType");
             return propPacketUtil.Done()[0];
         }
@@ -192,13 +191,28 @@ namespace FFXIVClassic_Map_Server.Actors
         public override bool CanCast(Character target, BattleCommand spell)
         {
             // todo:
-            return false;
+            if (target == null)
+            {
+                // Target does not exist.
+                return false;
+            }
+            if (Utils.Distance(positionX, positionY, positionZ, target.positionX, target.positionY, target.positionZ) > spell.range)
+            {
+                // The target is out of range.
+                return false;
+            }
+            if (!IsValidTarget(target, spell.mainTarget) || !spell.IsValidMainTarget(this, target))
+            {
+                // error packet is set in IsValidTarget
+                return false;
+            }
+            return true;
         }
 
         public override bool CanWeaponSkill(Character target, BattleCommand skill)
         {
             // todo:
-            return false;
+            return true;
         }
 
         public override bool CanUseAbility(Character target, BattleCommand ability)
@@ -257,7 +271,7 @@ namespace FFXIVClassic_Map_Server.Actors
             updateFlags |= ActorUpdateFlags.AllNpc;
         }
 
-        public override void Die(DateTime tick)
+        public override void Die(DateTime tick, BattleActionContainer actionContainer = null)
         {
             if (IsAlive())
             {
@@ -271,24 +285,25 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     //I think this is, or should be odne in DoBattleAction. Packet capture had the message in the same packet as an attack
                     // <actor> defeat/defeats <target>
-                    //((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
-
+                    actionContainer?.AddEXPAction(new BattleAction(actorId, 30108, 0));
                     if (lastAttacker.currentParty != null && lastAttacker.currentParty is Party)
                     {
                         foreach (var memberId in ((Party)lastAttacker.currentParty).members)
                         {
-                            var partyMember = zone.FindActorInArea<Player>(memberId);
+                            var partyMember = zone.FindActorInArea<Character>(memberId);
                             // onDeath(monster, player, killer)
                             lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, partyMember, lastAttacker);
-                            if (partyMember is Player)
-                                ((Player)partyMember).AddExp(1500, (byte)partyMember.GetClass(), 5);                            
+
+                            // todo: add actual experience calculation and exp bonus values.
+                            if (partyMember is Player player)
+                                BattleUtils.AddBattleBonusEXP(player, this, actionContainer);
                         }
                     }
                     else
                     {
                         // onDeath(monster, player, killer)
                         lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, lastAttacker, lastAttacker);
-                        ((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
+                        //((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
                     }
                 }
                 positionUpdates?.Clear();
@@ -359,18 +374,18 @@ namespace FFXIVClassic_Map_Server.Actors
                 lua.LuaEngine.CallLuaBattleFunction(this, "onAttack", this, state.GetTarget(), action.amount);
         }
 
-        public override void OnCast(State state, BattleAction[] actions, ref BattleAction[] errors)
+        public override void OnCast(State state, BattleAction[] actions, BattleCommand spell, ref BattleAction[] errors)
         {
-            base.OnCast(state, actions, ref errors);
+            base.OnCast(state, actions, spell, ref errors);
 
             if (GetMobMod((uint)MobModifier.SpellScript) != 0)
                 foreach (var action in actions)
                     lua.LuaEngine.CallLuaBattleFunction(this, "onCast", this, zone.FindActorInArea<Character>(action.targetId), ((MagicState)state).GetSpell(), action);
         }
 
-        public override void OnAbility(State state, BattleAction[] actions, ref BattleAction[] errors)
+        public override void OnAbility(State state, BattleAction[] actions, BattleCommand ability, ref BattleAction[] errors)
         {
-            base.OnAbility(state, actions, ref errors);
+            base.OnAbility(state, actions, ability, ref errors);
 
             /*
             if (GetMobMod((uint)MobModifier.AbilityScript) != 0)
@@ -379,9 +394,9 @@ namespace FFXIVClassic_Map_Server.Actors
             */
         }
 
-        public override void OnWeaponSkill(State state, BattleAction[] actions, ref BattleAction[] errors)
+        public override void OnWeaponSkill(State state, BattleAction[] actions, BattleCommand skill, ref BattleAction[] errors)
         {
-            base.OnWeaponSkill(state, actions, ref errors);
+            base.OnWeaponSkill(state, actions, skill, ref errors);
 
             if (GetMobMod((uint)MobModifier.WeaponSkillScript) != 0)
                 foreach (var action in actions)
@@ -414,6 +429,10 @@ namespace FFXIVClassic_Map_Server.Actors
             this.bnpcId = id;
         }
 
+        public Int64 GetMobMod(MobModifier mobMod)
+        {
+            return GetMobMod((uint)mobMod);
+        }
 
         public Int64 GetMobMod(uint mobModId)
         {
@@ -431,10 +450,11 @@ namespace FFXIVClassic_Map_Server.Actors
                 mobModifiers.Add((MobModifier)mobModId, val);
         }
 
-        public override void OnDamageTaken(Character attacker, BattleAction action, DamageTakenType damageTakenType)
+        public override void OnDamageTaken(Character attacker, BattleAction action,  BattleActionContainer actionContainer = null)
         {
             if (GetMobMod((uint)MobModifier.DefendScript) != 0)
-                lua.LuaEngine.CallLuaBattleFunction(this, "onDamageTaken", this, attacker, action.amount, (uint)damageTakenType);
+                lua.LuaEngine.CallLuaBattleFunction(this, "onDamageTaken", this, attacker, action.amount);
+            base.OnDamageTaken(attacker, action, actionContainer);
         }
     }
 }

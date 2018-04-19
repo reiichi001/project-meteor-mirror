@@ -1,4 +1,5 @@
 require("global");
+require("weaponskill");
 
 function onSkillPrepare(caster, target, skill)
     return 0;
@@ -8,19 +9,17 @@ function onSkillStart(caster, target, skill)
     return 0;
 end;
 
-function onSkillFinish(caster, target, skill, action)
-    local damage = math.random(100, 200);
-    
-    -- todo: populate a global script with statuses and modifiers
-    action.worldMasterTextId = 0x765D;
-    
-    -- todo: populate a global script with statuses and modifiers
-    -- magic.HandleAttackMagic(caster, target, spell, action)
-    -- action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
-    action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
-    
-    if target.hateContainer then
-        target.hateContainer.UpdateHate(caster, damage);
-    end;
-    return damage;
+function onCombo(caster, target, skill)
+    --http://forum.square-enix.com/ffxiv/threads/50479-Gladiator-Paladin-STR-MND-Stat-Caps/page7
+    --4.5 is a bonus on top of the 1x of normal flat blade
+    --This is modified by MND and dlvl and caps at 4.5, dont know the values used though
+    skill.enmityModifier = 5.5;
+end;
+
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate ws damage
+    action.amount = skill.basePotency;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
 end;

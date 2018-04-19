@@ -1,5 +1,6 @@
 -- todo: add enums for status effects in global.lua
 require("global")
+require("battleutils")
 
 magic =
 {

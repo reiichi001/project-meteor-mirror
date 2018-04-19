@@ -6,8 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.actors.chara.ai.utils;
+using MoonSharp.Interpreter;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
@@ -38,10 +39,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
     public enum BattleCommandProcRequirement : byte
     {
         None,
-        Evade = 0x01,
-        Block = 0x02,
-        Parry = 0x04,
-        Miss = 0x08
+        Miss,
+        Evade,
+        Parry,
+        Block
     }
 
     public enum BattleCommandValidUser : byte
@@ -51,6 +52,29 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         Monster
     }
 
+    public enum BattleCommandCastType : ushort
+    {
+        None,
+        Weaponskill = 1,
+        Weaponskill2 = 2,
+        BlackMagic = 3,
+        WhiteMagic = 4,
+        SongMagic = 8
+    }
+
+
+    //What type of command it is
+    [Flags]
+    public enum CommandType : ushort
+    {
+        //Type of action
+        None = 0,
+        AutoAttack = 1,
+        WeaponSkill = 2,
+        Ability =3,
+        Spell = 4
+    }
+
     class BattleCommand
     {
         public ushort id;
@@ -58,28 +82,50 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public byte job;
         public byte level;
         public BattleCommandRequirements requirements;
-        public ValidTarget validTarget;
-        public TargetFindAOEType aoeType;
-        public TargetFindAOETarget aoeTarget;
-        public byte numHits;
-        public BattleCommandPositionBonus positionBonus;
-        public BattleCommandProcRequirement procRequirement;
-        public int range;
-        public uint debuffDurationSeconds;
-        public uint buffDurationSeconds;
-        public byte castType;
-        public uint castTimeSeconds;
-        public uint recastTimeSeconds;
+        public ValidTarget mainTarget;                      //what the skill has to be used on. ie self for flare, enemy for ring of talons even though both are self-centere aoe
+        public ValidTarget validTarget;                     //what type of character the skill can hit
+        public TargetFindAOEType aoeType;                   //shape of aoe
+        public TargetFindAOETarget aoeTarget;               //where the center of the aoe is (target/self)
+        public byte numHits;                                //amount of hits in the skill
+        public BattleCommandPositionBonus positionBonus;    //bonus for front/flank/rear
+        public BattleCommandProcRequirement procRequirement;//if the skill requires a block/parry/evade before using
+        public int range;                                   //max distance to use skill
+
+        public uint statusId;                               //id of statuseffect that the skill might inflict
+        public uint statusDuration;                         //duration of statuseffect in milliseconds
+        public float statusChance;                          //percent chance of status landing, 0-1.0. Usually 1.0 for buffs
+        public byte castType;                               //casting animation, 2 for blm, 3 for whm, 8 for brd
+        public uint castTimeMs;                             //cast time in milliseconds
+        public uint recastTimeMs;                           //recast time in milliseconds
+        public uint maxRecastTimeSeconds;                   //maximum recast time in seconds
         public ushort mpCost;
         public ushort tpCost;
         public byte animationType;
         public ushort effectAnimation;
         public ushort modelAnimation;
         public ushort animationDurationSeconds;
-
         public uint battleAnimation;
         public ushort worldMasterTextId;
-        public int aoeRange;
+        public int aoeRange;                                //size of aoe effect. (how will this work for box aoes?)
+        public int[] comboNextCommandId = new int[2];       //next two skills in a combo
+        public short comboStep;                             //Where in a combo string this skill is
+        public CommandType commandType;
+        public ActionProperty actionProperty;
+        public ActionType actionType;
+
+
+        public byte statusTier;                             //tier of status to put on target
+        public ulong statusMagnitude = 0;                   //magnitude of status to put on target
+        public ushort basePotency;                          //damage variable
+        public float enmityModifier;                        //multiples by damage done to get final enmity
+        public float accuracyModifier;                      //modifies accuracy
+        public float bonusCritRate;                         //extra crit rate
+        public bool isCombo;
+        public bool isRanged;
+
+        public bool actionCrit;                             //Whether any actions were critical hits, used for Excruciate
+
+        public lua.LuaScript script;                        //cached script
 
         public TargetFind targetFind;
         public BattleCommandValidUser validUser;
@@ -89,6 +135,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.id = id;
             this.name = name;
             this.range = 0;
+            this.enmityModifier = 1;
+            this.accuracyModifier = 0;
+            this.statusTier = 1;
+            this.statusChance = 50;
+            this.recastTimeMs = (uint) maxRecastTimeSeconds * 1000;
+            this.isCombo = false;
         }
 
         public BattleCommand Clone()
@@ -96,20 +148,34 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return (BattleCommand)MemberwiseClone();
         }
         
+        public int CallLuaFunction(Character chara, string functionName, params object[] args)
+        {
+            if (script != null && !script.Globals.Get(functionName).IsNil())
+            {
+                DynValue res = new DynValue();
+                res = script.Call(script.Globals.Get(functionName), args);
+                if (res != null)
+                    return (int)res.Number;
+            }
+
+            return -1;
+        }
+
         public bool IsSpell()
         {
-            return mpCost != 0 || castTimeSeconds != 0;
+            return mpCost != 0 || castTimeMs != 0;
         }
 
         public bool IsInstantCast()
         {
-            return castTimeSeconds == 0;
+            return castTimeMs == 0;
         }
 
-        public bool IsValidTarget(Character user, Character target)
+        //Checks whether the skill can be used on the given target
+        public bool IsValidMainTarget(Character user, Character target)
         {
             targetFind = new TargetFind(user);
-            
+
             if (aoeType == TargetFindAOEType.Box)
             {
                 targetFind.SetAOEBox(validTarget, aoeTarget, range, aoeRange);
@@ -119,10 +185,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 targetFind.SetAOEType(validTarget, aoeType, aoeTarget, range, aoeRange);
             }
 
-
             /*
             worldMasterTextId
-            32512 cannot be performed on a KO'd target.
+            32512   cannot be performed on a KO'd target.
             32513	can only be performed on a KO'd target.
             32514	cannot be performed on yourself.
             32515	can only be performed on yourself.
@@ -130,24 +195,36 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             32517	can only be performed on a friendly target.
             32518	cannot be performed on an enemy.
             32519	can only be performed on an enemy,
+            32556   unable to execute [weaponskill]. Conditions for use are not met.
             */
 
             // cant target dead
-            if ((validTarget & (ValidTarget.Corpse | ValidTarget.CorpseOnly)) == 0 && target.IsDead())
+            if ((mainTarget & (ValidTarget.Corpse | ValidTarget.CorpseOnly)) == 0 && target.IsDead())
             {
                 // cannot be perfomed on
                 if (user is Player)
                     ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32512, 0x20, (uint)id);
                 return false;
             }
-            if (level > user.charaWork.parameterSave.state_mainSkillLevel)
+
+            //level too high
+            if (level > user.GetLevel())
             {
                 if (user is Player)
                     ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32527, 0x20, (uint)id);
+                //return false;
+            }
+
+            //Proc requirement
+            if (procRequirement != BattleCommandProcRequirement.None && !user.charaWork.battleTemp.timingCommandFlag[(int) procRequirement - 1])
+            {
+                if (user is Player)
+                    ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32556, 0x20, (uint)id);
                 return false;
             }
 
-            if (tpCost > user.GetTP())
+            //costs too much tp
+            if (CalculateTpCost(user) > user.GetTP())
             {
                 if (user is Player)
                     ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32546, 0x20, (uint)id);
@@ -155,7 +232,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             }
 
             // todo: calculate cost based on modifiers also (probably in BattleUtils)
-            
             if (BattleUtils.CalculateSpellCost(user, target, this) > user.GetMP())
             {
                 if (user is Player)
@@ -175,8 +251,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 }
             }
 
+
             // todo: i dont care to message for each scenario, just the most common ones..
-            if ((validTarget & ValidTarget.CorpseOnly) != 0)
+            if ((mainTarget & ValidTarget.CorpseOnly) != 0)
             {
                 if (target != null && target.IsAlive())
                 {
@@ -186,7 +263,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 }
             }
 
-            if ((validTarget & ValidTarget.Enemy) != 0)
+            if ((mainTarget & ValidTarget.Enemy) != 0)
             {
                 if (target == user || target != null &&
                     user.allegiance == target.allegiance)
@@ -197,21 +274,43 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 }
             }
 
-            if ((validTarget & (ValidTarget.PartyMember | ValidTarget.Player | ValidTarget.Ally)) != 0)
+            if ((mainTarget & ValidTarget.Ally) != 0)
             {
                 if (target == null || target.allegiance != user.allegiance)
                 {
                     if (user is Player)
-                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32516, 0x20, (uint)id);
+                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32517, 0x20, (uint)id);
                     return false;
                 }
             }
-            return targetFind.CanTarget(target, true, true, true);
+
+            if ((mainTarget & ValidTarget.PartyMember) != 0)
+            {
+                if (target == null || target.currentParty != user.currentParty)
+                {
+                    if (user is Player)
+                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20, (uint)id);
+                    return false;
+                }
+            }
+
+            if ((mainTarget & ValidTarget.Player) != 0)
+            {
+                if (!(target is Player))
+                {
+                    if (user is Player)
+                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32517, 0x20, (uint)id);
+                    return false;
+                }
+            }
+
+            return true;// targetFind.CanTarget(target, true, true, true); //this will be done later
         }
 
-        public ushort CalculateCost(uint level)
+        public ushort CalculateMpCost(Character user)
         {
             // todo: use precalculated costs instead
+            var level = user.GetLevel();
             ushort cost = 0;
             if (level <= 10)
                 cost = (ushort)(100 + level * 10);
@@ -230,15 +329,64 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             else
                 cost = (ushort)(8000 + (level - 70) * 500);
 
-            if (mpCost != 0)
-                return (ushort)Math.Ceiling((cost * mpCost * 0.001));
+            //scale the mpcost by level
+            cost = (ushort)Math.Ceiling((cost * mpCost * 0.001));
 
-            return mpCost != 0 ? (ushort)Math.Ceiling((cost * mpCost * 0.001)) : (ushort)0;
+            //if user is player, check if spell is a part of combo
+            if (user is Player)
+            {
+                var player = user as Player;
+                if (player.playerWork.comboNextCommandId[0] == id || player.playerWork.comboNextCommandId[1] == id)
+                    cost = (ushort)Math.Ceiling(cost * (1 - player.playerWork.comboCostBonusRate));
+            }
+
+            return mpCost != 0 ? cost : (ushort)0;
+        }
+
+        //Calculate TP cost taking into considerating the combo bonus rate for players
+        //Should this set tpCost or should it be called like CalculateMp where it gets calculated each time? 
+        //Might cause issues with the delay between starting and finishing a WS
+        public ushort CalculateTpCost(Character user)
+        {
+            ushort tp = tpCost;
+            //Calculate tp cost
+            if (user is Player)
+            {
+                var player = user as Player;
+                if (player.playerWork.comboNextCommandId[0] == id || player.playerWork.comboNextCommandId[1] == id)
+                    tp  = (ushort)Math.Ceiling((float)tpCost * (1 - player.playerWork.comboCostBonusRate));
+            }
+
+            return tp;
         }
 
         public List<Character> GetTargets()
         {
             return targetFind?.GetTargets<Character>();
+        }
+
+        //Handles setting the correct target for self-targeted spells
+        public Character GetMainTarget(Character caster, Character target)
+        {
+            //If skill can only be used on self
+            if (mainTarget == ValidTarget.Self)
+                return caster;
+            //If skill can only be used on party members and the target is not a party member
+            else if (((mainTarget & ValidTarget.PartyMember) != 0) && (target.currentParty != caster.currentParty))
+                return caster;
+            //If skill can only be used on allys and the target is not an ally
+            else if (((mainTarget & ValidTarget.Ally) != 0) && (target.allegiance != caster.allegiance))
+                return caster;
+            //If skill can only be used on players and the target is not a player
+            else if (((mainTarget & ValidTarget.Player) != 0) && (!(target is Player)))
+                return caster;
+
+            return target;
+        }
+
+        public ushort GetCommandType()
+        {
+            return (ushort) commandType;
         }
     }
 }

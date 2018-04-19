@@ -53,7 +53,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 }
 
                 //Only move if owner isn't dead and is either too far away from their spawn point or is meant to roam
-                else if (!owner.IsDead() && (owner.isMovingToSpawn || owner.GetMobMod((uint)MobModifier.Roams) > 0))
+                if (!owner.IsDead() && (owner.isMovingToSpawn || owner.GetMobMod((uint)MobModifier.Roams) > 0))
                 {
                     DoRoamTick(tick);
                 }
@@ -83,8 +83,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 {
                     foreach (var chara in owner.zone.GetActorsAroundActor<Character>(owner, 50))
                     {
-                        if (owner.allegiance == chara.allegiance)
-                            continue;
+                        if (chara.allegiance == owner.allegiance)
+                           continue;
 
                         if (owner.aiContainer.pathFind.AtPoint() && owner.detectionType != DetectionType.None)
                         {
@@ -119,8 +119,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 if (owner.GetState() != SetActorStatePacket.MAIN_STATE_ACTIVE)
                     owner.ChangeState(SetActorStatePacket.MAIN_STATE_ACTIVE);
 
-                owner.moveState = 2;
-                //owner.SetMod((uint)Modifier.Speed, 5);
                 lastActionTime = DateTime.Now;
                 battleStartTime = lastActionTime;
                 // todo: adjust cooldowns with modifiers
@@ -138,7 +136,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         {
             var target = owner.target;
             base.Disengage();
-            owner.statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnDeath, true);
             // todo:
             lastActionTime = lastUpdate.AddSeconds(5);
             owner.isMovingToSpawn = true;
@@ -152,11 +149,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
         public override void Cast(Character target, uint spellId)
         {
             // todo:
+            if(owner.aiContainer.CanChangeState())
+                owner.aiContainer.InternalCast(target, spellId);
         }
 
         public override void Ability(Character target, uint abilityId)
         {
             // todo:
+            if (owner.aiContainer.CanChangeState())
+                owner.aiContainer.InternalAbility(target, abilityId);
         }
 
         public override void RangedAttack(Character target)
@@ -213,13 +214,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 Disengage();
                 return;
             }
-
-
-            Move();
-
-            if ((tick - lastCombatTickScript).TotalSeconds > 2)
+            owner.SetMod((uint)Modifier.Speed, 5);
+            if ((tick - lastCombatTickScript).TotalSeconds > 3)
             {
-                lua.LuaEngine.CallLuaBattleFunction(owner, "onCombatTick", owner, owner.target, Utils.UnixTimeStampUTC(tick), contentGroupCharas);
+                Move();
+                //if (owner.aiContainer.CanChangeState())
+                    //owner.aiContainer.WeaponSkill(owner.zone.FindActorInArea<Character>(owner.target.actorId), 27155);
+                //lua.LuaEngine.CallLuaBattleFunction(owner, "onCombatTick", owner, owner.target, Utils.UnixTimeStampUTC(tick), contentGroupCharas);
                 lastCombatTickScript = tick;
             }
         }
@@ -239,7 +240,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
             var targetPos = new Vector3(owner.target.positionX, owner.target.positionY, owner.target.positionZ);
             var distance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, targetPos.X, targetPos.Y, targetPos.Z);
-
             if (distance > owner.GetAttackRange() - 0.2f || owner.aiContainer.CanFollowPath())
             {
                 if (CanMoveForward(distance))
@@ -276,12 +276,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
             {
                 FaceTarget();
             }
+            lastRoamUpdate = DateTime.Now;
         }
 
         protected void FaceTarget()
         {
             // todo: check if stunned etc
-            if (owner.statusEffects.HasStatusEffectsByFlag(StatusEffectFlags.PreventAction))
+            if (owner.statusEffects.HasStatusEffectsByFlag(StatusEffectFlags.PreventTurn) )
             {
             }
             else
@@ -392,14 +393,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         public override void ChangeTarget(Character target)
         {
-            owner.target = target;
-            owner.currentLockedTarget = target?.actorId ?? Actor.INVALID_ACTORID;
-            owner.currentTarget = target?.actorId ?? Actor.INVALID_ACTORID;
+            if (target != owner.target)
+            {
+                owner.target = target;
+                owner.currentLockedTarget = target?.actorId ?? Actor.INVALID_ACTORID;
+                owner.currentTarget = target?.actorId ?? Actor.INVALID_ACTORID;
 
-            foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
-                player.QueuePacket(owner.GetHateTypePacket(player));
+                 foreach (var player in owner.zone.GetActorsAroundActor<Player>(owner, 50))
+                    player.QueuePacket(owner.GetHateTypePacket(player));
 
-            base.ChangeTarget(target);
+                base.ChangeTarget(target);
+            }
         }
     }
 }

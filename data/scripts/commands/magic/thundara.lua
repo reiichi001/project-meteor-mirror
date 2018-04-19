@@ -8,14 +8,20 @@ function onMagicStart(caster, target, spell)
     return 0;
 end;
 
-function onMagicFinish(caster, target, spell, action)
-    local damage = math.random(10, 100);
-    
-    action.worldMasterTextId = 0x765D;
-    
-    -- todo: populate a global script with statuses and modifiers
-    -- magic.HandleAttackMagic(caster, target, spell, action)
-    action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
+--Increased Damage and reduced recast time in place of stun
+function onCombo(caster, target, spell)
+    spell.statusChance = 0;
+    spell.basePotency = spell.basePotency * 1.5;
+    spell.recastTimeMs = spell.recastTimeMs / 2;
+end;
 
-    return damage;
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate damage
+    action.amount = skill.basePotency;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
+
+    --Try to apply status effect
+    action.TryStatus(caster, target, skill, actionContainer, true);
 end;

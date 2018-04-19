@@ -26,6 +26,9 @@ namespace FFXIVClassic_Map_Server.Actors
         Appearance = 0x10,
         Speed = 0x20,
         Work = 0x40,
+        Stats = 0x80,
+        Status = 0x100,
+        StatusTime = 0x200,
 
         AllNpc = 0x6F,
         AllPlayer = 0x9F
@@ -364,13 +367,24 @@ namespace FFXIVClassic_Map_Server.Actors
             return classParams;
         }
 
+        //character's newMainState kind of messes with this
         public void ChangeState(ushort newState)
         {
-            //if (newState != currentMainState)
+            if (newState != currentMainState)
             {
                 currentMainState = newState;
+
                 updateFlags |= (ActorUpdateFlags.State | ActorUpdateFlags.Position);
             }
+        }
+
+        public void ModifySpeed(float mod)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                moveSpeeds[i] *= mod;
+            }
+            updateFlags |= ActorUpdateFlags.Speed;
         }
 
         public void ChangeSpeed(int type, float value)
@@ -403,20 +417,23 @@ namespace FFXIVClassic_Map_Server.Actors
                     if (positionUpdates != null && positionUpdates.Count > 0)
                     {
                         var pos = positionUpdates[0];
-                        oldPositionX = positionX;
-                        oldPositionY = positionY;
-                        oldPositionZ = positionZ;
-                        oldRotation = rotation;
+                        if (pos != null)
+                        {
+                            oldPositionX = positionX;
+                            oldPositionY = positionY;
+                            oldPositionZ = positionZ;
+                            oldRotation = rotation;
 
-                        positionX = pos.X;
-                        positionY = pos.Y;
-                        positionZ = pos.Z;
+                            positionX = pos.X;
+                            positionY = pos.Y;
+                            positionZ = pos.Z;
 
-                        zone.UpdateActorPosition(this);
+                            zone.UpdateActorPosition(this);
 
-                        //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
-
+                            //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
+                        }
                         positionUpdates.Remove(pos);
+
                     }
                     packets.Add(CreatePositionUpdatePacket());
                 }

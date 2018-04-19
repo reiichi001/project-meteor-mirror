@@ -1,4 +1,5 @@
 require("global");
+require("modifiers");
 
 properties = {
     permissions = 0,
@@ -128,7 +129,7 @@ function onTrigger(player, argc, id, level, weight)
 end;
 ]]
 
-function onTrigger(player, argc, skillName, level)
+function onTrigger(player, argc, width, height, blockCount)
     local messageId = MESSAGE_TYPE_SYSTEM_ERROR;
     local sender = "yolo";
     
@@ -147,24 +148,26 @@ function onTrigger(player, argc, skillName, level)
         local z = tonumber(pos[2]);
         local rot = tonumber(pos[3]);
         local zone = pos[4];
-        
+        local w = tonumber(width) or 0;
+        local h = tonumber(height) or 0;
+        local blocks = tonumber(blockCount) or 0;
         printf("%f %f %f", x, y, z);
         --local x, y, z = player.GetPos();
-        for i = 1, 1 do
-        
-        local actor = player.GetZone().SpawnActor(2104001, 'ass', x, y, z, rot, 0, 0, true );
-        
-        if player.currentContentGroup then
-            player.currentContentGroup:AddMember(actor.actorId)
+        for i = 0, blocks do
+            for i = 0, w do
+                for j = 0, h do
+                    local actor = player.GetZone().SpawnActor(2104001, 'ass', x + (i - (w / 2) * 3), y, z + (j - (h / 2) * 3), rot, 0, 0, true);
+                    actor.ChangeNpcAppearance(1001149);
+                    actor.SetMaxHP(10000);
+                    actor.SetHP(10000);
+                    actor.SetMod(modifiersGlobal.HasShield, 1);
+                end 
+            end
+
+            x = x + 500
         end
-        --actor.FollowTarget(player, 3.2);
-        end;
         return;
     end
-    level = tonumber(level) or 1; 
-    if player then
-        player.SendMessage(messageId, sender, string.format("name %s | cost %d | level %u", skillName, calculateCommandCost(player, skillName, level), level));
-    end;
 end;
 
 function calculateCommandCost(player, skillName, level)

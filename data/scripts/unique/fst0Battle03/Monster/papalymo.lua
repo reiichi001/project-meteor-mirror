@@ -1,5 +1,4 @@
 require ("global")
-require ("modifiers")
 require ("ally")
 
 function onSpawn(ally)
@@ -25,4 +24,5 @@ end
 
 function tryAggro(ally, contentGroupCharas)
     allyGlobal.tryAggro(ally, contentGroupCharas)
+    
 end

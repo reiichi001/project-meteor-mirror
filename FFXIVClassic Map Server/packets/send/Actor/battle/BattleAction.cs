@@ -1,5 +1,10 @@
 ﻿using FFXIVClassic.Common;
 using System;
+using System.Collections.Generic;
+using FFXIVClassic_Map_Server.actors.chara.ai;
+using FFXIVClassic_Map_Server.actors.chara.ai.utils;
+using FFXIVClassic_Map_Server.Actors;
+using FFXIVClassic_Map_Server.packets.send.actor.battle;
 
 namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
 {
@@ -9,13 +14,20 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
     {        
         //All HitEffects have the last byte 0x8
         HitEffectType = 8 << 24,
+        //Status effects use 32 << 24
+        StatusEffectType = 32 << 24,
+        //Magic effects use 48 << 24
+        MagicEffectType = 48 << 24,
 
         //Not setting RecoilLv2 or RecoilLv3 results in the weaker RecoilLv1.
         //These are the recoil animations that play on the target, ranging from weak to strong.
         //The recoil that gets set was likely based on the percentage of HP lost from the attack.
-        RecoilLv1 = 0 | HitEffectType,
-        RecoilLv2 = 1 << 0 | HitEffectType,
-        RecoilLv3 = 1 << 1 | HitEffectType,
+        //These also have a visual effect with heals and spells but in reverse. RecoilLv1 has a large effect, Lv3 has none. Crit is very large
+        //For spells they represent resists. Lv0 is a max resist, Lv3 is no resist. Crit is still used for crits.
+        //Heals used the same effects sometimes but it isn't clear what for, it seems random? Possibly something like a trait proccing or even just a bug
+        RecoilLv1 = 0,
+        RecoilLv2 = 1 << 0,
+        RecoilLv3 = 1 << 1,
 
         //Setting both recoil flags triggers the "Critical!" pop-up text and hit visual effect.
         CriticalHit = RecoilLv2 | RecoilLv3,
@@ -24,10 +36,19 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         //Mixing these flags together will yield different results.
         //Each visual likely relates to a specific weapon.
         //Ex: HitVisual4 flag alone appears to be the visual and sound effect for hand-to-hand attacks.
-        HitVisual1 = 1 << 2 | HitEffectType,
-        HitVisual2 = 1 << 3 | HitEffectType,
-        HitVisual3 = 1 << 4 | HitEffectType,
-        HitVisual4 = 1 << 5 | HitEffectType,
+
+        //HitVisual is probably based on attack property.
+        //HitVisual1 is for slashing attacks
+        //HitVisual2 is for piercing attacks
+        //HitVisual1 | Hitvisual2 is for blunt attacks
+        //HitVisual3 is for projectile attacks
+        //Basically take the attack property of a weapon and shift it left 2
+        //For auto attacks attack property is weapon's damageAttributeType1
+        //Still not totally sure how this works with weaponskills or what hitvisual4 or the other combinations are for
+        HitVisual1 = 1 << 2,
+        HitVisual2 = 1 << 3,
+        HitVisual3 = 1 << 4,
+        HitVisual4 = 1 << 5,
 
         //An additional visual effect that plays on the target when attacked if:
         //The attack is physical and they have the protect buff on.
@@ -40,18 +61,28 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         Shell = 1 << 7 | HitEffectType,
         ProtectShellSpecial = Protect | Shell,
 
-        //Unknown = 1 << 8, -- Not sure what this flag does.
+        // Required for heal text to be blue, not sure if that's all it's used for
+        Heal = 1 << 8,
+        MP = 1 << 9, //Causes "MP" text to appear when used with MagicEffectType. | with Heal to make text blue
+        TP = 1 << 10,//Causes "TP" text to appear when used with MagicEffectType. | with Heal to make text blue
 
         //If only HitEffect1 is set out of the hit effects, the "Evade!" pop-up text triggers along with the evade visual.
         //If no hit effects are set, the "Miss!" pop-up is triggered and no hit visual is played.
-        HitEffect1 = 1 << 9 | HitEffectType,
-        HitEffect2 = 1 << 10 | HitEffectType, //Plays the standard hit visual effect, but with no sound if used alone.
-        Hit = HitEffect1 | HitEffect2, //A standard hit effect with sound effect.
-        HitEffect3 = 1 << 11 | HitEffectType,
-        HitEffect4 = 1 << 12 | HitEffectType,
-        HitEffect5 = 1 << 13 | HitEffectType,
+        HitEffect1 = 1 << 9,
+        HitEffect2 = 1 << 10,   //Plays the standard hit visual effect, but with no sound if used alone.
+        HitEffect3 = 1 << 11,   //Yellow effect, crit?
+        HitEffect4 = 1 << 12,   //Plays the blocking animation
+        HitEffect5 = 1 << 13,
         GustyHitEffect = HitEffect3 | HitEffect2,
         GreenTintedHitEffect = HitEffect4 | HitEffect1,
+
+        //For specific animations
+        Miss = 0,
+        Evade = HitEffect1,
+        Hit = HitEffect1 | HitEffect2,
+        Crit = HitEffect3,
+        Parry = Hit | HitEffect3,
+        Block = HitEffect4,
 
         //Knocks you back away from the attacker.
         KnockbackLv1 = HitEffect4 | HitEffect2 | HitEffect1,
@@ -80,10 +111,10 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         //A special effect when performing appropriate skill combos in succession.
         //Ex: Thunder (SkillCombo1 Effect) -> Thundara (SkillCombo2 Effect) -> Thundaga (SkillCombo3 Effect)
         //Special Note: SkillCombo4 was never actually used in 1.0 since combos only chained up to 3 times maximum.
-        SkillCombo1 = 1 << 15 | HitEffectType,
-        SkillCombo2 = 1 << 16 | HitEffectType,
+        SkillCombo1 = 1 << 15,
+        SkillCombo2 = 1 << 16,
         SkillCombo3 = SkillCombo1 | SkillCombo2,
-        SkillCombo4 = 1 << 17 | HitEffectType
+        SkillCombo4 = 1 << 17
 
         //Flags beyond here are unknown/untested.
     }
@@ -100,28 +131,203 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         Left = 1 << 3
     }
 
+    public enum HitType : ushort
+    {
+        Miss = 0,
+        Evade = 1,
+        Parry = 2,
+        Block = 3,
+        Resist = 4,
+        Hit = 5,
+        Crit = 6
+    }
+
+    //Type of action
+    public enum ActionType : ushort
+    {
+        None = 0,
+        Physical = 1,
+        Magic = 2,
+        Heal = 3,
+        Status = 4
+    }
+
+    //There's are two columns in gamecommand that are for action property and action element respectively and both have percentages next to them
+    //the percentages are for what percent that property or element factors into the attack. Astral and Umbral are always 33% because they are both 3 elments combined
+    //ActionProperty and ActionElement are slightly different. Property defines whta type of attack it is, and 11-13 are used for "sonic, breath, neutral". Neutral is always used for magic
+    //For Element 11-13 are used for astral, umbral, and healing magic.
+    //Right now we aren't actually using these but when things like resists get better defined we'll have to
+    public enum ActionProperty : ushort
+    {
+        None = 0,
+        Slashing = 1,
+        Piercing = 2,
+        Blunt = 3,
+        Projectile = 4,
+
+        Fire = 5,
+        Ice = 6,
+        Wind = 7,
+        Earth = 8,
+        Lightning = 9,
+        Water = 10,
+
+        //These I'm not sure about. Check gameCommand.csv
+        Astral = 11,
+        Umbral = 12,
+        Heal = 13
+    }
+    
+   
+    /*
+    public enum ActionProperty : ushort
+    {
+        None = 0,
+        Slashing = 1,
+        Piercing = 2,
+        Blunt = 3,
+        Projectile = 4,
+
+        Fire = 5,
+        Ice = 6,
+        Wind = 7,
+        Earth = 8,
+        Lightning = 9,
+        Water = 10,
+        
+        Sonic = 11,
+        Breath = 12,
+        Neutral = 13,
+        Astral = 14,
+        Umbral = 15
+    }
+
+    public enum ActionElement : ushort
+    {
+        None = 0,
+        Slashing = 1,
+        Piercing = 2,
+        Blunt = 3,
+        Projectile = 4,
+
+        Fire = 5,
+        Ice = 6,
+        Wind = 7,
+        Earth = 8,
+        Lightning = 9,
+        Water = 10,
+
+        //These I'm not sure about. Check gameCommand.csv
+        Astral = 11,
+        Umbral = 12,
+        Heal = 13
+    }*/
+
+
     class BattleAction
     {
         public uint targetId;
         public ushort amount;
+        public ushort amountMitigated;          //Amount that got blocked/evaded or resisted
+        public ushort enmity;                   //Seperate from amount for abilities that cause a different amount of enmity than damage
         public ushort worldMasterTextId;
-        public uint effectId;
-        public byte param;
-        public byte unknown;
+        public uint effectId;                   //Impact effect, damage/heal/status numbers or name
+        public byte param;                      //Which side the battle action is coming from
+        public byte hitNum;                     //Which hit in a sequence of hits this is
 
         /// <summary>
-        /// this field is not actually part of the packet struct
+        /// these fields are not actually part of the packet struct
         /// </summary>
         public uint animation;
+        public CommandType commandType;         //What type of command was used (ie weaponskill, ability, etc)
+        public ActionProperty actionProperty;   //Damage type of the action
+        public ActionType actionType;           //Type of this action (ie physical, magic, heal)
+        public HitType hitType;
 
-        public BattleAction(uint targetId, ushort worldMasterTextId, uint effectId, ushort amount = 0, byte param = 0, byte unknown = 1)
+        //Rates, I'm not sure if these need to be stored like this but with the way some buffs work maybe they do?
+        //Makes things like Blindside easy at least.
+        public double parryRate = 0.0;
+        public double blockRate = 0.0;
+        public double resistRate = 0.0;
+        public double hitRate = 0.0;
+        public double critRate = 0.0;
+
+        public BattleAction(uint targetId, ushort worldMasterTextId, uint effectId, ushort amount = 0, byte param = 0, byte hitNum = 1)
         {
-            this.targetId = targetId;            
+            this.targetId = targetId;
             this.worldMasterTextId = worldMasterTextId;
             this.effectId = effectId;
             this.amount = amount;
             this.param = param;
-            this.unknown = unknown;        
+            this.hitNum = hitNum;
+            this.hitType = HitType.Hit;
+            this.enmity = amount;
+            this.commandType = (byte) CommandType.None;
+        }
+
+        public BattleAction(uint targetId, BattleCommand command, byte param = 0, byte hitNum = 1)
+        {
+            this.targetId = targetId;
+            this.worldMasterTextId = command.worldMasterTextId;
+            this.param = param;
+            this.hitNum = hitNum;
+            this.commandType = command.commandType;
+            this.actionProperty = command.actionProperty;
+            this.actionType = command.actionType;
+        }
+
+        //Order of what (probably) happens when a skill is used:
+        //Buffs that alter things like recast times or that only happen once per skill usage like Power Surge are activated
+        //Script calculates damage and handles any special requirements
+        //Rates are calculated
+        //Buffs that impact indiviudal hits like Blindside or Blood for Blood are activated
+        //The final hit type is determined
+        //Stoneskin takes damage
+        //Final damage amount is calculated using the hit type and defender's stats
+        //Buffs that activate or respond to damage like Rampage. Stoneskin gets removed AFTER damage if it falls off.
+        //Additional effects that are a part of the skill itself or weapon in case of auto attacks take place like status effects
+        //Certain buffs that alter the whole skill fall off (Resonance, Excruciate)
+        
+        public void DoAction(Character caster, Character target, BattleCommand skill, BattleActionContainer battleActions)
+        {
+            //First calculate rates for hit/block/etc
+            CalcRates(caster, target, skill);
+
+            //Next, modify those rates based on preaction buffs
+            //Still not sure how we shouldh andle these
+            PreAction(caster, target, skill, battleActions);
+
+            BattleUtils.DoAction(caster, target, skill, this, battleActions);
+        }
+
+
+        //Calculate the chance of hitting/critting/etc
+        public void CalcRates(Character caster, Character target, BattleCommand skill)
+        {
+            hitRate = BattleUtils.GetHitRate(caster, target, skill, this);
+            critRate = BattleUtils.GetCritRate(caster, target, skill, this);
+            blockRate = BattleUtils.GetBlockRate(caster, target, skill, this);
+            parryRate = BattleUtils.GetParryRate(caster, target, skill, this);
+            resistRate = BattleUtils.GetResistRate(caster, target, skill, this);
+        }
+
+        //These are buffs that activate before the action hits. Usually they change things like hit or crit rates or damage
+        public void PreAction(Character caster, Character target, BattleCommand skill, BattleActionContainer battleActions)
+        {
+            target.statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnPreactionTarget, "onPreAction", caster, target, skill, this, battleActions);
+
+            caster.statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnPreactionCaster, "onPreAction", caster, target, skill, this, battleActions);
+        }
+
+        //Try and apply a status effect
+        public void TryStatus(Character caster, Character target, BattleCommand skill, BattleActionContainer battleActions, bool isAdditional = true)
+        {
+            BattleUtils.TryStatus(caster, target, skill, this, battleActions, isAdditional);
+        }
+
+        public ushort GetHitType()
+        {
+            return (ushort)hitType;
         }
     }
 }

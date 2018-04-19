@@ -176,8 +176,7 @@ namespace FFXIVClassic_Map_Server.lua
         public static int CallLuaStatusEffectFunction(Character actor, StatusEffect effect, string functionName, params object[] args)
         {
             // todo: this is stupid, load the actual effect name from db table
-            var name = ((StatusEffectId)effect.GetStatusEffectId()).ToString().ToLower();
-            string path = $"./scripts/effects/{name}.lua";
+            string path = $"./scripts/effects/{effect.GetName()}.lua";
 
             if (File.Exists(path))
             {
@@ -247,7 +246,7 @@ namespace FFXIVClassic_Map_Server.lua
                     Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction [{functionName}] {e.Message}");
                 }
                 DynValue res = new DynValue();
-                DynValue r = script.Globals.Get(functionName);
+               // DynValue r = script.Globals.Get(functionName);
 
                 if (!script.Globals.Get(functionName).IsNil())
                 {
@@ -258,6 +257,82 @@ namespace FFXIVClassic_Map_Server.lua
             }
             return -1;
         }
+
+
+        public static void LoadBattleCommandScript(BattleCommand command, string folder)
+        {
+            string path = $"./scripts/commands/{folder}/{command.name}.lua";
+
+            if (File.Exists(path))
+            {
+                var script = LoadGlobals();
+
+                try
+                {
+                    script.DoFile(path);
+                }
+                catch (Exception e)
+                {
+                    Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction {e.Message}");
+                }
+                command.script = script;
+            }
+            else
+            {
+                path = $"./scripts/commands/{folder}/default.lua";
+                //Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction [{command.name}] Unable to find script {path}");
+                var script = LoadGlobals();
+
+                try
+                {
+                    script.DoFile(path);
+                }
+                catch (Exception e)
+                {
+                    Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction {e.Message}");
+                }
+
+                command.script = script;
+            }
+        }
+
+        public static void LoadStatusEffectScript(StatusEffect effect)
+        {
+            string path = $"./scripts/effects/{effect.GetName()}.lua";
+
+            if (File.Exists(path))
+            {
+                var script = LoadGlobals();
+
+                try
+                {
+                    script.DoFile(path);
+                }
+                catch (Exception e)
+                {
+                    Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction {e.Message}");
+                }
+                effect.script = script;
+            }
+            else
+            {
+                path = $"./scripts/effects/default.lua";
+                //Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction [{command.name}] Unable to find script {path}");
+                var script = LoadGlobals();
+
+                try
+                {
+                    script.DoFile(path);
+                }
+                catch (Exception e)
+                {
+                    Program.Log.Error($"LuaEngine.CallLuaBattleCommandFunction {e.Message}");
+                }
+
+                effect.script = script;
+            }
+        }
+
 
         public static string GetScriptPath(Actor target)
         {

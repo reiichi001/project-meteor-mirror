@@ -32,9 +32,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override bool Update(DateTime tick)
         {
-
             if ((target == null || owner.target != target || owner.target?.actorId != owner.currentLockedTarget) && owner.isAutoAttackEnabled)
-                owner.aiContainer.ChangeTarget(target = owner.zone.FindActorInArea<Character>(owner.currentLockedTarget));
+                owner.aiContainer.ChangeTarget(target = owner.zone.FindActorInArea<Character>(owner.currentTarget));
 
             if (target == null || target.IsDead())
             {
@@ -82,7 +81,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnComplete()
         {
-            BattleAction action = new BattleAction(target.actorId, 0x765D, (uint) HitEffect.Hit, 0, (byte) HitDirection.None);
+            //BattleAction action = new BattleAction(target.actorId, 0x765D, (uint) HitEffect.Hit, 0, (byte) HitDirection.None);
             errorResult = null;
 
             // todo: implement auto attack damage bonus in Character.OnAttack
@@ -99,16 +98,40 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
               * The above damage bonus also applies to “Shot” attacks by archers.
              */
             // handle paralyze/intimidate/sleep/whatever in Character.OnAttack
-            owner.OnAttack(this, action, ref errorResult);
-            owner.DoBattleAction((ushort)BattleActionX01PacketCommand.Attack, action.animation, errorResult == null ? action : errorResult);            
+
+
+            // todo: Change this to use a BattleCommand like the other states
+
+            //List<BattleAction> actions = new List<BattleAction>();
+            BattleActionContainer actions = new BattleActionContainer();
+            target.SetMod((uint) Modifier.MinimumHpLock, 0);
+            
+            var i = 0;
+            for (int hitNum = 0; hitNum < 1 /* owner.GetMod((uint) Modifier.HitCount)*/; hitNum++)
+            {
+                BattleAction action = new BattleAction(target.actorId, 0x765D, (uint)HitEffect.Hit, 100, (byte)HitDirection.None, (byte) hitNum);
+                action.commandType = CommandType.AutoAttack;
+                action.actionType = ActionType.Physical;
+                action.actionProperty = (ActionProperty) owner.GetMod(Modifier.AttackType);
+                // evasion, miss, dodge, etc to be handled in script, calling helpers from scripts/weaponskills.lua
+                // temporary evade/miss/etc function to test hit effects
+                action.DoAction(owner, target, null, actions);
+            }
+
+            // todo: this is fuckin stupid, probably only need *one* error packet, not an error for each action
+            BattleAction[] errors = (BattleAction[])actions.GetList().ToArray().Clone();
+            BattleAction error = null;// new BattleAction(0, null, 0, 0);
+            //owner.DoActions(null, actions.GetList(), ref error);
+            //owner.OnAttack(this, actions[0], ref errorResult);
+            owner.DoBattleAction(22104, 0x19001000, actions.GetList());
         }
 
         public override void TryInterrupt()
         {
-            if (owner.statusEffects.HasStatusEffectsByFlag((uint)StatusEffectFlags.PreventAction))
+            if (owner.statusEffects.HasStatusEffectsByFlag((uint)StatusEffectFlags.PreventAttack))
             {
                 // todo: sometimes paralyze can let you attack, calculate proc rate
-                var list = owner.statusEffects.GetStatusEffectsByFlag((uint)StatusEffectFlags.PreventAction);
+                var list = owner.statusEffects.GetStatusEffectsByFlag((uint)StatusEffectFlags.PreventAttack);
                 uint statusId = 0;
                 if (list.Count > 0)
                 {
@@ -124,12 +147,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         private bool IsAttackReady()
         {
             // todo: this enforced delay should really be changed if it's not retail..
-            return Program.Tick >= attackTime && Program.Tick >= owner.aiContainer.GetLastActionTime().AddSeconds(1);
+            return Program.Tick >= attackTime && Program.Tick >= owner.aiContainer.GetLastActionTime();
         }
 
         private bool CanAttack()
         {
-            if (!owner.isAutoAttackEnabled)
+            if (!owner.isAutoAttackEnabled || target.allegiance == owner.allegiance)
             {
                 return false;
             }

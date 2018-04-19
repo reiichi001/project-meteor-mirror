@@ -9,16 +9,13 @@ function onMagicStart(caster, target, spell)
     return 0;
 end;
 
-function onMagicFinish(caster, target, spell, action)
-    local damage = math.random(1000, 2500);
-    
-    -- todo: populate a global script with statuses and modifiers
-    action.worldMasterTextId = 0x765D;
-    
-    -- todo: populate a global script with statuses and modifiers
-    -- magic.HandleAttackMagic(caster, target, spell, action)
-    -- action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
-    action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate damage
+    action.amount = skill.basePotency;
 
-    return damage;
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
+
+    --Try to apply status effect
+    action.TryStatus(caster, target, skill, actionContainer, true);
 end;

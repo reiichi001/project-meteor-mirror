@@ -9,19 +9,16 @@ function onSkillStart(caster, target, spell)
     return 0;
 end;
 
-function onSkillFinish(caster, target, spell, action)
-    local damage = math.random(10, 100);
-    
-    -- todo: populate a global script with statuses and modifiers
-    action.worldMasterTextId = 0x765D;
-    
-    -- todo: populate a global script with statuses and modifiers
-    -- magic.HandleAttackSkill(caster, target, spell, action)
-    -- action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
-    action.effectId = bit32.bxor(0x8000000, spell.effectAnimation, 15636);
-    
-    if target.hateContainer then
-        target.hateContainer.UpdateHate(caster, damage);
-    end;
-    return damage;
+--Increased enmity
+function onCombo(caster, target, skill)
+    --https://www.bluegartr.com/threads/107403-Stats-and-how-they-work/page17
+    skill.enmityModifier = 2.75;
+end;
+
+function onSkillFinish(caster, target, skill, action, actionContainer)
+    --calculate ws damage
+    action.amount = skill.basePotency;
+
+    --DoAction handles rates, buffs, dealing damage
+    action.DoAction(caster, target, skill, actionContainer);
 end;

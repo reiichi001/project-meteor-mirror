@@ -61,7 +61,7 @@ function onEventStarted(player, equipAbilityWidget, triggername, slot, commandid
             player:SwapAbilities(oldSlot, slot + player.charaWork.commandBorder);
         else
             local tslot = slot + player.charaWork.commandBorder;
-            player:EquipAbility(player.GetJob(), commandid, tslot, true);
+            player:EquipAbility(player.GetCurrentClassOrJob(), commandid, tslot, true);
         end
 
     --Unequip
@@ -70,7 +70,7 @@ function onEventStarted(player, equipAbilityWidget, triggername, slot, commandid
         ability = worldManager.GetBattleCommand(commandid);
         --Is the ability a part of the player's current class?
         --This check isn't correct because of jobs having different ids
-        local classId = player:GetJob();
+        local classId = player:GetCurrentClassOrJob();
         local jobId = player:ConvertClassIdToJobId(classId);
 
         if(ability.job == classId or ability.job == jobId) then

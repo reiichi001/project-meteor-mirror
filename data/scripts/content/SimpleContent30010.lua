@@ -1,5 +1,4 @@
 require ("global")
-require ("ally")
 require ("modifiers")
 
 function onCreate(starterPlayer, contentArea, director)
@@ -34,48 +33,10 @@ function onCreate(starterPlayer, contentArea, director)
 	
 end
 
-function onUpdate(area, tick)
-	local players = area:GetPlayers()
-	local mobs = area:GetMonsters()
-	local allies = area:GetAllies()
-	local resumeChecks = true
-	for player in players do
-		if player then
-			local exitLoop = false
-			for ally in allies do
-				if ally then
-					if not ally:IsEngaged() then
-						if player:IsEngaged() then
-							ally.neutral = false
-							ally.isAutoAttackEnabled = true
-							ally:SetMod(modifiersGlobal.Speed, 8)
-							allyGlobal.EngageTarget(ally, player.target)
-							exitLoop = true
-							break
-						-- todo: support scripted paths
-						elseif ally:GetSpeed() > 0 then
-							
-						end
-					end
-				end
-			end
-			if exitLoop then
-				resumeChecks = false
-				break
-			end
-		end
-	end
-	if not resumeChecks then
-		return
-	end
-end
-
 function onDestroy()
 
 end
 
---Iterating over allies using the for...in syntax throws an except and lags the server.
---This function probably isn't needed either way, it does the smae thing as TryAggro in ally
 function onUpdate(tick, area)
 	if area then
 		local players = area:GetPlayers()
@@ -88,7 +49,7 @@ function onUpdate(tick, area)
 				
 				if allies then
 					for i = 0, #allies - 1 do
-						if allies[i] then
+						if allies[i] then							
 							if not allies[i]:IsEngaged() then
 								if player:IsEngaged() and player.target then
 									
@@ -99,7 +60,7 @@ function onUpdate(tick, area)
 									exitLoop = true
 									break
 								-- todo: support scripted paths
-								elseif allies[i]:GetSpeed() > 0 then
+								elseif allies[i]:GetSpeed() > 0 then									
 								end
 							end
 						end

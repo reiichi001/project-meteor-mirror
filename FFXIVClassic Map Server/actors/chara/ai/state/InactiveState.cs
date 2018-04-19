@@ -27,7 +27,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 if (owner.IsDead())
                     return true;
 
-                if (!owner.statusEffects.HasStatusEffectsByFlag(StatusEffectFlags.PreventAction))
+                if (!owner.statusEffects.HasStatusEffectsByFlag(StatusEffectFlags.PreventMovement))
                     return true;
             }
 
