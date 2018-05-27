@@ -80,8 +80,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 BattleAction action = new BattleAction(owner.actorId, 30331, (uint)(HitEffect.HitEffectType | HitEffect.Hit), dotTick);
                 utils.BattleUtils.HandleStoneskin(owner, action);
                 // todo: figure out how to make red numbers appear for enemies getting hurt by dots
-                owner.DelHP(action.amount);
-
+                //owner.DelHP(action.amount);
+                utils.BattleUtils.DamageTarget(owner, owner, action, null);
                 owner.DoBattleAction(0, 0, action);
             }
 

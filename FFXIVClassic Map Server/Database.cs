@@ -2317,11 +2317,11 @@ namespace FFXIVClassic_Map_Server
                             Tuple<byte, short> tuple = Tuple.Create<byte, short>(battleCommand.job, battleCommand.level);
                             if (battleCommandIdByLevel.ContainsKey(tuple))
                             {
-                                battleCommandIdByLevel[tuple].Add(id | 0xA0F00000);
+                                battleCommandIdByLevel[tuple].Add(id);
                             }
                             else
                             {
-                                List<uint> list = new List<uint>() { id | 0xA0F00000 };
+                                List<uint> list = new List<uint>() { id };
                                 battleCommandIdByLevel.Add(tuple, list);
                             }
                             count++;

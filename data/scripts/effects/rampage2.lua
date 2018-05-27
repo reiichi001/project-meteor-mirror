@@ -20,7 +20,7 @@ function onDamageTaken(effect, attacker, defender, action, actionContainer)
         effect.SetExtra(effect.GetExtra() + 1);
 
         attacker.AddMod(modifiersGlobal.Parry, parryPerDT);
-        attacker.SubtractMod(modifiersGlobal.Delay, delayMsPerDT);
+        attacker.SubtractMod(modifiersGlobal.AttackDelay, delayMsPerDT);
     end
 end
 

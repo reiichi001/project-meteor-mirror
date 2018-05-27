@@ -27,7 +27,8 @@ function onTrigger(player, argc, qty, name, lastName)
         qty = tonumber(qty) or 1;
         location = INVENTORY_CURRENCY;
         
-        player:AddExp(qty, player.charaWork.parameterSave.state_mainSkill[0], 5);
+        actionList = player:AddExp(qty, player.charaWork.parameterSave.state_mainSkill[0], 0);
+        player:DoBattleAction(0, 0, actionList);
     else
         print(sender.."unable to add experience, ensure player name is valid.");
     end;

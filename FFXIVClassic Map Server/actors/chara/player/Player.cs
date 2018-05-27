@@ -1888,7 +1888,7 @@ namespace FFXIVClassic_Map_Server.Actors
             Database.EquipAbility(this, classId, (ushort) (hotbarSlot - charaWork.commandBorder), commandId, recastEnd);
             //If the class we're equipping for is the current class (need to find out if state_mainSkill is supposed to change when you're a job)
             //then equip the ability in charawork.commands and save in databse, otherwise just save in database
-            if (classId == charaWork.parameterSave.state_mainSkill[0])
+            if (classId == GetCurrentClassOrJob())
             {
                 charaWork.command[hotbarSlot] = trueCommandId;
                 charaWork.commandCategory[hotbarSlot] = 1;
@@ -2240,6 +2240,7 @@ namespace FFXIVClassic_Map_Server.Actors
         //Returns BattleActions that can be sent to display the EXP gained number and level ups
         public List<BattleAction> AddExp(int exp, byte classId, byte bonusPercent = 0)
         {
+
             List<BattleAction> actionList = new List<BattleAction>();
             exp += (int) Math.Ceiling((exp * bonusPercent / 100.0f));
 
@@ -2310,7 +2311,8 @@ namespace FFXIVClassic_Map_Server.Actors
                         EquipAbilityInFirstOpenSlot(jobId, commandId, false);
 
                     //33926: You learn [command].
-                    actionList?.Add(new BattleAction(actorId, 33926, commandId));
+                    if(classId == GetCurrentClassOrJob() || jobId == GetCurrentClassOrJob())
+                        actionList?.Add(new BattleAction(actorId, 33926, commandId));
                 }
             }
         }
@@ -2405,8 +2407,8 @@ namespace FFXIVClassic_Map_Server.Actors
             var mainHandItem = equip.GetItemAtSlot(Equipment.SLOT_MAINHAND);
             var damageAttribute = 0;
             var attackDelay = 3000;
-            var hitCount = 1; 
-            GetAttackDelayMs();
+            var hitCount = 1;
+
             if (mainHandItem != null)
             {
                 var mainHandWeapon = (Server.GetItemGamedata(mainHandItem.itemId) as WeaponItem);

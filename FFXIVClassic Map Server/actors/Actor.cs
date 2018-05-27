@@ -454,8 +454,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
 
                 updateFlags = ActorUpdateFlags.None;
-                zone.BroadcastPacketsAroundActor(this, packets);
             }
+            zone.BroadcastPacketsAroundActor(this, packets);
         }
 
         public void GenerateActorName(int actorNumber)

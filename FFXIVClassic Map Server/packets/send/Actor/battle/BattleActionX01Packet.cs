@@ -45,7 +45,7 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.battle
                     binWriter.Write((Byte)1); //?
                 }
             }
-            new SubPacket(OPCODE, sourceActorId, data).DebugPrintSubPacket();
+
             return new SubPacket(OPCODE, sourceActorId, data);
         }
     }

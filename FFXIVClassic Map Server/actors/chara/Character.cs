@@ -388,8 +388,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 if ((updateFlags & ActorUpdateFlags.StatusTime) != 0)
                 {
                     packets.AddRange(statusEffects.GetStatusTimerPackets());
+                    statusEffects.ResetPropPacketUtil();
                     updateFlags &= ~ActorUpdateFlags.StatusTime;
-
                 }
 
                 if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)

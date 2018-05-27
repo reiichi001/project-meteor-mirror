@@ -383,6 +383,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                 case (ActionType.Status):
                     FinishActionStatus(caster, target, skill, action, actionContainer);
                     break;
+                default:
+                    actionContainer.AddAction(action);
+                    break;
             }
         }
 

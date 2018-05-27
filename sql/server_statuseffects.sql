@@ -72,6 +72,7 @@ INSERT INTO `server_statuseffects` VALUES (223104,'quelling_strike',1058,2,0);
 INSERT INTO `server_statuseffects` VALUES (223106,'hawks_eye',50,2,0);
 INSERT INTO `server_statuseffects` VALUES (223108,'decoy',4130,2,0);
 INSERT INTO `server_statuseffects` VALUES (223127,'bloodletter',42,2,0);
+INSERT INTO `server_statuseffects` VALUES (223133,'stoneskin',16402,1,3000);
 INSERT INTO `server_statuseffects` VALUES (223173,'covered',42,2,0);
 INSERT INTO `server_statuseffects` VALUES (223180,'regen',50,2,0);
 INSERT INTO `server_statuseffects` VALUES (223205,'combo',42,2,0);
@@ -124,4 +125,4 @@ commit;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-04-18 14:54:11
+-- Dump completed on 2018-05-27 14:40:45
