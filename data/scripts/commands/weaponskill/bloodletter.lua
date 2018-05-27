@@ -20,7 +20,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
 
     --DoAction handles rates, buffs, dealing damage
     action.DoAction(caster, target, skill, actionContainer);
-
+    
     --Try to apply status effect
     action.TryStatus(caster, target, skill, actionContainer, true);
 end;

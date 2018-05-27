@@ -10,11 +10,11 @@ function onAbilityStart(caster, target, ability)
 end;
 
 function onSkillFinish(caster, target, skill, action, actionContainer)
-    ability.statusMagnitude = 4;
+    skill.statusMagnitude = 4;
     
     --27242: Enhanced Barrage: Adds an additional attack to barrage ( 4 -> 5 )
     if caster.HasTrait(27242) then
-        ability.statusMagnitude = 5;
+        skill.statusMagnitude = 5;
     end
 
     --DoAction handles rates, buffs, dealing damage

@@ -19,10 +19,10 @@ end;
 -- A bonus from INT (2INT=1HP)
 -- An additional random integer (580 at level 50. +/- 3%)
 function onSkillFinish(caster, target, skill, action, actionContainer)
-    --Base formula isn't quit known yet
-    local amount = 100;
-    --Heals can vary by up to ~3.5% in either direction
-    amount = math.Clamp(amount * (0.965 + (math.rand() * 7.0)), 0, 9999);
+    --Base amount seems to be 0.215x^2 - 0.35x + 60
+    local amount = (0.215 * math.pow(caster.GetLevel(), 2)) - (0.35 * caster.GetLevel()) + 60;
+    --Heals can vary by up to 3%
+    amount = math.Clamp(amount * (0.97 + (math.rand() * 3.0)), 0, 9999);
 
     --PGL gets an INT bonus for Second Wind
     if caster.GetClass() == 2 then

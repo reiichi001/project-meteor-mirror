@@ -1073,13 +1073,12 @@ namespace FFXIVClassic_Map_Server.Actors
                     ushort hitCount = 0;
                     for (int hitNum = 1; hitNum <= command.numHits; hitNum++)
                     {
-                        var action = new BattleAction(chara.actorId, command, (byte)GetHitDirection(chara), (byte)hitNum);
+                        var action = new BattleAction(chara.actorId, command, (byte)GetHitDirection(chara), (byte) hitNum);
                         
                         //uncached script
                         lua.LuaEngine.CallLuaBattleCommandFunction(this, command, folder, "onSkillFinish", this, chara, command, action, actions);
                         //cached script
                         //skill.CallLuaFunction(owner, "onSkillFinish", this, chara, command, action, actions);
-
                         if (action.hitType > HitType.Evade && action.hitType != HitType.Resist)
                         {
                             hitTarget = true;

@@ -957,10 +957,7 @@ namespace FFXIVClassic_Map_Server
                             var tick = reader.GetUInt32(3);
                             var tier = reader.GetByte(4);
                             var extra = reader.GetUInt64(5);
-
-                            player.charaWork.status[count] = reader.GetUInt16(0);
-                            player.charaWork.statusShownTime[count] = reader.GetUInt32(1);
-
+                            
                             var effect = Server.GetWorldManager().GetStatusEffect(id);
                             if (effect != null)
                             {
@@ -973,6 +970,7 @@ namespace FFXIVClassic_Map_Server
                                 // dont wanna send ton of messages on login (i assume retail doesnt)
                                 player.statusEffects.AddStatusEffect(effect, null, true);
                             }
+                            
                         }
                     }
 
@@ -2229,8 +2227,7 @@ namespace FFXIVClassic_Map_Server
                     string queries = "";
                     foreach (var effect in player.statusEffects.GetStatusEffects())
                     {
-                        var duration = effect.GetDuration() + effect.GetStartTime().Second - Program.Tick.Second;
-
+                        var duration = Utils.UnixTimeStampUTC(effect.GetEndTime()) - Utils.UnixTimeStampUTC();
                         queries += Environment.NewLine + $"REPLACE INTO characters_statuseffect(characterId, statusId, magnitude, duration, tick, tier, extra) VALUES ({player.actorId}, {effect.GetStatusEffectId()}, {effect.GetMagnitude()}, {duration}, {effect.GetTickMs()}, {effect.GetTier()}, {effect.GetExtra()});";
                     }
 

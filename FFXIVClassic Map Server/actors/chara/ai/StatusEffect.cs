@@ -132,7 +132,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         Resonance = 223114,
         Soughspeak = 223115,
         PresenceofMind2 = 223116,
-        SanguineRite = 223117,
+        SanguineRite = 223117,      //old effect
         PunishingBarbs = 223118,
         DarkSeal = 223119,
         Emulate = 223120,
@@ -143,7 +143,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         SkullSunder = 223126,
         Bloodletter = 223127,       //comboed effect
         Levinbolt = 223128,
-        Protect = 223129,           //old Protect
+        Protect = 223129,           //untraited protect
         Shell = 223130,             //old shell
         Reraise = 223131,
         ShockSpikes = 223132,
@@ -246,13 +246,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         Excruciate = 223231,
         Necrogenesis = 223232,
         Parsimony = 223233,
-        SanguineRite2 = 223234,
+        SanguineRite2 = 223234,     //untraited effect
         Aero = 223235,
         Outmaneuver2 = 223236,
         Blindside2 = 223237,
         Decoy2 = 223238,            //Traited
-        Protect2 = 223239,          //new Protect
-        SanguineRite3 = 223240,
+        Protect2 = 223239,          //Traited
+        SanguineRite3 = 223240,     //Traited
         Bloodletter2 = 223241,      //uncomboed effect
         FullyBlissfulMind = 223242,
         MagicEvasionDown = 223243,
