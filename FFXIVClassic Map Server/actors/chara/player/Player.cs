@@ -1692,7 +1692,7 @@ namespace FFXIVClassic_Map_Server.Actors
         //A party member list packet came, set the party
         public void SetParty(Party group)
         {
-            if (group is Party)
+            if (group is Party && currentParty != group)
             {
                 RemoveFromCurrentPartyAndCleanup();
                 currentParty = group;
@@ -2236,14 +2236,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
         //Handles exp being added, does not handle figuring out exp bonus from buffs or skill/link chains or any of that
         //Returns BattleActions that can be sent to display the EXP gained number and level ups
+        //exp should be a ushort single the exp graphic overflows after ~65k
         public List<BattleAction> AddExp(int exp, byte classId, byte bonusPercent = 0)
         {
-
             List<BattleAction> actionList = new List<BattleAction>();
             exp += (int) Math.Ceiling((exp * bonusPercent / 100.0f));
 
-            //33935: You earn [exp] (+[bonusPercent]%) experience points.
-            actionList.Add(new BattleAction(actorId, 33935, 0, (ushort)exp, bonusPercent));
+            //You earn [exp] (+[bonusPercent]%) experience points.
+            //In non-english languages there are unique messages for each language, hence the use of ClassExperienceTextIds
+            actionList.Add(new BattleAction(actorId, BattleUtils.ClassExperienceTextIds[classId], 0, (ushort)exp, bonusPercent));
 
             bool leveled = false;
             int diff = MAXEXP[GetLevel() - 1] - charaWork.battleSave.skillPoint[classId - 1];            

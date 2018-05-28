@@ -191,7 +191,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                     else
                         LuaEngine.CallLuaStatusEffectFunction(this.owner, newEffect, "onGain", this.owner, newEffect);
                     effects.Add(newEffect.GetStatusEffectId(), newEffect);
-                    newEffect.SetSilent(silent);
+                    //newEffect.SetSilent(silent);
                     newEffect.SetHidden(hidden);
 
                     if (!newEffect.GetHidden())
@@ -203,16 +203,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                             index = Array.IndexOf(owner.charaWork.status, newEffect.GetStatusId());
                         else
                             index = Array.IndexOf(owner.charaWork.status, (ushort) 0);
-
-                        //owner.charaWork.status[index] = newEffect.GetStatusId();
+                        
                         SetStatusAtIndex(index, newEffect.GetStatusId());
                         //Stance statuses need their time set to an extremely high number so their icon doesn't flash
                         //Adding getduration with them doesn't work because it overflows
                         uint time = (newEffect.GetFlags() & (uint) StatusEffectFlags.Stance) == 0 ? Utils.UnixTimeStampUTC(newEffect.GetEndTime()) : 0xFFFFFFFF;
                         SetTimeAtIndex(index, time);
-                        //owner.charaWork.statusShownTime[index] = time;
-                        //owner.zone.BroadcastPacketAroundActor(owner, SetActorStatusPacket.BuildPacket(owner.actorId, (ushort)index, newEffect.GetStatusId()));
-                        //owner.zone.BroadcastPacketsAroundActor(owner, owner.GetActorStatusPackets());
                     }
                     owner.RecalculateStats();
                 }
@@ -233,13 +229,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 }
 
                 //hidden effects not in charawork
-                if(!effect.GetHidden())
+                var index = Array.IndexOf(owner.charaWork.status, effect.GetStatusId());
+                if (!effect.GetHidden() && index != -1)
                 {
-                    var index = Array.IndexOf(owner.charaWork.status, effect.GetStatusId());
-
-                    owner.charaWork.status[index] = 0;
-                    owner.charaWork.statusShownTime[index] = 0;
-                    this.owner.zone.BroadcastPacketAroundActor(this.owner, SetActorStatusPacket.BuildPacket(owner.actorId, (ushort)index, (ushort)0));
+                    SetStatusAtIndex(index, 0);
+                    SetTimeAtIndex(index, 0);
                 }
                 // function onLose(actor, effect)
                 effects.Remove(effect.GetStatusEffectId());
@@ -382,7 +376,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public void SetStatusAtIndex(int index, ushort statusId)
         {
             owner.charaWork.status[index] = statusId;
-            //owner.zone.BroadcastPacketAroundActor(owner, SetActorStatusPacket.BuildPacket(owner.actorId, (ushort)index, statusId));
 
             statusSubpackets.Add(SetActorStatusPacket.BuildPacket(owner.actorId, (ushort)index, statusId));
             owner.updateFlags |= ActorUpdateFlags.Status;

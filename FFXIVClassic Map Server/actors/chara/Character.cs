@@ -967,6 +967,7 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 StatusEffect procEffect = Server.GetWorldManager().GetStatusEffect(effectId);
                 procEffect.SetDuration(5);
+                procEffect.SetSilent(true);
                 statusEffects.AddStatusEffect(procEffect, this, true, true);
             }
             //Otherwise we're reseting a proc, remove the status

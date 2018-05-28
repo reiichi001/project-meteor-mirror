@@ -50,6 +50,29 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             { HitType.Crit,     HitEffect.Crit }
         };
 
+        public static Dictionary<byte, ushort> ClassExperienceTextIds = new Dictionary<byte, ushort>()
+        {
+            { 2, 33934 },   //Pugilist
+            { 3, 33935 },   //Gladiator
+            { 4, 33936 },   //Marauder
+            { 7, 33937 },   //Archer
+            { 8, 33938 },   //Lancer
+            { 10, 33939 },  //Sentinel, this doesn't exist anymore but it's still in the files so may as well put it here just in case
+            { 22, 33940 },  //Thaumaturge
+            { 23, 33941 },  //Conjurer
+            { 29, 33945 },  //Carpenter, for some reason there's a a few different messages between 33941 and 33945
+            { 30, 33946 },  //Blacksmith
+            { 31, 33947 },  //Armorer
+            { 32, 33948 },  //Goldsmith
+            { 33, 33949 },  //Leatherworker
+            { 34, 33950 },  //Weaver
+            { 35, 33951 },  //Alchemist
+            { 36, 33952 },  //Culinarian
+            { 39, 33953 },  //Miner
+            { 40, 33954 },  //Botanist
+            { 41, 33955 }   //Fisher
+        };
+
         //Most of these numbers I'm fairly certain are correct. The repeated numbers at levels 23 and 48 I'm less sure about but they do match some weird spots in the EXP graph
 
         public static ushort[] BASEEXP =   {150, 150, 150, 150, 150, 150, 150, 150, 150, 150,  //Level <= 10
@@ -815,7 +838,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                 totalBonus += GetChainBonus(expChainNumber);
 
                 StatusEffect newChain = Server.GetWorldManager().GetStatusEffect((uint)StatusEffectId.EXPChain);
-
+                newChain.SetSilent(true);
                 newChain.SetDuration(timeLimit);
                 newChain.SetTier((byte)(Math.Min(expChainNumber + 1, 255)));
                 attacker.statusEffects.AddStatusEffect(newChain, attacker, true, true);
