@@ -1707,22 +1707,20 @@ namespace FFXIVClassic_Map_Server.Actors
 
             Party partyGroup = (Party) currentParty;
 
-            partyGroup.RemoveMember(actorId);
-
-            //for (int i = 0; i < partyGroup.members.Count; i++)
-            //{
-            //    if (partyGroup.members[i] == actorId)
-            //    {
-            //        partyGroup.members.RemoveAt(i);
-            //        break;
-            //    }
-            //}
+            for (int i = 0; i < partyGroup.members.Count; i++)
+            {
+                if (partyGroup.members[i] == actorId)
+                {
+                    partyGroup.members.RemoveAt(i);
+                    break;
+                }
+            }
 
             //currentParty.members.Remove(this);
             if (partyGroup.members.Count == 0)
                 Server.GetWorldManager().NoMembersInParty((Party)currentParty);
 
-            //currentParty = new Party(0, actorId);
+            currentParty = null;
         }
         
         public void IssueChocobo(byte appearanceId, string nameResponse)
