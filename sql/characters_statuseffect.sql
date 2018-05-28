@@ -24,9 +24,9 @@ DROP TABLE IF EXISTS `characters_statuseffect`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `characters_statuseffect` (
   `characterId` int(10) unsigned NOT NULL,
-  `statusId` smallint(5) unsigned NOT NULL,
+  `statusId` mediumint(8) unsigned NOT NULL,
   `magnitude` bigint(20) unsigned NOT NULL,
-  `endTime` int(10) unsigned NOT NULL,
+  `duration` int(10) unsigned NOT NULL,
   `tick` int(10) unsigned NOT NULL,
   `tier` tinyint(3) unsigned NOT NULL,
   `extra` bigint(20) unsigned NOT NULL,
@@ -52,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-05-27 16:12:00
+-- Dump completed on 2018-05-27 17:59:07
