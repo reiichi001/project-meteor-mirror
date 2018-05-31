@@ -640,6 +640,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                     effect.SetTier(skill.statusTier);
                     effect.SetMagnitude(skill.statusMagnitude);
                     effect.SetOwner(target);
+                    effect.SetSource(caster);
+
                     if (target.statusEffects.AddStatusEffect(effect, caster))
                     {
                         //If we need an extra action to show the status text

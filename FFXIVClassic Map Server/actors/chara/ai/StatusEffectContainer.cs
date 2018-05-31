@@ -101,11 +101,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return effects.ContainsKey((uint)id);
         }
 
-        public BattleAction AddStatusForBattleAction(uint id, byte tier = 1)
+        public BattleAction AddStatusForBattleAction(uint id, byte tier = 1, ulong magnitude = 0, uint duration = 0)
         {
             BattleAction action = null;
 
-            if (AddStatusEffect(id, tier))
+            if (AddStatusEffect(id, tier, magnitude, duration))
                 action = new BattleAction(owner.actorId, 30328, id | (uint)HitEffect.StatusEffectType);
 
             return action;

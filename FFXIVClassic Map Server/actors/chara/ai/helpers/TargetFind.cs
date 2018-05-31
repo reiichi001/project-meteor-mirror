@@ -356,29 +356,34 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (target == null || !retarget && targets.Contains(target))
                 return false;
 
-            if ((validTarget & ValidTarget.Player) != 0 && target is Player)
-                return true;
-
-            if ((validTarget & ValidTarget.PartyMember) != 0 && target.currentParty == owner.currentParty)
-                return true;
-
-            // cant target dead
-            if ((validTarget & ValidTarget.Corpse) == 0 && target.IsDead())
+            //This skill can't be used on self and target is self, return false
+            if ((validTarget & ValidTarget.Self) == 0 && target == owner)
                 return false;
 
+            //This skill can't be used on NPCs and target is an NPC, return false
+            if ((validTarget & ValidTarget.NPC) == 0 && target.isStatic)
+                return false;
+
+            //This skill must be used on Allies and target is not an ally, return false
             if ((validTarget & ValidTarget.Ally) != 0 && target.allegiance != owner.allegiance)
                 return false;
 
+            //This skill can't be used on players and target is a player, return false
+            //Do we need a player flag? Ally/Enemy flags probably serve the same purpose
+            //if ((validTarget & ValidTarget.Player) == 0 && target is Player)
+                //return false;
+
+
+            //This skill must be used on enemies an target is not an enemy
             if ((validTarget & ValidTarget.Enemy) != 0 && target.allegiance == owner.allegiance)
                 return false;
 
-            if (((validTarget & ValidTarget.PartyMember) == 0) && ((validTarget & ValidTarget.Self) == 0) && target.currentParty == owner.currentParty)
-                return false;
-
+            //This skill must be used on a party member and target is not in owner's party, return false
             if ((validTarget & ValidTarget.PartyMember) != 0 && target.currentParty != owner.currentParty)
                 return false;
 
-            if ((validTarget & ValidTarget.NPC) != 0 && target.isStatic)
+            //This skill must be used on a corpse and target is alive, return false
+            if ((validTarget & ValidTarget.CorpseOnly) != 0 && target.IsAlive())
                 return false;
 
             // todo: why is player always zoning?
@@ -395,14 +400,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (validTarget == ValidTarget.Self && aoeType == TargetFindAOEType.None && owner != target)
                 return false;
 
-            if ((validTarget & ValidTarget.Self) == 0 && target == owner)
-                return false;
-
             // this is fuckin retarded, think of a better way l8r
             if (!ignoreAOE)
             {
                 // hit everything within zone or within aoe region
-                if (maxDistance == -1.0f || aoeType == TargetFindAOEType.Circle && !IsWithinCircle(target, maxDistance))
+                if (param == -1.0f || aoeType == TargetFindAOEType.Circle && !IsWithinCircle(target, param))
                     return false;
 
                 if (aoeType == TargetFindAOEType.Cone && !IsWithinCone(target, withPet))

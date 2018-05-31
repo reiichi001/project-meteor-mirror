@@ -1098,7 +1098,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             else
             {
-                actions.AddAction(new BattleAction(target.actorId, 30202, 0));
+                actions.AddAction(new BattleAction(actorId, 30202, 0));
             }
 
             //Now that we know if we hit the target we can check if the combo continues
@@ -1109,6 +1109,8 @@ namespace FFXIVClassic_Map_Server.Actors
                     player.SetCombos();
             
             BattleAction error = new BattleAction(actorId, 0, 0);
+            DelMP(command.CalculateMpCost(this));
+            DelTP(command.CalculateTpCost(this));
             actions.CombineLists();
             DoBattleAction(command.id, command.battleAnimation, actions.GetList());
         }

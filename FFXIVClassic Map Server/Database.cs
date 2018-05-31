@@ -1274,6 +1274,7 @@ namespace FFXIVClassic_Map_Server
         }
         public static void EquipAbility(Player player, byte classId, ushort hotbarSlot, uint commandId, uint recastTime)
         {
+            commandId ^= 0xA0F00000;
             if (commandId > 0)
             {
                 using (MySqlConnection conn = new MySqlConnection(
