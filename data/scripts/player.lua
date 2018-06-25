@@ -1,24 +1,24 @@
+require("global");
+
 local initClassItems, initRaceItems;
 
 function onBeginLogin(player)		
 	--New character, set the initial quest
-	--[[
 	if (player:GetPlayTime(false) == 0) then
 		initialTown = player:GetInitialTown();
-		
 		if (initialTown == 1 and player:HasQuest(110001) == false) then
-			player:AddQuest(110001);
+			--player:AddQuest(110001);
 			player:SetHomePoint(1280001);
 		elseif (initialTown == 2 and player:HasQuest(110005) == false) then
-			player:AddQuest(110005);
+			--player:AddQuest(110005);
 			player:SetHomePoint(1280061);
 		elseif (initialTown == 3 and player:HasQuest(110009) == false) then
-			player:AddQuest(110009);
+			--player:AddQuest(110009);
 			player:SetHomePoint(1280031);
 		end		
 		
 	end
-		]]	
+
 	--For Opening. Set Director and reset position incase d/c
 	if (player:HasQuest(110001) == true and player:GetZoneID() == 193) then
 		director = player:GetZone():CreateDirector("OpeningDirector", false);		

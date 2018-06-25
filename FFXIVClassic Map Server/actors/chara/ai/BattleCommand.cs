@@ -75,6 +75,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         Spell = 4
     }
 
+    public enum KnockbackType : ushort
+    {
+        None = 0,
+        Level1 = 1,
+        Level2 = 2,
+        Level3 = 3,
+        Level4 = 4,
+        Level5 = 5,
+        Clockwise1 = 6,
+        Clockwise2 = 7,
+        CounterClockwise1 = 8,
+        CounterClockwise2 = 9,
+        DrawIn = 10
+    }
+
     class BattleCommand
     {
         public ushort id;
@@ -121,7 +136,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public float accuracyModifier;                      //modifies accuracy
         public float bonusCritRate;                         //extra crit rate
         public bool isCombo;
-        public bool isRanged;
+        public bool isRanged = false;
 
         public bool actionCrit;                             //Whether any actions were critical hits, used for Excruciate
 
@@ -363,25 +378,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public List<Character> GetTargets()
         {
             return targetFind?.GetTargets<Character>();
-        }
-
-        //Handles setting the correct target for self-targeted spells
-        public Character GetMainTarget(Character caster, Character target)
-        {
-            //If skill can only be used on self
-            if (mainTarget == ValidTarget.Self)
-                return caster;
-            //If skill can only be used on party members and the target is not a party member
-            else if (((mainTarget & ValidTarget.PartyMember) != 0) && (target.currentParty != caster.currentParty))
-                return caster;
-            //If skill can only be used on allys and the target is not an ally
-            else if (((mainTarget & ValidTarget.Ally) != 0) && (target.allegiance != caster.allegiance))
-                return caster;
-            //If skill can only be used on players and the target is not a player
-            else if (((mainTarget & ValidTarget.Player) != 0) && (!(target is Player)))
-                return caster;
-
-            return target;
         }
 
         public ushort GetCommandType()

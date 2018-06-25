@@ -92,6 +92,7 @@ namespace FFXIVClassic_Map_Server.actors.chara
         Regain                  = 70,   //TP regen, should be -90 out of combat, Invigorate sets to 100+ depending on traits
         RegenDown               = 71,   //Damage over time effects. Separate from normal Regen because of how they are displayed in game
         Stoneskin               = 72,   //Nullifies damage
-        MinimumTpLock           = 73
+        MinimumTpLock           = 73,   //Don't let TP fall below this, used in openings
+        KnockbackImmune         = 74    //Immune to knockback effects when above 0
     }
 }

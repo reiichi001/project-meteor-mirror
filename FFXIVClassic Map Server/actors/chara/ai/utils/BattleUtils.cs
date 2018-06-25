@@ -50,6 +50,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             { HitType.Crit,     HitEffect.Crit }
         };
 
+        public static Dictionary<KnockbackType, HitEffect> KnockbackEffects = new Dictionary<KnockbackType, HitEffect>()
+        {
+            { KnockbackType.None, 0 },
+            { KnockbackType.Level1, HitEffect.KnockbackLv1 },
+            { KnockbackType.Level2, HitEffect.KnockbackLv2 },
+            { KnockbackType.Level3, HitEffect.KnockbackLv3 },
+            { KnockbackType.Level4, HitEffect.KnockbackLv4 },
+            { KnockbackType.Level5, HitEffect.KnockbackLv5 },
+            { KnockbackType.Clockwise1, HitEffect.KnockbackClockwiseLv1 },
+            { KnockbackType.Clockwise2, HitEffect.KnockbackClockwiseLv2 },
+            { KnockbackType.CounterClockwise1, HitEffect.KnockbackCounterClockwiseLv1 },
+            { KnockbackType.CounterClockwise2, HitEffect.KnockbackCounterClockwiseLv2 },
+            { KnockbackType.DrawIn, HitEffect.DrawIn }
+        };
+
         public static Dictionary<byte, ushort> ClassExperienceTextIds = new Dictionary<byte, ushort>()
         {
             { 2, 33934 },   //Pugilist

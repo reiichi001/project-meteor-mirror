@@ -26,7 +26,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.spell = Server.GetWorldManager().GetBattleCommand(spellId);
             var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onMagicPrepare", owner, target, spell);
 
-            this.target = spell.GetMainTarget(owner, target);
+            //Modify spell based on status effects. Need to do it here because they can modify cast times
+            List<StatusEffect> effects = owner.statusEffects.GetStatusEffectsByFlag((uint)(StatusEffectFlags.ActivateOnCastStart));
+
+            //modify skill based on status effects
+            //Do this here to allow buffs like Resonance to increase range before checking CanCast()
+            foreach (var effect in effects)
+                lua.LuaEngine.CallLuaStatusEffectFunction(owner, effect, "onMagicCast", owner, effect, spell);
+
+            this.target = target != null ? target : owner;
 
             if (returnCode == 0 && owner.CanCast(this.target, spell))
             {
@@ -64,13 +72,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                     lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onCombo", owner, target, spell);
                     spell.isCombo = true;
                 }
-
-                //Modify spell based on status effects. Need to do it here because they can modify cast times
-                List<StatusEffect> effects = owner.statusEffects.GetStatusEffectsByFlag((uint) (StatusEffectFlags.ActivateOnCastStart));
-
-                //modify skill based on status effects
-                foreach (var effect in effects)
-                    lua.LuaEngine.CallLuaStatusEffectFunction(owner, effect, "onMagicCast", owner, effect, spell);
 
                 if (!spell.IsInstantCast())
                 {

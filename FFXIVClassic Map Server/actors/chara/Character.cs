@@ -1072,6 +1072,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 foreach (var chara in targets)
                 {
                     ushort hitCount = 0;
+                    ushort totalDamage = 0;
                     for (int hitNum = 1; hitNum <= command.numHits; hitNum++)
                     {
                         var action = new BattleAction(chara.actorId, command, (byte)GetHitDirection(chara), (byte) hitNum);
@@ -1084,13 +1085,16 @@ namespace FFXIVClassic_Map_Server.Actors
                         {
                             hitTarget = true;
                             hitCount++;
+                            totalDamage += action.amount;
                         }
                     }
 
                     if (command.numHits > 1)
                     {
-                        //You use [command] on [target].
-                        actions.AddAction(new BattleAction(chara.actorId, 30442, 0, 0, (byte)hitCount));
+                        //30442: [hitCount]fold Attack! [chara] takes a total of totalDamage points of damage.
+                        //30450: All attacks miss!
+                        ushort textId = (ushort) (hitTarget ? 30442 : 30450);
+                        actions.AddAction(new BattleAction(chara.actorId, textId, 0, totalDamage, (byte)hitCount));
                     }
                 }
 

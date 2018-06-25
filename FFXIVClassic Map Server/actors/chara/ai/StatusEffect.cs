@@ -129,12 +129,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         RoamingSoul = 223111,
         Purge = 223112,
         Spiritsong = 223113,
-        Resonance = 223114,
+        Resonance = 223114,         //Old Resonance? Both have the same icons and description
         Soughspeak = 223115,
         PresenceofMind2 = 223116,
         SanguineRite = 223117,      //old effect
         PunishingBarbs = 223118,
-        DarkSeal = 223119,
+        DarkSeal = 223119,          //old effect
         Emulate = 223120,
         ParadigmShift = 223121,
         ConcussiveBlowx1 = 223123,
@@ -241,7 +241,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         ShroudofSaints = 223226,
         ClericStance = 223227,
         BlissfulMind = 223228,
-        DarkSeal2 = 223229,
+        DarkSeal2 = 223229,         //new effect
         Resonance2 = 223230,
         Excruciate = 223231,
         Necrogenesis = 223232,
