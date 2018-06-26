@@ -1,7 +1,4 @@
-require("global")
 require("modifiers")
-require("hiteffect")
-require("utils")
 
 function onHit(effect, attacker, defender, action, actionContainer)
     local enmity = action.enmity;

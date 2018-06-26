@@ -1,13 +1,12 @@
 require("modifiers")
-require("battleutils")
 
-function onPreAction(caster, target, effect, skill, action, actionContainer)
-    if skill.commandType == CommandType.Spell then
-        if action.actionType == ActionType.Heal then
-            action.amount = action.amount * 0.80;
-        elseif action.actionType == ActionType.Magic then
-            action.amount = action.amount * 1.20;
-        end
-    end
+function onGain(target, effect)
+    --Multiples Attack Magic Potency by 1.2 and Healing Magic Potency by 0.8
+    target.SetMod(modifiersGlobal.MagicAttack, target.GetMod(modifiersGlobal.MagicAttack) * 1.2);
+    target.SetMod(modifiersGlobal.MagicHeal, target.GetMod(modifiersGlobal.MagicHeal) * 0.8);
 end;
 
+function onLose(target, effect)
+    target.SetMod(modifiersGlobal.MagicAttack, target.GetMod(modifiersGlobal.MagicAttack) / 1.2);
+    target.SetMod(modifiersGlobal.MagicHeal, target.GetMod(modifiersGlobal.MagicHeal) / 0.8);
+end;

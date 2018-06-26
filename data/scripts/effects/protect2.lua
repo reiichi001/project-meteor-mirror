@@ -5,21 +5,18 @@ function onGain(target, effect)
     --http://forum.square-enix.com/ffxiv/threads/41900-White-Mage-A-Guide
     --5-4-5-4-5-4-5-4-5 repeating points of Enhancing for 1 defense
     --4.56 * Enhancing Potency
-    local defenseBuff = 5-- 4.56 * effect.GetMagnitude();
+    local defenseBuff = 4.56 * effect.GetMagnitude();
     local magicDefenseBuff = 0;
 
     target.AddMod(modifiersGlobal.Defense, defenseBuff);
 
     --27365: Enhanced Protect: Increases magic defense gained from Protect.
     --There is no "magic defense" stat, instead it gives stats to each resist stat.
-    --if effect.GetTier() >= 2 then
-        --7-6-7 repeating
-        --6.67 * Enhancing Potency
-        magicDefenseBuff = 5--6.67 * effect.GetMagnitude();
-        for i = modifiersGlobal.ResistFire, modifiersGlobal.ResistWater do
-            target.AddMod(i, magicDefenseBuff);
-        end
-    --end
+    magicDefenseBuff = 6.67 * effect.GetMagnitude();
+    for i = modifiersGlobal.ResistFire, modifiersGlobal.ResistWater do
+        target.AddMod(i, magicDefenseBuff);
+    end
+    
 
 end;
 
@@ -31,13 +28,9 @@ function onLose(target, effect)
 
     --27365: Enhanced Protect: Increases magic defense gained from Protect.
     --There is no "magic defense" stat, instead it gives stats to each resist stat.
-    --if effect.GetTier() >= 2 then
-        --7-6-7 repeating
-        --6.67 * Enhancing Potency
-        magicDefenseBuff = 6.67 * effect.GetMagnitude();
-        for i = modifiersGlobal.ResistFire, modifiersGlobal.ResistWater do
-            target.SubtractMod(i, magicDefenseBuff);
-        end
-    --end
+    magicDefenseBuff = 6.67 * effect.GetMagnitude();
+    for i = modifiersGlobal.ResistFire, modifiersGlobal.ResistWater do
+        target.SubtractMod(i, magicDefenseBuff);
+    end
 end;
 

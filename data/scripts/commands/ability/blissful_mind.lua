@@ -26,7 +26,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
 
         caster.AddMP(amount);
 
-        actionContainer.AddMPAction(caster.actorId, 30321, amount);
+        actionContainer.AddMPAction(caster.actorId, 33007, amount);
         actionContainer.AddAction(remAction);
     else
         --Blissful mind takes 25% of CURRENT HP and begins storing MP up to that point, at which point the buff changes to indicate its full

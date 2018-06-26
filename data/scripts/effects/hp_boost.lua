@@ -11,5 +11,5 @@ function onGain(target, effect)
 end;
 
 function onLose(target, effect)
-    target.SetMaxHP(target.GetMaxHP() * 0.75);
+    target.SetMaxHP(target.GetMaxHP() / 1.25);
 end;

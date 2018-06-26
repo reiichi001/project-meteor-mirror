@@ -1,13 +1,10 @@
 require("modifiers")
 
---will this break with things like slow?
+--Set magnitude to milliseconds that HF will reduce delay by
 function onGain(target, effect)
-    local currDelay = target.GetMod(modifiersGlobal.AttackDelay);
-    target.SetMod(modifiersGlobal.AttackDelay), 0.66 * currDelay);
+    target.SubtractMod(modifiersGlobal.AttackDelay), effect.GetMagnitude());
 end;
 
 function onLose(target, effect)
-    local currDelay = target.GetMod(modifiersGlobal.AttackDelay);
-    target.SetMod(modifiersGlobal.AttackDelay), 1.50 * currDelay);
+    target.AddMod(modifiersGlobal.AttackDelay), effect.GetMagnitude());
 end;
-

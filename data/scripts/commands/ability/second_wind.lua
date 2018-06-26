@@ -1,5 +1,6 @@
 require("global");
 require("modifiers");
+require("utils")
 --require("ability");
 
 function onAbilityPrepare(caster, target, ability)
@@ -20,9 +21,11 @@ end;
 -- An additional random integer (580 at level 50. +/- 3%)
 function onSkillFinish(caster, target, skill, action, actionContainer)
     --Base amount seems to be 0.215x^2 - 0.35x + 60
+    --^ this isn't totally correct
     local amount = (0.215 * math.pow(caster.GetLevel(), 2)) - (0.35 * caster.GetLevel()) + 60;
-    --Heals can vary by up to 3%
-    amount = math.Clamp(amount * (0.97 + (math.rand() * 3.0)), 0, 9999);
+
+    --Heals can vary by up to 3.5%
+    amount = math.Clamp(amount * (0.965 + (math.random() * 0.07)), 0, 9999);
 
     --PGL gets an INT bonus for Second Wind
     if caster.GetClass() == 2 then
@@ -34,6 +37,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
         amount = amount * 1.25;
     end;
     
+    action.amount = amount;
     --DoAction handles rates, buffs, dealing damage
     action.DoAction(caster, target, skill, actionContainer);
 end;

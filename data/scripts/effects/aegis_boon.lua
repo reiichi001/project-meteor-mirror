@@ -1,10 +1,8 @@
-require("global")
 require("modifiers")
-require("hiteffect")
 require("utils")
 
 --Forces a full block (0 damage taken)
-function onPreAction(caster, target, effect, skill, action, actionContainer)
+function onPreAction(effect, caster, target, skill, action, actionContainer)
     --If action hit from the rear and is a weaponskill ation
     action.blockRate = 100.0;
 end;

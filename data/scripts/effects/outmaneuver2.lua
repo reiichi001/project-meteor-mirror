@@ -1,6 +1,4 @@
 require("modifiers")
-require("hiteffect")
-require("battleutils")
 
 --Add 30 raw block rate. No idea how much block it actually gives.
 function onGain(owner, effect)

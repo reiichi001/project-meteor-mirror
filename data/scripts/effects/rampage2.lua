@@ -1,7 +1,4 @@
-require("global")
 require("modifiers")
-require("hiteffect")
-require("battleutils")
 require("utils")
 
 parryPerDT = 20;

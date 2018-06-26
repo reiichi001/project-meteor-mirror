@@ -1,5 +1,3 @@
-require("modifiers")
-require("hiteffect")
 require("battleutils")
 
 --Heals for 30%? of damage dealt on auto attacks.

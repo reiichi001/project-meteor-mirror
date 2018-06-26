@@ -1,5 +1,4 @@
 require("modifiers")
-require("hiteffect")
 require("battleutils")
 
 --Untraited reduces cooldown by 50%

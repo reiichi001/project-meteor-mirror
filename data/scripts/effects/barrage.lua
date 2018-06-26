@@ -1,9 +1,3 @@
-require("modifiers")
-require("hiteffect")
-require("battleutils")
-
---Untraited reduces cooldown by 50%
---Traited reduces cooldown by 100%
 function onCommandStart(effect, owner, skill, actionContainer)
     --27259: Light Shot
     if skill.id == 27259 then

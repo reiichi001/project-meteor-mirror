@@ -1,4 +1,5 @@
---Bloodletter2 is the uncomboed version of Bloodletter. It doesn't deal any additional damage when it falls off but has the same tick damage
+require("modifiers")
+
 function onGain(owner, effect)
     owner.SubtractMod(modifiersGlobal.MagicEvasion, effect.GetMagnitude());
 end

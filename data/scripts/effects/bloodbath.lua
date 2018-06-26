@@ -1,5 +1,4 @@
 require("modifiers");
-require("battleutils");
 
 --Absorb HP on next WS or ability
 function onHit(effect, attacker, defender, action, actionContainer)

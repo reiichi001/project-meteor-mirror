@@ -1,4 +1,5 @@
 require("modifiers")
+require("battleutils")
 
 function onGain(target, effect)
     --Untraited Sentinel is 30% damage taken down, traited is 50%

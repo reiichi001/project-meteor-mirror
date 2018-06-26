@@ -1,7 +1,5 @@
-require("global")
 require("modifiers")
-require("hiteffect")
-require("utils")
+require("battleutils")
 
 --Unclear what the exact damage is but it seems like it's the total amount of damage the attack would have done before parrying
 function onDamageTaken(effect, attacker, defender, action, actionContainer)

@@ -1,3 +1,5 @@
+require("modifiers")
+
 function onGain(owner, effect)
     owner.SubtractMod(modifiersGlobal.Defense, effect.GetMagnitude());
 end

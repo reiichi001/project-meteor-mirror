@@ -1,5 +1,3 @@
-require("modifiers")
-require("hiteffect")
 require("battleutils")
 
 function onHit(effect, attacker, defender, action, actionContainer)

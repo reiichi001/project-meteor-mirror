@@ -1,5 +1,4 @@
 require("modifiers");
-require("battleutils");
 
 function onGain(owner, effect)
     owner.statusEffects.RemoveStatusEffect(223208);

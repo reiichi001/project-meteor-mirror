@@ -1,3 +1,5 @@
+require("modifiers")
+
 --This is the comboed version of bloodletter.
 --All videos I can find have it dealing 15 damage.
 --Damage type is projectile.

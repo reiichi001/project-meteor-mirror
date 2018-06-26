@@ -1,5 +1,4 @@
 require("modifiers")
-require("hiteffect")
 require("battleutils")
 
 --https://www.bluegartr.com/threads/107403-Stats-and-how-they-work/page22
