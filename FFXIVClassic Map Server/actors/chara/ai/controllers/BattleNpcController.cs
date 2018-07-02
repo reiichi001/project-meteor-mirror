@@ -240,7 +240,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
             var targetPos = new Vector3(owner.target.positionX, owner.target.positionY, owner.target.positionZ);
             var distance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, targetPos.X, targetPos.Y, targetPos.Z);
-            if (distance > owner.GetAttackRange() - 0.2f || owner.aiContainer.CanFollowPath())
+            if (distance > owner.GetAttackRange() - 0.2f && owner.aiContainer.CanFollowPath())
             {
                 if (CanMoveForward(distance))
                 {

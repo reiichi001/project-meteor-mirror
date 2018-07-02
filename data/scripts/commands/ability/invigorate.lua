@@ -15,7 +15,7 @@ function onAbilityStart(caster, target, ability)
     local magnitude = 100;
 
     --8032704: Drachen Mail
-    if caster.GetEquipment().GetItemAtSlot(10).itemId == 8032704 then
+    if caster.HasItemEquippedInSlot(8032704, 10) then
         magnitude = 120;
     end
 

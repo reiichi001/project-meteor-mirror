@@ -409,5 +409,37 @@ namespace FFXIVClassic.Common
 
             return dx * dx + dy * dy + dz * dz;
         }
+
+        //Distance of just the x and z valeus, ignoring y
+        public static float XZDistanceSquared(Vector3 lhs, Vector3 rhs)
+        {
+            return XZDistanceSquared(lhs.X, lhs.Z, rhs.X, rhs.Z);
+        }
+
+        public static float XZDistance(Vector3 lhs, Vector3 rhs)
+        {
+            return XZDistance(lhs.X, lhs.Z, rhs.X, rhs.Z);
+        }
+
+        public static float XZDistance(float x, float z, float x2, float z2)
+        {
+            if (x == x2 && z == z2)
+                return 0.0f;
+
+            return (float)Math.Sqrt(XZDistanceSquared(x, z, x2, z2));
+        }
+
+
+        public static float XZDistanceSquared(float x, float z, float x2, float z2)
+        {
+            if (x == x2 && z == z2)
+                return 0.0f;
+
+            // todo: mz maths is shit
+            var dx = x - x2;
+            var dz = z - z2;
+
+            return dx * dx + dz * dz;
+        }
     }
 }

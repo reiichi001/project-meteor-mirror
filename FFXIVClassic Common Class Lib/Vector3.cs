@@ -105,17 +105,17 @@ namespace FFXIVClassic.Common
             return newVec;
         }
 
-        public bool IsWithinCircle(Vector3 centre, float radius)
+        public bool IsWithinCircle(Vector3 center, float maxRadius, float minRadius)
         {
-            if (this.X == centre.X && this.Z == centre.Z)
+            if (this.X == center.X && this.Z == center.Z)
                 return true;
 
-            float diffX = centre.X - this.X;
-            float diffZ = centre.Z - this.Z;
+            float diffX = center.X - this.X;
+            float diffZ = center.Z - this.Z;
 
-            float distance = (float)Math.Sqrt((diffX * diffX) + (diffZ * diffZ));
+            float distance = Utils.XZDistance(center.X, center.Z, X, Z);
 
-            return distance < radius;
+            return distance <= maxRadius && distance >= minRadius;
         }
 
         public bool IsWithinBox(Vector3 upperLeftCorner, Vector3 lowerRightCorner)
@@ -126,6 +126,20 @@ namespace FFXIVClassic.Common
                 lowerRightCorner.X >= this.X &&
                 lowerRightCorner.Y >= this.Y &&
                 lowerRightCorner.Z >= this.Z;
+        }
+
+        //Checks if this vector is in a cone, note it doesn't check for distance
+        public bool IsWithinCone(Vector3 coneCenter, float coneRotation, float coneAngle)
+        {
+            float angleToTarget = GetAngle(coneCenter, this);
+            float halfAngleOfAoe = (float) (coneAngle * Math.PI / 2);
+            float rotationToAdd = coneRotation + halfAngleOfAoe;
+
+            //This is the angle relative to the lower angle of the cone
+            angleToTarget = (angleToTarget + rotationToAdd - (0.5f * (float)Math.PI)) % (2 * (float) Math.PI);
+
+            //If the relative angle is less than the total angle of the cone, the target is inside the cone
+            return angleToTarget >= 0 && angleToTarget <= (coneAngle * Math.PI);
         }
     }
 }

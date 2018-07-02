@@ -11,7 +11,7 @@ end;
 
 function onSkillFinish(caster, target, skill, action, actionContainer)
     --8032701: Fighter's Gauntlets: Reduces Collusion cooldown by 10 seconds
-    if caster.GetEquipment().GetItemAtSlot(14).itemId == 8032701 then
+    if caster.HasItemEquippedInSlot(8032701, 13) then
         skill.recastTimeMs = skill.recastTimeMs - 10000;
     end
 

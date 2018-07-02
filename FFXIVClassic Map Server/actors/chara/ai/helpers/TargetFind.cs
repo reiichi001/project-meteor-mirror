@@ -70,13 +70,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
     class TargetFind
     {
         private Character owner;
-        private Character masterTarget; // if target is a pet, this is the owner
+        private Character masterTarget;         // if target is a pet, this is the owner
         private TargetFindCharacterType findType;
         private ValidTarget validTarget;
         private TargetFindAOETarget aoeTarget;
         private TargetFindAOEType aoeType;
-        private Vector3 targetPosition;
-        private float maxDistance;
+        private Vector3 aoeTargetPosition;      //This is the center of circle an cone AOEs and the position where line aoes come out
+        private float aoeTargetRotation;        //This is the direction the aoe target is facing
+        private float maxDistance;              //Radius for circle and cone AOEs, length for line AOEs
+        private float minDistance;              //Minimum distance to that target must be to be able to be hit
+        private float width;                    //Width of line AOEs
+        private float height;                   //All AoEs are boxes or cylinders. Height is usually 10y regardless of maxDistance, but some commands have different values. Height is total height, so targets can be at most half this distance away on Y axis
+        private float aoeRotateAngle;           //This is the angle that cones and line aoes are rotated about aoeTargetPosition for skills that come out of a side other than the front
+        private float coneAngle;                //The angle of the cone itself in Pi Radians
         private float param;
         private List<Character> targets;
 
@@ -92,8 +98,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.validTarget = ValidTarget.Enemy;
             this.aoeType = TargetFindAOEType.None;
             this.aoeTarget = TargetFindAOETarget.Target;
-            this.targetPosition = null;
+            this.aoeTargetPosition = null;
+            this.aoeTargetRotation = 0;
             this.maxDistance = 0.0f;
+            this.minDistance = 0.0f;
+            this.width = 0.0f;
+            this.height = 0.0f;
+            this.aoeRotateAngle = 0.0f;
+            this.coneAngle = 0.0f;
             this.param = 0.0f;
             this.targets = new List<Character>();
         }
@@ -117,12 +129,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         /// <see cref="TargetFindAOEType.Box"/> - width of box / 2 (todo: set box length not just between user and target)
         /// </param>
         /// <param name="param"> param in degrees of cone (todo: probably use radians and forget converting at runtime) </param>
-        public void SetAOEType(ValidTarget validTarget, TargetFindAOEType aoeType, TargetFindAOETarget aoeTarget, float maxDistance = -1.0f, float param = -1.0f)
+        public void SetAOEType(ValidTarget validTarget, TargetFindAOEType aoeType, TargetFindAOETarget aoeTarget, float maxDistance, float minDistance, float height, float aoeRotate, float coneAngle, float param = 0.0f)
         {
             this.validTarget = validTarget;
             this.aoeType = aoeType;
-            this.maxDistance = maxDistance != -1.0f ? maxDistance : 0.0f;
-            this.param = param != -1.0f ? param : 0.0f;
+            this.maxDistance = maxDistance;
+            this.minDistance = minDistance;
+            this.param = param;
+            this.height = height;
+            this.aoeRotateAngle = aoeRotate;
+            this.coneAngle = coneAngle;
         }
 
         /// <summary>
@@ -132,15 +148,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         /// <param name="aoeTarget"></param>
         /// <param name="length"></param>
         /// <param name="width"></param>
-        public void SetAOEBox(ValidTarget validTarget, TargetFindAOETarget aoeTarget, float length, float width)
+        public void SetAOEBox(ValidTarget validTarget, TargetFindAOETarget aoeTarget, float length, float width, float aoeRotateAngle)
         {
             this.validTarget = validTarget;
             this.aoeType = TargetFindAOEType.Box;
             this.aoeTarget = aoeTarget;
+            this.aoeRotateAngle = aoeRotateAngle;
             float x = owner.positionX - (float)Math.Cos(owner.rotation + (float)(Math.PI / 2)) * (length);
             float z = owner.positionZ + (float)Math.Sin(owner.rotation + (float)(Math.PI / 2)) * (length);
-            this.targetPosition = new Vector3(x, owner.positionY, z);
-            this.maxDistance = width;
+            this.maxDistance = length;
+            this.width = width;
         }
 
         /// <summary>
@@ -163,9 +180,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             validTarget = flags;
             // are we creating aoe circles around target or self
             if (aoeTarget == TargetFindAOETarget.Self)
-                this.targetPosition = owner.GetPosAsVector3();
+            {
+                this.aoeTargetPosition = owner.GetPosAsVector3();
+                this.aoeTargetRotation = owner.rotation + (float) (aoeRotateAngle * Math.PI);
+            }
             else
-                this.targetPosition = target.GetPosAsVector3();
+            {
+                this.aoeTargetPosition = target.GetPosAsVector3();
+                this.aoeTargetRotation = target.rotation + (float) (aoeRotateAngle * Math.PI);
+            }
 
             masterTarget = TryGetMasterTarget(target) ?? target;
 
@@ -179,66 +202,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             {
                 AddAllInRange(target, withPet);
             }
-                /*
-                if (aoeType != TargetFindAOEType.None)
-                {
-                    if (IsPlayer(owner))
-                    {
-                        if (masterTarget is Player)
-                        {
-                            findType = TargetFindCharacterType.PlayerToPlayer;
 
-                            if (masterTarget.currentParty != null)
-                            {
-                                if ((validTarget & (ValidTarget.Ally | ValidTarget.PartyMember)) != 0)
-                                    AddAllInAlliance(masterTarget, withPet);
-                                else
-                                    AddAllInParty(masterTarget, withPet);
-                            }
-                            else
-                            {
-                                AddTarget(masterTarget, withPet);
-                            }
-                        }
-                        else
-                        {
-                            findType = TargetFindCharacterType.PlayerToBattleNpc;
-                            AddAllBattleNpcs(masterTarget, false);
-                        }
-                    }
-                    else
-                    {
-                        // todo: this needs checking..
-                        if (masterTarget is Player || owner.allegiance == CharacterTargetingAllegiance.Player)
-                            findType = TargetFindCharacterType.BattleNpcToPlayer;
-                        else
-                            findType = TargetFindCharacterType.BattleNpcToBattleNpc;
-
-                        // todo: configurable pet aoe buff
-                        if (findType == TargetFindCharacterType.BattleNpcToBattleNpc && TryGetMasterTarget(target) != null)
-                            withPet = true;
-
-                        // todo: does ffxiv have call for help flag?
-                        //if ((findFlags & ValidTarget.HitAll) != 0)
-                        //{
-                        //    AddAllInZone(masterTarget, withPet);
-                        //}
-
-                        AddAllInAlliance(target, withPet);
-
-                        if (findType == TargetFindCharacterType.BattleNpcToPlayer)
-                        {
-                            if (owner.allegiance == CharacterTargetingAllegiance.Player)
-                                AddAllInZone(masterTarget, withPet);
-                            else
-                                AddAllInHateList();
-                        }
-                    }
-                }*/
-
-
-                if (targets.Count > 8)
-                    targets.RemoveRange(8, targets.Count - 8);
+            //if (targets.Count > 8)
+                //targets.RemoveRange(8, targets.Count - 8);
 
             //Curaga starts with lowest health players, so the targets are definitely sorted at least for some abilities
             //Other aoe abilities might be sorted by distance?
@@ -252,28 +218,33 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         /// </summary>
         private bool IsWithinBox(Character target, bool withPet)
         {
-            if (aoeTarget == TargetFindAOETarget.Self)
-                targetPosition = owner.GetPosAsVector3();
-            else
-                targetPosition = target.GetPosAsVector3();
+            Vector3 vec = target.GetPosAsVector3() - aoeTargetPosition;
+            Vector3 relativePos = new Vector3();
 
-            var myPos = owner.GetPosAsVector3();
-            var angle = Vector3.GetAngle(myPos, targetPosition);
+            //Get target's position relative to owner's position where owner's front is facing positive z axis
+            relativePos.X = (float)(vec.X * Math.Cos(aoeTargetRotation) - vec.Z * Math.Sin(aoeTargetRotation));
+            relativePos.Z = (float)(vec.X * Math.Sin(aoeTargetRotation) + vec.Z * Math.Cos(aoeTargetRotation));
 
-            // todo: actually check this works..
-            var myCorner = myPos.NewHorizontalVector(angle, maxDistance);
-            var myCorner2 = myPos.NewHorizontalVector(angle, -maxDistance);
+            float halfHeight = height / 2;
+            float halfWidth = width / 2;
 
-            var targetCorner = targetPosition.NewHorizontalVector(angle, maxDistance);
-            var targetCorner2 = targetPosition.NewHorizontalVector(angle, -maxDistance);
+            Vector3 closeBottomLeft = new Vector3(-halfWidth, -halfHeight, minDistance);
+            Vector3 farTopRight = new Vector3(halfWidth, halfHeight, maxDistance);
 
-            return target.GetPosAsVector3().IsWithinBox(targetCorner2, myCorner);
+            return relativePos.IsWithinBox(closeBottomLeft, farTopRight);
         }
 
         private bool IsWithinCone(Character target, bool withPet)
         {
-            // todo: make this actual cone
-            return owner.IsFacing(target, param) && Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, target.positionX, target.positionY, target.positionZ) < maxDistance;
+            double distance = Utils.XZDistance(aoeTargetPosition, target.GetPosAsVector3());
+
+            //Make sure target is within the correct range first
+            if (!IsWithinCircle(target))
+                return false;
+
+            //This might not be 100% right or the most optimal way to do this
+            //Get between taget's position and our position
+            return target.GetPosAsVector3().IsWithinCone(aoeTargetPosition, aoeTargetRotation, coneAngle);
         }
 
         private void AddTarget(Character target, bool withPet)
@@ -364,9 +335,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if ((validTarget & ValidTarget.NPC) == 0 && target.isStatic)
                 return false;
 
+            //This skill can't be used on corpses and target is dead, return false
+            if ((validTarget & ValidTarget.Corpse) == 0 && target.IsDead())
+                return false;
+
             //This skill must be used on Allies and target is not an ally, return false
             if ((validTarget & ValidTarget.Ally) != 0 && target.allegiance != owner.allegiance)
                 return false;
+
 
             //This skill can't be used on players and target is a player, return false
             //Do we need a player flag? Ally/Enemy flags probably serve the same purpose
@@ -404,7 +380,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (!ignoreAOE)
             {
                 // hit everything within zone or within aoe region
-                if (param == -1.0f || aoeType == TargetFindAOEType.Circle && !IsWithinCircle(target, param))
+                if (param == -1.0f || aoeType == TargetFindAOEType.Circle && !IsWithinCircle(target))
                     return false;
 
                 if (aoeType == TargetFindAOEType.Cone && !IsWithinCone(target, withPet))
@@ -419,16 +395,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return true;
         }
 
-        private bool IsWithinCircle(Character target, float maxDistance)
+        private bool IsWithinCircle(Character target)
         {
-            // todo: make y diff modifiable?
-                        
-            //if (Math.Abs(owner.positionX - target.positionY) > 6.0f)
-               // return false;
-
-            if (this.targetPosition == null)
-                this.targetPosition = aoeTarget == TargetFindAOETarget.Self ? owner.GetPosAsVector3() : masterTarget.GetPosAsVector3();
-            return target.GetPosAsVector3().IsWithinCircle(targetPosition, maxDistance);
+            //Check if XZ is in circle and that y difference isn't larger than half height
+            return target.GetPosAsVector3().IsWithinCircle(aoeTargetPosition, maxDistance, minDistance) && Math.Abs(owner.positionY - target.positionY) <= (height / 2);
         }
 
         private bool IsPlayer(Character target)

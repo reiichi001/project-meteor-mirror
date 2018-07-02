@@ -542,8 +542,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             hitEffect |= HitTypeEffects[hitType];
 
             //For combos that land, add the combo effect
-            if (skill != null && skill.isCombo && hitType > HitType.Evade && hitType != HitType.Evade)
+            if (skill != null && skill.isCombo && hitType > HitType.Evade && hitType != HitType.Evade && !skill.comboEffectAdded)
+            {
                 hitEffect |= (HitEffect)(skill.comboStep << 15);
+                skill.comboEffectAdded = true;
+            }
 
             //if attack hit the target, take into account protective status effects
             if (hitType >= HitType.Parry)
@@ -581,8 +584,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 
             hitEffect |= HitTypeEffects[hitType];
 
-            if (skill != null && skill.isCombo)
+            if (skill != null && skill.isCombo && !skill.comboEffectAdded)
+            {
                 hitEffect |= (HitEffect)(skill.comboStep << 15);
+                skill.comboEffectAdded = true;
+            }
 
             //if attack hit the target, take into account protective status effects
             if (hitType >= HitType.Block)

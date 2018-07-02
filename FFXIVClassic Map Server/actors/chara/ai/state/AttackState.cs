@@ -104,7 +104,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
             //List<BattleAction> actions = new List<BattleAction>();
             BattleActionContainer actions = new BattleActionContainer();
-            target.SetMod((uint) Modifier.MinimumHpLock, 0);
             
             var i = 0;
             for (int hitNum = 0; hitNum < 1 /* owner.GetMod((uint) Modifier.HitCount)*/; hitNum++)
@@ -123,7 +122,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             BattleAction error = null;// new BattleAction(0, null, 0, 0);
             //owner.DoActions(null, actions.GetList(), ref error);
             //owner.OnAttack(this, actions[0], ref errorResult);
-            owner.DoBattleAction(22104, 0x19001000, actions.GetList());
+            var anim = (uint)(17 << 24 | 1 << 12);
+            owner.DoBattleAction(22104, anim, actions.GetList());
         }
 
         public override void TryInterrupt()
@@ -161,6 +161,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             {
                 return false;
             }
+
+            if (!owner.IsFacing(target))
+            {
+                return false;
+            }
             // todo: shouldnt need to check if owner is dead since all states would be cleared
             if (owner.IsDead() || target.IsDead())
             {
@@ -179,7 +184,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             {
                 if (owner is Player)
                 {
-                    ((Player)owner).SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20);
+                    //The target is too far away
+                    ((Player)owner).SendGameMessage(Server.GetWorldManager().GetActor(), 32537, 0x20);
                 }
                 return false;
             }

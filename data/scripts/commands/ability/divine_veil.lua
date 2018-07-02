@@ -11,7 +11,7 @@ end;
 
 function onSkillFinish(caster, target, skill, action, actionContainer)
     --8051401: Gallant Cuisses
-    if caster.GetEquipment().GetItemAtSlot(14).itemId == 8051401 then
+    if caster.HasItemEquippedInSlot(8051401, 12) then
         ability.statusTier = 2;
     end
 

@@ -12,8 +12,7 @@ function onMagicStart(caster, target, skill)
     local tpPerTick = 50;
 
     --8051405: Choral Tights: Enhances Paeon Of War
-    local pants = caster.GetEquipment().GetItemAtSlot(12);
-    if pants and pants.itemId == 8051405 then
+    if caster.HasItemEquippedInSlot(8051405, 12) then
         tpPerTick = 60;
     end
 

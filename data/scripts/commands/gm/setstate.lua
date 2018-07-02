@@ -14,14 +14,11 @@ function onTrigger(player, argc, state)
     local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
     local sender = "[setstate] ";
     
-    max = tonumber(state) or 0;
-    
-    for s = 0, max do
-        if player and player.target then
-            player.target:ChangeState(s);
-			wait(0.8);
-			player:SendMessage(0x20, "", "state: "..s);
-        end;
-    end
-           
+    local s = tonumber(state);
+    local actor = GetWorldManager():GetActorInWorld(player.currentTarget) or nil;
+    if player and actor then
+        actor:ChangeState(s);
+		wait(0.8);
+		player:SendMessage(0x20, "", "state: "..s);
+    end;
 end;

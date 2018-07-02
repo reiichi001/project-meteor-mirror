@@ -14,8 +14,7 @@ function onMagicStart(caster, target, skill)
     --8032705: Choral Shirt: Enhances Ballad of Magi
     --With Choral Shirt, Ballad gives 26 mp a tick. It could be a flat 6 or multiply by 1.3
     --Because minuet seemed like a normal addition I'm assuming this is too
-    local shirt = caster.GetEquipment().GetItemAtSlot(10);
-    if shirt and shirt.itemId == 8032705 then
+    if caster.HasItemEquippedInSlot(8032705, 10) then
         mpPerTick = mpPerTick + 6;
     end
 

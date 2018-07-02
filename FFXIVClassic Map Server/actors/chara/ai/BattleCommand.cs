@@ -104,7 +104,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public byte numHits;                                //amount of hits in the skill
         public BattleCommandPositionBonus positionBonus;    //bonus for front/flank/rear
         public BattleCommandProcRequirement procRequirement;//if the skill requires a block/parry/evade before using
-        public int range;                                   //max distance to use skill
+        public float range;                                 //maximum distance to target to be able to use this skill
+        public float minRange;                              //Minimum distance to target to be able to use this skill
 
         public uint statusId;                               //id of statuseffect that the skill might inflict
         public uint statusDuration;                         //duration of statuseffect in milliseconds
@@ -121,7 +122,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public ushort animationDurationSeconds;
         public uint battleAnimation;
         public ushort worldMasterTextId;
-        public int aoeRange;                                //size of aoe effect. (how will this work for box aoes?)
+        public float aoeRange;                              //Radius for circle and cone aoes, length for box aoes
+        public float aoeMinRange;                           //Minimum range of aoe effect for things like Lunar Dynamo or Arrow Helix
+        public float aoeConeAngle;                          //Angle of aoe cones
+        public float aoeRotateAngle;                        //Amount aoes are rotated about the target position (usually the user's position)
+        public float rangeHeight;                           //Total height a skill can be used against target above or below user
+        public float rangeWidth;                            //Width of box aoes
         public int[] comboNextCommandId = new int[2];       //next two skills in a combo
         public short comboStep;                             //Where in a combo string this skill is
         public CommandType commandType;
@@ -130,12 +136,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
 
         public byte statusTier;                             //tier of status to put on target
-        public ulong statusMagnitude = 0;                   //magnitude of status to put on target
+        public double statusMagnitude = 0;                  //magnitude of status to put on target
         public ushort basePotency;                          //damage variable
         public float enmityModifier;                        //multiples by damage done to get final enmity
         public float accuracyModifier;                      //modifies accuracy
         public float bonusCritRate;                         //extra crit rate
         public bool isCombo;
+        public bool comboEffectAdded = false;               //If the combo effect is added to multiple hiteffects it plays multiple times, so this keeps track of that
         public bool isRanged = false;
 
         public bool actionCrit;                             //Whether any actions were critical hits, used for Excruciate
@@ -193,11 +200,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             if (aoeType == TargetFindAOEType.Box)
             {
-                targetFind.SetAOEBox(validTarget, aoeTarget, range, aoeRange);
+                targetFind.SetAOEBox(validTarget, aoeTarget, aoeRange, rangeWidth, aoeRotateAngle);
             }
             else
             {
-                targetFind.SetAOEType(validTarget, aoeType, aoeTarget, range, aoeRange);
+                targetFind.SetAOEType(validTarget, aoeType, aoeTarget, aoeRange, aoeMinRange, rangeHeight, aoeRotateAngle, aoeConeAngle);
             }
 
             /*

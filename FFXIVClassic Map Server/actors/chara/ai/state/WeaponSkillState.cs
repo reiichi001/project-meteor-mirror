@@ -46,7 +46,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             }
             else
             {
-                owner.LookAt(target);
                 hitDirection = owner.GetHitDirection(target);
 
                 //Do positionals and combo effects first because these can influence accuracy and amount of targets/numhits, which influence the rest of the steps
@@ -76,6 +75,21 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                                 skill.isCombo = true;
                         }
                     }
+
+                    if (!skill.IsInstantCast())
+                    {
+                        float castTime = skill.castTimeMs;
+
+                        // command casting duration
+                        if (owner is Player)
+                        {
+                            // todo: modify spellSpeed based on modifiers and stuff
+                            ((Player)owner).SendStartCastbar(skill.id, Utils.UnixTimeStampUTC(DateTime.Now.AddMilliseconds(castTime)));
+                        }
+                        owner.SendChant(0xf, 0x0);
+                        //You ready [skill] (6F000002: BLM, 6F000003: WHM, 0x6F000008: BRD)
+                        owner.DoBattleAction(skill.id, (uint)0x6F000000 | skill.castType, new BattleAction(target.actorId, 30126, 1, 0, 1));
+                    }
                 }
             }
         }
@@ -95,7 +109,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 // todo: check weapon delay/haste etc and use that
                 var actualCastTime = skill.castTimeMs;
 
-                if ((tick - startTime).Milliseconds >= skill.castTimeMs)
+                if ((tick - startTime).TotalMilliseconds >= skill.castTimeMs)
                 {
                     OnComplete();
                     return true;
@@ -117,6 +131,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnComplete()
         {
+            owner.LookAt(target);
             skill.targetFind.FindWithinArea(target, skill.validTarget, skill.aoeTarget);
             isCompleted = true;
 

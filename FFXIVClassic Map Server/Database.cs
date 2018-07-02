@@ -2258,7 +2258,7 @@ namespace FFXIVClassic_Map_Server
                     int count = 0;
                     conn.Open();
 
-                    var query = ("SELECT `id`, name, classJob, lvl, requirements, mainTarget, validTarget, aoeType, aoeRange, aoeTarget, basePotency, numHits, positionBonus, procRequirement, `range`, statusId, statusDuration, statusChance, " +
+                    var query = ("SELECT `id`, name, classJob, lvl, requirements, mainTarget, validTarget, aoeType, aoeRange, aoeMinRange, aoeConeAngle, aoeRotateAngle, aoeTarget, basePotency, numHits, positionBonus, procRequirement, `range`, minRange, rangeHeight, rangeWidth, statusId, statusDuration, statusChance, " +
                         "castType, castTime, recastTime, mpCost, tpCost, animationType, effectAnimation, modelAnimation, animationDuration, battleAnimation, validUser, comboId1, comboId2, comboStep, accuracyMod, worldMasterTextId, commandType, actionType, actionProperty FROM server_battle_commands;");
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
@@ -2281,7 +2281,10 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.numHits = reader.GetByte("numHits");
                             battleCommand.positionBonus = (BattleCommandPositionBonus)reader.GetByte("positionBonus");
                             battleCommand.procRequirement = (BattleCommandProcRequirement)reader.GetByte("procRequirement");
-                            battleCommand.range = reader.GetInt32("range");
+                            battleCommand.range = reader.GetFloat("range");
+                            battleCommand.minRange = reader.GetFloat("minRange");
+                            battleCommand.rangeHeight = reader.GetInt32("rangeHeight");
+                            battleCommand.rangeWidth = reader.GetInt32("rangeWidth");
                             battleCommand.statusId = reader.GetUInt32("statusId");
                             battleCommand.statusDuration = reader.GetUInt32("statusDuration");
                             battleCommand.statusChance = reader.GetFloat("statusChance");
@@ -2295,7 +2298,10 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.effectAnimation = reader.GetUInt16("effectAnimation");
                             battleCommand.modelAnimation = reader.GetUInt16("modelAnimation");
                             battleCommand.animationDurationSeconds = reader.GetUInt16("animationDuration");
-                            battleCommand.aoeRange = reader.GetInt32("aoeRange");
+                            battleCommand.aoeRange = reader.GetFloat("aoeRange");
+                            battleCommand.aoeMinRange = reader.GetFloat("aoeMinRange");
+                            battleCommand.aoeConeAngle = reader.GetFloat("aoeConeAngle");
+                            battleCommand.aoeRotateAngle = reader.GetFloat("aoeRotateAngle");
                             battleCommand.aoeTarget = (TargetFindAOETarget)reader.GetByte("aoeTarget");
 
                             battleCommand.battleAnimation = reader.GetUInt32("battleAnimation");

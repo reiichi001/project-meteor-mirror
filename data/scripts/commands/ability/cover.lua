@@ -13,7 +13,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
     --This is for the "Cover" effect the caster receives.
     local coverTier = 1
     --8032701: Gallant Surcoat: Enhances Cover
-    if caster.GetEquipment().GetItemAtSlot(10).itemId == 8032701 then
+    if caster.HasItemEquippedInSlot(8032701, 10) then
         coverTier = 2;
     end
 

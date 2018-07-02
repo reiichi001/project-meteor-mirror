@@ -828,7 +828,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 //TP gained on an attack is usually 100 * delay.
                 //Store TP seems to add .1% per point.
                 double weaponDelay = GetMod(Modifier.AttackDelay) / 1000.0;
-                var storeTPPercent = 1 + (GetMod(Modifier.StoreTP) * 0.1);
+                var storeTPPercent = 1 + (GetMod(Modifier.StoreTP) * 0.001);
                 AddTP((int)(weaponDelay * 100 * storeTPPercent));
             }
         }
@@ -1106,7 +1106,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             //Now that we know if we hit the target we can check if the combo continues
-            if (this is Player player && command.commandType == CommandType.WeaponSkill)
+            if (this is Player player)
                 if (command.isCombo && hitTarget)
                     player.SetCombos(command.comboNextCommandId);
                 else
@@ -1122,7 +1122,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public List<Character> GetPartyMembersInRange(uint range)
         {
             TargetFind targetFind = new TargetFind(this);
-            targetFind.SetAOEType(ValidTarget.PartyMember, TargetFindAOEType.Circle, TargetFindAOETarget.Self, range);
+            targetFind.SetAOEType(ValidTarget.PartyMember, TargetFindAOEType.Circle, TargetFindAOETarget.Self, range, 0, 10, 0, 0);
             targetFind.FindWithinArea(this, ValidTarget.PartyMember, TargetFindAOETarget.Self);
             return targetFind.GetTargets();
         }

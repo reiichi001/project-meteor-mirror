@@ -13,7 +13,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
     action.amount = skill.basePotency;
 
     --8071401: Gallant Gauntlets: Enhances Holy Succor
-    if caster.GetEquipment().GetItemAtSlot(13).itemId == 8071401 then
+    if caster.HasItemEquippedInSlot(8071401, 13) then
         action.amount = action.amount * 1.10;
     end
 

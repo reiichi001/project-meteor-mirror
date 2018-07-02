@@ -127,7 +127,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return AddStatusEffect(se, owner);
         }
 
-        public bool AddStatusEffect(uint id,  byte tier, UInt64 magnitude)
+        public bool AddStatusEffect(uint id,  byte tier, double magnitude)
         {
             var se = Server.GetWorldManager().GetStatusEffect(id);
 
@@ -137,7 +137,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return AddStatusEffect(se, owner);
         }
 
-        public bool AddStatusEffect(uint id, byte tier, UInt64 magnitude, uint duration, int tickMs = 3000)
+        public bool AddStatusEffect(uint id, byte tier, double magnitude, uint duration, int tickMs = 3000)
         {
             var se = Server.GetWorldManager().GetStatusEffect(id);
             if (se != null)

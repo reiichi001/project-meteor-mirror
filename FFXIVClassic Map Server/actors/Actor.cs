@@ -657,9 +657,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             var dX = this.positionX - x;
             var dY = this.positionZ - z;
-
             var rot2 = Math.Atan2(dY, dX);
-
             var dRot = Math.PI - rot2 + Math.PI / 2;
 
             // pending move, dont need to unset it
@@ -668,10 +666,11 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         // todo: is this legit?
-        public bool IsFacing(float x, float z, float angle = 40.0f)
+        public bool IsFacing(float x, float z, float angle = 90.0f)
         {
             angle = (float)(Math.PI * angle / 180);
-            return Math.Abs(Vector3.GetAngle(positionX, positionZ, x, z) - rotation) < angle;
+            var a = Vector3.GetAngle(positionX, positionZ, x, z);
+            return new Vector3(x, 0, z).IsWithinCone(GetPosAsVector3(), rotation, angle);
         }
 
         public bool IsFacing(Actor target, float angle = 40.0f)

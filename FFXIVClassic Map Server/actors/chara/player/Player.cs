@@ -2124,6 +2124,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override bool CanCast(Character target, BattleCommand spell)
         {
+            //Might want to do these with a BattleAction instead to be consistent with the rest of command stuff
             if (GetHotbarTimer(spell.id) > Utils.UnixTimeStampUTC())
             {
                 // todo: this needs confirming
@@ -2137,10 +2138,28 @@ namespace FFXIVClassic_Map_Server.Actors
                 SendGameMessage(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)spell.id);
                 return false;
             }
-            if (Utils.Distance(positionX, positionY, positionZ, target.positionX, target.positionY, target.positionZ) > spell.range)
+            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) > spell.range)
             {
-                // The target is out of range.
+                // The target is too far away.
                 SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20, (uint)spell.id);
+                return false;
+            }
+            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) < spell.minRange)
+            {
+                // The target is too close.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32538, 0x20, (uint)spell.id);
+                return false;
+            }
+            if (target.positionY - positionY > (spell.rangeHeight / 2))
+            {
+                // The target is too far above you.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32540, 0x20, (uint)spell.id);
+                return false;
+            }
+            if (positionY - target.positionY > (spell.rangeHeight / 2))
+            {
+                // The target is too far below you.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32541, 0x20, (uint)spell.id);
                 return false;
             }
             if (!IsValidTarget(target, spell.mainTarget) || !spell.IsValidMainTarget(this, target))
@@ -2169,12 +2188,37 @@ namespace FFXIVClassic_Map_Server.Actors
                 return false;
             }
 
-            if (Utils.Distance(positionX, positionY, positionZ, target.positionX, target.positionY, target.positionZ) > skill.range)
+            //Original game checked height difference before horizontal distance
+            if (target.positionY - positionY > (skill.rangeHeight / 2))
             {
-                // The target is out of range.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20, (uint)skill.id);
+                // The target is too far above you.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32540, 0x20, (uint)skill.id);
                 return false;
             }
+
+            if (positionY - target.positionY > (skill.rangeHeight / 2))
+            {
+                // The target is too far below you.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32541, 0x20, (uint)skill.id);
+                return false;
+            }
+
+            var targetDist = Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ);
+
+            if (targetDist > skill.range)
+            {
+                // The target is out of range.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32537, 0x20, (uint)skill.id);
+                return false;
+            }
+
+            if (targetDist < skill.minRange)
+            {
+                // The target is too close.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32538, 0x20, (uint)skill.id);
+                return false;
+            }
+
 
             if (!IsValidTarget(target, skill.validTarget) || !skill.IsValidMainTarget(this, target))
             {
@@ -2379,7 +2423,8 @@ namespace FFXIVClassic_Map_Server.Actors
             //If we're starting or continuing a combo chain, add the status effect and combo cost bonus
             if (comboIds[0] != 0)
             {
-                StatusEffect comboEffect = new StatusEffect(this, (uint) StatusEffectId.Combo, 1, 0, 13);
+                StatusEffect comboEffect = new StatusEffect(this, Server.GetWorldManager().GetStatusEffect((uint) StatusEffectId.Combo));
+                comboEffect.SetDuration(13);
                 comboEffect.SetOverwritable(1);
                 statusEffects.AddStatusEffect(comboEffect, this, true);
                 playerWork.comboCostBonusRate = 1;
@@ -2468,6 +2513,13 @@ namespace FFXIVClassic_Map_Server.Actors
                     AddMod(trait.modifier, trait.bonus);
                 }
             }
+        }
+
+        public bool HasItemEquippedInSlot(uint itemId, ushort slot)
+        {
+            var equippedItem = equipment.GetItemAtSlot(slot);
+
+            return equippedItem != null && equippedItem.itemId == itemId;
         }
     }
 }

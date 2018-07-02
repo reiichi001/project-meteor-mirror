@@ -61,17 +61,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 // todo: check within attack range
                 float[] baseCastDuration = { 1.0f, 0.25f };
 
+                //There are no positional spells, so just check onCombo, need to check first because certain spells change aoe type/accuracy
+                //If owner is a player and the spell being used is part of the current combo
+                if (owner is Player p && p.GetClass() == spell.job)
+                {
+                    if (spell.comboStep == 1 || ((p.playerWork.comboNextCommandId[0] == spell.id || p.playerWork.comboNextCommandId[1] == spell.id)))
+                    {
+                        lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onCombo", owner, target, spell);
+                        spell.isCombo = true;
+                    }
+                }
+
                 //Check combo stuff here because combos can impact spell cast times
 
                 float spellSpeed = spell.castTimeMs;
-
-                //There are no positional spells, so just check onCombo, need to check first because certain spells change aoe type/accuracy
-                //If owner is a player and the spell being used is part of the current combo
-                if (spell.comboStep == 1 || ((owner is Player p) && (p.playerWork.comboNextCommandId[0] == spell.id || p.playerWork.comboNextCommandId[1] == spell.id)))
-                {
-                    lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onCombo", owner, target, spell);
-                    spell.isCombo = true;
-                }
 
                 if (!spell.IsInstantCast())
                 {

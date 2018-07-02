@@ -17,7 +17,8 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
     local slope = 0.625; 
     local intercept = -110;
 
-    if caster.GetEquipment().GetItemAtSlot(14).itemId == 8051406 then
+    --8051406: Healer's Culottes: Enhances Regen
+    if caster.HasItemEquippedInSlot(8051406, 14) then
         --I don't know if the numbers in that thread are completely correct because the AF Regen table has 3 1555s in a row.
         --If we assume that AF boots multiply both static parts of the regenTick equation by 1.25, we get a decently close match to actual numbers
         slope = slope * 1.25;
@@ -25,7 +26,6 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
     end
 
     local regenTick = (slope * caster.GetMod(modifiersGlobal.MagicEnhancePotency)) + intercept) + 1;
-
 
     spell.statusMagnitude = regenTick;
 

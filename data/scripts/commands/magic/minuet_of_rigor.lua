@@ -14,8 +14,7 @@ function onMagicStart(caster, target, skill)
     --8071405: Choral Ringbands: Enhances Minuet of Rigor
     --With Choral Tights, Minuet gives 60 ACC/MACC at 50. Unsure what it is at lower levels (ie if it's a flat added 25 MP or a multiplier)
     --Assuming it's a flat 25 because that makes more sense than multiplying by 1.714
-    local gloves = caster.GetEquipment().GetItemAtSlot(13);
-    if gloves and gloves.itemId == 8071405 then
+    if  caster.HasItemEquippedInSlot(8071405, 13) then
         acc = acc + 25;
     end
 
