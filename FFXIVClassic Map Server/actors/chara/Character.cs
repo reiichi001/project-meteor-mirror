@@ -439,7 +439,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public virtual uint GetAttackRange()
         {
-            return (uint)GetMod((uint)Modifier.AttackRange);
+            return (uint)(GetMod((uint)Modifier.AttackRange) == 0 ? 3 : GetMod((uint)Modifier.AttackRange));
         }
 
         public virtual bool Engage(uint targid = 0, ushort newMainState = 0xFFFF)

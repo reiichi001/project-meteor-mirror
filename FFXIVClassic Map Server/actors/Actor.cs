@@ -633,7 +633,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void LookAt(Actor actor)
         {
-            if (actor != null)
+            if (actor != null && actor != this)
             {
                 LookAt(actor.positionX, actor.positionZ);
             }

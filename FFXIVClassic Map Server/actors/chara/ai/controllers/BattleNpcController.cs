@@ -51,9 +51,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 {
                     DoCombatTick(tick);
                 }
-
-                //Only move if owner isn't dead and is either too far away from their spawn point or is meant to roam
-                if (!owner.IsDead() && (owner.isMovingToSpawn || owner.GetMobMod((uint)MobModifier.Roams) > 0))
+                //Only move if owner isn't dead and is either too far away from their spawn point or is meant to roam and isn't in combat
+                else if (!owner.IsDead() && (owner.isMovingToSpawn || owner.GetMobMod((uint)MobModifier.Roams) > 0))
                 {
                     DoRoamTick(tick);
                 }
@@ -238,9 +237,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 return;
             }
 
-            var targetPos = new Vector3(owner.target.positionX, owner.target.positionY, owner.target.positionZ);
-            var distance = Utils.Distance(owner.positionX, owner.positionY, owner.positionZ, targetPos.X, targetPos.Y, targetPos.Z);
-            if (distance > owner.GetAttackRange() - 0.2f && owner.aiContainer.CanFollowPath())
+            var vecToTarget = owner.target.GetPosAsVector3() - owner.GetPosAsVector3();
+            vecToTarget /= vecToTarget.Length();
+            vecToTarget = (Utils.Distance(owner.GetPosAsVector3(), owner.target.GetPosAsVector3()) - owner.GetAttackRange() + 0.2f) * vecToTarget;
+
+            var targetPos = vecToTarget + owner.GetPosAsVector3();
+            var distance = Utils.Distance(owner.GetPosAsVector3(), owner.target.GetPosAsVector3());
+            if (distance > owner.GetAttackRange() - 0.2f)
             {
                 if (CanMoveForward(distance))
                 {
