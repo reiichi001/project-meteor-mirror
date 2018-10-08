@@ -715,7 +715,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             if (target == null)
             {
-                Program.Log.Error($"[{this.actorId}][{this.customDisplayName}] FindRandomPointAroundTarget: no target found!");
+                Program.Log.Error(String.Format("[{0} {1}] FindRandomPointAroundTarget: no target found!", this.actorId, this.customDisplayName));
                 return GetPosAsVector3();
             }
             return FindRandomPoint(target.positionX, target.positionY, target.positionZ, minRadius, maxRadius);
