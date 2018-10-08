@@ -1,5 +1,4 @@
 ﻿using MySql.Data.MySqlClient;
-using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,29 +48,6 @@ namespace FFXIVClassic_Map_Server
                 }
             }
             return id;
-        }
-
-        public static List<Npc> GetNpcList()
-        {
-            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                List<Npc> npcList = null;
-                try
-                {
-                    conn.Open();
-                    npcList = conn.Query<Npc>("SELECT * FROM npc_list").ToList();
-                }
-                catch (MySqlException e)
-                {
-                    Program.Log.Error(e.ToString());
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-
-                return npcList;
-            }
         }
 
         public static Dictionary<uint, ItemData> GetItemGamedata()
@@ -2218,24 +2194,40 @@ namespace FFXIVClassic_Map_Server
 
         public static void SavePlayerStatusEffects(Player player)
         {
+            string[] faqs = null;
+            List<string> raw = new List<string>();
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
                 {
                     conn.Open();
 
-                    // we'll run them all at once instead of one at a time
-                    string queries = "";
-                    foreach (var effect in player.statusEffects.GetStatusEffects())
+                    using (MySqlTransaction trns = conn.BeginTransaction())
                     {
-                        var duration = Utils.UnixTimeStampUTC(effect.GetEndTime()) - Utils.UnixTimeStampUTC();
-                        queries += Environment.NewLine + $"REPLACE INTO characters_statuseffect(characterId, statusId, magnitude, duration, tick, tier, extra) VALUES ({player.actorId}, {effect.GetStatusEffectId()}, {effect.GetMagnitude()}, {duration}, {effect.GetTickMs()}, {effect.GetTier()}, {effect.GetExtra()});";
-                    }
+                        string query = @"
+                                    REPLACE INTO characters_statuseffect
+                                    (characterId, statusId, magnitude, duration, tick, tier, extra)
+                                    VALUES
+                                    (@actorId, @statusId, @magnitude, @duration, @tick, @tier, @extra)                                  
+                                    ";
+                        using (MySqlCommand cmd = new MySqlCommand(query, conn, trns))
+                        {    
+                            foreach (var effect in player.statusEffects.GetStatusEffects())
+                            {
+                                var duration = Utils.UnixTimeStampUTC(effect.GetEndTime()) - Utils.UnixTimeStampUTC();
 
-                    if (queries.Length > 0)
-                    {
-                        MySqlCommand cmd = new MySqlCommand(queries, conn);
-                        cmd.ExecuteNonQuery();
+                                cmd.Parameters.AddWithValue("@actorId", player.actorId);
+                                cmd.Parameters.AddWithValue("@statusId", effect.GetStatusEffectId());
+                                cmd.Parameters.AddWithValue("@magnitude", effect.GetMagnitude());
+                                cmd.Parameters.AddWithValue("@duration", duration);
+                                cmd.Parameters.AddWithValue("@tick", effect.GetTickMs());
+                                cmd.Parameters.AddWithValue("@tier", effect.GetTier());
+                                cmd.Parameters.AddWithValue("@extra", effect.GetExtra());
+
+                                cmd.ExecuteNonQuery();
+                            }
+                            trns.Commit();
+                        }
                     }
                 }
                 catch (MySqlException e)
