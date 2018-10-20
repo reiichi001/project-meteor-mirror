@@ -169,7 +169,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public SubPacket CreateIdleAnimationPacket()
         {
-            return SetActorSubStatPacket.BuildPacket(actorId, 0, 0, 0, 0, 0, 0, animationId);
+            return SetActorSubStatePacket.BuildPacket(actorId, 0, 0, 0, 0, 0, 0, animationId);
         }
 
         public void SetQuestGraphic(Player player, int graphicNum)
@@ -221,8 +221,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SendChant(int left, int right)
         {
-            SetActorSubStatPacket.BuildPacket(actorId, 0, left, right, 0, 0, 0, 0).DebugPrintSubPacket();
-            zone.BroadcastPacketAroundActor(this, SetActorSubStatPacket.BuildPacket(actorId, 0, left, right, 0, 0, 0, 0));
+            SetActorSubStatePacket.BuildPacket(actorId, 0, left, right, 0, 0, 0, 0).DebugPrintSubPacket();
+            zone.BroadcastPacketAroundActor(this, SetActorSubStatePacket.BuildPacket(actorId, 0, left, right, 0, 0, 0, 0));
         }
 
         public void DoBattleAction(ushort commandId, uint animationId)
@@ -370,11 +370,21 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if ((updateFlags & ActorUpdateFlags.State) != 0)
                 {
-                    packets.Add(SetActorStatePacket.BuildPacket(actorId, currentMainState, currentSubState));
+                    packets.Add(SetActorStatePacket.BuildPacket(actorId, currentMainState, 0x0));
                     packets.Add(BattleActionX00Packet.BuildPacket(actorId, 0x72000062, 0));
                     packets.Add(BattleActionX01Packet.BuildPacket(actorId, 0x7C000062, 21001, new BattleAction(actorId, 0, 1)));
 
                     updateFlags &= ~ActorUpdateFlags.State;
+                    //DoBattleAction(21001, 0x7C000062, new BattleAction(this.actorId, 0, 1, 0, 0, 1)); //Attack Mode
+                }
+
+                if ((updateFlags & ActorUpdateFlags.SubState) != 0)
+                {
+                    packets.Add(SetActorSubStatePacket.BuildPacket(actorId, currentSubState));
+                    packets.Add(BattleActionX00Packet.BuildPacket(actorId, 0x72000062, 0));
+                    packets.Add(BattleActionX01Packet.BuildPacket(actorId, 0x7C000062, 21001, new BattleAction(actorId, 0, 1)));
+
+                    updateFlags &= ~ActorUpdateFlags.SubState;
                     //DoBattleAction(21001, 0x7C000062, new BattleAction(this.actorId, 0, 1, 0, 0, 1)); //Attack Mode
                 }
 

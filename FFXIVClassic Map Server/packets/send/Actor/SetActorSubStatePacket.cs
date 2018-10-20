@@ -2,10 +2,11 @@
 using System.IO;
 
 using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.actors.chara;
 
 namespace  FFXIVClassic_Map_Server.packets.send.actor
 {
-    class SetActorSubStatPacket
+    class SetActorSubStatePacket
     {
         public const ushort OPCODE = 0x144;
         public const uint PACKET_SIZE = 0x28;
@@ -21,7 +22,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor
             SubStatMotionPack = 0x06,
             Unknown2          = 0x07,
         }
-        public static SubPacket BuildPacket(uint sourceActorId, byte breakage, int leftChant, int rightChant, int guard, int wasteStat, int statMode, uint idleAnimationId)
+        public static SubPacket BuildPacket(uint sourceActorId, SubState substate)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -29,13 +30,13 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                   binWriter.Write((byte)breakage);
-                   binWriter.Write((byte)(((leftChant & 0xF) << 4) | (rightChant & 0xF)));
-                   binWriter.Write((byte)(guard & 0xF));
-                   binWriter.Write((byte)(wasteStat));
-                   binWriter.Write((byte)(statMode));
+                   binWriter.Write((byte)substate.breakage);
+                   binWriter.Write((byte)substate.chantId);
+                   binWriter.Write((byte)(substate.guard & 0xF));
+                   binWriter.Write((byte)(substate.waste));
+                   binWriter.Write((byte)(substate.mode));
                    binWriter.Write((byte)0);
-                   binWriter.Write((UInt16)(idleAnimationId&0xFFFF));
+                   binWriter.Write((ushort)substate.motionPack);
                 }
             }
 

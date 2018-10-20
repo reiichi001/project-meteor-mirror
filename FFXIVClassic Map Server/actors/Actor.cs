@@ -11,6 +11,7 @@ using System.Reflection;
 using System.ComponentModel;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.packets.send;
+using FFXIVClassic_Map_Server.actors.chara;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -21,17 +22,18 @@ namespace FFXIVClassic_Map_Server.Actors
         Position = 0x01,
         HpTpMp = 0x02,
         State = 0x04,
-        Combat = 0x07,
-        Name = 0x08,
-        Appearance = 0x10,
-        Speed = 0x20,
-        Work = 0x40,
-        Stats = 0x80,
-        Status = 0x100,
-        StatusTime = 0x200,
+        SubState = 0x08,
+        Combat = 0x0F,
+        Name = 0x10,
+        Appearance = 0x20,
+        Speed = 0x40,
+        Work = 0x80,
+        Stats = 0x100,
+        Status = 0x200,
+        StatusTime = 0x400,
 
-        AllNpc = 0x6F,
-        AllPlayer = 0x9F
+        AllNpc = 0xDF,
+        AllPlayer = 0x13F
     }
 
     class Actor
@@ -44,7 +46,9 @@ namespace FFXIVClassic_Map_Server.Actors
         public string customDisplayName;
 
         public ushort currentMainState = SetActorStatePacket.MAIN_STATE_PASSIVE;
-        public ushort currentSubState = SetActorStatePacket.SUB_STATE_NONE;
+
+        public SubState currentSubState = new SubState();
+
         public float positionX, positionY, positionZ, rotation;
         public float oldPositionX, oldPositionY, oldPositionZ, oldRotation;
         public ushort moveState, oldMoveState;
@@ -378,6 +382,16 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public SubState GetSubState()
+        {
+            return currentSubState;
+        }
+
+        public void SubstateModified()
+        {    
+            updateFlags |= (ActorUpdateFlags.SubState);           
+        }
+
         public void ModifySpeed(float mod)
         {
             for (int i = 0; i < 4; i++)
@@ -450,7 +464,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if ((updateFlags & ActorUpdateFlags.State) != 0)
                 {
-                    packets.Add(SetActorStatePacket.BuildPacket(actorId, currentMainState, currentSubState));
+                    packets.Add(SetActorStatePacket.BuildPacket(actorId, currentMainState, 0x3B));
+                }
+
+                if ((updateFlags & ActorUpdateFlags.SubState) != 0)
+                {
+                    packets.Add(SetActorSubStatePacket.BuildPacket(actorId, currentSubState));
                 }
 
                 updateFlags = ActorUpdateFlags.None;
