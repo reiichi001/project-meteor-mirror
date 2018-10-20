@@ -388,7 +388,7 @@ namespace FFXIVClassic_Lobby_Server
                             address = reader.GetString("address");
                             port = reader.GetUInt16("port");
                             listPosition = reader.GetUInt16("listPosition");
-                            population = reader.GetUInt16("population");
+                            population = 2;
                             name = reader.GetString("name");
                             isActive = reader.GetBoolean("isActive");
 
@@ -440,7 +440,7 @@ namespace FFXIVClassic_Lobby_Server
                             address = reader.GetString("address");
                             port = reader.GetUInt16("port");
                             listPosition = reader.GetUInt16("listPosition");
-                            population = reader.GetUInt16("population");
+                            population = 2; //TODO
                             name = reader.GetString("name");
                             isActive = reader.GetBoolean("isActive");
 
@@ -588,7 +588,7 @@ namespace FFXIVClassic_Lobby_Server
 
         public static Appearance GetAppearance(uint charaId)
         {
-            Appearance appearance = null;
+            Appearance appearance = new Appearance();
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
@@ -637,11 +637,11 @@ namespace FFXIVClassic_Lobby_Server
                         {
                             appearance.size = reader.GetByte("size");
                             appearance.voice = reader.GetByte("voice");
-                            appearance.skinColor = reader.GetByte("skinColor");
-                            appearance.hairStyle = reader.GetByte("hairStyle");
-                            appearance.hairColor = reader.GetByte("hairColor");
-                            appearance.hairHighlightColor = reader.GetByte("hairHighlightColor");
-                            appearance.eyeColor = reader.GetByte("eyeColor");
+                            appearance.skinColor = reader.GetUInt16("skinColor");
+                            appearance.hairStyle = reader.GetUInt16("hairStyle");
+                            appearance.hairColor = reader.GetUInt16("hairColor");
+                            appearance.hairHighlightColor = reader.GetUInt16("hairHighlightColor");
+                            appearance.eyeColor = reader.GetUInt16("eyeColor");
                             appearance.characteristics = reader.GetByte("characteristics");
                             appearance.characteristicsColor = reader.GetByte("characteristicsColor");
                             appearance.faceType = reader.GetByte("faceType");
@@ -653,19 +653,19 @@ namespace FFXIVClassic_Lobby_Server
                             appearance.faceIrisSize = reader.GetByte("faceIrisSize");
                             appearance.faceEyebrows = reader.GetByte("faceEyebrows");
 
-                            appearance.mainHand = reader.GetByte("mainHand");
-                            appearance.offHand = reader.GetByte("offHand");
-                            appearance.head = reader.GetByte("head");
-                            appearance.body = reader.GetByte("body");
-                            appearance.mainHand = reader.GetByte("mainHand");
-                            appearance.legs = reader.GetByte("legs");
-                            appearance.hands = reader.GetByte("hands");
-                            appearance.feet = reader.GetByte("feet");
-                            appearance.waist = reader.GetByte("waist");
-                            appearance.leftFinger = reader.GetByte("leftFinger");
-                            appearance.rightFinger = reader.GetByte("rightFinger");
-                            appearance.leftEar = reader.GetByte("leftEar");
-                            appearance.rightEar = reader.GetByte("rightEar");
+                            appearance.mainHand = reader.GetUInt32("mainHand");
+                            appearance.offHand = reader.GetUInt32("offHand");
+                            appearance.head = reader.GetUInt32("head");
+                            appearance.body = reader.GetUInt32("body");
+                            appearance.mainHand = reader.GetUInt32("mainHand");
+                            appearance.legs = reader.GetUInt32("legs");
+                            appearance.hands = reader.GetUInt32("hands");
+                            appearance.feet = reader.GetUInt32("feet");
+                            appearance.waist = reader.GetUInt32("waist");
+                            appearance.leftFinger = reader.GetUInt32("leftFinger");
+                            appearance.rightFinger = reader.GetUInt32("rightFinger");
+                            appearance.leftEar = reader.GetUInt32("leftEar");
+                            appearance.rightEar = reader.GetUInt32("rightEar");
                         }
 
                     }
