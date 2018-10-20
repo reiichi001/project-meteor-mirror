@@ -200,7 +200,7 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 if (!effect.GetHidden())
                 {
-                    propPacketUtil.AddProperty($"charaWork.statusShownTime[{i}]");
+                    propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
                     propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
                     i++;
                 }
@@ -287,7 +287,8 @@ namespace FFXIVClassic_Map_Server.Actors
         #region ai stuff
         public void PathTo(float x, float y, float z, float stepSize = 0.70f, int maxPath = 40, float polyRadius = 0.0f)
         {
-            aiContainer?.pathFind?.PreparePath(x, y, z, stepSize, maxPath, polyRadius);
+            if (aiContainer != null && aiContainer.pathFind != null)
+                aiContainer.pathFind.PreparePath(x, y, z, stepSize, maxPath, polyRadius);
         }
 
         public void FollowTarget(Actor target, float stepSize = 1.2f, int maxPath = 25, float radius = 0.0f)
@@ -759,7 +760,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             foreach (BattleAction action in actions)
             {
-                if (zone.FindActorInArea<Character>(action.targetId) is Character chara)
+                if (zone.FindActorInArea<Character>(action.targetId) is Character)
                 {
                     //BattleUtils.HandleHitType(this, chara, action);
                     //BattleUtils.DoAction(this, chara, action, DamageTakenType.Magic);
@@ -775,7 +776,7 @@ namespace FFXIVClassic_Map_Server.Actors
             foreach (BattleAction action in actions)
             {
                 //Should we just store the character insteado f having to find it again?
-                if (zone.FindActorInArea<Character>(action.targetId) is Character chara)
+                if (zone.FindActorInArea<Character>(action.targetId) is Character)
                 {
                     //BattleUtils.DoAction(this, chara, action, DamageTakenType.Weaponskill);
                 }
@@ -788,7 +789,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             foreach (var action in actions)
             {
-                if (zone.FindActorInArea<Character>(action.targetId) is Character chara)
+                if (zone.FindActorInArea<Character>(action.targetId) is Character)
                 {
                     //BattleUtils.DoAction(this, chara, action, DamageTakenType.Ability);
                 }
@@ -947,12 +948,12 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     shouldSend = true;
                     charaWork.battleTemp.timingCommandFlag[i] = false;
-                    propPacketUtil.AddProperty($"charaWork.battleTemp.timingCommandFlag[{i}]");
+                    propPacketUtil.AddProperty(String.Format("charaWork.battleTemp.timingCommandFlag[{0}]", i));
                 }
             }
 
-            if (shouldSend && this is Player player)
-                player.QueuePackets(propPacketUtil.Done());
+            if (shouldSend && this is Player)
+                ((Player)this).QueuePackets(propPacketUtil.Done());
         }
 
         //Set given proc to true and send packet if this is a player
@@ -976,11 +977,11 @@ namespace FFXIVClassic_Map_Server.Actors
                 statusEffects.RemoveStatusEffect(statusEffects.GetStatusEffectById((uint)effectId));
             }
 
-            if (this is Player player)
+            if (this is Player)
             {
                 var propPacketUtil = new ActorPropertyPacketUtil("charaWork/timingCommand", this);
-                propPacketUtil.AddProperty($"charaWork.battleTemp.timingCommandFlag[{procId}]");
-                player.QueuePackets(propPacketUtil.Done());
+                propPacketUtil.AddProperty(String.Format("charaWork.battleTemp.timingCommandFlag[{0}]", procId));
+                ((Player)this).QueuePackets(propPacketUtil.Done());
             }
         }
 
@@ -1106,12 +1107,14 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             //Now that we know if we hit the target we can check if the combo continues
-            if (this is Player player)
+            if (this is Player)
+            {
                 if (command.isCombo && hitTarget)
-                    player.SetCombos(command.comboNextCommandId);
+                    ((Player)this).SetCombos(command.comboNextCommandId);
                 else
-                    player.SetCombos();
-            
+                    ((Player)this).SetCombos();
+            }
+
             BattleAction error = new BattleAction(actorId, 0, 0);
             DelMP(command.CalculateMpCost(this));
             DelTP(command.CalculateTpCost(this));
