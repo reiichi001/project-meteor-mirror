@@ -57,7 +57,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                         // todo: modify spellSpeed based on modifiers and stuff
                         ((Player)owner).SendStartCastbar(skill.id, Utils.UnixTimeStampUTC(DateTime.Now.AddMilliseconds(castTime)));
                     }
-                    owner.SendChant(0xf, 0x0);
+                    owner.GetSubState().chantId = 0xf0;
+                    owner.SubstateModified();
                     //You ready [skill] (6F000002: BLM, 6F000003: WHM, 0x6F000008: BRD)
                     owner.DoBattleAction(skill.id, (uint)0x6F000000 | skill.castType, new BattleAction(target.actorId, 30126, 1, 0, 1));
                 }
@@ -144,7 +145,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void Cleanup()
         {
-            owner.SendChant(0, 0);
+            owner.GetSubState().chantId = 0x0;
+            owner.SubstateModified();
             owner.aiContainer.UpdateLastActionTime(skill.animationDurationSeconds);
         }
     }

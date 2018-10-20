@@ -63,8 +63,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
                 //There are no positional spells, so just check onCombo, need to check first because certain spells change aoe type/accuracy
                 //If owner is a player and the spell being used is part of the current combo
-                if (owner is Player p && p.GetClass() == spell.job)
+                if (owner is Player && ((Player)owner).GetClass() == spell.job)
                 {
+                    Player p = (Player)owner;
                     if (spell.comboStep == 1 || ((p.playerWork.comboNextCommandId[0] == spell.id || p.playerWork.comboNextCommandId[1] == spell.id)))
                     {
                         lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onCombo", owner, target, spell);
@@ -84,7 +85,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                         // todo: modify spellSpeed based on modifiers and stuff
                         ((Player)owner).SendStartCastbar(spell.id, Utils.UnixTimeStampUTC(DateTime.Now.AddMilliseconds(spellSpeed)));
                     }
-                    owner.SendChant(0xf, 0x0);
+                    owner.GetSubState().chantId = 0xf0;
+                    owner.SubstateModified();
                     owner.DoBattleAction(spell.id, (uint) 0x6F000000 | spell.castType, new BattleAction(target.actorId, 30128, 1, 0, 1)); //You begin casting (6F000002: BLM, 6F000003: WHM, 0x6F000008: BRD)
                 }
             }
@@ -120,7 +122,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             // todo: send paralyzed/sleep message etc.
             if (errorResult != null)
             {
-                owner.SendChant(0, 0);
+                owner.GetSubState().chantId = 0x0;
+                owner.SubstateModified();
                 owner.DoBattleAction(spell.id, errorResult.animation, errorResult);
                 errorResult = null;
             }
@@ -181,7 +184,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void Cleanup()
         {
-            owner.SendChant(0, 0);
+            owner.GetSubState().chantId = 0x0;
+            owner.SubstateModified();
 
             if (owner is Player)
             {

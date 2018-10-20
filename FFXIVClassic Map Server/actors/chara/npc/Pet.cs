@@ -17,8 +17,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     ushort actorState, uint animationId, string customDisplayName)
             : base(actorNumber, actorClass, uniqueId, spawnedArea, posX, posY, posZ, rot, actorState, animationId, customDisplayName)  
         {
-            this.aiContainer = new AIContainer(this, new PetController(this), new PathFind(this), new TargetFind(this));
-            this.currentSubState = SetActorStatePacket.SUB_STATE_MONSTER;
+            this.aiContainer = new AIContainer(this, new PetController(this), new PathFind(this), new TargetFind(this));            
             this.hateContainer = new HateContainer(this);
         }
     }

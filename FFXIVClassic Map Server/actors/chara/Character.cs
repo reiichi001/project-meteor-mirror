@@ -167,9 +167,9 @@ namespace FFXIVClassic_Map_Server.Actors
             return SetActorIconPacket.BuildPacket(actorId, currentActorIcon);
         }
 
-        public SubPacket CreateIdleAnimationPacket()
+        public SubPacket CreateSubStatePacket()
         {
-            return SetActorSubStatePacket.BuildPacket(actorId, 0, 0, 0, 0, 0, 0, animationId);
+            return SetActorSubStatePacket.BuildPacket(actorId, currentSubState);
         }
 
         public void SetQuestGraphic(Player player, int graphicNum)
@@ -217,12 +217,6 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             else
                 zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
-        }
-
-        public void SendChant(int left, int right)
-        {
-            SetActorSubStatePacket.BuildPacket(actorId, 0, left, right, 0, 0, 0, 0).DebugPrintSubPacket();
-            zone.BroadcastPacketAroundActor(this, SetActorSubStatePacket.BuildPacket(actorId, 0, left, right, 0, 0, 0, 0));
         }
 
         public void DoBattleAction(ushort commandId, uint animationId)

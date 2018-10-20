@@ -63,6 +63,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             this.actorClassId = actorClass.actorClassId;
 
+            this.currentSubState.motionPack = (ushort) animationId;
+
             LoadNpcAppearance(actorClass.actorClassId);
 
             className = actorClass.classPath.Substring(actorClass.classPath.LastIndexOf("/") + 1);
@@ -201,7 +203,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             subpackets.Add(CreateNamePacket());
             subpackets.Add(CreateStatePacket());
-            subpackets.Add(CreateIdleAnimationPacket());
+            subpackets.Add(CreateSubStatePacket());
             subpackets.Add(CreateInitStatusPacket());
             subpackets.Add(CreateSetActorIconPacket());
             subpackets.Add(CreateIsZoneingPacket());           

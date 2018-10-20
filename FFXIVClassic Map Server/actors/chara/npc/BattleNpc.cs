@@ -77,7 +77,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             this.aiContainer = new AIContainer(this, new BattleNpcController(this), new PathFind(this), new TargetFind(this));
 
-            this.currentSubState = SetActorStatePacket.SUB_STATE_MONSTER;
+            //this.currentSubState = SetActorStatePacket.SUB_STATE_MONSTER;
             //this.currentMainState = SetActorStatePacket.MAIN_STATE_ACTIVE;
 
             //charaWork.property[2] = 1;
@@ -108,7 +108,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 subpackets.Add(CreateNamePacket());
                 subpackets.Add(CreateStatePacket());
-                subpackets.Add(CreateIdleAnimationPacket());
+                subpackets.Add(CreateSubStatePacket());
                 subpackets.Add(CreateInitStatusPacket());
                 subpackets.Add(CreateSetActorIconPacket());
                 subpackets.Add(CreateIsZoneingPacket());
@@ -276,7 +276,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (IsAlive())
             {
                 // todo: does retail 
-                if (lastAttacker is Pet && lastAttacker.aiContainer.GetController<PetController>()?.GetPetMaster() is Player)
+                if (lastAttacker is Pet && lastAttacker.aiContainer.GetController<PetController>() != null && lastAttacker.aiContainer.GetController<PetController>().GetPetMaster() is Player)
                 {
                     lastAttacker = lastAttacker.aiContainer.GetController<PetController>().GetPetMaster();
                 }
@@ -285,7 +285,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     //I think this is, or should be odne in DoBattleAction. Packet capture had the message in the same packet as an attack
                     // <actor> defeat/defeats <target>
-                    actionContainer?.AddEXPAction(new BattleAction(actorId, 30108, 0));
+                    if (actionContainer != null)
+                        actionContainer.AddEXPAction(new BattleAction(actorId, 30108, 0));
                     if (lastAttacker.currentParty != null && lastAttacker.currentParty is Party)
                     {
                         foreach (var memberId in ((Party)lastAttacker.currentParty).members)
@@ -295,8 +296,8 @@ namespace FFXIVClassic_Map_Server.Actors
                             lua.LuaEngine.CallLuaBattleFunction(this, "onDeath", this, partyMember, lastAttacker);
 
                             // todo: add actual experience calculation and exp bonus values.
-                            if (partyMember is Player player)
-                                BattleUtils.AddBattleBonusEXP(player, this, actionContainer);
+                            if (partyMember is Player)
+                                BattleUtils.AddBattleBonusEXP((Player)partyMember, this, actionContainer);
                         }
                     }
                     else
@@ -306,7 +307,9 @@ namespace FFXIVClassic_Map_Server.Actors
                         //((Player)lastAttacker).QueuePacket(BattleActionX01Packet.BuildPacket(lastAttacker.actorId, 0, 0, new BattleAction(actorId, 30108, 0)));
                     }
                 }
-                positionUpdates?.Clear();
+
+                if (positionUpdates != null)
+                    positionUpdates.Clear();
                 aiContainer.InternalDie(tick, despawnTime);
                 //this.ResetMoveSpeeds();
                 // todo: reset cooldowns
@@ -315,7 +318,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             else
             {
-                var err = $"[{actorId}][{GetUniqueId()}] {positionX} {positionY} {positionZ} {GetZone().GetName()} tried to die ded";
+                var err = String.Format("[{0}][{1}] {2} {3} {4} {5} tried to die ded", actorId, GetUniqueId(), positionX, positionY, positionZ, GetZone().GetName());
                 Program.Log.Error(err);
                 //throw new Exception(err);
             }

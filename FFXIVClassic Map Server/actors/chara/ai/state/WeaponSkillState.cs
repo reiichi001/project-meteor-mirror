@@ -58,8 +58,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                         skill.CallLuaFunction(owner, "onPositional", owner, target, skill);
 
                     //Combo stuff
-                    if (owner is Player p)
+                    if (owner is Player)
                     {
+                        Player p = (Player)owner;
                         //If skill is part of owner's class/job, it can be used in a combo
                         if (skill.job == p.GetClass() || skill.job == p.GetCurrentClassOrJob())
                         {
@@ -86,7 +87,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                             // todo: modify spellSpeed based on modifiers and stuff
                             ((Player)owner).SendStartCastbar(skill.id, Utils.UnixTimeStampUTC(DateTime.Now.AddMilliseconds(castTime)));
                         }
-                        owner.SendChant(0xf, 0x0);
+                        owner.GetSubState().chantId = 0xf0;
+                        owner.SubstateModified();
                         //You ready [skill] (6F000002: BLM, 6F000003: WHM, 0x6F000008: BRD)
                         owner.DoBattleAction(skill.id, (uint)0x6F000000 | skill.castType, new BattleAction(target.actorId, 30126, 1, 0, 1));
                     }

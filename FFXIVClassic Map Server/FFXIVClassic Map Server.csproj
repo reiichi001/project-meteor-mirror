@@ -140,6 +140,7 @@
     <Compile Include="actors\chara\npc\Pet.cs" />
     <Compile Include="actors\chara\player\Equipment.cs" />
     <Compile Include="actors\chara\player\Inventory.cs" />
+    <Compile Include="actors\chara\SubState.cs" />
     <Compile Include="actors\chara\Work.cs" />
     <Compile Include="actors\debug\Debug.cs" />
     <Compile Include="actors\director\Director.cs" />
@@ -256,7 +257,7 @@
     <Compile Include="packets\send\actor\inventory\EquipmentListX08Packet.cs" />
     <Compile Include="packets\send\actor\RemoveActorPacket.cs" />
     <Compile Include="packets\send\actor\SetActorIconPacket.cs" />
-    <Compile Include="packets\send\actor\SetActorSubStatPacket.cs" />
+    <Compile Include="packets\send\actor\SetActorSubStatePacket.cs" />
     <Compile Include="packets\send\actor\SetActorStatusPacket.cs" />
     <Compile Include="packets\send\actor\SetActorBGPropertiesPacket.cs" />
     <Compile Include="packets\send\actor\_0xFPacket.cs" />

@@ -185,7 +185,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public SubPacket CreateStatePacket()
         {
-            return SetActorStatePacket.BuildPacket(actorId, currentMainState, currentSubState);
+            return SetActorStatePacket.BuildPacket(actorId, currentMainState, 0);
         }
 
         public List<SubPacket> GetEventConditionPackets()

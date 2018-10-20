@@ -131,7 +131,6 @@ namespace FFXIVClassic_Map_Server.Actors
             playerSession = cp;
             actorName = String.Format("_pc{0:00000000}", actorID);
             className = "Player";
-            currentSubState = SetActorStatePacket.SUB_STATE_PLAYER;
 
             moveSpeeds[0] = SetActorSpeedPacket.DEFAULT_STOP;
             moveSpeeds[1] = SetActorSpeedPacket.DEFAULT_WALK;
@@ -288,7 +287,7 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateNamePacket());
             subpackets.Add(_0xFPacket.BuildPacket(actorId));
             subpackets.Add(CreateStatePacket());
-            subpackets.Add(CreateIdleAnimationPacket());
+            subpackets.Add(CreateSubStatePacket());
             subpackets.Add(CreateInitStatusPacket());
             subpackets.Add(CreateSetActorIconPacket());
             subpackets.Add(CreateIsZoneingPacket());
