@@ -1612,7 +1612,7 @@ namespace FFXIVClassic_Map_Server
                                     SELECT 
                                     characters_achievements.achievementId FROM characters_achievements 
                                     INNER JOIN gamedata_achievements ON characters_achievements.achievementId = gamedata_achievements.achievementId
-                                    WHERE characterId = @charId AND rewardPoints <> 0 ORDER BY timeDone LIMIT 5";
+                                    WHERE characterId = @charId AND rewardPoints <> 0 AND timeDone IS NOT NULL ORDER BY timeDone LIMIT 5";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
