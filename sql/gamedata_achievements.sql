@@ -620,7 +620,7 @@ INSERT INTO `gamedata_achievements` VALUES (1404,'Taking in the Sights: Coerthas
 INSERT INTO `gamedata_achievements` VALUES (1405,'Taking in the Sights: Mor Dhona',805,5);
 INSERT INTO `gamedata_achievements` VALUES (1406,'\"Been There, Done That\"',806,10);
 INSERT INTO `gamedata_achievements` VALUES (1499,'\"Been There, Done That\"',807,0);
-INSERT INTO `gamedata_achievements` VALUES (1500,'Grand Company',820,5);
+INSERT INTO `gamedata_achievements` VALUES (1500,'Grand Company',820,0);
 INSERT INTO `gamedata_achievements` VALUES (1501,'All Watched Over by a Maelstrom of Loving Grace',821,5);
 INSERT INTO `gamedata_achievements` VALUES (1502,'Snakebitten',822,5);
 INSERT INTO `gamedata_achievements` VALUES (1503,'\"Come On Baby, Light My Fire\"',823,5);
