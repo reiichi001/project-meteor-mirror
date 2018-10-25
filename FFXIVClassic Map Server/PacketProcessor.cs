@@ -250,6 +250,11 @@ namespace FFXIVClassic_Map_Server
                         GroupCreatedPacket groupCreated = new GroupCreatedPacket(subpacket.data);
                         Server.GetWorldManager().SendGroupInit(session, groupCreated.groupId);
                         break;
+                    //Achievement Progress Request
+                    case 0x0135:
+                        AchievementProgressRequestPacket progressRequest = new AchievementProgressRequestPacket(subpacket.data);
+                        session.QueuePacket(Database.GetAchievementProgress(session.GetActor(), progressRequest.achievementID));
+                        break;
                     /* RECRUITMENT */
                     //Start Recruiting
                     case 0x01C3:
