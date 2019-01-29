@@ -216,11 +216,11 @@
     <Compile Include="packets\send\actor\ActorDoEmotePacket.cs" />
     <Compile Include="packets\send\actor\ActorInstantiatePacket.cs" />
     <Compile Include="packets\send\actor\ActorSpecialGraphicPacket.cs" />
-    <Compile Include="packets\send\actor\battle\BattleAction.cs" />
-    <Compile Include="packets\send\actor\battle\BattleActionContainer.cs" />
-    <Compile Include="packets\send\actor\battle\BattleActionX00Packet.cs" />
-    <Compile Include="packets\send\actor\battle\BattleActionX18Packet.cs" />
-    <Compile Include="packets\send\actor\battle\BattleActionX10Packet.cs" />
+    <Compile Include="packets\send\actor\battle\CommandResult.cs" />
+    <Compile Include="packets\send\actor\battle\CommandResultContainer.cs" />
+    <Compile Include="packets\send\actor\battle\CommandResultX00Packet.cs" />
+    <Compile Include="packets\send\actor\battle\CommandResultX18Packet.cs" />
+    <Compile Include="packets\send\actor\battle\CommandResultX10Packet.cs" />
     <Compile Include="packets\send\actor\DeleteAllActorsPacket.cs" />
     <Compile Include="packets\send\actor\events\SetEventStatus.cs" />
     <Compile Include="packets\send\actor\events\SetNoticeEventCondition.cs" />
@@ -246,7 +246,7 @@
     <Compile Include="packets\send\actor\PlayBGAnimation.cs" />
     <Compile Include="packets\send\actor\_0x132Packet.cs" />
     <Compile Include="packets\send\actor\SetActorIsZoningPacket.cs" />
-    <Compile Include="packets\send\actor\battle\BattleActionX01Packet.cs" />
+    <Compile Include="packets\send\actor\battle\CommandResultX01Packet.cs" />
     <Compile Include="packets\send\actor\inventory\EquipmentListX01Packet.cs" />
     <Compile Include="packets\send\actor\inventory\InventoryBeginChangePacket.cs" />
     <Compile Include="packets\send\actor\inventory\InventoryEndChangePacket.cs" />

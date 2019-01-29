@@ -19,7 +19,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         protected DateTime startTime;
 
-        protected BattleAction errorResult;
+        protected CommandResult errorResult;
 
         protected bool isCompleted;
 

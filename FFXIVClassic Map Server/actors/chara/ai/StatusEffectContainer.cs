@@ -77,7 +77,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             //DoTs tick before regen and the full dot damage is displayed, even if some or all of it is nullified by regen. Only effects like stoneskin actually alter the number shown
             if (dotTick > 0)
             {
-                BattleAction action = new BattleAction(owner.actorId, 30331, (uint)(HitEffect.HitEffectType | HitEffect.Hit), dotTick);
+                CommandResult action = new CommandResult(owner.actorId, 30331, (uint)(HitEffect.HitEffectType | HitEffect.Hit), dotTick);
                 utils.BattleUtils.HandleStoneskin(owner, action);
                 // todo: figure out how to make red numbers appear for enemies getting hurt by dots
                 //owner.DelHP(action.amount);
@@ -101,12 +101,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return effects.ContainsKey((uint)id);
         }
 
-        public BattleAction AddStatusForBattleAction(uint id, byte tier = 1, ulong magnitude = 0, uint duration = 0)
+        public CommandResult AddStatusForCommandResult(uint id, byte tier = 1, ulong magnitude = 0, uint duration = 0)
         {
-            BattleAction action = null;
+            CommandResult action = null;
 
             if (AddStatusEffect(id, tier, magnitude, duration))
-                action = new BattleAction(owner.actorId, 30328, id | (uint)HitEffect.StatusEffectType);
+                action = new CommandResult(owner.actorId, 30328, id | (uint)HitEffect.StatusEffectType);
 
             return action;
         }
@@ -225,7 +225,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 // send packet to client with effect remove message
                 if (!silent && !effect.GetSilent() && (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
                 {
-                    owner.DoBattleAction(0, 0, new BattleAction(owner.actorId, 30331, effect.GetStatusEffectId()));
+                    owner.DoBattleAction(0, 0, new CommandResult(owner.actorId, 30331, effect.GetStatusEffectId()));
                 }
 
                 //hidden effects not in charawork
@@ -266,22 +266,22 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         }
 
 
-        //Remove status effect and return the battleaction message instead of sending it immediately
-        public BattleAction RemoveStatusEffectForBattleAction(uint effectId, ushort worldMasterTextId = 30331)
+        //Remove status effect and return the CommandResult message instead of sending it immediately
+        public CommandResult RemoveStatusEffectForCommandResult(uint effectId, ushort worldMasterTextId = 30331)
         {
-            BattleAction action = null;
+            CommandResult action = null;
             if (RemoveStatusEffect(effectId, true))
-                action = new BattleAction(owner.actorId, worldMasterTextId, effectId);
+                action = new CommandResult(owner.actorId, worldMasterTextId, effectId);
 
             return action;
         }
 
-        //Remove status effect and return the battleaction message instead of sending it immediately
-        public BattleAction RemoveStatusEffectForBattleAction(StatusEffect effect, ushort worldMasterTextId = 30331)
+        //Remove status effect and return the CommandResult message instead of sending it immediately
+        public CommandResult RemoveStatusEffectForCommandResult(StatusEffect effect, ushort worldMasterTextId = 30331)
         {
-            BattleAction action = null;
+            CommandResult action = null;
             if (RemoveStatusEffect(effect, true))
-                action = new BattleAction(owner.actorId, worldMasterTextId, effect.GetStatusEffectId());
+                action = new CommandResult(owner.actorId, worldMasterTextId, effect.GetStatusEffectId());
             return action;
         }
 
@@ -408,7 +408,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         //Doing this instead of simply calling remove then add so that the new effect is in the same slot as the old one
         //There should be a better way to do this
         //Currently causes the icons to blink whenb eing rpelaced
-        public BattleAction ReplaceEffect(StatusEffect effectToBeReplaced, uint newEffectId, byte tier, double magnitude, uint duration)
+        public CommandResult ReplaceEffect(StatusEffect effectToBeReplaced, uint newEffectId, byte tier, double magnitude, uint duration)
         {
             StatusEffect newEffect = Server.GetWorldManager().GetStatusEffect(newEffectId);
             newEffect.SetTier(tier);
@@ -434,7 +434,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             SetStatusAtIndex(index, (ushort) (newEffectId - 200000));
             SetTimeAtIndex(index, time);
 
-            return new BattleAction(owner.actorId, 30328, (uint) HitEffect.StatusEffectType | newEffectId);
+            return new CommandResult(owner.actorId, 30328, (uint) HitEffect.StatusEffectType | newEffectId);
         }
     }
 }

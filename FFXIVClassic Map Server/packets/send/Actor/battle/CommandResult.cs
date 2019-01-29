@@ -224,7 +224,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
     }*/
 
 
-    class BattleAction
+    class CommandResult
     {
         public uint targetId;
         public ushort amount;
@@ -252,7 +252,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         public double hitRate = 0.0;
         public double critRate = 0.0;
 
-        public BattleAction(uint targetId, ushort worldMasterTextId, uint effectId, ushort amount = 0, byte param = 0, byte hitNum = 1)
+        public CommandResult(uint targetId, ushort worldMasterTextId, uint effectId, ushort amount = 0, byte param = 0, byte hitNum = 1)
         {
             this.targetId = targetId;
             this.worldMasterTextId = worldMasterTextId;
@@ -265,7 +265,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
             this.commandType = (byte) CommandType.None;
         }
 
-        public BattleAction(uint targetId, BattleCommand command, byte param = 0, byte hitNum = 1)
+        public CommandResult(uint targetId, BattleCommand command, byte param = 0, byte hitNum = 1)
         {
             this.targetId = targetId;
             this.worldMasterTextId = command.worldMasterTextId;
@@ -288,16 +288,16 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         //Additional effects that are a part of the skill itself or weapon in case of auto attacks take place like status effects
         //Certain buffs that alter the whole skill fall off (Resonance, Excruciate)
         
-        public void DoAction(Character caster, Character target, BattleCommand skill, BattleActionContainer battleActions)
+        public void DoAction(Character caster, Character target, BattleCommand skill, CommandResultContainer results)
         {
             //First calculate rates for hit/block/etc
             CalcRates(caster, target, skill);
 
             //Next, modify those rates based on preaction buffs
             //Still not sure how we shouldh andle these
-            PreAction(caster, target, skill, battleActions);
+            PreAction(caster, target, skill, results);
 
-            BattleUtils.DoAction(caster, target, skill, this, battleActions);
+            BattleUtils.DoAction(caster, target, skill, this, results);
         }
 
 
@@ -312,17 +312,17 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         }
 
         //These are buffs that activate before the action hits. Usually they change things like hit or crit rates or damage
-        public void PreAction(Character caster, Character target, BattleCommand skill, BattleActionContainer battleActions)
+        public void PreAction(Character caster, Character target, BattleCommand skill, CommandResultContainer results)
         {
-            target.statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnPreactionTarget, "onPreAction", caster, target, skill, this, battleActions);
+            target.statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnPreactionTarget, "onPreAction", caster, target, skill, this, results);
 
-            caster.statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnPreactionCaster, "onPreAction", caster, target, skill, this, battleActions);
+            caster.statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnPreactionCaster, "onPreAction", caster, target, skill, this, results);
         }
 
         //Try and apply a status effect
-        public void TryStatus(Character caster, Character target, BattleCommand skill, BattleActionContainer battleActions, bool isAdditional = true)
+        public void TryStatus(Character caster, Character target, BattleCommand skill, CommandResultContainer results, bool isAdditional = true)
         {
-            BattleUtils.TryStatus(caster, target, skill, this, battleActions, isAdditional);
+            BattleUtils.TryStatus(caster, target, skill, this, results, isAdditional);
         }
 
         public ushort GetHitType()

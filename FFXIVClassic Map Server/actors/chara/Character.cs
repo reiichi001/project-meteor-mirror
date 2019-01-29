@@ -221,15 +221,15 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void DoBattleAction(ushort commandId, uint animationId)
         {
-            zone.BroadcastPacketAroundActor(this, BattleActionX00Packet.BuildPacket(actorId, animationId, commandId));
+            zone.BroadcastPacketAroundActor(this, CommandResultX00Packet.BuildPacket(actorId, animationId, commandId));
         }
 
-        public void DoBattleAction(ushort commandId, uint animationId, BattleAction action)
+        public void DoBattleAction(ushort commandId, uint animationId, CommandResult action)
         {
-            zone.BroadcastPacketAroundActor(this, BattleActionX01Packet.BuildPacket(actorId, animationId, commandId, action));
+            zone.BroadcastPacketAroundActor(this, CommandResultX01Packet.BuildPacket(actorId, animationId, commandId, action));
         }
 
-        public void DoBattleAction(ushort commandId, uint animationId, BattleAction[] actions)
+        public void DoBattleAction(ushort commandId, uint animationId, CommandResult[] actions)
         {
             int currentIndex = 0;
             //AoE abilities only ever hit 16 people, so we probably won't need this loop anymore
@@ -237,12 +237,12 @@ namespace FFXIVClassic_Map_Server.Actors
             while (true)
             {
                 if (actions.Length - currentIndex >= 10)
-                    zone.BroadcastPacketAroundActor(this, BattleActionX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
+                    zone.BroadcastPacketAroundActor(this, CommandResultX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
                 else if (actions.Length - currentIndex > 1)
-                    zone.BroadcastPacketAroundActor(this, BattleActionX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
+                    zone.BroadcastPacketAroundActor(this, CommandResultX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
                 else if (actions.Length - currentIndex == 1)
                 {
-                    zone.BroadcastPacketAroundActor(this, BattleActionX01Packet.BuildPacket(actorId, animationId, commandId, actions[currentIndex]));
+                    zone.BroadcastPacketAroundActor(this, CommandResultX01Packet.BuildPacket(actorId, animationId, commandId, actions[currentIndex]));
                     currentIndex++;
                 }
                 else
@@ -253,19 +253,19 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public void DoBattleAction(ushort commandId, uint animationId, List<BattleAction> actions)
+        public void DoBattleAction(ushort commandId, uint animationId, List<CommandResult> actions)
         {
             int currentIndex = 0;
 
             while (true)
             {
                 if (actions.Count - currentIndex >= 10)
-                    zone.BroadcastPacketAroundActor(this, BattleActionX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
+                    zone.BroadcastPacketAroundActor(this, CommandResultX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
                 else if (actions.Count - currentIndex > 1)
-                    zone.BroadcastPacketAroundActor(this, BattleActionX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
+                    zone.BroadcastPacketAroundActor(this, CommandResultX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
                 else if (actions.Count - currentIndex == 1)
                 {
-                    zone.BroadcastPacketAroundActor(this, BattleActionX01Packet.BuildPacket(actorId, animationId, commandId, actions[currentIndex]));
+                    zone.BroadcastPacketAroundActor(this, CommandResultX01Packet.BuildPacket(actorId, animationId, commandId, actions[currentIndex]));
                     currentIndex++;
                 }
                 else
@@ -365,8 +365,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 if ((updateFlags & ActorUpdateFlags.State) != 0)
                 {
                     packets.Add(SetActorStatePacket.BuildPacket(actorId, currentMainState, 0x0));
-                    packets.Add(BattleActionX00Packet.BuildPacket(actorId, 0x72000062, 0));
-                    packets.Add(BattleActionX01Packet.BuildPacket(actorId, 0x7C000062, 21001, new BattleAction(actorId, 0, 1)));
+                    packets.Add(CommandResultX00Packet.BuildPacket(actorId, 0x72000062, 0));
+                    packets.Add(CommandResultX01Packet.BuildPacket(actorId, 0x7C000062, 21001, new CommandResult(actorId, 0, 1)));
 
                     updateFlags &= ~ActorUpdateFlags.State;
                     //DoBattleAction(21001, 0x7C000062, new BattleAction(this.actorId, 0, 1, 0, 0, 1)); //Attack Mode
@@ -375,8 +375,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 if ((updateFlags & ActorUpdateFlags.SubState) != 0)
                 {
                     packets.Add(SetActorSubStatePacket.BuildPacket(actorId, currentSubState));
-                    packets.Add(BattleActionX00Packet.BuildPacket(actorId, 0x72000062, 0));
-                    packets.Add(BattleActionX01Packet.BuildPacket(actorId, 0x7C000062, 21001, new BattleAction(actorId, 0, 1)));
+                    packets.Add(CommandResultX00Packet.BuildPacket(actorId, 0x72000062, 0));
+                    packets.Add(CommandResultX01Packet.BuildPacket(actorId, 0x7C000062, 21001, new CommandResult(actorId, 0, 1)));
 
                     updateFlags &= ~ActorUpdateFlags.SubState;
                     //DoBattleAction(21001, 0x7C000062, new BattleAction(this.actorId, 0, 1, 0, 0, 1)); //Attack Mode
@@ -523,7 +523,7 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         //AdditionalActions is the list of actions that EXP/Chain messages are added to
-        public virtual void Die(DateTime tick, BattleActionContainer actionContainer = null)
+        public virtual void Die(DateTime tick, CommandResultContainer actionContainer = null)
         {
             // todo: actual despawn timer
             aiContainer.InternalDie(tick, 10);
@@ -740,7 +740,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return (float) GetMod((uint)Modifier.Speed);
         }
 
-        public virtual void OnAttack(State state, BattleAction action, ref BattleAction error)
+        public virtual void OnAttack(State state, CommandResult action, ref CommandResult error)
         {
             var target = state.GetTarget();
             // todo: change animation based on equipped weapon
@@ -756,13 +756,13 @@ namespace FFXIVClassic_Map_Server.Actors
             target.AddTP(100);
         }
 
-        public virtual void OnCast(State state, BattleAction[] actions, BattleCommand spell, ref BattleAction[] errors)
+        public virtual void OnCast(State state, CommandResult[] actions, BattleCommand spell, ref CommandResult[] errors)
         {
             // damage is handled in script
             var spellCost = spell.CalculateMpCost(this);
             this.DelMP(spellCost); // mpCost can be set in script e.g. if caster has something for free spells
 
-            foreach (BattleAction action in actions)
+            foreach (CommandResult action in actions)
             {
                 if (zone.FindActorInArea<Character>(action.targetId) is Character)
                 {
@@ -773,11 +773,11 @@ namespace FFXIVClassic_Map_Server.Actors
             lua.LuaEngine.GetInstance().OnSignal("spellUsed");
         }
 
-        public virtual void OnWeaponSkill(State state, BattleAction[] actions, BattleCommand skill, ref BattleAction[] errors)
+        public virtual void OnWeaponSkill(State state, CommandResult[] actions, BattleCommand skill, ref CommandResult[] errors)
         {
             // damage is handled in script
 
-            foreach (BattleAction action in actions)
+            foreach (CommandResult action in actions)
             {
                 //Should we just store the character insteado f having to find it again?
                 if (zone.FindActorInArea<Character>(action.targetId) is Character)
@@ -789,7 +789,7 @@ namespace FFXIVClassic_Map_Server.Actors
             this.DelTP(skill.tpCost);
         }
 
-        public virtual void OnAbility(State state, BattleAction[] actions, BattleCommand ability, ref BattleAction[] errors)
+        public virtual void OnAbility(State state, CommandResult[] actions, BattleCommand ability, ref CommandResult[] errors)
         {
             foreach (var action in actions)
             {
@@ -815,7 +815,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         }
 
-        public virtual void OnDamageDealt(Character defender, BattleAction action, BattleActionContainer actionContainer = null)
+        public virtual void OnDamageDealt(Character defender, CommandResult action, CommandResultContainer actionContainer = null)
         {
             switch (action.hitType)
             {
@@ -838,7 +838,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public virtual void OnDamageTaken(Character attacker, BattleAction action, BattleActionContainer actionContainer = null)
+        public virtual void OnDamageTaken(Character attacker, CommandResult action, CommandResultContainer actionContainer = null)
         {
             switch (action.hitType)
             {
@@ -1007,34 +1007,34 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         //Called when this character evades attacker's action
-        public void OnEvade(Character attacker, BattleAction action, BattleActionContainer actionContainer = null)
+        public void OnEvade(Character attacker, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Evade);
             statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnEvade, "onEvade", attacker, this, action, actionContainer);
         }
 
         //Called when this character blocks attacker's action
-        public void OnBlock(Character attacker, BattleAction action, BattleActionContainer actionContainer = null)
+        public void OnBlock(Character attacker, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Block);
             statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnBlock, "onBlock", attacker, this, action, actionContainer);
         }
 
         //Called when this character parries attacker's action
-        public void OnParry(Character attacker, BattleAction action, BattleActionContainer actionContainer = null)
+        public void OnParry(Character attacker, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Parry);
             statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnParry, "onParry", attacker, this, action, actionContainer);
         }
 
         //Called when this character misses
-        public void OnMiss(Character defender, BattleAction action, BattleActionContainer actionContainer = null)
+        public void OnMiss(Character defender, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Miss);
             statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnMiss, "onMiss", this, defender, action, actionContainer);
         }
 
-        public void OnHit(Character defender, BattleAction action, BattleActionContainer actionContainer = null)
+        public void OnHit(Character defender, CommandResult action, CommandResultContainer actionContainer = null)
         {
             statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnHit, "onHit", this, defender, action, actionContainer);
         }
@@ -1065,7 +1065,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void DoBattleCommand(BattleCommand command, string folder)
         {
             //List<BattleAction> actions = new List<BattleAction>();
-            BattleActionContainer actions = new BattleActionContainer();
+            CommandResultContainer actions = new CommandResultContainer();
 
             var targets = command.targetFind.GetTargets();
             bool hitTarget = false;
@@ -1080,7 +1080,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     ushort totalDamage = 0;
                     for (int hitNum = 1; hitNum <= command.numHits; hitNum++)
                     {
-                        var action = new BattleAction(chara.actorId, command, (byte)GetHitDirection(chara), (byte) hitNum);
+                        var action = new CommandResult(chara.actorId, command, (byte)GetHitDirection(chara), (byte) hitNum);
                         
                         //uncached script
                         lua.LuaEngine.CallLuaBattleCommandFunction(this, command, folder, "onSkillFinish", this, chara, command, action, actions);
@@ -1099,7 +1099,7 @@ namespace FFXIVClassic_Map_Server.Actors
                         //30442: [hitCount]fold Attack! [chara] takes a total of totalDamage points of damage.
                         //30450: All attacks miss!
                         ushort textId = (ushort) (hitTarget ? 30442 : 30450);
-                        actions.AddAction(new BattleAction(chara.actorId, textId, 0, totalDamage, (byte)hitCount));
+                        actions.AddAction(new CommandResult(chara.actorId, textId, 0, totalDamage, (byte)hitCount));
                     }
                 }
 
@@ -1107,7 +1107,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             else
             {
-                actions.AddAction(new BattleAction(actorId, 30202, 0));
+                actions.AddAction(new CommandResult(actorId, 30202, 0));
             }
 
             //Now that we know if we hit the target we can check if the combo continues
@@ -1119,7 +1119,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     ((Player)this).SetCombos();
             }
 
-            BattleAction error = new BattleAction(actorId, 0, 0);
+            CommandResult error = new CommandResult(actorId, 0, 0);
             DelMP(command.CalculateMpCost(this));
             DelTP(command.CalculateTpCost(this));
             actions.CombineLists();

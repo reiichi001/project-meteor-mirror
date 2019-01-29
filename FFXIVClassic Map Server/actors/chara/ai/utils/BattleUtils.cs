@@ -96,7 +96,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                                         270, 280, 290, 300, 310, 320, 330, 340, 350, 360,   //Level <= 40
                                         370, 380, 380, 390, 400, 410, 420, 430, 430, 440};  //Level <= 50
 
-        public static bool TryAttack(Character attacker, Character defender, BattleAction action, ref BattleAction error)
+        public static bool TryAttack(Character attacker, Character defender, CommandResult action, ref CommandResult error)
         {
             // todo: get hit rate, hit count, set hit effect
             //action.effectId |= (uint)(HitEffect.RecoilLv2 | HitEffect.Hit | HitEffect.HitVisual1);
@@ -122,7 +122,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         //Damage calculations
         //Calculate damage of action
         //We could probably just do this when determining the action's hit type
-        public static void CalculatePhysicalDamageTaken(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static void CalculatePhysicalDamageTaken(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             short dlvl = (short)(defender.GetLevel() - attacker.GetLevel());
 
@@ -137,7 +137,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         }
 
 
-        public static void CalculateSpellDamageTaken(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static void CalculateSpellDamageTaken(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             short dlvl = (short)(defender.GetLevel() - attacker.GetLevel());
 
@@ -158,7 +158,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         }
 
         
-        public static void CalculateBlockDamage(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static void CalculateBlockDamage(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             double percentBlocked;
 
@@ -177,7 +177,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         }
 
         //don't know exact crit bonus formula
-        public static void CalculateCritDamage(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static void CalculateCritDamage(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             short dlvl = (short)(defender.GetLevel() - attacker.GetLevel());
             double bonus = (.04 * (dlvl * dlvl)) - 2 * dlvl;
@@ -193,7 +193,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             action.amount = (ushort)(action.amount * bonus.Clamp(1.15, 1.75));//min bonus of 115, max bonus of 175
         }
 
-        public static void CalculateParryDamage(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static void CalculateParryDamage(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             double percentParry = 0.75;
 
@@ -204,7 +204,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         //There are 3 or 4 tiers of resist that are flat 25% decreases in damage. 
         //It's possible we could just calculate the damage at the same time as we determine the hit type (the same goes for the rest of the hit types)
         //Or we could have HitTypes for DoubleResist, TripleResist, and FullResist that get used here.
-        public static void CalculateResistDamage(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static void CalculateResistDamage(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             double percentResist = 0.5;
 
@@ -214,7 +214,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 
         //It's weird that stoneskin is handled in C# and all other buffs are in scripts right now
         //But it's because stoneskin acts like both a preaction and postaction buff in that it falls off after damage is dealt but impacts how much damage is dealt
-        public static void HandleStoneskin(Character defender, BattleAction action)
+        public static void HandleStoneskin(Character defender, CommandResult action)
         {
             var mitigation = Math.Min(action.amount, defender.GetMod(Modifier.Stoneskin));
 
@@ -222,7 +222,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             defender.SubtractMod((uint)Modifier.Stoneskin, mitigation);
         }
 
-        public static void DamageTarget(Character attacker, Character defender, BattleAction action, BattleActionContainer actionContainer= null)
+        public static void DamageTarget(Character attacker, Character defender, CommandResult action, CommandResultContainer actionContainer= null)
         {
             if (defender != null)
             {
@@ -245,7 +245,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             }
         }
 
-        public static void HealTarget(Character caster, Character target, BattleAction action, BattleActionContainer actionContainer = null)
+        public static void HealTarget(Character caster, Character target, CommandResult action, CommandResultContainer actionContainer = null)
         {
             if (target != null)
             {
@@ -259,7 +259,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         #region Rate Functions
 
         //How is accuracy actually calculated?
-        public static double GetHitRate(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static double GetHitRate(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             double hitRate = 80.0;
 
@@ -273,7 +273,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         }
 
         //Whats the parry formula?
-        public static double GetParryRate(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static double GetParryRate(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             //Can't parry with shield, can't parry rear attacks
             if (defender.GetMod((uint)Modifier.HasShield) != 0 || action.param == (byte) HitDirection.Rear)
@@ -286,7 +286,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             return parryRate + (defender.GetMod(Modifier.RawParryRate));
         }
 
-        public static double GetCritRate(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static double GetCritRate(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             if (action.actionType == ActionType.Status)
                 return 0.0;
@@ -303,7 +303,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 
         //http://kanican.livejournal.com/55370.html
         // todo: figure that out
-        public static double GetResistRate(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static double GetResistRate(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             // todo: add elemental stuff
             //Can only resist spells?
@@ -318,7 +318,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         //(2) Every point in "Block Rate" gives +0.2% rate
         //(3) True block proc rate is capped at 75%. No clue on a possible floor.
         //(4) The baseline rate is based on dLVL only(mob stats play no role). The baseline rate is summarized in this raw data sheet: https://imgbox.com/aasLyaJz
-        public static double GetBlockRate(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static double GetBlockRate(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             //Shields are required to block and can't block from rear.
             if (defender.GetMod((uint)Modifier.HasShield) == 0 || action.param == (byte)HitDirection.Rear)
@@ -336,7 +336,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 
         #endregion
 
-        public static bool TryCrit(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static bool TryCrit(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             if ((Program.Random.NextDouble() * 100) <= action.critRate)
             {
@@ -352,7 +352,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             return false;
         }
 
-        public static bool TryResist(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static bool TryResist(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             if ((Program.Random.NextDouble() * 100) <= action.resistRate)
             {
@@ -364,7 +364,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             return false;
         }
 
-        public static bool TryBlock(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static bool TryBlock(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             if ((Program.Random.NextDouble() * 100) <= action.blockRate)
             {
@@ -376,7 +376,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             return false;
         }
 
-        public static bool TryParry(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static bool TryParry(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             if ((Program.Random.NextDouble() * 100) <= action.parryRate)
             {
@@ -389,7 +389,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         }
 
         //TryMiss instead of tryHit because hits are the default and don't change damage
-        public static bool TryMiss(Character attacker, Character defender, BattleCommand skill, BattleAction action)
+        public static bool TryMiss(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             if ((Program.Random.NextDouble() * 100) >= GetHitRate(attacker, defender, skill, action))
             {
@@ -405,7 +405,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         /*
          * Hit Effecthelpers. Different types of hit effects hits use some flags for different things, so they're split into physical, magical, heal, and status
          */
-        public static void DoAction(Character caster, Character target, BattleCommand skill, BattleAction action, BattleActionContainer actionContainer = null)
+        public static void DoAction(Character caster, Character target, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             switch (action.actionType)
             {
@@ -428,7 +428,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         }
 
         //Determine the hit type, set the hit effect, modify damage based on stoneskin and hit type, hit target
-        public static void FinishActionPhysical(Character attacker, Character defender, BattleCommand skill, BattleAction action, BattleActionContainer actionContainer = null)
+        public static void FinishActionPhysical(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             //Figure out the hit type and change damage depending on hit type
             if (!TryMiss(attacker, defender, skill, action))
@@ -454,7 +454,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             if (skill != null && skill.numHits > 1)
             {
                 if (action.hitNum == 1)
-                    actionContainer?.AddAction(new BattleAction(attacker.actorId, 30441, 0));
+                    actionContainer?.AddAction(new CommandResult(attacker.actorId, 30441, 0));
 
                 textIds = MultiHitTypeTextIds;
             }
@@ -474,7 +474,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             DamageTarget(attacker, defender, action, actionContainer);
         }
 
-        public static void FinishActionSpell(Character attacker, Character defender, BattleCommand skill, BattleAction action, BattleActionContainer actionContainer = null)
+        public static void FinishActionSpell(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             //Determine the hit type of the action
             if (!TryMiss(attacker, defender, skill, action))
@@ -500,7 +500,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             DamageTarget(attacker, defender, action, actionContainer);
         }
 
-        public static void FinishActionHeal(Character attacker, Character defender, BattleCommand skill, BattleAction action, BattleActionContainer actionContainer = null)
+        public static void FinishActionHeal(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             //Set the hit effect
             SetHitEffectHeal(attacker, defender, skill, action);
@@ -510,7 +510,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             HealTarget(attacker, defender, action, actionContainer);
         }
 
-        public static void FinishActionStatus(Character attacker, Character defender, BattleCommand skill, BattleAction action, BattleActionContainer actionContainer = null)
+        public static void FinishActionStatus(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             //Set the hit effect
             SetHitEffectStatus(attacker, defender, skill, action);
@@ -520,7 +520,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             actionContainer.AddAction(action);
         }
 
-        public static void SetHitEffectPhysical(Character attacker, Character defender, BattleCommand skill, BattleAction action, BattleActionContainer actionContainer)
+        public static void SetHitEffectPhysical(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer)
         {
             var hitEffect = HitEffect.HitEffectType;
             HitType hitType = action.hitType;
@@ -564,7 +564,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             action.effectId = (uint)hitEffect;
         }
 
-        public static void SetHitEffectSpell(Character attacker, Character defender, BattleCommand skill, BattleAction action, BattleActionContainer actionContainer = null)
+        public static void SetHitEffectSpell(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             var hitEffect = HitEffect.MagicEffectType;
             HitType hitType = action.hitType;
@@ -606,7 +606,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         }
 
 
-        public static void SetHitEffectHeal(Character caster, Character receiver, BattleCommand skill, BattleAction action)
+        public static void SetHitEffectHeal(Character caster, Character receiver, BattleCommand skill, CommandResult action)
         {
             var hitEffect = HitEffect.MagicEffectType | HitEffect.Heal;
             //Heals use recoil levels in some way as well. Possibly for very low health clutch heals or based on percentage of current health healed (not max health).
@@ -617,7 +617,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             action.effectId = (uint)hitEffect;
         }
 
-        public static void SetHitEffectStatus(Character caster, Character receiver, BattleCommand skill, BattleAction action)
+        public static void SetHitEffectStatus(Character caster, Character receiver, BattleCommand skill, CommandResult action)
         {
             var hitEffect = (uint)HitEffect.StatusEffectType | skill.statusId;
             action.effectId = hitEffect;
@@ -646,7 +646,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         //For instance, Goring Blade's bleed effect requires another action so the first action can still show damage numbers
         //Sentinel doesn't require an additional action because it doesn't need to show those numbers
         //this is stupid
-        public static void TryStatus(Character caster, Character target, BattleCommand skill, BattleAction action, BattleActionContainer battleActions, bool isAdditional = true)
+        public static void TryStatus(Character caster, Character target, BattleCommand skill, CommandResult action, CommandResultContainer results, bool isAdditional = true)
         {
             double rand = Program.Random.NextDouble();
 
@@ -667,7 +667,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                     {
                         //If we need an extra action to show the status text
                         if (isAdditional)
-                            battleActions.AddAction(target.actorId, 30328, skill.statusId | (uint) HitEffect.StatusEffectType);
+                            results.AddAction(target.actorId, 30328, skill.statusId | (uint) HitEffect.StatusEffectType);
                     }
                     else
                         action.worldMasterTextId = 32002;//Is this right?
@@ -679,7 +679,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                     {
                         //If we need an extra action to show the status text
                         if (isAdditional)
-                            battleActions.AddAction(target.actorId, 30328, skill.statusId | (uint) HitEffect.StatusEffectType);
+                            results.AddAction(target.actorId, 30328, skill.statusId | (uint) HitEffect.StatusEffectType);
                     }
                     else
                         action.worldMasterTextId = 32002;//Is this right?
@@ -835,7 +835,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         }
 
         //Calculates bonus EXP for Links and Chains
-        public static void AddBattleBonusEXP(Player attacker, BattleNpc defender, BattleActionContainer actionContainer)
+        public static void AddBattleBonusEXP(Player attacker, BattleNpc defender, CommandResultContainer actionContainer)
         {
             ushort baseExp = GetBaseEXP(attacker, defender);
 
@@ -855,7 +855,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                 {
                     expChainNumber = effect.GetTier();
                     timeLimit = (uint)(GetChainTimeLimit(expChainNumber));
-                    actionContainer?.AddEXPAction(new BattleAction(attacker.actorId, 33919, 0, expChainNumber, (byte)timeLimit));
+                    actionContainer?.AddEXPAction(new CommandResult(attacker.actorId, 33919, 0, expChainNumber, (byte)timeLimit));
                 }
 
                 totalBonus += GetChainBonus(expChainNumber);

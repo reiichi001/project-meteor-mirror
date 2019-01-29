@@ -74,7 +74,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             // todo: send paralyzed/sleep message etc.
             if (errorResult != null)
             {
-                owner.zone.BroadcastPacketAroundActor(owner, BattleActionX01Packet.BuildPacket(errorResult.targetId, errorResult.animation, 0x765D, errorResult));
+                owner.zone.BroadcastPacketAroundActor(owner, CommandResultX01Packet.BuildPacket(errorResult.targetId, errorResult.animation, 0x765D, errorResult));
                 errorResult = null;
             }
         }
@@ -103,12 +103,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             // todo: Change this to use a BattleCommand like the other states
 
             //List<BattleAction> actions = new List<BattleAction>();
-            BattleActionContainer actions = new BattleActionContainer();
+            CommandResultContainer actions = new CommandResultContainer();
             
             var i = 0;
             for (int hitNum = 0; hitNum < 1 /* owner.GetMod((uint) Modifier.HitCount)*/; hitNum++)
             {
-                BattleAction action = new BattleAction(target.actorId, 0x765D, (uint)HitEffect.Hit, 100, (byte)HitDirection.None, (byte) hitNum);
+                CommandResult action = new CommandResult(target.actorId, 0x765D, (uint)HitEffect.Hit, 100, (byte)HitDirection.None, (byte) hitNum);
                 action.commandType = CommandType.AutoAttack;
                 action.actionType = ActionType.Physical;
                 action.actionProperty = (ActionProperty) owner.GetMod(Modifier.AttackType);
@@ -118,8 +118,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             }
 
             // todo: this is fuckin stupid, probably only need *one* error packet, not an error for each action
-            BattleAction[] errors = (BattleAction[])actions.GetList().ToArray().Clone();
-            BattleAction error = null;// new BattleAction(0, null, 0, 0);
+            CommandResult[] errors = (CommandResult[])actions.GetList().ToArray().Clone();
+            CommandResult error = null;// new BattleAction(0, null, 0, 0);
             //owner.DoActions(null, actions.GetList(), ref error);
             //owner.OnAttack(this, actions[0], ref errorResult);
             var anim = (uint)(17 << 24 | 1 << 12);

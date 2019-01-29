@@ -6,12 +6,12 @@ using System.Collections.Generic;
 
 namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
 {
-    class BattleActionX10Packet
+    class CommandResultX10Packet
     {
         public const ushort OPCODE = 0x013A;
         public const uint PACKET_SIZE = 0xD8;
         
-        public static SubPacket BuildPacket(uint sourceActorId, uint animationId, ushort commandId, BattleAction[] actionList, ref int listOffset)
+        public static SubPacket BuildPacket(uint sourceActorId, uint animationId, ushort commandId, CommandResult[] actionList, ref int listOffset)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -66,7 +66,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
             return new SubPacket(OPCODE, sourceActorId, data);
         }
 
-        public static SubPacket BuildPacket(uint sourceActorId, uint animationId, ushort commandId, List<BattleAction> actionList, ref int listOffset)
+        public static SubPacket BuildPacket(uint sourceActorId, uint animationId, ushort commandId, List<CommandResult> actionList, ref int listOffset)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

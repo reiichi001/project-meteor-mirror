@@ -5,18 +5,18 @@ using System.IO;
 namespace FFXIVClassic_Map_Server.packets.send.actor.battle
 {
     // see xtx_command
-    enum BattleActionX01PacketCommand : ushort
+    enum CommandResultX01PacketCommand : ushort
     {
         Disengage = 12002,
         Attack = 22104,
     }
 
-    class BattleActionX01Packet
+    class CommandResultX01Packet
     {
         public const ushort OPCODE = 0x0139;
         public const uint PACKET_SIZE = 0x58;
 
-        public static SubPacket BuildPacket(uint sourceActorId, uint animationId, ushort commandId, BattleAction action)
+        public static SubPacket BuildPacket(uint sourceActorId, uint animationId, ushort commandId, CommandResult action)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 

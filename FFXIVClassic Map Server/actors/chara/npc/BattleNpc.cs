@@ -271,7 +271,7 @@ namespace FFXIVClassic_Map_Server.Actors
             updateFlags |= ActorUpdateFlags.AllNpc;
         }
 
-        public override void Die(DateTime tick, BattleActionContainer actionContainer = null)
+        public override void Die(DateTime tick, CommandResultContainer actionContainer = null)
         {
             if (IsAlive())
             {
@@ -286,7 +286,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     //I think this is, or should be odne in DoBattleAction. Packet capture had the message in the same packet as an attack
                     // <actor> defeat/defeats <target>
                     if (actionContainer != null)
-                        actionContainer.AddEXPAction(new BattleAction(actorId, 30108, 0));
+                        actionContainer.AddEXPAction(new CommandResult(actorId, 30108, 0));
                     if (lastAttacker.currentParty != null && lastAttacker.currentParty is Party)
                     {
                         foreach (var memberId in ((Party)lastAttacker.currentParty).members)
@@ -367,7 +367,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return this.isAtSpawn = Utils.DistanceSquared(positionX, positionY, positionZ, spawnX, spawnY, spawnZ) <= 2500.0f;
         }
 
-        public override void OnAttack(State state, BattleAction action, ref BattleAction error)
+        public override void OnAttack(State state, CommandResult action, ref CommandResult error)
         {
             base.OnAttack(state, action, ref error);
             // todo: move this somewhere else prolly and change based on model/appearance (so maybe in Character.cs instead)
@@ -377,7 +377,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 lua.LuaEngine.CallLuaBattleFunction(this, "onAttack", this, state.GetTarget(), action.amount);
         }
 
-        public override void OnCast(State state, BattleAction[] actions, BattleCommand spell, ref BattleAction[] errors)
+        public override void OnCast(State state, CommandResult[] actions, BattleCommand spell, ref CommandResult[] errors)
         {
             base.OnCast(state, actions, spell, ref errors);
 
@@ -386,7 +386,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     lua.LuaEngine.CallLuaBattleFunction(this, "onCast", this, zone.FindActorInArea<Character>(action.targetId), ((MagicState)state).GetSpell(), action);
         }
 
-        public override void OnAbility(State state, BattleAction[] actions, BattleCommand ability, ref BattleAction[] errors)
+        public override void OnAbility(State state, CommandResult[] actions, BattleCommand ability, ref CommandResult[] errors)
         {
             base.OnAbility(state, actions, ability, ref errors);
 
@@ -397,7 +397,7 @@ namespace FFXIVClassic_Map_Server.Actors
             */
         }
 
-        public override void OnWeaponSkill(State state, BattleAction[] actions, BattleCommand skill, ref BattleAction[] errors)
+        public override void OnWeaponSkill(State state, CommandResult[] actions, BattleCommand skill, ref CommandResult[] errors)
         {
             base.OnWeaponSkill(state, actions, skill, ref errors);
 
@@ -453,7 +453,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 mobModifiers.Add((MobModifier)mobModId, val);
         }
 
-        public override void OnDamageTaken(Character attacker, BattleAction action,  BattleActionContainer actionContainer = null)
+        public override void OnDamageTaken(Character attacker, CommandResult action,  CommandResultContainer actionContainer = null)
         {
             if (GetMobMod((uint)MobModifier.DefendScript) != 0)
                 lua.LuaEngine.CallLuaBattleFunction(this, "onDamageTaken", this, attacker, action.amount);

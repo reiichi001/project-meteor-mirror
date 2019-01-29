@@ -1793,7 +1793,7 @@ namespace FFXIVClassic_Map_Server.Actors
             base.PostUpdate(tick, packets);
         }
 
-        public override void Die(DateTime tick, BattleActionContainer actionContainer = null)
+        public override void Die(DateTime tick, CommandResultContainer actionContainer = null)
         {
             // todo: death timer
             aiContainer.InternalDie(tick, 60);
@@ -2122,7 +2122,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public override bool CanCast(Character target, BattleCommand spell)
         {
-            //Might want to do these with a BattleAction instead to be consistent with the rest of command stuff
+            //Might want to do these with a CommandResult instead to be consistent with the rest of command stuff
             if (GetHotbarTimer(spell.id) > Utils.UnixTimeStampUTC())
             {
                 // todo: this needs confirming
@@ -2227,7 +2227,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public override void OnAttack(State state, BattleAction action, ref BattleAction error)
+        public override void OnAttack(State state, CommandResult action, ref CommandResult error)
         {
             var target = state.GetTarget();
 
@@ -2248,7 +2248,7 @@ namespace FFXIVClassic_Map_Server.Actors
             LuaEngine.GetInstance().OnSignal("playerAttack");
         }
 
-        public override void OnCast(State state, BattleAction[] actions, BattleCommand spell, ref BattleAction[] errors)
+        public override void OnCast(State state, CommandResult[] actions, BattleCommand spell, ref CommandResult[] errors)
         {
             // todo: update hotbar timers to skill's recast time (also needs to be done on class change or equip crap)
             base.OnCast(state, actions, spell, ref errors);
@@ -2257,7 +2257,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //LuaEngine.GetInstance().OnSignal("spellUse");
         }
 
-        public override void OnWeaponSkill(State state, BattleAction[] actions, BattleCommand skill, ref BattleAction[] errors)
+        public override void OnWeaponSkill(State state, CommandResult[] actions, BattleCommand skill, ref CommandResult[] errors)
         {
             // todo: update hotbar timers to skill's recast time (also needs to be done on class change or equip crap)
             base.OnWeaponSkill(state, actions, skill, ref errors);
@@ -2269,7 +2269,7 @@ namespace FFXIVClassic_Map_Server.Actors
             LuaEngine.GetInstance().OnSignal("weaponskillUse");
         }
 
-        public override void OnAbility(State state, BattleAction[] actions, BattleCommand ability, ref BattleAction[] errors)
+        public override void OnAbility(State state, CommandResult[] actions, BattleCommand ability, ref CommandResult[] errors)
         {
             base.OnAbility(state, actions, ability, ref errors);
             UpdateHotbarTimer(ability.id, ability.recastTimeMs);
@@ -2277,16 +2277,16 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         //Handles exp being added, does not handle figuring out exp bonus from buffs or skill/link chains or any of that
-        //Returns BattleActions that can be sent to display the EXP gained number and level ups
+        //Returns CommandResults that can be sent to display the EXP gained number and level ups
         //exp should be a ushort single the exp graphic overflows after ~65k
-        public List<BattleAction> AddExp(int exp, byte classId, byte bonusPercent = 0)
+        public List<CommandResult> AddExp(int exp, byte classId, byte bonusPercent = 0)
         {
-            List<BattleAction> actionList = new List<BattleAction>();
+            List<CommandResult> actionList = new List<CommandResult>();
             exp += (int) Math.Ceiling((exp * bonusPercent / 100.0f));
 
             //You earn [exp] (+[bonusPercent]%) experience points.
             //In non-english languages there are unique messages for each language, hence the use of ClassExperienceTextIds
-            actionList.Add(new BattleAction(actorId, BattleUtils.ClassExperienceTextIds[classId], 0, (ushort)exp, bonusPercent));
+            actionList.Add(new CommandResult(actorId, BattleUtils.ClassExperienceTextIds[classId], 0, (ushort)exp, bonusPercent));
 
             bool leveled = false;
             int diff = MAXEXP[GetLevel() - 1] - charaWork.battleSave.skillPoint[classId - 1];            
@@ -2331,7 +2331,7 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         //Increaess level of current class and equips new abilities earned at that level
-        public void LevelUp(byte classId, List<BattleAction> actionList = null)
+        public void LevelUp(byte classId, List<CommandResult> actionList = null)
         {
             if (charaWork.battleSave.skillLevel[classId - 1] < charaWork.battleSave.skillLevelCap[classId])
             {
@@ -2341,7 +2341,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 //33909: You gain level [level]
                 if (actionList != null)
-                    actionList.Add(new BattleAction(actorId, 33909, 0, (ushort) charaWork.battleSave.skillLevel[classId - 1]));
+                    actionList.Add(new CommandResult(actorId, 33909, 0, (ushort) charaWork.battleSave.skillLevel[classId - 1]));
 
                 //If there's any abilites that unlocks at this level, equip them.
                 List<uint> commandIds = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, GetLevel());
@@ -2356,7 +2356,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     if (actionList != null)
                     {
                         if(classId == GetCurrentClassOrJob() || jobId == GetCurrentClassOrJob())
-                            actionList.Add(new BattleAction(actorId, 33926, commandId));
+                            actionList.Add(new CommandResult(actorId, 33926, commandId));
                     }
                 }
             }

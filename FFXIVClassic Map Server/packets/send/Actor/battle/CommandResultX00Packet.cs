@@ -4,7 +4,7 @@ using System.IO;
 
 namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
 {
-    class BattleActionX00Packet
+    class CommandResultX00Packet
     {
         public const ushort OPCODE = 0x013C;
         public const uint PACKET_SIZE = 0x48;
