@@ -443,7 +443,7 @@ namespace FFXIVClassic_Map_Server.Actors
             {                
                 if (a is Player)
                 {
-                    if (isIsolated && packet.header.sourceId != a.actorId)
+                    if (isIsolated)
                         continue;
 
                     SubPacket clonedPacket = new SubPacket(packet, a.actorId);

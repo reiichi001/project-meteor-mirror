@@ -227,6 +227,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             if (defender != null)
             {
 
+                //Bugfix, mobs that instantly died were insta disappearing due to lastAttacker == null.
+                if (defender is BattleNpc)
+                {
+                    var bnpc = defender as BattleNpc;
+                    if (bnpc.lastAttacker == null)
+                        bnpc.lastAttacker = attacker;
+                }
+
                 defender.DelHP((short)action.amount);
                 attacker.OnDamageDealt(defender, action, actionContainer);
                 defender.OnDamageTaken(attacker, action, actionContainer);

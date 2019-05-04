@@ -224,25 +224,25 @@ namespace FFXIVClassic_Map_Server.Actors
             zone.BroadcastPacketAroundActor(this, CommandResultX00Packet.BuildPacket(actorId, animationId, commandId));
         }
 
-        public void DoBattleAction(ushort commandId, uint animationId, CommandResult action)
+        public void DoBattleAction(ushort commandId, uint animationId, CommandResult result)
         {
-            zone.BroadcastPacketAroundActor(this, CommandResultX01Packet.BuildPacket(actorId, animationId, commandId, action));
+            zone.BroadcastPacketAroundActor(this, CommandResultX01Packet.BuildPacket(actorId, animationId, commandId, result));
         }
 
-        public void DoBattleAction(ushort commandId, uint animationId, CommandResult[] actions)
+        public void DoBattleAction(ushort commandId, uint animationId, CommandResult[] results)
         {
             int currentIndex = 0;
             //AoE abilities only ever hit 16 people, so we probably won't need this loop anymore
             //Apparently aoe are limited to 8?
             while (true)
             {
-                if (actions.Length - currentIndex >= 10)
-                    zone.BroadcastPacketAroundActor(this, CommandResultX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
-                else if (actions.Length - currentIndex > 1)
-                    zone.BroadcastPacketAroundActor(this, CommandResultX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
-                else if (actions.Length - currentIndex == 1)
+                if (results.Length - currentIndex >= 10)
+                    zone.BroadcastPacketAroundActor(this, CommandResultX18Packet.BuildPacket(actorId, animationId, commandId, results, ref currentIndex));
+                else if (results.Length - currentIndex > 1)
+                    zone.BroadcastPacketAroundActor(this, CommandResultX10Packet.BuildPacket(actorId, animationId, commandId, results, ref currentIndex));
+                else if (results.Length - currentIndex == 1)
                 {
-                    zone.BroadcastPacketAroundActor(this, CommandResultX01Packet.BuildPacket(actorId, animationId, commandId, actions[currentIndex]));
+                    zone.BroadcastPacketAroundActor(this, CommandResultX01Packet.BuildPacket(actorId, animationId, commandId, results[currentIndex]));
                     currentIndex++;
                 }
                 else
@@ -253,19 +253,19 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public void DoBattleAction(ushort commandId, uint animationId, List<CommandResult> actions)
+        public void DoBattleAction(ushort commandId, uint animationId, List<CommandResult> results)
         {
             int currentIndex = 0;
 
             while (true)
             {
-                if (actions.Count - currentIndex >= 10)
-                    zone.BroadcastPacketAroundActor(this, CommandResultX18Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
-                else if (actions.Count - currentIndex > 1)
-                    zone.BroadcastPacketAroundActor(this, CommandResultX10Packet.BuildPacket(actorId, animationId, commandId, actions, ref currentIndex));
-                else if (actions.Count - currentIndex == 1)
+                if (results.Count - currentIndex >= 10)
+                    zone.BroadcastPacketAroundActor(this, CommandResultX18Packet.BuildPacket(actorId, animationId, commandId, results, ref currentIndex));
+                else if (results.Count - currentIndex > 1)
+                    zone.BroadcastPacketAroundActor(this, CommandResultX10Packet.BuildPacket(actorId, animationId, commandId, results, ref currentIndex));
+                else if (results.Count - currentIndex == 1)
                 {
-                    zone.BroadcastPacketAroundActor(this, CommandResultX01Packet.BuildPacket(actorId, animationId, commandId, actions[currentIndex]));
+                    zone.BroadcastPacketAroundActor(this, CommandResultX01Packet.BuildPacket(actorId, animationId, commandId, results[currentIndex]));
                     currentIndex++;
                 }
                 else
@@ -374,9 +374,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if ((updateFlags & ActorUpdateFlags.SubState) != 0)
                 {
-                    packets.Add(SetActorSubStatePacket.BuildPacket(actorId, currentSubState));
-                    packets.Add(CommandResultX00Packet.BuildPacket(actorId, 0x72000062, 0));
-                    packets.Add(CommandResultX01Packet.BuildPacket(actorId, 0x7C000062, 21001, new CommandResult(actorId, 0, 1)));
+                   //packets.Add(SetActorSubStatePacket.BuildPacket(actorId, currentSubState));
+                    //packets.Add(CommandResultX00Packet.BuildPacket(actorId, 0x72000062, 0));
+                    //packets.Add(CommandResultX01Packet.BuildPacket(actorId, 0x7C000062, 21001, new CommandResult(actorId, 0, 1)));
 
                     updateFlags &= ~ActorUpdateFlags.SubState;
                     //DoBattleAction(21001, 0x7C000062, new BattleAction(this.actorId, 0, 1, 0, 0, 1)); //Attack Mode
