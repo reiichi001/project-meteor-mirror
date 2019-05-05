@@ -50,7 +50,7 @@ namespace FFXIVClassic_Map_Server.utils
                             name = matches[2].Value.Trim(',');
 
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         { continue; }
 
                         placenames.Add(id, name);
@@ -72,7 +72,7 @@ namespace FFXIVClassic_Map_Server.utils
                             id = UInt32.Parse(matches[0].Value.Trim(','));
                             pId = UInt32.Parse(matches[1].Value.Trim(','));
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         { continue; }
 
                         cmd.Parameters["@id"].Value = id;
@@ -131,7 +131,7 @@ namespace FFXIVClassic_Map_Server.utils
                             nameId = UInt32.Parse(matches[6].Value.Trim(','));
 
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         { continue; }
 
                         cmd.Parameters["@id"].Value = id;
@@ -198,7 +198,7 @@ namespace FFXIVClassic_Map_Server.utils
                             
 
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         { continue; }
 
                         cmd.Parameters["@id"].Value = id;
@@ -260,7 +260,7 @@ namespace FFXIVClassic_Map_Server.utils
                             name = matches2[9].Value.Trim(',');
                             points = UInt32.Parse(matches[3].Value.Trim(','));
                         }
-                        catch (FormatException e)
+                        catch (FormatException)
                         { continue;  }
 
                         if (id == 100)

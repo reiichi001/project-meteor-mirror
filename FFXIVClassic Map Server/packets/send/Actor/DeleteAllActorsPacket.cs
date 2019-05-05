@@ -1,7 +1,5 @@
 ﻿using FFXIVClassic.Common;
 
-using FFXIVClassic.Common;
-
 namespace  FFXIVClassic_Map_Server.packets.send.actor
 {
     class DeleteAllActorsPacket

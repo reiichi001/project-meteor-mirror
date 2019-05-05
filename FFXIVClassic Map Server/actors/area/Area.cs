@@ -2,20 +2,13 @@
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.actors.chara.npc;
-using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using MoonSharp.Interpreter;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.packets.send;
-using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.actors.director;
-using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 
 namespace FFXIVClassic_Map_Server.Actors
 {

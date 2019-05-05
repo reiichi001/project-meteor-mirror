@@ -241,7 +241,7 @@ namespace FFXIVClassic_Map_Server.actors.director
             {
                 className = className.Substring(0, 20 - zoneName.Length);
             }
-            catch (ArgumentOutOfRangeException e)
+            catch (ArgumentOutOfRangeException)
             { }
 
             //Convert actor number to base 63

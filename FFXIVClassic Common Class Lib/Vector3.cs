@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic.Common
 {
@@ -64,7 +60,7 @@ namespace FFXIVClassic.Common
         public static bool operator ==(Vector3 lhs, Vector3 rhs)
         {
             return (lhs?.X == rhs?.X && lhs?.Y == rhs?.Y && lhs?.Z == rhs?.Z);
-        }
+        }     
 
         public float Length()
         {
@@ -140,6 +136,24 @@ namespace FFXIVClassic.Common
 
             //If the relative angle is less than the total angle of the cone, the target is inside the cone
             return angleToTarget >= 0 && angleToTarget <= (coneAngle * Math.PI);
+        }
+
+        public override bool Equals(object obj)
+        {
+            var vector = obj as Vector3;
+            return vector != null &&
+                   X == vector.X &&
+                   Y == vector.Y &&
+                   Z == vector.Z;
+        }
+
+        public override int GetHashCode()
+        {
+            var hashCode = -307843816;
+            hashCode = hashCode * -1521134295 + X.GetHashCode();
+            hashCode = hashCode * -1521134295 + Y.GetHashCode();
+            hashCode = hashCode * -1521134295 + Z.GetHashCode();
+            return hashCode;
         }
     }
 }

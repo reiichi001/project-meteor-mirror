@@ -60,7 +60,7 @@ namespace FFXIVClassic.Common
                     // Calculate a bitmask of the desired length
                     long mask = 0;
                     for (int i = 0; i < fieldLength; i++)
-                        mask |= 1 << i;
+                        mask |= 1L << i;
 
                     r |= ((UInt32)f.GetValue(t) & mask) << offset;
 
