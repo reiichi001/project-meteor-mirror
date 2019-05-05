@@ -17,9 +17,21 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FFXIVClassic_Map_Server.actors.chara.ai;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
+    [Flags]
+    enum NpcSpawnType : ushort
+    {
+        Normal    = 0x00,
+        Scripted  = 0x01,
+        Nighttime = 0x02,
+        Evening   = 0x04,
+        Daytime   = 0x08,
+        Weather   = 0x10,
+    }
+
     class Npc : Character
     {
         private uint actorClassId;
@@ -29,6 +41,7 @@ namespace FFXIVClassic_Map_Server.Actors
         private uint layout, instance;
 
         public NpcWork npcWork = new NpcWork();
+        public NpcSpawnType npcSpawnType;
 
         public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, ushort actorState, uint animationId, string customDisplayName)
             : base((4 << 28 | spawnedArea.actorId << 19 | (uint)actorNumber))  
@@ -50,6 +63,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
             this.actorClassId = actorClass.actorClassId;
 
+            this.currentSubState.motionPack = (ushort) animationId;
+
             LoadNpcAppearance(actorClass.actorClassId);
 
             className = actorClass.classPath.Substring(actorClass.classPath.LastIndexOf("/") + 1);
@@ -57,15 +72,17 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.battleSave.potencial = 1.0f;
 
-            charaWork.parameterSave.state_mainSkill[0] = 3;
-            charaWork.parameterSave.state_mainSkill[2] = 3;
-            charaWork.parameterSave.state_mainSkillLevel = 2;
+            // todo: these really need to be read from db etc
+            {
+                charaWork.parameterSave.state_mainSkill[0] = 3;
+                charaWork.parameterSave.state_mainSkill[2] = 3;
+                charaWork.parameterSave.state_mainSkillLevel = 1;
 
-            charaWork.parameterSave.hp[0] = 500;
-            charaWork.parameterSave.hpMax[0] = 500;
-
-            for (int i = 0; i < 32; i++ )            
-                charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);            
+                charaWork.parameterSave.hp[0] = 80;
+                charaWork.parameterSave.hpMax[0] = 80;
+            }
+            for (int i = 0; i < 32; i++ )
+                charaWork.property[i] = (byte)(((int)actorClass.propertyFlags >> i) & 1);
 
             npcWork.pushCommand = actorClass.pushCommand;
             npcWork.pushCommandSub = actorClass.pushCommandSub;
@@ -84,8 +101,8 @@ namespace FFXIVClassic_Map_Server.Actors
                     isStatic = true;
                 }
             }
-
-            GenerateActorName((int)actorNumber);            
+            GenerateActorName((int)actorNumber);
+            this.aiContainer = new AIContainer(this, null, new PathFind(this), new TargetFind(this));
         }
 
         public Npc(int actorNumber, ActorClass actorClass, string uniqueId, Area spawnedArea, float posX, float posY, float posZ, float rot, uint layout, uint instance)
@@ -124,6 +141,7 @@ namespace FFXIVClassic_Map_Server.Actors
             this.instance = instance;
 
             GenerateActorName((int)actorNumber);
+            this.aiContainer = new AIContainer(this, null, new PathFind(this), new TargetFind(null));
         }
 
         public SubPacket CreateAddActorPacket()
@@ -142,8 +160,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 isStatic = true;
             else
             {
-            //    charaWork.property[2] = 1;
-             //   npcWork.hateType = 1;
+                //charaWork.property[2] = 1;
+                //npcWork.hateType = 1;
             }
 
             if (lParams == null)
@@ -178,14 +196,14 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateSpeedPacket());            
             subpackets.Add(CreateSpawnPositonPacket(0x0));
 
-            if (isMapObj)            
-                subpackets.Add(SetActorBGPropertiesPacket.BuildPacket(actorId, instance, layout));                        
+            if (isMapObj)
+                subpackets.Add(SetActorBGPropertiesPacket.BuildPacket(actorId, instance, layout));
             else
                 subpackets.Add(CreateAppearancePacket());
 
             subpackets.Add(CreateNamePacket());
             subpackets.Add(CreateStatePacket());
-            subpackets.Add(CreateIdleAnimationPacket());
+            subpackets.Add(CreateSubStatePacket());
             subpackets.Add(CreateInitStatusPacket());
             subpackets.Add(CreateSetActorIconPacket());
             subpackets.Add(CreateIsZoneingPacket());           
@@ -229,7 +247,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //Status Times
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
             {
-                if (charaWork.statusShownTime[i] != 0xFFFFFFFF)
+                if (charaWork.statusShownTime[i] != 0)
                     propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
             }
 
@@ -392,18 +410,46 @@ namespace FFXIVClassic_Map_Server.Actors
             zone.DespawnActor(this);
         }
 
-        public void Update(double deltaTime)
+        public override void Update(DateTime tick)
         {
-            LuaEngine.GetInstance().CallLuaFunction(null, this, "onUpdate", true, deltaTime);         
+            // todo: can normal npcs have status effects?
+            aiContainer.Update(tick);
         }
 
-        //A party member list packet came, set the party
-       /* public void SetParty(MonsterPartyGroup group)
+        public override void PostUpdate(DateTime tick, List<SubPacket> packets = null)
         {
-            if (group is MonsterPartyGroup)
-                currentParty = group;
+            packets = packets ?? new List<SubPacket>();
+
+            if ((updateFlags & ActorUpdateFlags.Work) != 0)
+            {
+
+            }
+            base.PostUpdate(tick, packets);
         }
-        */
+
+        public override void OnSpawn()
+        {
+            base.OnSpawn();
+        }
+
+        public override void OnDeath()
+        {
+            base.OnDeath();
+        }
+
+        public override void OnDespawn()
+        {
+            zone.BroadcastPacketAroundActor(this, RemoveActorPacket.BuildPacket(this.actorId));
+            QueuePositionUpdate(spawnX, spawnY, spawnZ);
+            LuaEngine.CallLuaBattleFunction(this, "onDespawn", this);
+        }
+        //A party member list packet came, set the party
+        /* public void SetParty(MonsterPartyGroup group)
+         {
+             if (group is MonsterPartyGroup)
+                 currentParty = group;
+         }
+         */
 
     }
 }

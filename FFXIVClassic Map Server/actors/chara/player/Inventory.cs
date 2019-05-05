@@ -1,5 +1,4 @@
-﻿
-using FFXIVClassic.Common;
+﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
@@ -139,7 +138,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return (int)INV_ERROR.INVENTORY_FULL;
 
             ItemData gItem = Server.GetItemGamedata(itemId);
-          
+
             if (gItem == null)
             {
                 Program.Log.Error("Inventory.AddItem: unable to find item %u", itemId);

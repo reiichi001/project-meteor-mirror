@@ -1,13 +1,4 @@
-﻿using FFXIVClassic.Common;
-using FFXIVClassic_World_Server.DataObjects.Group;
-using FFXIVClassic_World_Server.Packets.Send.Subpackets;
-using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FFXIVClassic_World_Server.Packets.Send.Subpackets;
 
 namespace FFXIVClassic_World_Server.DataObjects
 {

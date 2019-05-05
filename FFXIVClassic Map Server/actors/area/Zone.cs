@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.IO;
+
 using FFXIVClassic_Map_Server.actors.director;
 
 namespace FFXIVClassic_Map_Server.actors.area
@@ -20,10 +22,31 @@ namespace FFXIVClassic_Map_Server.actors.area
         Dictionary<string, List<PrivateAreaContent>> contentAreas = new Dictionary<string, List<PrivateAreaContent>>();
         Object contentAreasLock = new Object();
 
-        public Zone(uint id, string zoneName, ushort regionId, string classPath, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid)
+        public SharpNav.TiledNavMesh tiledNavMesh;
+        public SharpNav.NavMeshQuery navMeshQuery;
+
+        public Int64 pathCalls;
+        public Int64 prevPathCalls = 0;
+        public Int64 pathCallTime;
+
+        public Zone(uint id, string zoneName, ushort regionId, string classPath, ushort bgmDay, ushort bgmNight, ushort bgmBattle, bool isIsolated, bool isInn, bool canRideChocobo, bool canStealth, bool isInstanceRaid, bool loadNavMesh = false)
             : base(id, zoneName, regionId, classPath, bgmDay, bgmNight, bgmBattle, isIsolated, isInn, canRideChocobo, canStealth, isInstanceRaid)
         {
+            if (loadNavMesh)
+            {
+                try
+                {
+                    tiledNavMesh = utils.NavmeshUtils.LoadNavmesh(tiledNavMesh, zoneName + ".snb");
+                    navMeshQuery = new SharpNav.NavMeshQuery(tiledNavMesh, 100);
 
+                    if (tiledNavMesh != null && tiledNavMesh.Tiles[0].PolyCount > 0)
+                        Program.Log.Info($"Loaded navmesh for {zoneName}");
+                }
+                catch (Exception e)
+                {
+                    Program.Log.Error(e.Message);
+                }
+            }
         }
 
         public void AddPrivateArea(PrivateArea pa)
@@ -97,21 +120,36 @@ namespace FFXIVClassic_Map_Server.actors.area
 
         public Actor FindActorInZone(uint id)
         {
-            if (!mActorList.ContainsKey(id))
+            lock (mActorList)
             {
-                foreach(Dictionary<uint, PrivateArea> paList in privateAreas.Values)
+                if (!mActorList.ContainsKey(id))
                 {
-                    foreach(PrivateArea pa in paList.Values)
+                    foreach (Dictionary<uint, PrivateArea> paList in privateAreas.Values)
                     {
-                        Actor actor = pa.FindActorInArea(id);
-                        if (actor != null)
-                            return actor;
+                        foreach (PrivateArea pa in paList.Values)
+                        {
+                            Actor actor = pa.FindActorInArea(id);
+                            if (actor != null)
+                                return actor;
+                        }
                     }
+
+                    foreach (List<PrivateAreaContent> paList in contentAreas.Values)
+                    {
+                        foreach (PrivateArea pa in paList)
+                        {
+                            Actor actor = pa.FindActorInArea(id);
+                            if (actor != null)
+                                return actor;
+                        }
+                    }
+
+
+                    return null;
                 }
-                return null;
+                else
+                    return mActorList[id];
             }
-            else
-                return mActorList[id];
         }
 
         public PrivateAreaContent CreateContentArea(Player starterPlayer, string areaClassPath, string contentScript, string areaName, string directorName, params object[] args)
@@ -127,6 +165,7 @@ namespace FFXIVClassic_Map_Server.actors.area
                     contentAreas.Add(areaName, new List<PrivateAreaContent>());
                 PrivateAreaContent contentArea = new PrivateAreaContent(this, classPath, areaName, 1, director, starterPlayer);                
                 contentAreas[areaName].Add(contentArea);
+                
                 return contentArea;
             }
         }
@@ -139,5 +178,30 @@ namespace FFXIVClassic_Map_Server.actors.area
             }
         }
 
+        public override void Update(DateTime tick)
+        {
+            base.Update(tick);
+
+            foreach (var a in privateAreas.Values)
+                foreach(var b in a.Values)
+                    b.Update(tick);
+
+            foreach (var a in contentAreas.Values)
+                foreach (var b in a)
+                    b.Update(tick);
+
+            // todo: again, this is retarded but debug stuff
+            var diffTime = tick - lastUpdate;
+            
+            if (diffTime.TotalSeconds >= 10)
+            {
+                if (this.pathCalls > 0)
+                {
+                    Program.Log.Debug("Number of pathfinding calls {0} average time {1}ms. {2} this tick", pathCalls, (float)(pathCallTime / pathCalls), pathCalls - prevPathCalls);
+                    prevPathCalls = pathCalls;
+                }
+                lastUpdate = tick;
+            }
+        }
     }
 }

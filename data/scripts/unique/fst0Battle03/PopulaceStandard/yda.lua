@@ -7,9 +7,10 @@ end
 
 function onEventStarted(player, npc, triggerName)
 	man0g0Quest = player:GetQuest("Man0g0");
-	
+	print("Got Quest Man0g0");
 	if (man0g0Quest ~= nil) then	
-	
+		
+		print("Man0g0Quest is not nil");
 		if (triggerName == "pushDefault") then
 			callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrNomal002", nil, nil, nil);			
 		elseif (triggerName == "talkDefault") then		
@@ -23,6 +24,7 @@ function onEventStarted(player, npc, triggerName)
 				player:GetDirector("OpeningDirector"):onTalkEvent(player, npc);
 			--Was she talked to after papalymo?
 			else
+				print("Making content area");
 				if (man0g0Quest:GetQuestFlag(MAN0G0_FLAG_MINITUT_DONE1) == true) then				
 
 					player:EndEvent();
@@ -35,13 +37,16 @@ function onEventStarted(player, npc, triggerName)
 					end
 		
 					director = contentArea:GetContentDirector();		
-					player:AddDirector(director);		
+					--player:AddDirector(director);		
 					director:StartDirector(false);
 					
 					player:KickEvent(director, "noticeEvent", true);
 					player:SetLoginDirector(director);		
 					
+					print("Content area and director made");
+					player:ChangeState(0);
 					GetWorldManager():DoZoneChangeContent(player, contentArea, 362.4087, 4, -703.8168, 1.5419, 16);
+					print("Zone Change");
 					return;
 				else
 					callClientFunction(player, "delegateEvent", player, man0g0Quest, "processEvent000_1", nil, nil, nil);

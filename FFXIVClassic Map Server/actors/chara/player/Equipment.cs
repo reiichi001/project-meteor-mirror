@@ -163,6 +163,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             owner.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
 
             list[slot] = item;
+            owner.CalculateBaseStats();// RecalculateStats();
         }
 
         public void ToggleDBWrite(bool flag)
@@ -189,6 +190,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             owner.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
 
             list[slot] = null;
+            owner.RecalculateStats();
         }
 
         private void SendEquipmentPackets(ushort equipSlot, InventoryItem item)

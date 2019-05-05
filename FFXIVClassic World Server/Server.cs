@@ -172,6 +172,7 @@ namespace FFXIVClassic_World_Server
 
             if (subpacket.gameMessage.opcode != 0x1 && subpacket.gameMessage.opcode != 0xca)
                 subpacket.DebugPrintSubPacket();     
+
             if (subpacket.gameMessage.opcode >= 0x1000)
             {
                 //subpacket.DebugPrintSubPacket();                

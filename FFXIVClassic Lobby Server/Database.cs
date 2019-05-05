@@ -1,6 +1,5 @@
 ﻿using FFXIVClassic_Lobby_Server.dataobjects;
 using MySql.Data.MySqlClient;
-using Dapper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -219,7 +218,7 @@ namespace FFXIVClassic_Lobby_Server
                 {
                     MySqlCommand cmd = new MySqlCommand();
                     cmd.Connection = conn;
-                    cmd.CommandText = String.Format("INSERT INTO characters_parametersave(characterId, hp, hpMax, mp, mpMax, mainSkill, mainSkillLevel) VALUES(@characterId, 1, 1, 1, 1, @mainSkill, 1);", CharacterCreatorUtils.GetClassNameForId((short)charaInfo.currentClass));
+                    cmd.CommandText = String.Format("INSERT INTO characters_parametersave(characterId, hp, hpMax, mp, mpMax, mainSkill, mainSkillLevel) VALUES(@characterId, 1900, 1000, 115, 115, @mainSkill, 1);", CharacterCreatorUtils.GetClassNameForId((short)charaInfo.currentClass));
                     cmd.Prepare();
 
                     cmd.Parameters.AddWithValue("@characterId", cid);
@@ -231,15 +230,51 @@ namespace FFXIVClassic_Lobby_Server
                 catch (MySqlException e)
                 {
                     Program.Log.Error(e.ToString());
-                   
+                    conn.Dispose();
+                    return;
+                }
 
+                //Create Hotbar
+                try
+                {
+                    MySqlCommand cmd = new MySqlCommand();
+                    cmd.Connection = conn;
+                    cmd.CommandText = "SELECT id FROM server_battle_commands WHERE classJob = @classjob AND lvl = 1 ORDER BY id DESC";
+                    cmd.Prepare();
+
+                    cmd.Parameters.AddWithValue("@classJob", charaInfo.currentClass);
+                    List<uint> defaultActions = new List<uint>();
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        while(reader.Read())
+                        {
+                            defaultActions.Add(reader.GetUInt32("id"));
+                        }
+                    }
+                    MySqlCommand cmd2 = new MySqlCommand();
+                    cmd2.Connection = conn;
+                    cmd2.CommandText = "INSERT INTO characters_hotbar (characterId, classId, hotbarSlot, commandId, recastTime) VALUES (@characterId, @classId, @hotbarSlot, @commandId, 0)";
+                    cmd2.Prepare();
+                    cmd2.Parameters.AddWithValue("@characterId", cid);
+                    cmd2.Parameters.AddWithValue("@classId", charaInfo.currentClass);
+                    cmd2.Parameters.Add("@hotbarSlot", MySqlDbType.Int16);
+                    cmd2.Parameters.Add("@commandId", MySqlDbType.Int16);
+
+                    for(int i = 0; i < defaultActions.Count; i++)
+                    {
+                        cmd2.Parameters["@hotbarSlot"].Value = i;
+                        cmd2.Parameters["@commandId"].Value = defaultActions[i];
+                        cmd2.ExecuteNonQuery();
+                    }
+                }
+                catch(MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
                 }
                 finally
                 {
                     conn.Dispose();
                 }
-
-                
             }
 
             Program.Log.Debug("[SQL] CID={0} state updated to active(2).", cid);
@@ -325,48 +360,105 @@ namespace FFXIVClassic_Lobby_Server
 
         public static List<World> GetServers()
         {
-            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            string query;
+            MySqlCommand cmd;
+            List<World> worldList = new List<World>();
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                List<World> worldList = null;
                 try
                 {
                     conn.Open();
-                    worldList = conn.Query<World>("SELECT * FROM servers WHERE isActive=true").ToList();                                       
+                    query = "SELECT * FROM servers WHERE isActive=true";
+                    cmd = new MySqlCommand(query, conn);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            ushort id;
+                            string address;
+                            ushort port;
+                            ushort listPosition;
+                            ushort population;
+                            string name;
+                            bool isActive;
+
+                            id = reader.GetUInt16("id");
+                            address = reader.GetString("address");
+                            port = reader.GetUInt16("port");
+                            listPosition = reader.GetUInt16("listPosition");
+                            population = 2;
+                            name = reader.GetString("name");
+                            isActive = reader.GetBoolean("isActive");
+
+                            worldList.Add(new World(id, address, port, listPosition, population, name, isActive));
+                        }
+                    }
                 }
                 catch (MySqlException e)
                 {
                     Program.Log.Error(e.ToString());
-                    worldList = new List<World>(); }
+                    worldList = new List<World>();
+                }
                 finally
-                {                    
+                {
                     conn.Dispose();
                 }
-                return worldList;
             }
+            return worldList;
         }
 
         public static World GetServer(uint serverId)
         {
-            using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            string query;
+            MySqlCommand cmd;
+            World world = null;
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                World world = null;
                 try
                 {
                     conn.Open();
-                    world = conn.Query<World>("SELECT * FROM servers WHERE id=@ServerId", new {ServerId = serverId}).SingleOrDefault();                  
+                    query = "SELECT * FROM servers WHERE id=@ServerId";
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@ServerId", serverId);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            ushort id;
+                            string address;
+                            ushort port;
+                            ushort listPosition;
+                            ushort population;
+                            string name;
+                            bool isActive;
+
+                            id = reader.GetUInt16("id");
+                            address = reader.GetString("address");
+                            port = reader.GetUInt16("port");
+                            listPosition = reader.GetUInt16("listPosition");
+                            population = 2; //TODO
+                            name = reader.GetString("name");
+                            isActive = reader.GetBoolean("isActive");
+
+                            world = new World(id, address, port, listPosition, population, name, isActive);
+                        }
+                    }
                 }
                 catch (MySqlException e)
                 {
-                    Program.Log.Error(e.ToString());
-                                       
+                    Program.Log.Error(e.ToString());                    
                 }
                 finally
                 {
                     conn.Dispose();
                 }
-
-                return world;
             }
+
+            return world;           
         }
 
         public static List<Character> GetCharacters(uint userId)
@@ -432,9 +524,11 @@ namespace FFXIVClassic_Lobby_Server
             Character chara = null;
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                conn.Open();
+                try
+                {
+                    conn.Open();
 
-                string query = @"
+                    string query = @"
                     SELECT 
                     id,            
                     slot,
@@ -454,29 +548,39 @@ namespace FFXIVClassic_Lobby_Server
                     INNER JOIN characters_parametersave ON id = characters_parametersave.characterId
                     WHERE id = @charId";
 
-                MySqlCommand cmd = new MySqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@charId", charId);
-                using (MySqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.Read())
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", charId);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
-                        chara = new Character();
-                        chara.id = reader.GetUInt32("id");
-                        chara.slot = reader.GetUInt16("slot");
-                        chara.serverId = reader.GetUInt16("serverId");
-                        chara.name = reader.GetString("name");
-                        chara.isLegacy = reader.GetBoolean("isLegacy");
-                        chara.doRename = reader.GetBoolean("doRename");
-                        chara.currentZoneId = reader.GetUInt32("currentZoneId");
-                        chara.guardian = reader.GetByte("guardian");
-                        chara.birthMonth = reader.GetByte("birthMonth");
-                        chara.birthDay = reader.GetByte("birthDay");
-                        chara.initialTown = reader.GetByte("initialTown");
-                        chara.tribe = reader.GetByte("tribe");
-                        chara.currentClass = reader.GetByte("mainSkill");
-                        //chara.currentJob = ???
-                        chara.currentLevel = reader.GetInt16("mainSkillLevel");
+                        if (reader.Read())
+                        {
+                            chara = new Character();
+                            chara.id = reader.GetUInt32("id");
+                            chara.slot = reader.GetUInt16("slot");
+                            chara.serverId = reader.GetUInt16("serverId");
+                            chara.name = reader.GetString("name");
+                            chara.isLegacy = reader.GetBoolean("isLegacy");
+                            chara.doRename = reader.GetBoolean("doRename");
+                            chara.currentZoneId = reader.GetUInt32("currentZoneId");
+                            chara.guardian = reader.GetByte("guardian");
+                            chara.birthMonth = reader.GetByte("birthMonth");
+                            chara.birthDay = reader.GetByte("birthDay");
+                            chara.initialTown = reader.GetByte("initialTown");
+                            chara.tribe = reader.GetByte("tribe");
+                            chara.currentClass = reader.GetByte("mainSkill");
+                            //chara.currentJob = ???
+                            chara.currentLevel = reader.GetInt16("mainSkillLevel");
+                        }
                     }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+
+                }
+                finally
+                {
+                    conn.Dispose();
                 }
             }
             return chara;
@@ -484,96 +588,139 @@ namespace FFXIVClassic_Lobby_Server
 
         public static Appearance GetAppearance(uint charaId)
         {
+            Appearance appearance = new Appearance();
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                Appearance appearance = null;
                 try
                 {
                     conn.Open();
-                    appearance = conn.Query<Appearance>("SELECT * FROM characters_appearance WHERE characterId=@CharaId", new { CharaId = charaId }).SingleOrDefault();
+                    //Load appearance
+                    string query = @"
+                            SELECT 
+                            baseId,                       
+                            size,
+                            voice,
+                            skinColor,
+                            hairStyle,
+                            hairColor,
+                            hairHighlightColor,
+                            eyeColor,
+                            characteristics,
+                            characteristicsColor,
+                            faceType,
+                            ears,
+                            faceMouth,
+                            faceFeatures,
+                            faceNose,
+                            faceEyeShape,
+                            faceIrisSize,
+                            faceEyebrows,
+                            mainHand,
+                            offHand,
+                            head,
+                            body,
+                            legs,
+                            hands,
+                            feet,
+                            waist,
+                            leftFinger,
+                            rightFinger,
+                            leftEar,
+                            rightEar
+                            FROM characters_appearance WHERE characterId = @charaId";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", charaId);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            appearance.size = reader.GetByte("size");
+                            appearance.voice = reader.GetByte("voice");
+                            appearance.skinColor = reader.GetUInt16("skinColor");
+                            appearance.hairStyle = reader.GetUInt16("hairStyle");
+                            appearance.hairColor = reader.GetUInt16("hairColor");
+                            appearance.hairHighlightColor = reader.GetUInt16("hairHighlightColor");
+                            appearance.eyeColor = reader.GetUInt16("eyeColor");
+                            appearance.characteristics = reader.GetByte("characteristics");
+                            appearance.characteristicsColor = reader.GetByte("characteristicsColor");
+                            appearance.faceType = reader.GetByte("faceType");
+                            appearance.ears = reader.GetByte("ears");
+                            appearance.faceMouth = reader.GetByte("faceMouth");
+                            appearance.faceFeatures = reader.GetByte("faceFeatures");
+                            appearance.faceNose = reader.GetByte("faceNose");
+                            appearance.faceEyeShape = reader.GetByte("faceEyeShape");
+                            appearance.faceIrisSize = reader.GetByte("faceIrisSize");
+                            appearance.faceEyebrows = reader.GetByte("faceEyebrows");
+
+                            appearance.mainHand = reader.GetUInt32("mainHand");
+                            appearance.offHand = reader.GetUInt32("offHand");
+                            appearance.head = reader.GetUInt32("head");
+                            appearance.body = reader.GetUInt32("body");
+                            appearance.mainHand = reader.GetUInt32("mainHand");
+                            appearance.legs = reader.GetUInt32("legs");
+                            appearance.hands = reader.GetUInt32("hands");
+                            appearance.feet = reader.GetUInt32("feet");
+                            appearance.waist = reader.GetUInt32("waist");
+                            appearance.leftFinger = reader.GetUInt32("leftFinger");
+                            appearance.rightFinger = reader.GetUInt32("rightFinger");
+                            appearance.leftEar = reader.GetUInt32("leftEar");
+                            appearance.rightEar = reader.GetUInt32("rightEar");
+                        }
+
+                    }
                 }
                 catch (MySqlException e)
                 {
                     Program.Log.Error(e.ToString());
-                   
+
                 }
                 finally
                 {
                     conn.Dispose();
                 }
-
-                return appearance;
             }
+
+            return appearance;
         }
 
         public static List<String> GetReservedNames(uint userId)
         {
+            List<String> reservedNames = new List<String>();
             using (var conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
-                List<String> nameList = null;
-                try
-                {
-                    conn.Open();
-                    nameList = conn.Query<String>("SELECT name FROM reserved_names WHERE userId=@UserId", new { UserId = userId }).ToList();
-                }
-                catch (MySqlException e)
-                {
-                    Program.Log.Error(e.ToString());
-                    nameList = new List<String>(); }
-                finally
-                {
-                    conn.Dispose();
-                }
-                return nameList;
-            }
-        }
-
-        public static List<Retainer> GetRetainers(uint userId)
-        {
-            List<Retainer> retainers = new List<Retainer>();
-
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
                 try
                 {
                     conn.Open();
 
-                    string query = @"
-                                    SELECT characters.id as charaId, server_retainers.id as retainerId, server_retainers.name, characters_retainers.doRename FROM characters 
-                                    INNER JOIN characters_retainers ON characters.id = characters_retainers.characterId
-                                    INNER JOIN server_retainers ON characters_retainers.retainerId = server_retainers.id
-                                    WHERE userId = @userId
-                                    ";
+                    string query = "SELECT name FROM reserved_names WHERE userId=@UserId";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    
+                    cmd.Parameters.AddWithValue("@UserId", userId);
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
                         {
-                            uint characterId = reader.GetUInt32("charaId");
-                            uint retainerId = reader.GetUInt32("retainerId");
-                            string name = reader.GetString("name");
-                            bool doRename = reader.GetBoolean("doRename");                            
-
-                            retainers.Add(new Retainer(characterId, retainerId, name, doRename));
+                            reservedNames.Add(reader.GetString("name"));
                         }
                     }
-
                 }
                 catch (MySqlException e)
                 {
                     Program.Log.Error(e.ToString());
+
                 }
                 finally
                 {
                     conn.Dispose();
                 }
-
-                return retainers;
             }
+            return reservedNames;
+        }
 
+        public static List<Retainer> GetRetainers(uint userId)
+        {
+            return new List<Retainer>();
         }
 
     }

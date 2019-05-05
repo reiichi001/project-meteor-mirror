@@ -103,7 +103,7 @@ namespace FFXIVClassic_Map_Server.actors.director
 
             List<LuaParam> lparams = CallLuaScript("init", args2);
             
-            if (lparams.Count >= 1 && lparams[0].value is string)
+            if (lparams != null && lparams.Count >= 1 && lparams[0].value is string)
             {
                 classPath = (string)lparams[0].value;
                 className = classPath.Substring(classPath.LastIndexOf("/") + 1);
@@ -127,8 +127,8 @@ namespace FFXIVClassic_Map_Server.actors.director
             {               
                 ((GuildleveDirector)this).LoadGuildleve();
             }
-            
-            StartCoroutine("main", this);
+
+            CallLuaScript("main", this, contentGroup);
         }
 
         public void StartContentGroup()
@@ -160,6 +160,9 @@ namespace FFXIVClassic_Map_Server.actors.director
             if (!members.Contains(actor))
             {
                 members.Add(actor);
+
+                if (actor is Player)
+                    ((Player)actor).AddDirector(this);
 
                 if (contentGroup != null)
                     contentGroup.AddMember(actor);
@@ -270,6 +273,7 @@ namespace FFXIVClassic_Map_Server.actors.director
         {
             if (directorScript != null)
             {
+                directorScript = LuaEngine.LoadScript(String.Format(LuaEngine.FILEPATH_DIRECTORS, directorScriptPath));
                 if (!directorScript.Globals.Get(funcName).IsNil())
                 {
                     DynValue result = directorScript.Call(directorScript.Globals[funcName], args);
@@ -314,8 +318,5 @@ namespace FFXIVClassic_Map_Server.actors.director
             DynValue value = coroutine.Resume(args2);
             LuaEngine.GetInstance().ResolveResume(player, coroutine, value);
         }
-
-
-
     }    
 }

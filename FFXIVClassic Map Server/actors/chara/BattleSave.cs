@@ -5,7 +5,7 @@
         public float potencial = 6.6f;
         public short[] skillLevel = new short[52];
         public short[] skillLevelCap = new short[52];
-        public short[] skillPoint = new short[52];
+        public int[] skillPoint = new int[52];
 
         public short physicalLevel;
         public int physicalExp;

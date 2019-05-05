@@ -93,7 +93,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 return false;
             }
             else
-                return (questFlags & (1 << bitIndex)) == (1 << bitIndex);
+            return (questFlags & (1 << bitIndex)) == (1 << bitIndex);
         }
 
         public uint GetPhase()

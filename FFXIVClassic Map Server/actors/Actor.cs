@@ -10,11 +10,35 @@ using FFXIVClassic_Map_Server.actors.area;
 using System.Reflection;
 using System.ComponentModel;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
+using FFXIVClassic_Map_Server.packets.send;
+using FFXIVClassic_Map_Server.actors.chara;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
+    [Flags]
+    enum ActorUpdateFlags
+    {
+        None = 0x00,
+        Position = 0x01,
+        HpTpMp = 0x02,
+        State = 0x04,
+        SubState = 0x08,
+        Combat = 0x0F,
+        Name = 0x10,
+        Appearance = 0x20,
+        Speed = 0x40,
+        Work = 0x80,
+        Stats = 0x100,
+        Status = 0x200,
+        StatusTime = 0x400,
+
+        AllNpc = 0xDF,
+        AllPlayer = 0x13F
+    }
+
     class Actor
     {
+        public static uint INVALID_ACTORID = 0xC0000000;
         public uint actorId;
         public string actorName;
 
@@ -22,7 +46,9 @@ namespace FFXIVClassic_Map_Server.Actors
         public string customDisplayName;
 
         public ushort currentMainState = SetActorStatePacket.MAIN_STATE_PASSIVE;
-        public ushort currentSubState = SetActorStatePacket.SUB_STATE_NONE;
+
+        public SubState currentSubState = new SubState();
+
         public float positionX, positionY, positionZ, rotation;
         public float oldPositionX, oldPositionY, oldPositionZ, oldRotation;
         public ushort moveState, oldMoveState;
@@ -40,6 +66,15 @@ namespace FFXIVClassic_Map_Server.Actors
         public string classPath;
         public string className;
         public List<LuaParam> classParams;
+
+        public List<Vector3> positionUpdates;
+        protected DateTime lastUpdateScript;
+        protected DateTime lastUpdate;
+        public Actor target;
+
+        public bool isAtSpawn = true;
+
+        public ActorUpdateFlags updateFlags;
 
         public EventList eventConditions;
 
@@ -74,6 +109,17 @@ namespace FFXIVClassic_Map_Server.Actors
                     break;
                 }
             }
+        }
+
+        public virtual void ResetMoveSpeeds()
+        {
+            this.moveSpeeds[0] = SetActorSpeedPacket.DEFAULT_STOP;
+            this.moveSpeeds[1] = SetActorSpeedPacket.DEFAULT_WALK;
+            this.moveSpeeds[2] = SetActorSpeedPacket.DEFAULT_RUN;
+            this.moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_ACTIVE;
+
+            this.moveState = this.oldMoveState;
+            this.updateFlags |= ActorUpdateFlags.Speed;
         }
 
         public SubPacket CreateAddActorPacket(byte val)
@@ -139,7 +185,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public SubPacket CreateStatePacket()
         {
-            return SetActorStatePacket.BuildPacket(actorId, currentMainState, currentSubState);
+            return SetActorStatePacket.BuildPacket(actorId, currentMainState, 0);
         }
 
         public List<SubPacket> GetEventConditionPackets()
@@ -325,20 +371,40 @@ namespace FFXIVClassic_Map_Server.Actors
             return classParams;
         }
 
+        //character's newMainState kind of messes with this
         public void ChangeState(ushort newState)
         {
-            currentMainState = newState;
-            SubPacket ChangeStatePacket = SetActorStatePacket.BuildPacket(actorId, newState, currentSubState);       
-            SubPacket battleActionPacket = BattleActionX01Packet.BuildPacket(actorId, actorId, actorId, 0x72000062, 1, 0, 0x05209, 0, 0);
-            zone.BroadcastPacketAroundActor(this, ChangeStatePacket);
-            zone.BroadcastPacketAroundActor(this, battleActionPacket);
+            if (newState != currentMainState)
+            {
+                currentMainState = newState;
+
+                updateFlags |= (ActorUpdateFlags.State | ActorUpdateFlags.Position);
+            }
+        }
+
+        public SubState GetSubState()
+        {
+            return currentSubState;
+        }
+
+        public void SubstateModified()
+        {    
+            updateFlags |= (ActorUpdateFlags.SubState);           
+        }
+
+        public void ModifySpeed(float mod)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                moveSpeeds[i] *= mod;
+            }
+            updateFlags |= ActorUpdateFlags.Speed;
         }
 
         public void ChangeSpeed(int type, float value)
         {
             moveSpeeds[type] = value;
-            SubPacket ChangeSpeedPacket = SetActorSpeedPacket.BuildPacket(actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2], moveSpeeds[3]);
-            zone.BroadcastPacketAroundActor(this, ChangeSpeedPacket);
+            updateFlags |= ActorUpdateFlags.Speed;
         }
 
         public void ChangeSpeed(float speedStop, float speedWalk, float speedRun, float speedActive)
@@ -347,12 +413,68 @@ namespace FFXIVClassic_Map_Server.Actors
             moveSpeeds[1] = speedWalk;
             moveSpeeds[2] = speedRun;
             moveSpeeds[3] = speedActive;
-            SubPacket ChangeSpeedPacket = SetActorSpeedPacket.BuildPacket(actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2], moveSpeeds[3]);
-            zone.BroadcastPacketAroundActor(this, ChangeSpeedPacket);
+            updateFlags |= ActorUpdateFlags.Speed;
         }
 
-        public void Update(double deltaTime)
-        {            
+        public virtual void Update(DateTime tick)
+        {
+
+        }
+
+        public virtual void PostUpdate(DateTime tick, List<SubPacket> packets = null)
+        {
+            if (updateFlags != ActorUpdateFlags.None)
+            {
+                packets = packets ?? new List<SubPacket>();
+                if ((updateFlags & ActorUpdateFlags.Position) != 0)
+                {
+                    if (positionUpdates != null && positionUpdates.Count > 0)
+                    {
+                        var pos = positionUpdates[0];
+                        if (pos != null)
+                        {
+                            oldPositionX = positionX;
+                            oldPositionY = positionY;
+                            oldPositionZ = positionZ;
+                            oldRotation = rotation;
+
+                            positionX = pos.X;
+                            positionY = pos.Y;
+                            positionZ = pos.Z;
+
+                            zone.UpdateActorPosition(this);
+
+                            //Program.Server.GetInstance().mLuaEngine.OnPath(actor, position, positionUpdates)
+                        }
+                        positionUpdates.Remove(pos);
+
+                    }
+                    packets.Add(CreatePositionUpdatePacket());
+                }
+
+                if ((updateFlags & ActorUpdateFlags.Speed) != 0)
+                {
+                    packets.Add(SetActorSpeedPacket.BuildPacket(actorId, moveSpeeds[0], moveSpeeds[1], moveSpeeds[2], moveSpeeds[3]));
+                }
+
+                if ((updateFlags & ActorUpdateFlags.Name) != 0)
+                {
+                    packets.Add(SetActorNamePacket.BuildPacket(actorId, displayNameId, customDisplayName));
+                }
+
+                if ((updateFlags & ActorUpdateFlags.State) != 0)
+                {
+                    packets.Add(SetActorStatePacket.BuildPacket(actorId, currentMainState, 0x3B));
+                }
+
+                if ((updateFlags & ActorUpdateFlags.SubState) != 0)
+                {
+                    packets.Add(SetActorSubStatePacket.BuildPacket(actorId, currentSubState));
+                }
+
+                updateFlags = ActorUpdateFlags.None;
+            }
+            zone.BroadcastPacketsAroundActor(this, packets);
         }
 
         public void GenerateActorName(int actorNumber)
@@ -468,7 +590,7 @@ namespace FFXIVClassic_Map_Server.Actors
                         if (value.GetType() == curObj.GetType())
                             parentObj.GetType().GetField(split[split.Length - 1]).SetValue(parentObj, value);
                         else
-                            parentObj.GetType().GetField(split[split.Length-1]).SetValue(parentObj, TypeDescriptor.GetConverter(value.GetType()).ConvertTo(value, curObj.GetType()));
+                            parentObj.GetType().GetField(split[split.Length - 1]).SetValue(parentObj, TypeDescriptor.GetConverter(value.GetType()).ConvertTo(value, curObj.GetType()));
 
                         SetActorPropetyPacket changeProperty = new SetActorPropetyPacket(uiFunc);
                         changeProperty.AddProperty(this, name);
@@ -481,8 +603,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
                 return false;
             }
-        }       
+        }
 
+        #region positioning
         public List<float> GetPos()
         {
             List<float> pos = new List<float>();
@@ -494,6 +617,11 @@ namespace FFXIVClassic_Map_Server.Actors
             pos.Add(zoneId);
 
             return pos;
+        }
+
+        public Vector3 GetPosAsVector3()
+        {
+            return new Vector3(positionX, positionY, positionZ);
         }
 
         public void SetPos(float x, float y, float z, float rot = 0, uint zoneId = 0)
@@ -521,6 +649,103 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             return zoneId;
         }
+
+        public void LookAt(Actor actor)
+        {
+            if (actor != null && actor != this)
+            {
+                LookAt(actor.positionX, actor.positionZ);
+            }
+            else
+            {
+                Program.Log.Error("[{0}][{1}] Actor.LookAt() unable to find actor!", actorId, actorName);
+            }
+        }
+
+        public void LookAt(Vector3 pos)
+        {
+            if (pos != null)
+            {
+                LookAt(pos.X, pos.Z);
+            }
+        }
+
+        public void LookAt(float x, float z)
+        {
+            var rot1 = this.rotation;
+
+            var dX = this.positionX - x;
+            var dY = this.positionZ - z;
+            var rot2 = Math.Atan2(dY, dX);
+            var dRot = Math.PI - rot2 + Math.PI / 2;
+
+            // pending move, dont need to unset it
+            this.updateFlags |= ActorUpdateFlags.Position;
+            rotation = (float)dRot;
+        }
+
+        // todo: is this legit?
+        public bool IsFacing(float x, float z, float angle = 90.0f)
+        {
+            angle = (float)(Math.PI * angle / 180);
+            var a = Vector3.GetAngle(positionX, positionZ, x, z);
+            return new Vector3(x, 0, z).IsWithinCone(GetPosAsVector3(), rotation, angle);
+        }
+
+        public bool IsFacing(Actor target, float angle = 40.0f)
+        {
+            if (target == null)
+            {
+                Program.Log.Error("[{0}][{1}] IsFacing no target!", actorId, actorName);
+                return false;
+            }
+
+            return IsFacing(target.positionX, target.positionZ, angle);
+        }
+
+        public void QueuePositionUpdate(Vector3 pos)
+        {
+            if (positionUpdates == null)
+                positionUpdates = new List<Vector3>();
+
+            positionUpdates.Add(pos);
+            this.updateFlags |= ActorUpdateFlags.Position;
+        }
+
+        public void QueuePositionUpdate(float x, float y, float z)
+        {
+            QueuePositionUpdate(new Vector3(x, y, z));
+        }
+
+        public void ClearPositionUpdates()
+        {
+            positionUpdates.Clear();
+        }
+
+        public Vector3 FindRandomPoint(float x, float y, float z, float minRadius, float maxRadius)
+        {
+            var angle = Program.Random.NextDouble() * Math.PI * 2;
+            var radius = Math.Sqrt(Program.Random.NextDouble() * (maxRadius - minRadius)) + minRadius;
+
+            return new Vector3(x + (float)(radius * Math.Cos(angle)), y, z + (float)(radius * Math.Sin(angle)));
+        }
+
+        public Vector3 FindRandomPointAroundTarget(Actor target, float minRadius, float maxRadius)
+        {
+            if (target == null)
+            {
+                Program.Log.Error(String.Format("[{0} {1}] FindRandomPointAroundTarget: no target found!", this.actorId, this.customDisplayName));
+                return GetPosAsVector3();
+            }
+            return FindRandomPoint(target.positionX, target.positionY, target.positionZ, minRadius, maxRadius);
+        }
+
+        public Vector3 FindRandomPointAroundActor(float minRadius, float maxRadius)
+        {
+            return FindRandomPoint(positionX, positionY, positionZ, minRadius, maxRadius);
+        }
+        #endregion
+        
     }
 }
 

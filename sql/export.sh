@@ -6,5 +6,5 @@ DBNAME=ffxiv_server
 for T in `mysqlshow -u $USER -p$PASS $DBNAME %`;
 do
     echo "Backing up $T"
-    mysqldump -u $USER -p$PASS $DBNAME $T --extended-insert=FALSE --no-tablespaces > $EXPORT_PATH/$T.sql
+    mysqldump -u $USER -p$PASS $DBNAME $T --extended-insert=FALSE --no-tablespaces --no-autocommit > $EXPORT_PATH/$T.sql
 done;

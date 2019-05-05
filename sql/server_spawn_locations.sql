@@ -6,6 +6,7 @@ Target Host: localhost
 Target Database: ffxiv_server
 Date: 9/9/2017 2:33:14 PM
 */
+DROP TABLE IF EXISTS `server_spawn_locations`;
 
 SET FOREIGN_KEY_CHECKS=0;
 -- ----------------------------

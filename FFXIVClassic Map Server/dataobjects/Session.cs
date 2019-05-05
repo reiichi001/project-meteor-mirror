@@ -1,14 +1,8 @@
-﻿using FFXIVClassic_Map_Server;
-using FFXIVClassic.Common;
+﻿using FFXIVClassic.Common;
 
 using FFXIVClassic_Map_Server.Actors;
-using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 
 namespace FFXIVClassic_Map_Server.dataobjects
@@ -70,21 +64,26 @@ namespace FFXIVClassic_Map_Server.dataobjects
             if (isUpdatesLocked)
                 return;
 
+            if (playerActor.positionX == x && playerActor.positionY == y && playerActor.positionZ == z && playerActor.rotation == rot)
+                return;
+
+            /*
             playerActor.oldPositionX = playerActor.positionX;
             playerActor.oldPositionY = playerActor.positionY;
             playerActor.oldPositionZ = playerActor.positionZ;
             playerActor.oldRotation = playerActor.rotation;
-
+            
             playerActor.positionX = x;
             playerActor.positionY = y;
             playerActor.positionZ = z;
+            */
             playerActor.rotation = rot;
             playerActor.moveState = moveState;
 
-            GetActor().GetZone().UpdateActorPosition(GetActor());
-
+            //GetActor().GetZone().UpdateActorPosition(GetActor());
+            playerActor.QueuePositionUpdate(new Vector3(x,y,z));
         }
-        long lastMilis = 0;
+
         public void UpdateInstance(List<Actor> list)
         {
             if (isUpdatesLocked)
@@ -107,7 +106,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 {
                     QueuePacket(RemoveActorPacket.BuildPacket(actorInstanceList[i].actorId));
                     actorInstanceList.RemoveAt(i);
-                }                
+                }
             }
 
             //Retainer Instance
@@ -132,15 +131,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
                 if (actorInstanceList.Contains(actor))
                 {
-                    //Don't send for static characters (npcs)
-                    if (actor is Character && ((Character)actor).isStatic)
-                        continue;
 
-                    QueuePacket(actor.CreatePositionUpdatePacket());
                 }
                 else
                 {   
-                    QueuePacket(actor.GetSpawnPackets(playerActor, 1));   
+                    QueuePacket(actor.GetSpawnPackets(playerActor, 1));
 
                     QueuePacket(actor.GetInitPackets());
                     QueuePacket(actor.GetSetEventStatusPackets());

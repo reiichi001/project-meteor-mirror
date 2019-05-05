@@ -42,6 +42,7 @@ namespace FFXIVClassic_Map_Server.actors.group
         public void Start()
         {
             isStarted = true;
+            
             SendGroupPacketsAll(members);
         }
 
@@ -49,8 +50,9 @@ namespace FFXIVClassic_Map_Server.actors.group
         {
             if (actor == null)
                 return;
-
-            members.Add(actor.actorId);
+            
+            if(!members.Contains(actor.actorId))
+                members.Add(actor.actorId);
 
             if (actor is Character)            
                 ((Character)actor).SetCurrentContentGroup(this);
@@ -121,7 +123,6 @@ namespace FFXIVClassic_Map_Server.actors.group
             }
 
             session.QueuePacket(GroupMembersEndPacket.buildPacket(session.id, session.GetActor().zoneId, time, this));
-
         }
 
         public override uint GetTypeId()
@@ -169,5 +170,9 @@ namespace FFXIVClassic_Map_Server.actors.group
                 DeleteGroup();
         }
 
+        public List<uint> GetMembers()
+        {
+            return members;
+        }
     }
 }

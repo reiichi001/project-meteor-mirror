@@ -21,32 +21,18 @@ using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.packets.send.group;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
 using FFXIVClassic_Map_Server.actors.chara.npc;
+using FFXIVClassic_Map_Server.actors.chara.ai;
+using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
+using FFXIVClassic_Map_Server.packets.send.actor.battle;
+using FFXIVClassic_Map_Server.actors.chara.ai.utils;
+using FFXIVClassic_Map_Server.actors.chara.ai.state;
+using FFXIVClassic_Map_Server.actors.chara.npc;
+using FFXIVClassic_Map_Server.actors.chara;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
     class Player : Character
     {
-        public const int CLASSID_PUG = 2;
-        public const int CLASSID_GLA = 3;
-        public const int CLASSID_MRD = 4;
-        public const int CLASSID_ARC = 7;
-        public const int CLASSID_LNC = 8;
-        public const int CLASSID_THM = 22;
-        public const int CLASSID_CNJ = 23;
-
-        public const int CLASSID_CRP = 29;
-        public const int CLASSID_BSM = 30;
-        public const int CLASSID_ARM = 31;
-        public const int CLASSID_GSM = 32;
-        public const int CLASSID_LTW = 33;
-        public const int CLASSID_WVR = 34;
-        public const int CLASSID_ALC = 35;
-        public const int CLASSID_CUL = 36;
-
-        public const int CLASSID_MIN = 39;
-        public const int CLASSID_BTN = 40;
-        public const int CLASSID_FSH = 41;
-
         public const int MAXSIZE_INVENTORY_NORMAL = 200;
         public const int MAXSIZE_INVENTORY_CURRANCY = 320;
         public const int MAXSIZE_INVENTORY_KEYITEMS = 500;
@@ -97,7 +83,6 @@ namespace FFXIVClassic_Map_Server.Actors
         public uint destinationZone;
         public ushort destinationSpawnType;
         public uint[] timers = new uint[20];
-        public ushort currentJob;
         public uint currentTitle;
         public uint playTime;
         public uint lastPlayTimeUpdate;
@@ -152,7 +137,6 @@ namespace FFXIVClassic_Map_Server.Actors
             playerSession = cp;
             actorName = String.Format("_pc{0:00000000}", actorID);
             className = "Player";
-            currentSubState = SetActorStatePacket.SUB_STATE_PLAYER;
 
             moveSpeeds[0] = SetActorSpeedPacket.DEFAULT_STOP;
             moveSpeeds[1] = SetActorSpeedPacket.DEFAULT_WALK;
@@ -217,11 +201,7 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.command[12] = 0xA0F00000 | 22012;
             charaWork.command[13] = 0xA0F00000 | 22013;
             charaWork.command[14] = 0xA0F00000 | 29497;
-            charaWork.command[15] = 0xA0F00000 | 22015;
-
-            charaWork.command[32] = 0xA0F00000 | 27191;
-            charaWork.command[33] = 0xA0F00000 | 22302;
-            charaWork.command[34] = 0xA0F00000 | 28466;
+            charaWork.command[15] = 0xA0F00000 | 22015;            
 
             charaWork.commandAcquired[27150 - 26000] = true;
 
@@ -243,20 +223,20 @@ namespace FFXIVClassic_Map_Server.Actors
 
             charaWork.commandCategory[0] = 1;
             charaWork.commandCategory[1] = 1;
-            charaWork.commandCategory[32] = 1;
-            charaWork.commandCategory[33] = 1;
-            charaWork.commandCategory[34] = 1;
 
             charaWork.parameterSave.commandSlot_compatibility[0] = true;
             charaWork.parameterSave.commandSlot_compatibility[1] = true;
-            charaWork.parameterSave.commandSlot_compatibility[32] = true;
 
             charaWork.commandBorder = 0x20;
 
-            charaWork.parameterTemp.tp = 3000;
+            charaWork.parameterTemp.tp = 0;
 
             Database.LoadPlayerCharacter(this);
             lastPlayTimeUpdate = Utils.UnixTimeStampUTC();
+
+            this.aiContainer = new AIContainer(this, new PlayerController(this), null, new TargetFind(this));
+            allegiance = CharacterTargetingAllegiance.Player;
+            CalculateBaseStats();
         }
         
         public List<SubPacket> Create0x132Packets()
@@ -299,6 +279,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
             ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams).DebugPrintSubPacket();
 
+
             return ActorInstantiatePacket.BuildPacket(actorId, actorName, className, lParams);
         }
 
@@ -314,7 +295,7 @@ namespace FFXIVClassic_Map_Server.Actors
             subpackets.Add(CreateNamePacket());
             subpackets.Add(_0xFPacket.BuildPacket(actorId));
             subpackets.Add(CreateStatePacket());
-            subpackets.Add(CreateIdleAnimationPacket());
+            subpackets.Add(CreateSubStatePacket());
             subpackets.Add(CreateInitStatusPacket());
             subpackets.Add(CreateSetActorIconPacket());
             subpackets.Add(CreateIsZoneingPacket());
@@ -389,7 +370,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //Status Times
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
             {
-                if (charaWork.statusShownTime[i] != 0xFFFFFFFF)
+                if (charaWork.statusShownTime[i] != 0)
                     propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
             }
         
@@ -402,20 +383,28 @@ namespace FFXIVClassic_Map_Server.Actors
             
             propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[0]");
             propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[1]");
-            
+
             //Battle Save Skillpoint
-            
+            propPacketUtil.AddProperty(String.Format("charaWork.battleSave.skillPoint[{0}]", charaWork.parameterSave.state_mainSkill[0] - 1));
+
             //Commands
             propPacketUtil.AddProperty("charaWork.commandBorder");
-
+            
             propPacketUtil.AddProperty("charaWork.battleSave.negotiationFlag[0]");
-
+            
             for (int i = 0; i < charaWork.command.Length; i++)
             {
                 if (charaWork.command[i] != 0)
+                {
                     propPacketUtil.AddProperty(String.Format("charaWork.command[{0}]", i));
+                    //Recast Timers
+                    if(i >= charaWork.commandBorder)
+                    {
+                        propPacketUtil.AddProperty(String.Format("charaWork.parameterTemp.maxCommandRecastTime[{0}]", i - charaWork.commandBorder));
+                        propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i - charaWork.commandBorder));
+                    }
+                }
             }
-         
             
             for (int i = 0; i < charaWork.commandCategory.Length; i++)
             {
@@ -429,7 +418,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 if (charaWork.commandAcquired[i] != false)
                     propPacketUtil.AddProperty(String.Format("charaWork.commandAcquired[{0}]", i));
             }
-            
 
             for (int i = 0; i < charaWork.additionalCommandAcquired.Length; i++)
             {
@@ -444,13 +432,11 @@ namespace FFXIVClassic_Map_Server.Actors
                     propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_compatibility[{0}]", i));
             }
 
-         /*
-      for (int i = 0; i < charaWork.parameterSave.commandSlot_recastTime.Length; i++)
-      {
-          if (charaWork.parameterSave.commandSlot_recastTime[i] != 0)
-              propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i));
-      }            
-      */
+            for (int i = 0; i < charaWork.parameterSave.commandSlot_recastTime.Length; i++)
+            {
+                if (charaWork.parameterSave.commandSlot_recastTime[i] != 0)
+                    propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i));
+            }
 
             //System
             propPacketUtil.AddProperty("charaWork.parameterTemp.forceControl_float_forClientSelf[0]");
@@ -526,7 +512,7 @@ namespace FFXIVClassic_Map_Server.Actors
             QueuePacket(SetDalamudPacket.BuildPacket(actorId, 0));
             QueuePacket(SetMusicPacket.BuildPacket(actorId, zone.bgmDay, 0x01));
             QueuePacket(SetWeatherPacket.BuildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR, 1));
-            
+
             QueuePacket(SetMapPacket.BuildPacket(actorId, zone.regionId, zone.actorId));
 
             QueuePackets(GetSpawnPackets(this, spawnType));            
@@ -551,7 +537,7 @@ namespace FFXIVClassic_Map_Server.Actors
             List<SubPacket> worldMasterSpawn = world.GetActor().GetSpawnPackets();
             
             playerSession.QueuePacket(areaMasterSpawn);
-            playerSession.QueuePacket(debugSpawn);            
+            playerSession.QueuePacket(debugSpawn);
             playerSession.QueuePacket(worldMasterSpawn);
 
             //Inn Packets (Dream, Cutscenes, Armoire)
@@ -582,6 +568,9 @@ namespace FFXIVClassic_Map_Server.Actors
 
             if (currentContentGroup != null)
                 currentContentGroup.SendGroupPackets(playerSession);
+
+            if (currentParty != null)
+                currentParty.SendGroupPackets(playerSession);
         }
 
         private void SendRemoveInventoryPackets(List<ushort> slots)
@@ -627,13 +616,15 @@ namespace FFXIVClassic_Map_Server.Actors
             try
             {
                 BasePacket packet = new BasePacket(path);
+
                 packet.ReplaceActorID(actorId);
-                foreach (SubPacket p in packet.GetSubpackets())
-                    playerSession.QueuePacket(p);
+                var packets = packet.GetSubpackets();
+                QueuePackets(packets);
             }
             catch (Exception e)
             {
                 this.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "[SendPacket]", "Unable to send packet.");
+                this.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "[SendPacket]", e.Message);
             }
         }
 
@@ -699,6 +690,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //Save Player
             Database.SavePlayerPlayTime(this);
             Database.SavePlayerPosition(this);
+            Database.SavePlayerStatusEffects(this);
         }
 
         public void CleanupAndSave(uint destinationZone, ushort spawnType, float destinationX, float destinationY, float destinationZ, float destinationRot)
@@ -722,6 +714,8 @@ namespace FFXIVClassic_Map_Server.Actors
             //Save Player
             Database.SavePlayerPlayTime(this);
             Database.SavePlayerPosition(this);
+            this.statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnZoning, true);
+            Database.SavePlayerStatusEffects(this);
         }
 
         public Area GetZone()
@@ -736,13 +730,16 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void Logout()
         {
+            // todo: really this should be in CleanupAndSave but we might want logout/disconnect handled separately for some effects
             QueuePacket(LogoutPacket.BuildPacket(actorId));
+            statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnLogout);
             CleanupAndSave();
         }
 
         public void QuitGame()
         {
             QueuePacket(QuitPacket.BuildPacket(actorId));
+            statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnLogout);
             CleanupAndSave();
         }
 
@@ -956,11 +953,11 @@ namespace FFXIVClassic_Map_Server.Actors
             //Calculate hp/mp
 
             //Get Potenciel ??????
-            
+
             //Set HP/MP/TP PARAMS
 
             //Set mainskill and level
-            
+
             //Set Parameters
 
             //Set current EXP
@@ -972,11 +969,14 @@ namespace FFXIVClassic_Map_Server.Actors
             //Check if bonus point available... set
 
             //Set rested EXP
-
             charaWork.parameterSave.state_mainSkill[0] = classId;
             charaWork.parameterSave.state_mainSkillLevel = charaWork.battleSave.skillLevel[classId-1];
-
             playerWork.restBonusExpRate = 0.0f;
+            for(int i = charaWork.commandBorder; i < charaWork.command.Length; i++)
+            {
+                charaWork.command[i] = 0;
+                charaWork.commandCategory[i] = 0;
+            }
 
             ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("charaWork/stateForAll", this);
 
@@ -984,6 +984,20 @@ namespace FFXIVClassic_Map_Server.Actors
             propertyBuilder.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
             propertyBuilder.NewTarget("playerWork/expBonus");
             propertyBuilder.AddProperty("playerWork.restBonusExpRate");
+            propertyBuilder.NewTarget("charaWork/battleStateForSelf");
+            propertyBuilder.AddProperty(String.Format("charaWork.battleSave.skillPoint[{0}]", classId - 1));
+            Database.LoadHotbar(this);
+
+            var time = Utils.UnixTimeStampUTC();
+            for(int i = charaWork.commandBorder; i < charaWork.command.Length; i++)
+            {
+                if(charaWork.command[i] != 0)
+                {
+                    charaWork.parameterSave.commandSlot_recastTime[i - charaWork.commandBorder] = time + charaWork.parameterTemp.maxCommandRecastTime[i - charaWork.commandBorder];
+                }
+            }
+
+            UpdateHotbar();
 
             List<SubPacket> packets = propertyBuilder.Done();
 
@@ -991,6 +1005,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 BroadcastPacket(packet, true);
 
             Database.SavePlayerCurrentClass(this);
+            RecalculateStats();
         }
 
         public void GraphicChange(int slot, InventoryItem invItem)
@@ -1517,7 +1532,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 director.RemoveMember(this);
             }
         }
-
+        
         public GuildleveDirector GetGuildleveDirector()
         {
             foreach (Director d in ownedDirectors)
@@ -1635,7 +1650,7 @@ namespace FFXIVClassic_Map_Server.Actors
             //Update Instance
             List<Actor> aroundMe = new List<Actor>();
 
-            if (zone != null)                
+            if (zone != null)
                 aroundMe.AddRange(zone.GetActorsAroundActor(this, 50));
             if (zone2 != null)
                 aroundMe.AddRange(zone2.GetActorsAroundActor(this, 50));
@@ -1697,7 +1712,7 @@ namespace FFXIVClassic_Map_Server.Actors
         //A party member list packet came, set the party
         public void SetParty(Party group)
         {
-            if (group is Party)
+            if (group is Party && currentParty != group)
             {
                 RemoveFromCurrentPartyAndCleanup();
                 currentParty = group;
@@ -1724,16 +1739,10 @@ namespace FFXIVClassic_Map_Server.Actors
             //currentParty.members.Remove(this);
             if (partyGroup.members.Count == 0)
                 Server.GetWorldManager().NoMembersInParty((Party)currentParty);
+
             currentParty = null;
         }
-
         
-
-        public void Update(double delta)
-        {
-            LuaEngine.GetInstance().CallLuaFunction(this, this, "OnUpdate", true, delta);
-        }
-
         public void IssueChocobo(byte appearanceId, string nameResponse)
         {
             Database.IssuePlayerChocobo(this, appearanceId, nameResponse);
@@ -1747,7 +1756,7 @@ namespace FFXIVClassic_Map_Server.Actors
             Database.ChangePlayerChocoboAppearance(this, appearanceId);
             chocoboAppearance = appearanceId;
         }
-
+        
         public Retainer SpawnMyRetainer(Npc bell, int retainerIndex)
         {
             Retainer retainer = Database.LoadRetainer(this, retainerIndex);
@@ -1778,6 +1787,794 @@ namespace FFXIVClassic_Map_Server.Actors
                 retainerMeetingGroup.SendDeletePacket(playerSession);
                 retainerMeetingGroup = null;
             }
+        }
+        
+        public override void Update(DateTime tick)
+        {
+            aiContainer.Update(tick);
+            statusEffects.Update(tick);
+        }
+
+        public override void PostUpdate(DateTime tick, List<SubPacket> packets = null)
+        {
+            // todo: is this correct?
+            if (this.playerSession.isUpdatesLocked)
+                return;
+
+            // todo: should probably add another flag for battleTemp since all this uses reflection
+            packets = new List<SubPacket>();
+
+            // we only want the latest update for the player
+            if ((updateFlags & ActorUpdateFlags.Position) != 0)
+            {
+                if (positionUpdates.Count > 1)
+                    positionUpdates.RemoveRange(1, positionUpdates.Count - 1);
+            }
+
+            if ((updateFlags & ActorUpdateFlags.HpTpMp) != 0)
+            {
+                var propPacketUtil = new ActorPropertyPacketUtil("charaWork/stateAtQuicklyForAll", this);
+
+                // todo: should this be using job as index?
+                propPacketUtil.AddProperty("charaWork.parameterSave.hp[0]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.hpMax[0]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[0]");
+                propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
+
+                packets.AddRange(propPacketUtil.Done());
+            }
+
+
+            if ((updateFlags & ActorUpdateFlags.Stats) != 0)
+            {
+                var propPacketUtil = new ActorPropertyPacketUtil("charaWork/battleParameter", this);
+
+                for (uint i = 0; i < 35; i++)
+                {
+                    if (GetMod(i) != charaWork.battleTemp.generalParameter[i])
+                    {
+                        charaWork.battleTemp.generalParameter[i] = (short)GetMod(i);
+                        propPacketUtil.AddProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
+                    }
+                }
+
+                QueuePackets(propPacketUtil.Done());
+
+            }
+
+
+            base.PostUpdate(tick, packets);
+        }
+
+        public override void Die(DateTime tick, CommandResultContainer actionContainer = null)
+        {
+            // todo: death timer
+            aiContainer.InternalDie(tick, 60);
+        }
+
+        //Update commands and recast timers for the entire hotbar
+        public void UpdateHotbar()
+        {
+            List<ushort> slotsToUpdate = new List<ushort>();
+            for (ushort i = charaWork.commandBorder; i < charaWork.commandBorder + 30; i++)
+            {
+                slotsToUpdate.Add(i);
+            }
+            UpdateHotbar(slotsToUpdate);
+        }
+
+        //Updates the hotbar and recast timers for only certain hotbar slots
+        public void UpdateHotbar(List<ushort> slotsToUpdate)
+        {
+            UpdateHotbarCommands(slotsToUpdate);
+            UpdateRecastTimers(slotsToUpdate);
+        }
+
+        //Update command ids for the passed in hotbar slots
+        public void UpdateHotbarCommands(List<ushort> slotsToUpdate)
+        {
+            ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("charaWork/command", this);
+            foreach (ushort slot in slotsToUpdate)
+            {
+                propPacketUtil.AddProperty(String.Format("charaWork.command[{0}]", slot));
+                propPacketUtil.AddProperty(String.Format("charaWork.commandCategory[{0}]", slot));
+            }
+
+            propPacketUtil.NewTarget("charaWork/commandDetailForSelf");
+            //Enable or disable slots based on whether there is an ability in that slot
+            foreach (ushort slot in slotsToUpdate)
+            {
+                charaWork.parameterSave.commandSlot_compatibility[slot - charaWork.commandBorder] = charaWork.command[slot] != 0;
+                propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_compatibility[{0}]", slot - charaWork.commandBorder));
+            }
+
+            QueuePackets(propPacketUtil.Done());
+            //QueuePackets(compatibiltyUtil.Done());
+        }
+
+        //Update recast timers for the passed in hotbar slots
+        public void UpdateRecastTimers(List<ushort> slotsToUpdate)
+        {
+            ActorPropertyPacketUtil recastPacketUtil = new ActorPropertyPacketUtil("charaWork/commandDetailForSelf", this);
+
+            foreach (ushort slot in slotsToUpdate)
+            {
+                recastPacketUtil.AddProperty(String.Format("charaWork.parameterTemp.maxCommandRecastTime[{0}]", slot - charaWork.commandBorder));
+                recastPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", slot - charaWork.commandBorder));
+            }
+
+            QueuePackets(recastPacketUtil.Done());
+        }
+
+        //Find the first open slot in classId's hotbar and equip an ability there.
+        public void EquipAbilityInFirstOpenSlot(byte classId, uint commandId, bool printMessage = true)
+        {
+            //Find first open slot on class's hotbar slot, then call EquipAbility with that slot.
+            ushort hotbarSlot = 0;
+
+            //If the class we're equipping for is the current class, we can just look at charawork.command
+            if(classId == charaWork.parameterSave.state_mainSkill[0])
+                hotbarSlot = FindFirstCommandSlotById(0);
+            //Otherwise, we need to check the database.
+            else
+                hotbarSlot = (ushort) (Database.FindFirstCommandSlot(this, classId) + charaWork.commandBorder);
+
+            EquipAbility(classId, commandId, hotbarSlot, printMessage);
+        }
+
+        //Add commandId to classId's hotbar at hotbarSlot.
+        //If classId is not the current class, do it in the database
+        //hotbarSlot starts at 32
+        public void EquipAbility(byte classId, uint commandId, ushort hotbarSlot, bool printMessage = true)
+        {
+            var ability = Server.GetWorldManager().GetBattleCommand(commandId);
+            uint trueCommandId = 0xA0F00000 + commandId;
+            ushort lowHotbarSlot = (ushort)(hotbarSlot - charaWork.commandBorder);
+            ushort maxRecastTime = (ushort)(ability != null ? ability.maxRecastTimeSeconds : 5);
+            uint recastEnd = Utils.UnixTimeStampUTC() + maxRecastTime;
+            List<ushort> slotsToUpdate = new List<ushort>();
+            
+            Database.EquipAbility(this, classId, (ushort) (hotbarSlot - charaWork.commandBorder), commandId, recastEnd);
+            //If the class we're equipping for is the current class (need to find out if state_mainSkill is supposed to change when you're a job)
+            //then equip the ability in charawork.commands and save in databse, otherwise just save in database
+            if (classId == GetCurrentClassOrJob())
+            {
+                charaWork.command[hotbarSlot] = trueCommandId;
+                charaWork.commandCategory[hotbarSlot] = 1;
+                charaWork.parameterTemp.maxCommandRecastTime[lowHotbarSlot] = maxRecastTime;
+                charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot] = recastEnd;
+
+                slotsToUpdate.Add(hotbarSlot);
+                UpdateHotbar(slotsToUpdate);
+            }
+
+
+            if(printMessage)
+                SendGameMessage(Server.GetWorldManager().GetActor(), 30603, 0x20, 0, commandId);
+        }
+
+        //Doesn't take a classId because the only way to swap abilities is through the ability equip widget oe /eaction, which only apply to current class
+        //hotbarSlot 1 and 2 are 32-indexed.
+        public void SwapAbilities(ushort hotbarSlot1, ushort hotbarSlot2)
+        {
+            //0 indexed hotbar slots for saving to database and recast timers
+            uint lowHotbarSlot1 = (ushort)(hotbarSlot1 - charaWork.commandBorder);
+            uint lowHotbarSlot2 = (ushort)(hotbarSlot2 - charaWork.commandBorder);
+            
+            //Store information about first command
+            uint commandId = charaWork.command[hotbarSlot1];
+            uint recastEnd = charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot1];
+            ushort recastMax = charaWork.parameterTemp.maxCommandRecastTime[lowHotbarSlot1];
+
+            //Move second command's info to first hotbar slot
+            charaWork.command[hotbarSlot1] = charaWork.command[hotbarSlot2];
+            charaWork.parameterTemp.maxCommandRecastTime[lowHotbarSlot1] = charaWork.parameterTemp.maxCommandRecastTime[lowHotbarSlot2];
+            charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot1] = charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot2];
+
+            //Move first command's info to second slot
+            charaWork.command[hotbarSlot2] = commandId;
+            charaWork.parameterTemp.maxCommandRecastTime[lowHotbarSlot2] = recastMax;
+            charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot2] = recastEnd;
+
+            //Save changes to both slots
+            Database.EquipAbility(this, GetCurrentClassOrJob(), (ushort)(lowHotbarSlot1), 0xA0F00000 ^ charaWork.command[hotbarSlot1], charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot1]);
+            Database.EquipAbility(this, GetCurrentClassOrJob(), (ushort)(lowHotbarSlot2), 0xA0F00000 ^ charaWork.command[hotbarSlot2], charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot2]);
+
+            //Update slots on client
+            List<ushort> slotsToUpdate = new List<ushort>();
+            slotsToUpdate.Add(hotbarSlot1);
+            slotsToUpdate.Add(hotbarSlot2);
+            UpdateHotbar(slotsToUpdate);
+        }
+
+        public void UnequipAbility(ushort hotbarSlot, bool printMessage = true)
+        {
+            List<ushort> slotsToUpdate = new List<ushort>();
+            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder - 1);
+            uint commandId = charaWork.command[trueHotbarSlot];
+            Database.UnequipAbility(this, (ushort)(trueHotbarSlot - charaWork.commandBorder));
+            charaWork.command[trueHotbarSlot] = 0;
+            slotsToUpdate.Add(trueHotbarSlot);
+
+            if(printMessage)
+                SendGameMessage(Server.GetWorldManager().GetActor(), 30604, 0x20, 0, 0xA0F00000 ^ commandId);
+
+            UpdateHotbar(slotsToUpdate);
+        }
+
+        //Finds the first hotbar slot with a given commandId.
+        //If the returned value is outside the hotbar, it indicates it wasn't found.
+        public ushort FindFirstCommandSlotById(uint commandId)
+        {
+            if(commandId != 0)
+                commandId |= 0xA0F00000;
+
+            ushort firstSlot = (ushort)(charaWork.commandBorder + 30);
+
+            for (ushort i = charaWork.commandBorder; i < charaWork.commandBorder + 30; i++)
+            {
+                if (charaWork.command[i] == commandId)
+                {
+                    firstSlot = i;
+                    break;
+                }
+            }
+
+            return firstSlot;
+        }
+        
+        private void UpdateHotbarTimer(uint commandId, uint recastTimeMs)
+        {
+            ushort slot = FindFirstCommandSlotById(commandId);
+            charaWork.parameterSave.commandSlot_recastTime[slot - charaWork.commandBorder] = Utils.UnixTimeStampUTC(DateTime.Now.AddMilliseconds(recastTimeMs));
+            var slots = new List<ushort>();
+            slots.Add(slot);
+            UpdateRecastTimers(slots);
+        }
+
+        private uint GetHotbarTimer(uint commandId)
+        {
+            ushort slot = FindFirstCommandSlotById(commandId);
+            return charaWork.parameterSave.commandSlot_recastTime[slot - charaWork.commandBorder];
+        }
+
+        public override void Cast(uint spellId, uint targetId = 0)
+        {
+            if (aiContainer.CanChangeState())
+                aiContainer.Cast(zone.FindActorInArea<Character>(targetId == 0 ? currentTarget : targetId), spellId);
+            else if (aiContainer.IsCurrentState<MagicState>())
+                // You are already casting.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32536, 0x20);
+            else
+                // Please wait a moment and try again.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20);
+        }
+
+        public override void Ability(uint abilityId, uint targetId = 0)
+        {
+            if (aiContainer.CanChangeState())
+                aiContainer.Ability(zone.FindActorInArea<Character>(targetId == 0 ? currentTarget : targetId), abilityId);
+            else
+                // Please wait a moment and try again.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20);
+        }
+
+        public override void WeaponSkill(uint skillId, uint targetId = 0)
+        {
+            if (aiContainer.CanChangeState())
+                aiContainer.WeaponSkill(zone.FindActorInArea<Character>(targetId == 0 ? currentTarget : targetId), skillId);
+            else
+                // Please wait a moment and try again.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20);
+        }
+
+        public override bool IsValidTarget(Character target, ValidTarget validTarget)
+        {
+            if (target == null)
+            {
+                // Target does not exist.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32511, 0x20);
+                return false;
+            }
+
+            if (target.isMovingToSpawn)
+            {
+                // That command cannot be performed on the current target.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20);
+                return false;
+            }
+
+            // enemy only
+            if ((validTarget & ValidTarget.Enemy) != 0)
+            {
+                // todo: this seems ambiguous
+                if (target.isStatic)
+                {
+                    // That command cannot be performed on the current target.
+                    SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20);
+                    return false;
+                }
+                if (currentParty != null && target.currentParty == currentParty)
+                {
+                    // That command cannot be performed on a party member.
+                    SendGameMessage(Server.GetWorldManager().GetActor(), 32548, 0x20);
+                    return false;
+                }
+                // todo: pvp?
+                if (target.allegiance == allegiance)
+                {
+                    // That command cannot be performed on an ally.
+                    SendGameMessage(Server.GetWorldManager().GetActor(), 32549, 0x20);
+                    return false;
+                }
+
+                bool partyEngaged = false;
+                // todo: replace with confrontation status effect? (see how dsp does it)
+                if (target.aiContainer.IsEngaged())
+                {
+                    if (currentParty != null)
+                    {
+                        if (target is BattleNpc)
+                        {
+                            var helpingActorId = ((BattleNpc)target).GetMobMod((uint)MobModifier.CallForHelp);
+                            partyEngaged = this.actorId == helpingActorId || (((BattleNpc)target).GetMobMod((uint)MobModifier.FreeForAll) != 0);
+                        }
+
+                        if (!partyEngaged)
+                        {
+                            foreach (var memberId in ((Party)currentParty).members)
+                            {
+                                if (memberId == target.currentLockedTarget)
+                                {
+                                    partyEngaged = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    else if (target.currentLockedTarget == actorId)
+                    {
+                        partyEngaged = true;
+                    }
+                }
+                else
+                {
+                    partyEngaged = true;
+                }
+
+                if (!partyEngaged)
+                {
+                    // That target is already engaged.
+                    SendGameMessage(Server.GetWorldManager().GetActor(), 32520, 0x20);
+                    return false;
+                }
+            }
+
+            if ((validTarget & ValidTarget.Ally) != 0 && target.allegiance != allegiance)
+            {
+                // That command cannot be performed on the current target.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20);
+                return false;
+            }
+
+            // todo: isStatic seems ambiguous?
+            if ((validTarget & ValidTarget.NPC) != 0 && target.isStatic)
+                return true;
+
+            // todo: why is player always zoning?
+            // cant target if zoning
+            if (target is Player && ((Player)target).playerSession.isUpdatesLocked)
+            {
+                // That command cannot be performed on the current target.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20);
+                return false;
+            }
+
+            return true;
+        }
+
+        public override bool CanCast(Character target, BattleCommand spell)
+        {
+            //Might want to do these with a CommandResult instead to be consistent with the rest of command stuff
+            if (GetHotbarTimer(spell.id) > Utils.UnixTimeStampUTC())
+            {
+                // todo: this needs confirming
+                // Please wait a moment and try again.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20, (uint)spell.id);
+                return false;
+            }
+            if (target == null)
+            {
+                // Target does not exist.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)spell.id);
+                return false;
+            }
+            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) > spell.range)
+            {
+                // The target is too far away.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20, (uint)spell.id);
+                return false;
+            }
+            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) < spell.minRange)
+            {
+                // The target is too close.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32538, 0x20, (uint)spell.id);
+                return false;
+            }
+            if (target.positionY - positionY > (spell.rangeHeight / 2))
+            {
+                // The target is too far above you.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32540, 0x20, (uint)spell.id);
+                return false;
+            }
+            if (positionY - target.positionY > (spell.rangeHeight / 2))
+            {
+                // The target is too far below you.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32541, 0x20, (uint)spell.id);
+                return false;
+            }
+            if (!IsValidTarget(target, spell.mainTarget) || !spell.IsValidMainTarget(this, target))
+            {
+                // error packet is set in IsValidTarget
+                return false;
+            }
+            return true;
+        }
+
+        public override bool CanWeaponSkill(Character target, BattleCommand skill)
+        {
+            // todo: see worldmaster ids 32558~32557 for proper ko message and stuff
+            if (GetHotbarTimer(skill.id) > Utils.UnixTimeStampUTC())
+            {
+                // todo: this needs confirming
+                // Please wait a moment and try again.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20, (uint)skill.id);
+                return false;
+            }
+
+            if (target == null)
+            {
+                // Target does not exist.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)skill.id);
+                return false;
+            }
+
+            //Original game checked height difference before horizontal distance
+            if (target.positionY - positionY > (skill.rangeHeight / 2))
+            {
+                // The target is too far above you.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32540, 0x20, (uint)skill.id);
+                return false;
+            }
+
+            if (positionY - target.positionY > (skill.rangeHeight / 2))
+            {
+                // The target is too far below you.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32541, 0x20, (uint)skill.id);
+                return false;
+            }
+
+            var targetDist = Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ);
+
+            if (targetDist > skill.range)
+            {
+                // The target is out of range.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32537, 0x20, (uint)skill.id);
+                return false;
+            }
+
+            if (targetDist < skill.minRange)
+            {
+                // The target is too close.
+                SendGameMessage(Server.GetWorldManager().GetActor(), 32538, 0x20, (uint)skill.id);
+                return false;
+            }
+
+
+            if (!IsValidTarget(target, skill.validTarget) || !skill.IsValidMainTarget(this, target))
+            {
+                // error packet is set in IsValidTarget
+                return false;
+            }
+
+            return true;
+        }
+
+        public override void OnAttack(State state, CommandResult action, ref CommandResult error)
+        {
+            var target = state.GetTarget();
+
+            base.OnAttack(state, action, ref error);
+
+            // todo: switch based on main weap (also probably move this anim assignment somewhere else)
+            action.animation = 0x19001000;
+            if (error == null)
+            {
+                // melee attack animation
+                //action.animation = 0x19001000;
+            }
+            if (target is BattleNpc)
+            {
+                ((BattleNpc)target).hateContainer.UpdateHate(this, action.enmity);
+            }
+
+            LuaEngine.GetInstance().OnSignal("playerAttack");
+        }
+
+        public override void OnCast(State state, CommandResult[] actions, BattleCommand spell, ref CommandResult[] errors)
+        {
+            // todo: update hotbar timers to skill's recast time (also needs to be done on class change or equip crap)
+            base.OnCast(state, actions, spell, ref errors);
+            // todo: should just make a thing that updates the one slot cause this is dumb as hell            
+            UpdateHotbarTimer(spell.id, spell.recastTimeMs);
+            //LuaEngine.GetInstance().OnSignal("spellUse");
+        }
+
+        public override void OnWeaponSkill(State state, CommandResult[] actions, BattleCommand skill, ref CommandResult[] errors)
+        {
+            // todo: update hotbar timers to skill's recast time (also needs to be done on class change or equip crap)
+            base.OnWeaponSkill(state, actions, skill, ref errors);
+
+            // todo: should just make a thing that updates the one slot cause this is dumb as hell
+            UpdateHotbarTimer(skill.id, skill.recastTimeMs);
+            // todo: this really shouldnt be called on each ws?
+            lua.LuaEngine.CallLuaBattleFunction(this, "onWeaponSkill", this, state.GetTarget(), skill);
+            LuaEngine.GetInstance().OnSignal("weaponskillUse");
+        }
+
+        public override void OnAbility(State state, CommandResult[] actions, BattleCommand ability, ref CommandResult[] errors)
+        {
+            base.OnAbility(state, actions, ability, ref errors);
+            UpdateHotbarTimer(ability.id, ability.recastTimeMs);
+            LuaEngine.GetInstance().OnSignal("abilityUse");
+        }
+
+        //Handles exp being added, does not handle figuring out exp bonus from buffs or skill/link chains or any of that
+        //Returns CommandResults that can be sent to display the EXP gained number and level ups
+        //exp should be a ushort single the exp graphic overflows after ~65k
+        public List<CommandResult> AddExp(int exp, byte classId, byte bonusPercent = 0)
+        {
+            List<CommandResult> actionList = new List<CommandResult>();
+            exp += (int) Math.Ceiling((exp * bonusPercent / 100.0f));
+
+            //You earn [exp] (+[bonusPercent]%) experience points.
+            //In non-english languages there are unique messages for each language, hence the use of ClassExperienceTextIds
+            actionList.Add(new CommandResult(actorId, BattleUtils.ClassExperienceTextIds[classId], 0, (ushort)exp, bonusPercent));
+
+            bool leveled = false;
+            int diff = MAXEXP[GetLevel() - 1] - charaWork.battleSave.skillPoint[classId - 1];            
+            //While there is enough experience to level up, keep leveling up, unlocking skills and removing experience from exp until we don't have enough to level up
+            while (exp >= diff && GetLevel() < charaWork.battleSave.skillLevelCap[classId])
+            {
+                //Level up
+                LevelUp(classId);
+                leveled = true;
+                //Reduce exp based on how much exp is needed to level
+                exp -= diff;
+                diff = MAXEXP[GetLevel() - 1];
+            }
+
+            if(leveled)
+            {
+                //Set exp to current class to 0 so that exp is added correctly
+                charaWork.battleSave.skillPoint[classId - 1] = 0;
+                //send new level
+                ActorPropertyPacketUtil expPropertyPacket2 = new ActorPropertyPacketUtil("charaWork/exp", this);
+                ActorPropertyPacketUtil expPropertyPacket3 = new ActorPropertyPacketUtil("charaWork/stateForAll", this);
+                expPropertyPacket2.AddProperty(String.Format("charaWork.battleSave.skillLevel[{0}]", classId - 1));
+                expPropertyPacket2.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
+                QueuePackets(expPropertyPacket2.Done());
+                QueuePackets(expPropertyPacket3.Done());
+                //play levelup animation (do this outside LevelUp so that it only plays once if multiple levels are earned
+                //also i dunno how to do this
+
+                Database.SetLevel(this, classId, GetLevel());
+                Database.SavePlayerCurrentClass(this);
+            }
+            //Cap experience for level 50
+            charaWork.battleSave.skillPoint[classId - 1] = Math.Min(charaWork.battleSave.skillPoint[classId - 1] + exp, MAXEXP[GetLevel() - 1]);
+
+            ActorPropertyPacketUtil expPropertyPacket = new ActorPropertyPacketUtil("charaWork/battleStateForSelf", this);
+            expPropertyPacket.AddProperty(String.Format("charaWork.battleSave.skillPoint[{0}]", classId - 1));
+            
+            QueuePackets(expPropertyPacket.Done());
+            Database.SetExp(this, classId, charaWork.battleSave.skillPoint[classId - 1]);
+
+            return actionList;
+        }
+
+        //Increaess level of current class and equips new abilities earned at that level
+        public void LevelUp(byte classId, List<CommandResult> actionList = null)
+        {
+            if (charaWork.battleSave.skillLevel[classId - 1] < charaWork.battleSave.skillLevelCap[classId])
+            {
+                //Increase level
+                charaWork.battleSave.skillLevel[classId - 1]++;
+                charaWork.parameterSave.state_mainSkillLevel++;
+
+                //33909: You gain level [level]
+                if (actionList != null)
+                    actionList.Add(new CommandResult(actorId, 33909, 0, (ushort) charaWork.battleSave.skillLevel[classId - 1]));
+
+                //If there's any abilites that unlocks at this level, equip them.
+                List<uint> commandIds = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, GetLevel());
+                foreach(uint commandId in commandIds)
+                {
+                    EquipAbilityInFirstOpenSlot(classId, commandId, false);
+                    byte jobId = ConvertClassIdToJobId(classId);
+                    if (jobId != classId)
+                        EquipAbilityInFirstOpenSlot(jobId, commandId, false);
+
+                    //33926: You learn [command].
+                    if (actionList != null)
+                    {
+                        if(classId == GetCurrentClassOrJob() || jobId == GetCurrentClassOrJob())
+                            actionList.Add(new CommandResult(actorId, 33926, commandId));
+                    }
+                }
+            }
+        }
+        
+        public static byte ConvertClassIdToJobId(byte classId)
+        {
+            byte jobId = classId;
+
+            switch(classId)
+            {
+                case CLASSID_PUG:
+                case CLASSID_GLA:
+                case CLASSID_MRD:
+                    jobId += 13;
+                    break;
+                case CLASSID_ARC:
+                case CLASSID_LNC:
+                    jobId += 11;
+                    break;
+                case CLASSID_THM:
+                case CLASSID_CNJ:
+                    jobId += 4;
+                    break;
+            }
+
+            return jobId;
+        }
+
+        public void SetCurrentJob(byte jobId)
+        {
+            currentJob = jobId;
+            BroadcastPacket(SetCurrentJobPacket.BuildPacket(actorId, jobId), true);
+            Database.LoadHotbar(this);
+            SendCharaExpInfo();
+        }
+
+        //Gets the id of the player's current job. If they aren't a job, gets the id of their class
+        public byte GetCurrentClassOrJob()
+        {
+            if (currentJob != 0)
+                return (byte) currentJob;
+            return charaWork.parameterSave.state_mainSkill[0];
+        }
+
+        public void hpstuff(uint hp)
+        {
+            SetMaxHP(hp);
+            SetHP(hp);            
+            mpMaxBase = (ushort)hp;
+            charaWork.parameterSave.mpMax = (short)hp;
+            charaWork.parameterSave.mp = (short)hp;
+            AddTP(3000);
+            updateFlags |= ActorUpdateFlags.HpTpMp;
+        }
+        
+        public void SetCombos(int comboId1 = 0, int comboId2 = 0)
+        {
+            SetCombos(new int[] { comboId1, comboId2 });
+        }
+
+        public void SetCombos(int[] comboIds)
+        {
+            Array.Copy(comboIds, playerWork.comboNextCommandId, 2);
+
+            //If we're starting or continuing a combo chain, add the status effect and combo cost bonus
+            if (comboIds[0] != 0)
+            {
+                StatusEffect comboEffect = new StatusEffect(this, Server.GetWorldManager().GetStatusEffect((uint) StatusEffectId.Combo));
+                comboEffect.SetDuration(13);
+                comboEffect.SetOverwritable(1);
+                statusEffects.AddStatusEffect(comboEffect, this, true);
+                playerWork.comboCostBonusRate = 1;
+            }
+            //Otherwise we're ending a combo, remove the status
+            else
+            {
+                statusEffects.RemoveStatusEffect(statusEffects.GetStatusEffectById((uint) StatusEffectId.Combo));
+                playerWork.comboCostBonusRate = 0;
+            }
+
+            ActorPropertyPacketUtil comboPropertyPacket = new ActorPropertyPacketUtil("playerWork/combo", this);
+            comboPropertyPacket.AddProperty("playerWork.comboCostBonusRate");
+            comboPropertyPacket.AddProperty("playerWork.comboNextCommandId[0]");
+            comboPropertyPacket.AddProperty("playerWork.comboNextCommandId[1]");
+            QueuePackets(comboPropertyPacket.Done());
+        }
+
+        public override void CalculateBaseStats()
+        {
+            base.CalculateBaseStats();
+            //Add weapon property mod
+            var equip = GetEquipment();
+            var mainHandItem = equip.GetItemAtSlot(Equipment.SLOT_MAINHAND);
+            var damageAttribute = 0;
+            var attackDelay = 3000;
+            var hitCount = 1;
+
+            if (mainHandItem != null)
+            {
+                var mainHandWeapon = (Server.GetItemGamedata(mainHandItem.itemId) as WeaponItem);
+                damageAttribute = mainHandWeapon.damageAttributeType1;
+                attackDelay = (int) (mainHandWeapon.damageInterval * 1000);
+                hitCount = mainHandWeapon.frequency;
+            }
+
+            var hasShield = equip.GetItemAtSlot(Equipment.SLOT_OFFHAND) != null ? 1 : 0;
+            SetMod((uint)Modifier.HasShield, hasShield);
+
+            SetMod((uint)Modifier.AttackType, damageAttribute);
+            SetMod((uint)Modifier.AttackDelay, attackDelay);
+            SetMod((uint)Modifier.HitCount, hitCount);
+
+            //These stats all correlate in a 3:2 fashion
+            //It seems these stats don't actually increase their respective stats. The magic stats do, however
+            AddMod((uint)Modifier.Attack, (long)(GetMod(Modifier.Strength) * 0.667));
+            AddMod((uint)Modifier.Accuracy, (long)(GetMod(Modifier.Dexterity) * 0.667));
+            AddMod((uint)Modifier.Defense, (long)(GetMod(Modifier.Vitality) * 0.667));
+
+            //These stats correlate in a 4:1 fashion. (Unsure if MND is accurate but it would make sense for it to be)
+            AddMod((uint)Modifier.MagicAttack, (long)((float)GetMod(Modifier.Intelligence) * 0.25));
+
+            AddMod((uint)Modifier.MagicAccuracy, (long)((float)GetMod(Modifier.Mind) * 0.25));
+            AddMod((uint)Modifier.MagicHeal, (long)((float)GetMod(Modifier.Mind) * 0.25));
+
+            AddMod((uint)Modifier.MagicEvasion, (long)((float)GetMod(Modifier.Piety) * 0.25));
+            AddMod((uint)Modifier.MagicEnfeeblingPotency, (long)((float)GetMod(Modifier.Piety) * 0.25));
+
+            //VIT correlates to HP in a 1:1 fashion
+            AddMod((uint)Modifier.Hp, (long)((float)Modifier.Vitality));
+
+            CalculateTraitMods();
+        }
+
+        public bool HasTrait(ushort id)
+        {
+            BattleTrait trait = Server.GetWorldManager().GetBattleTrait(id);
+
+            return HasTrait(trait);
+        }
+
+        public bool HasTrait(BattleTrait trait)
+        {
+            return (trait != null) && (trait.job == GetClass()) && (trait.level <= GetLevel());
+        }
+
+        public void CalculateTraitMods()
+        {
+            var traitIds = Server.GetWorldManager().GetAllBattleTraitIdsForClass((byte) GetClass());
+
+            foreach(var traitId in traitIds)
+            {
+                var trait = Server.GetWorldManager().GetBattleTrait(traitId);
+                if(HasTrait(trait))
+                {
+                    AddMod(trait.modifier, trait.bonus);
+                }
+            }
+        }
+
+        public bool HasItemEquippedInSlot(uint itemId, ushort slot)
+        {
+            var equippedItem = equipment.GetItemAtSlot(slot);
+
+            return equippedItem != null && equippedItem.itemId == itemId;
         }
 
     }

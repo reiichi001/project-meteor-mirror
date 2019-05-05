@@ -16,6 +16,10 @@ namespace FFXIVClassic_Map_Server
     class Program
     {
         public static Logger Log;
+        public static Server Server;
+        public static Random Random;
+        public static DateTime LastTick = DateTime.Now;
+        public static DateTime Tick = DateTime.Now;
 
         static void Main(string[] args)
         {
@@ -57,9 +61,10 @@ namespace FFXIVClassic_Map_Server
             //Start server if A-OK
             if (startServer)
             {
-                Server server = new Server();
-                
-                server.StartServer();
+                Random = new Random();
+                Server = new Server();
+                Tick = DateTime.Now;
+                Server.StartServer();
 
                 while (startServer)
                 {

@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.actors.director;
+using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
@@ -103,59 +104,67 @@ namespace FFXIVClassic_Map_Server.Actors
             return subpackets;
         }
 
+        // todo: handle instance areas in derived class? (see virtuals)
         #region Actor Management
 
         public void AddActorToZone(Actor actor)
         {
             lock (mActorList)
             {
+                if (actor is Character)
+                    ((Character)actor).ResetTempVars();
+
                 if (!mActorList.ContainsKey(actor.actorId))
                     mActorList.Add(actor.actorId, actor);
+
+
+                int gridX = (int)actor.positionX / boundingGridSize;
+                int gridY = (int)actor.positionZ / boundingGridSize;
+
+                gridX += halfWidth;
+                gridY += halfHeight;
+
+                //Boundries
+                if (gridX < 0)
+                    gridX = 0;
+                if (gridX >= numXBlocks)
+                    gridX = numXBlocks - 1;
+                if (gridY < 0)
+                    gridY = 0;
+                if (gridY >= numYBlocks)
+                    gridY = numYBlocks - 1;
+
+                lock (mActorBlock)
+                    mActorBlock[gridX, gridY].Add(actor);
             }
-
-            int gridX = (int)actor.positionX / boundingGridSize;
-            int gridY = (int)actor.positionZ / boundingGridSize;
-
-            gridX += halfWidth;
-            gridY += halfHeight;
-
-            //Boundries
-            if (gridX < 0)
-                gridX = 0;
-            if (gridX >= numXBlocks)
-                gridX = numXBlocks - 1;
-            if (gridY < 0)
-                gridY = 0;
-            if (gridY >= numYBlocks)
-                gridY = numYBlocks - 1;
-
-            lock (mActorBlock)
-                mActorBlock[gridX, gridY].Add(actor);
         }
 
         public void RemoveActorFromZone(Actor actor)
         {
-            lock (mActorList)
-                mActorList.Remove(actor.actorId);
+            if (actor != null)
+                lock (mActorList)
+                {
+                    mActorList.Remove(actor.actorId);
 
-            int gridX = (int)actor.positionX / boundingGridSize;
-            int gridY = (int)actor.positionZ / boundingGridSize;
+                    int gridX = (int)actor.positionX / boundingGridSize;
+                    int gridY = (int)actor.positionZ / boundingGridSize;
 
-            gridX += halfWidth;
-            gridY += halfHeight;
+                    gridX += halfWidth;
+                    gridY += halfHeight;
 
-            //Boundries
-            if (gridX < 0)
-                gridX = 0;
-            if (gridX >= numXBlocks)
-                gridX = numXBlocks - 1;
-            if (gridY < 0)
-                gridY = 0;
-            if (gridY >= numYBlocks)
-                gridY = numYBlocks - 1;
+                    //Boundries
+                    if (gridX < 0)
+                        gridX = 0;
+                    if (gridX >= numXBlocks)
+                        gridX = numXBlocks - 1;
+                    if (gridY < 0)
+                        gridY = 0;
+                    if (gridY >= numYBlocks)
+                        gridY = numYBlocks - 1;
 
-            lock (mActorBlock)
-                mActorBlock[gridX, gridY].Remove(actor);
+                    lock (mActorBlock)
+                        mActorBlock[gridX, gridY].Remove(actor);
+                }
         }
 
         public void UpdateActorPosition(Actor actor)
@@ -203,12 +212,12 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public List<Actor> GetActorsAroundPoint(float x, float y, int checkDistance)
+        public virtual List<T> GetActorsAroundPoint<T>(float x, float y, int checkDistance) where T : Actor
         {
             checkDistance /= boundingGridSize;
 
-            int gridX = (int)x/boundingGridSize;
-            int gridY = (int)y/boundingGridSize;
+            int gridX = (int)x / boundingGridSize;
+            int gridY = (int)y / boundingGridSize;
 
             gridX += halfWidth;
             gridY += halfHeight;
@@ -223,7 +232,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (gridY >= numYBlocks)
                 gridY = numYBlocks - 1;
 
-            List<Actor> result = new List<Actor>();
+            List<T> result = new List<T>();
 
             lock (mActorBlock)
             {
@@ -231,7 +240,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     for (int gy = gridY - checkDistance; gy <= gridY + checkDistance; gy++)
                     {
-                        result.AddRange(mActorBlock[gx, gy]);
+                        result.AddRange(mActorBlock[gx, gy].OfType<T>());
                     }
                 }
             }
@@ -245,11 +254,20 @@ namespace FFXIVClassic_Map_Server.Actors
                         result.RemoveAt(i);
                 }
             }
-
             return result;
         }
 
-        public List<Actor> GetActorsAroundActor(Actor actor, int checkDistance)
+        public virtual List<Actor> GetActorsAroundPoint(float x, float y, int checkDistance)
+        {
+            return GetActorsAroundPoint<Actor>(x, y, checkDistance);
+        }
+
+        public virtual List<Actor> GetActorsAroundActor(Actor actor, int checkDistance)
+        {
+            return GetActorsAroundActor<Actor>(actor, checkDistance);
+        }
+
+        public virtual List<T> GetActorsAroundActor<T>(Actor actor, int checkDistance) where T : Actor
         {
             checkDistance /= boundingGridSize;
 
@@ -269,7 +287,7 @@ namespace FFXIVClassic_Map_Server.Actors
             if (gridY >= numYBlocks)
                 gridY = numYBlocks - 1;
 
-            List<Actor> result = new List<Actor>();
+            var result = new List<T>();
 
             lock (mActorBlock)
             {
@@ -277,7 +295,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 {
                     for (int gx = ((gridX - checkDistance) < 0 ? 0 : (gridX - checkDistance)); gx <= ((gridX + checkDistance) >= numXBlocks ? numXBlocks - 1 : (gridX + checkDistance)); gx++)
                     {
-                        result.AddRange(mActorBlock[gx, gy]);
+                        result.AddRange(mActorBlock[gx, gy].OfType<T>());
                     }
                 }
             }
@@ -307,6 +325,11 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        public T FindActorInArea<T>(uint id) where T : Actor
+        {
+            return FindActorInArea(id) as T;
+        }
+
         public Actor FindActorInZoneByUniqueID(string uniqueId)
         {
             lock (mActorList)
@@ -327,13 +350,10 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             lock (mActorList)
             {
-                foreach (Actor a in mActorList.Values)
+                foreach (Player player in mActorList.Values.OfType<Player>())
                 {
-                    if (a is Player)
-                    {
-                        if (((Player)a).customDisplayName.ToLower().Equals(name.ToLower()))
-                            return (Player)a;
-                    }
+                    if (player.customDisplayName.ToLower().Equals(name.ToLower()))
+                        return player;
                 }
                 return null;
             }
@@ -368,6 +388,45 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
+        // todo: for zones override this to search contentareas (assuming flag is passed)
+        public virtual List<T> GetAllActors<T>() where T : Actor
+        {
+            lock (mActorList)
+            {
+                List<T> actorList = new List<T>(mActorList.Count);
+                actorList.AddRange(mActorList.Values.OfType<T>());
+                return actorList;
+            }
+        }
+
+        public int GetActorCount()
+        {
+            lock (mActorList)
+            {
+                return mActorList.Count;
+            }
+        }
+
+        public virtual List<Actor> GetAllActors()
+        {
+            return GetAllActors<Actor>();
+        }
+
+        public virtual List<Player> GetPlayers()
+        {
+            return GetAllActors<Player>();
+        }
+
+        public virtual List<BattleNpc> GetMonsters()
+        {
+            return GetAllActors<BattleNpc>();
+        }
+
+        public virtual List<Ally> GetAllies()
+        {
+            return GetAllActors<Ally>();
+        }
+
         public void BroadcastPacketsAroundActor(Actor actor, List<SubPacket> packets)
         {
             foreach (SubPacket packet in packets)
@@ -384,7 +443,7 @@ namespace FFXIVClassic_Map_Server.Actors
             {                
                 if (a is Player)
                 {
-                    if (isIsolated && packet.header.sourceId != a.actorId)
+                    if (isIsolated)
                         continue;
 
                     SubPacket clonedPacket = new SubPacket(packet, a.actorId);
@@ -396,69 +455,95 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SpawnActor(SpawnLocation location)
         {
-            ActorClass actorClass = Server.GetWorldManager().GetActorClass(location.classId);
-            
-            if (actorClass == null)
-                return;
+            lock (mActorList)
+            {
+                ActorClass actorClass = Server.GetWorldManager().GetActorClass(location.classId);
 
-            uint zoneId;
+                if (actorClass == null)
+                    return;
 
-            if (this is PrivateArea)
-                zoneId = ((PrivateArea)this).GetParentZone().actorId;
-            else
-                zoneId = actorId;
+                uint zoneId;
 
-            Npc npc = new Npc(mActorList.Count + 1, actorClass, location.uniqueId, this, location.x, location.y, location.z, location.rot, location.state, location.animId, null);
+                if (this is PrivateArea)
+                    zoneId = ((PrivateArea)this).GetParentZone().actorId;
+                else
+                    zoneId = actorId;
 
-            npc.LoadEventConditions(actorClass.eventConditions);            
+                Npc npc = new Npc(mActorList.Count + 1, actorClass, location.uniqueId, this, location.x, location.y, location.z, location.rot, location.state, location.animId, null);
 
-            AddActorToZone(npc);                          
+
+                npc.LoadEventConditions(actorClass.eventConditions);
+
+                AddActorToZone(npc);
+            }
         }
 
-        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0)
+        public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, float rot = 0, ushort state = 0, uint animId = 0, bool isMob = false)
         {
-            ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+            lock (mActorList)
+            {
+                ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
 
-            if (actorClass == null)
-                return null;
+                if (actorClass == null)
+                    return null;
 
-            uint zoneId;
+                uint zoneId;
+                if (this is PrivateArea)
+                    zoneId = ((PrivateArea)this).GetParentZone().actorId;
+                else
+                    zoneId = actorId;
 
-            if (this is PrivateArea)
-                zoneId = ((PrivateArea)this).GetParentZone().actorId;
-            else
-                zoneId = actorId;
+                Npc npc;
+                if (isMob)
+                    npc = new BattleNpc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
+                else
+                    npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
 
-            Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, rot, state, animId, null);
+                npc.LoadEventConditions(actorClass.eventConditions);
+                npc.SetMaxHP(100);
+                npc.SetHP(100);
+                npc.ResetMoveSpeeds();
 
-            npc.LoadEventConditions(actorClass.eventConditions);
+                AddActorToZone(npc);
 
-            AddActorToZone(npc);
-
-            return npc;
+                return npc;
+            }
         }
 
         public Npc SpawnActor(uint classId, string uniqueId, float x, float y, float z, uint regionId, uint layoutId)
         {
-            ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
+            lock (mActorList)
+            {
+                ActorClass actorClass = Server.GetWorldManager().GetActorClass(classId);
 
-            if (actorClass == null)
-                return null;
+                if (actorClass == null)
+                    return null;
 
-            uint zoneId;
+                uint zoneId;
 
-            if (this is PrivateArea)
-                zoneId = ((PrivateArea)this).GetParentZone().actorId;
-            else
-                zoneId = actorId;
+                if (this is PrivateArea)
+                    zoneId = ((PrivateArea)this).GetParentZone().actorId;
+                else
+                    zoneId = actorId;
 
-            Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, 0, regionId, layoutId);
+                Npc npc = new Npc(mActorList.Count + 1, actorClass, uniqueId, this, x, y, z, 0, regionId, layoutId);
 
-            npc.LoadEventConditions(actorClass.eventConditions);
+                npc.LoadEventConditions(actorClass.eventConditions);
 
-            AddActorToZone(npc);
+                AddActorToZone(npc);
 
-            return npc;
+                return npc;
+            }
+        }
+
+        public BattleNpc GetBattleNpcById(uint id)
+        {
+            foreach (var bnpc in GetAllActors<BattleNpc>())
+            {
+                if (bnpc.GetBattleNpcId() == id)
+                    return bnpc;
+            }
+            return null;
         }
 
         public void DespawnActor(string uniqueId)
@@ -579,12 +664,18 @@ namespace FFXIVClassic_Map_Server.Actors
             return null;
         }
 
-        public void Update(double deltaTime)
+        public override void Update(DateTime tick)
         {
             lock (mActorList)
             {
-                foreach (Actor a in mActorList.Values)
-                    a.Update(deltaTime);
+                foreach (Actor a in mActorList.Values.ToList())
+                    a.Update(tick);
+
+                if ((tick - lastUpdateScript).TotalMilliseconds > 1500)
+                {
+                    //LuaEngine.GetInstance().CallLuaFunctionForReturn(LuaEngine.GetScriptPath(this), "onUpdate", true, this, tick);
+                    lastUpdateScript = tick;
+                }
             }
         }
 
