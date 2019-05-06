@@ -2,7 +2,6 @@
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using FFXIVClassic_Lobby_Server.utils;
 
 namespace FFXIVClassic_Lobby_Server

@@ -17,7 +17,6 @@ using System.Threading;
 using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.actors.chara;
-using FFXIVClassic_Map_Server.Actors.Chara;
 using FFXIVClassic_Map_Server.actors.chara.player;
 
 namespace FFXIVClassic_Map_Server

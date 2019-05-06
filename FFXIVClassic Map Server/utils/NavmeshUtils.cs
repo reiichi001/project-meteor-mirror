@@ -1,13 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.IO;
 using SharpNav;
 using SharpNav.Pathfinding;
-using SharpNav.Crowds;
-using SharpNav.IO;
 using FFXIVClassic.Common;
 
 namespace FFXIVClassic_Map_Server.utils

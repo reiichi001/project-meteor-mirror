@@ -12,7 +12,6 @@ using FFXIVClassic_Map_Server.packets.receive.supportdesk;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
-using FFXIVClassic_Map_Server.actors.chara;
 
 namespace FFXIVClassic_Map_Server
 {

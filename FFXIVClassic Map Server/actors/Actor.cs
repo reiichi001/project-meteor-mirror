@@ -9,8 +9,6 @@ using System.Collections.Generic;
 using FFXIVClassic_Map_Server.actors.area;
 using System.Reflection;
 using System.ComponentModel;
-using FFXIVClassic_Map_Server.packets.send.actor.battle;
-using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.actors.chara;
 
 namespace FFXIVClassic_Map_Server.Actors

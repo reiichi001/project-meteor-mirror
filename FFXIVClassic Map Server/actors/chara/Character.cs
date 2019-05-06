@@ -1,6 +1,5 @@
 ﻿
 using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.Actors.Chara;
@@ -13,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using FFXIVClassic_Map_Server.actors.chara;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
-using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.actors.chara.ai.state;
 using FFXIVClassic_Map_Server.actors.chara.ai.utils;
 using FFXIVClassic_Map_Server.actors.chara.npc;

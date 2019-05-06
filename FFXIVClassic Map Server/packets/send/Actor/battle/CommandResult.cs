@@ -1,12 +1,9 @@
-﻿using FFXIVClassic.Common;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.actors.chara.ai.utils;
 using FFXIVClassic_Map_Server.Actors;
-using FFXIVClassic_Map_Server.packets.send.actor.battle;
 
-namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
+namespace FFXIVClassic_Map_Server.packets.send.actor.battle
 {
     //These flags can be stacked and mixed, but the client will prioritize certain flags over others.
     [Flags]

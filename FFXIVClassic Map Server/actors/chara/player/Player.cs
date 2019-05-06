@@ -23,9 +23,6 @@ using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.packets.receive.events;
-using FFXIVClassic_Map_Server.actors.group;
-using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
-using FFXIVClassic_Map_Server.actors.chara.npc;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
