@@ -46,7 +46,7 @@ function onEventStarted(player, npc, triggerName)
 	--callClientFunction(player, "eventAfterChocoboName", player);
 
 	local curLevel = 20; -- TODO: pull from character
-	local hasIssuance = player:GetInventory(INVENTORY_KEYITEMS):HasItem(gcIssuances[npc:GetActorClassId()]);
+	local hasIssuance = player:GetItemPackage(INVENTORY_KEYITEMS):HasItem(gcIssuances[npc:GetActorClassId()]);
 	local hasChocobo = player.hasChocobo;
 	
 	if (player.isGM and hasChocobo == false) then -- Let GMs auto have the issuance for debugging 
@@ -78,11 +78,11 @@ function onEventStarted(player, npc, triggerName)
 			player:SendGameMessage(player, GetWorldMaster(), 25248, 0x20, 2001007);
 			player:SendDataPacket("attention", GetWorldMaster(), "", 25248, 2001007);
 			
-			if (player:GetInventory(INVENTORY_KEYITEMS):HasItem(2001007) == false) then
-				player:GetInventory(INVENTORY_KEYITEMS):AddItem(2001007);
+			if (player:GetItemPackage(INVENTORY_KEYITEMS):HasItem(2001007) == false) then
+				player:GetItemPackage(INVENTORY_KEYITEMS):AddItem(2001007);
 			end
 			
-			player:GetInventory(INVENTORY_KEYITEMS):RemoveItem(gcIssuances[npc:GetActorClassId()], 1);
+			player:GetItemPackage(INVENTORY_KEYITEMS):RemoveItem(gcIssuances[npc:GetActorClassId()], 1);
 			
 			player:EndEvent();
 			return;

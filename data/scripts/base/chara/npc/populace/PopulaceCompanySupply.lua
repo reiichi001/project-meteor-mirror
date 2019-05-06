@@ -370,7 +370,7 @@ function deliveryMenuOpen(player, npc, itemId, price, hqPrice, supplyType)
         player:SendMessage(0x20, "", "Type7Param: " .. tostring(Type7Param.slot));
         --]]
         
-        pickedItem = GetItemGamedata(player:GetInventory(INVENTORY_NORMAL):GetItemAtSlot(Type7Param.slot).itemId).name;
+        pickedItem = GetItemGamedata(player:GetItemPackage(INVENTORY_NORMAL):GetItemAtSlot(Type7Param.slot).itemId).name;
         player:SendMessage(0x20, "", "Player tried to deliver " .. quantity .. " " ..  pickedItem);
         
         -- TODO: Add error handling for capped seals, no-long-available-to-deliver, etc
