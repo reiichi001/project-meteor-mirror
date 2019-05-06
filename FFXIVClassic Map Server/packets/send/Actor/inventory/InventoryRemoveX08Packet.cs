@@ -3,9 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-using FFXIVClassic.Common;
-
-namespace  FFXIVClassic_Map_Server.packets.send.actor.inventory
+namespace FFXIVClassic_Map_Server.packets.send.actor.inventory
 {
     class InventoryRemoveX08Packet
     {

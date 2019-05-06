@@ -1,15 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading;
-using System.Text;
 using MySql.Data.MySqlClient;
-using System.Reflection;
-using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic.Common;
 using NLog;
-using NLog.Targets;
-using NLog.Targets.Wrappers;
-using NLog.Config;
 
 namespace FFXIVClassic_Map_Server
 {

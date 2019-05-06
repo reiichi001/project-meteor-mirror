@@ -1,11 +1,8 @@
 ﻿using FFXIVClassic.Common;
-using System;
 using System.IO;
-
-using FFXIVClassic.Common;
 using System.Text;
 
-namespace  FFXIVClassic_Map_Server.packets.send.actor
+namespace FFXIVClassic_Map_Server.packets.send.actor
 {
     class PlayBGAnimation
     {

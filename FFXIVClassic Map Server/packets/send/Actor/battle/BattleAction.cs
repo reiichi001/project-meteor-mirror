@@ -1,6 +1,4 @@
-﻿using FFXIVClassic.Common;
-
-namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
+﻿namespace FFXIVClassic_Map_Server.packets.send.actor.battle
 {
     class BattleAction
     {

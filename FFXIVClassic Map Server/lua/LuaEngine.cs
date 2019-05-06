@@ -11,8 +11,6 @@ using MoonSharp.Interpreter.Loaders;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
-using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.area;
 using System.Threading;

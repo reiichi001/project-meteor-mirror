@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.dataobjects;
 
 using System.IO;
-using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.Actors;

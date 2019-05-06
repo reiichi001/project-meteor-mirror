@@ -1,9 +1,6 @@
 ﻿using FFXIVClassic.Common;
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.receive;
 using FFXIVClassic_Map_Server.packets.send;

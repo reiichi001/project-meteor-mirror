@@ -1,9 +1,6 @@
 ﻿using FFXIVClassic_World_Server.Actor.Group.Work;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
 using FFXIVClassic.Common;
 

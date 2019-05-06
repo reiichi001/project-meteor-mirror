@@ -1,15 +1,9 @@
-﻿using FFXIVClassic_Map_Server;
-using FFXIVClassic.Common;
-
-using FFXIVClassic_Map_Server.actors.chara.npc;
+﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.actors.director;
 
 namespace FFXIVClassic_Map_Server.actors.area

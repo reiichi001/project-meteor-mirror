@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using FFXIVClassic.Common;
 using System.Collections.Concurrent;
 using System.Net;
-using System.Collections.Generic;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Send;
 
 namespace FFXIVClassic_Map_Server.dataobjects

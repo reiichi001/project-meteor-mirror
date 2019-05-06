@@ -1,7 +1,6 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.dataobjects;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 

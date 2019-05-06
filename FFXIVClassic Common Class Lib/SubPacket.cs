@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using FFXIVClassic.Common;
 using NLog;
 using NLog.Targets;
 

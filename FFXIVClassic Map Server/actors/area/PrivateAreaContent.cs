@@ -1,16 +1,11 @@
 ﻿using FFXIVClassic_Map_Server.actors.director;
-using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_Map_Server.actors.area
 {
-   
+
     class PrivateAreaContent : PrivateArea
     {
         private Director currentDirector;

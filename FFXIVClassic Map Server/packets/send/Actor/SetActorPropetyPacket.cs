@@ -5,9 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-using FFXIVClassic.Common;
-
-namespace  FFXIVClassic_Map_Server.packets.send.actor
+namespace FFXIVClassic_Map_Server.packets.send.actor
 {
     class SetActorPropetyPacket
     {

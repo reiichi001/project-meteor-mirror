@@ -2,9 +2,7 @@
 using System;
 using System.IO;
 
-using FFXIVClassic.Common;
-
-namespace  FFXIVClassic_Map_Server.packets.send.actor
+namespace FFXIVClassic_Map_Server.packets.send.actor
 {
     class SetActorStatusPacket
     {

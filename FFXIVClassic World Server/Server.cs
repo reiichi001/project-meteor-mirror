@@ -1,8 +1,6 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_World_Server.DataObjects;
 using FFXIVClassic_World_Server.DataObjects.Group;
-using FFXIVClassic_World_Server.Packets.Receive.Subpackets;
-using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Receive;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Send;
