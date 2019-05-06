@@ -27,7 +27,7 @@ function onTrigger(player, argc, keyitem, qty, name, lastName)
         qty = tonumber(qty) or 1;
         local location = INVENTORY_KEYITEMS;
        
-        local removed = player:GetInventory(location):RemoveItem(keyitem, qty);
+        local removed = player:GetItemPackage(location):RemoveItem(keyitem, qty);
         local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
         local message = "Attempting to remove keyitem" -- "unable to remove keyitem";
         

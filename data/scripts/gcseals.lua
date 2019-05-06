@@ -35,7 +35,7 @@ function GetGCSeals(player, company)
     company = tonumber(company);
     
     if company ~= nil and company > 0 and company < 4 then
-        return player:GetInventory(INVENTORY_CURRENCY):GetItemQuantity(companySeal[tonumber(company)]);
+        return player:GetItemPackage(INVENTORY_CURRENCY):GetItemQuantity(companySeal[tonumber(company)]);
     else
         return -1;
     end
@@ -52,7 +52,7 @@ function AddGCSeals(player, company, amount)
     if currentAmount ~= -1 then
         if amount then
             if currentAmount + amount <= maxAmount then
-               invCheck = player:GetInventory(INVENTORY_CURRENCY):AddItem(companySeal[company], amount, 1);
+               invCheck = player:GetItemPackage(INVENTORY_CURRENCY):AddItem(companySeal[company], amount, 1);
                 if invCheck == INV_ERROR_SUCCESS then
                     return INV_ERROR_SUCCESS;
                 end
