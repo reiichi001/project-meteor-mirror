@@ -12,12 +12,11 @@ SET FOREIGN_KEY_CHECKS=0;
 -- Table structure for retainers_inventory
 -- ----------------------------
 CREATE TABLE `retainers_inventory` (
-  `id` int(10) unsigned zerofill NOT NULL AUTO_INCREMENT,
   `retainerId` int(10) unsigned NOT NULL,
-  `itemPackage` smallint(5) unsigned NOT NULL DEFAULT '0',
   `serverItemId` int(10) unsigned NOT NULL,
-  PRIMARY KEY (`id`,`retainerId`)
-) ENGINE=InnoDB AUTO_INCREMENT=345 DEFAULT CHARSET=utf8;
+  `itemPackage` mediumint(8) unsigned NOT NULL,
+  PRIMARY KEY (`retainerId`,`serverItemId`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records 

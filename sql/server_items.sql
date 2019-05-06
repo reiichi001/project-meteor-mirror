@@ -20,7 +20,7 @@ CREATE TABLE `server_items` (
   `isAttached` tinyint(1) unsigned DEFAULT '0',
   `isDealing` tinyint(1) unsigned DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2659 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
 
 -- ----------------------------
 -- Records 

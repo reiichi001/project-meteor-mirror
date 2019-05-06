@@ -7,18 +7,14 @@ using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.events;
-using FFXIVClassic_Map_Server.packets.send.actor.events;
 using FFXIVClassic_Map_Server.packets.send.actor.inventory;
-using FFXIVClassic_Map_Server.packets.send.events;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.utils;
 using System;
 using System.Collections.Generic;
 using MoonSharp.Interpreter;
 using FFXIVClassic_Map_Server.packets.receive.events;
-using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.actors.group;
-using FFXIVClassic_Map_Server.packets.send.group;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 

@@ -1227,7 +1227,6 @@ namespace FFXIVClassic_Map_Server
                                     itemId,
                                     server_items_modifiers.id AS modifierId,
                                     quantity,
-                                    isExclusive,
                                     quality,
 
                                     durability,
@@ -1379,7 +1378,6 @@ namespace FFXIVClassic_Map_Server
                                     itemId,
                                     server_items_modifiers.id AS modifierId,
                                     quantity,
-                                    isExclusive,
                                     quality,
 
                                     durability,
@@ -1448,7 +1446,6 @@ namespace FFXIVClassic_Map_Server
                                     itemId,
                                     server_items_modifiers.id AS modifierId,
                                     quantity,
-                                    isExclusive,
                                     quality,
 
                                     durability,
@@ -1548,7 +1545,6 @@ namespace FFXIVClassic_Map_Server
                                     itemId,
                                     server_items_modifiers.id AS modifierId,
                                     quantity,
-                                    isExclusive,
                                     quality,
 
                                     durability,
