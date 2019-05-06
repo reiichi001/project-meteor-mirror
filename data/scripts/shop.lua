@@ -9,8 +9,8 @@ function purchaseItem(player, location, itemId, quantity, quality, price, curren
     local worldMaster = GetWorldMaster();          
     local invCheck = -1;
 
-    if (player:GetInventory(INVENTORY_CURRENCY):HasItem(currency, price)) then
-        invCheck = player:GetInventory(location):AddItem(itemId, quantity, quality); 
+    if (player:GetItemPackage(INVENTORY_CURRENCY):HasItem(currency, price)) then
+        invCheck = player:GetItemPackage(location):AddItem(itemId, quantity, quality); 
     
         if (invCheck == INV_ERROR_FULL) then
             -- Your inventory is full.
@@ -21,7 +21,7 @@ function purchaseItem(player, location, itemId, quantity, quality, price, curren
         elseif (invCheck == INV_ERROR_SYSTEM_ERROR) then
             player:SendMessage(0x20, "", "[DEBUG] Server Error on adding item.");
         elseif (invCheck == INV_ERROR_SUCCESS) then
-            player:GetInventory(INVENTORY_CURRENCY):removeItem(currency, price);
+            player:GetItemPackage(INVENTORY_CURRENCY):removeItem(currency, price);
             
             if (currency == 1000001) then  -- If Gil
                 -- You purchase <quantity> <itemId> <quality> for <price> gil.
@@ -48,8 +48,8 @@ function sellItem(player, itemId, quantity, quality, itemPrice, slot, currency)
     local worldMaster = GetWorldMaster();
     local cost = quantity * itemPrice;
     
-    player:GetInventory(INVENTORY_CURRENCY):AddItem(currency, cost);
-    player:GetInventory(INVENTORY_NORMAL):RemoveItemAtSlot(slot, quantity);   
+    player:GetItemPackage(INVENTORY_CURRENCY):AddItem(currency, cost);
+    player:GetItemPackage(INVENTORY_NORMAL):RemoveItemAtSlot(slot, quantity);   
     -- You sell <quantity> <itemId> <quality> for <cost> gil.
     player:SendGameMessage(player, worldMaster, 25075, MESSAGE_TYPE_SYSTEM, itemId, quality, quantity, cost);
 end
