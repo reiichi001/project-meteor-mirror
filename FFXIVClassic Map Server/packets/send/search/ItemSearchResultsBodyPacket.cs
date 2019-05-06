@@ -1,5 +1,4 @@
 ﻿using System.IO;
-using System.Text;
 using System;
 using FFXIVClassic.Common;
 using System.Collections.Generic;

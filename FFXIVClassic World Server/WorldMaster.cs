@@ -8,11 +8,6 @@ using FFXIVClassic_World_Server.Packets.WorldPackets.Send.Group;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_World_Server
 {

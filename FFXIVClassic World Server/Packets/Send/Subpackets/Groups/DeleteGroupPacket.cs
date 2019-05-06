@@ -1,12 +1,7 @@
 ﻿using FFXIVClassic.Common;
-using FFXIVClassic_World_Server.Actor.Group;
 using FFXIVClassic_World_Server.DataObjects.Group;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups
 {

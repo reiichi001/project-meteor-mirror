@@ -1,9 +1,6 @@
 ﻿using FFXIVClassic_World_Server.DataObjects.Group;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_World_Server
 {
@@ -23,8 +20,22 @@ namespace FFXIVClassic_World_Server
             mCurrentWorldGroupsReference = worldGroupList;
         }
 
+        //Checks if the LS name is in use or banned
+        public int CanCreateLinkshell(string name)
+        {
+            bool nameBanned = Database.LinkshellIsBannedName(name);
+            bool alreadyExists = Database.LinkshellExists(name);
+
+            if (nameBanned)
+                return 2;
+            if (alreadyExists)
+                return 1;
+            else
+                return 0;
+        }
+
         //Creates a new linkshell and adds it to the list
-        public ulong CreateLinkshell(string name, ushort crest, uint master)
+        public Linkshell CreateLinkshell(string name, ushort crest, uint master)
         {
             lock (mGroupLockReference)
             {
@@ -32,18 +43,19 @@ namespace FFXIVClassic_World_Server
                 if (resultId >= 0)
                 {
                     Linkshell newLs = new Linkshell(resultId, mWorldManager.GetGroupIndex(), name, crest, master, 0xa);
+                    
+                    mLinkshellList.Add(mWorldManager.GetGroupIndex(), newLs);
+                    mNameToIdLookup.Add(newLs.name, newLs.groupIndex);
+                    mLSIdToIdLookup.Add(newLs.dbId, newLs);
+                    mCurrentWorldGroupsReference.Add(mWorldManager.GetGroupIndex(), newLs);
+                    mWorldManager.IncrementGroupIndex();
 
                     //Add founder to the LS
-                    if (AddMemberToLinkshell(master, newLs.name))
-                    {
-                        mLinkshellList.Add(mWorldManager.GetGroupIndex(), newLs);
-                        mNameToIdLookup.Add(newLs.name, newLs.groupIndex);
-                        mLSIdToIdLookup.Add(newLs.dbId, newLs);
-                        mCurrentWorldGroupsReference.Add(mWorldManager.GetGroupIndex(), newLs);
-                        mWorldManager.IncrementGroupIndex();
-                    }
+                    AddMemberToLinkshell(master, newLs.name);
+                  
+                    return newLs;
                 }
-                return resultId;
+                return null;
             }
         }
 

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using FFXIVClassic_Lobby_Server.utils;
-using FFXIVClassic.Common;
 
 namespace FFXIVClassic_Lobby_Server
 {

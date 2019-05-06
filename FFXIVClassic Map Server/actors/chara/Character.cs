@@ -1,9 +1,12 @@
 ﻿
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.area;
+using FFXIVClassic_Map_Server.actors.chara.player;
 using FFXIVClassic_Map_Server.actors.group;
 using FFXIVClassic_Map_Server.Actors.Chara;
+using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send.actor;
+using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.utils;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using System;
@@ -107,7 +110,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public Group currentParty = null;
         public ContentGroup currentContentGroup = null;
-
+        
         //public DateTime lastAiUpdate;
 
         public AIContainer aiContainer;
@@ -131,8 +134,13 @@ namespace FFXIVClassic_Map_Server.Actors
         public float extraFloat;
 
         protected Dictionary<string, UInt64> tempVars = new Dictionary<string, UInt64>();
+        
+        //Inventory        
+        protected Dictionary<ushort, ItemPackage> itemPackages = new Dictionary<ushort, ItemPackage>();
+        protected Equipment equipment;
 
-        public Character(uint actorID) : base(actorID)
+        public Character(uint actorID)
+            : base(actorID)
         {
             //Init timer array to "notimer"
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
@@ -207,7 +215,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             return propPacketUtil.Done();
         }
-
+        
         public void PlayAnimation(uint animId, bool onlySelf = false)
         {
             if (onlySelf)
@@ -218,7 +226,7 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 zone.BroadcastPacketAroundActor(this, PlayAnimationOnActorPacket.BuildPacket(actorId, animId));
         }
-
+        
         public void DoBattleAction(ushort commandId, uint animationId)
         {
             zone.BroadcastPacketAroundActor(this, CommandResultX00Packet.BuildPacket(actorId, animationId, commandId));
@@ -493,7 +501,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
             return false;
         }
-
+        
         public virtual void Cast(uint spellId, uint targetId = 0)
         {
             if (aiContainer.CanChangeState())
@@ -1133,5 +1141,180 @@ namespace FFXIVClassic_Map_Server.Actors
             targetFind.FindWithinArea(this, ValidTarget.PartyMember, TargetFindAOETarget.Self);
             return targetFind.GetTargets();
         }
+
+        #region Inventory
+        public void SendItemPackage(Player player, uint id)
+        {
+            if (!itemPackages.ContainsKey((ushort)id))
+                return;
+
+            player.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
+            itemPackages[(ushort)id].SendFullInventory(player);
+            player.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
+        }
+
+        public void AddItem(uint catalogID)
+        {
+            AddItem(catalogID, 1);
+        }
+
+        public void AddItem(uint catalogID, int quantity)
+        {
+            AddItem(catalogID, quantity, 1);
+        }
+
+        public void AddItem(uint catalogID, int quantity, byte quality)
+        {
+            ushort itemPackage = GetPackageForItem(catalogID);
+            if (itemPackages.ContainsKey(itemPackage))
+            {
+                itemPackages[itemPackage].AddItem(catalogID, quantity, quality);
+            }
+        }
+
+        public void AddItem(InventoryItem item)
+        {
+            ushort itemPackage = GetPackageForItem(item.GetItemData().catalogID);
+            if (itemPackages.ContainsKey(itemPackage))
+            {
+                itemPackages[itemPackage].AddItem(item);
+            }
+        }
+
+        public void SetItem(InventoryItem item, ushort itemPackage, ushort slot)
+        {
+            if (itemPackages.ContainsKey(itemPackage))
+            {
+                itemPackages[itemPackage].SetItem(slot, item);
+            }
+        }
+
+        public void MoveItem(InventoryItem item, ushort destinationPackage)
+        {
+            ushort sourcePackage = item.itemPackage;
+
+            if (!itemPackages.ContainsKey(sourcePackage) && !itemPackages.ContainsKey(destinationPackage))
+                return;
+
+            itemPackages[sourcePackage].RemoveItem(item);
+            itemPackages[destinationPackage].AddItem(item);
+        }
+
+        public void RemoveItem(uint catalogID)
+        {
+            RemoveItem(catalogID, 1);
+        }
+
+        public void RemoveItem(uint catalogID, int quantity)
+        {
+            RemoveItem(catalogID, quantity, 1);
+        }
+
+        public void RemoveItem(uint catalogID, int quantity, byte quality)
+        {
+            ushort itemPackage = GetPackageForItem(catalogID);
+            if (itemPackages.ContainsKey(itemPackage))
+            {
+                itemPackages[itemPackage].RemoveItem(catalogID, quantity, quality);
+            }
+        }
+
+        public void RemoveItemAtSlot(ushort itemPackage, ushort slot)
+        {
+            if (itemPackages.ContainsKey(itemPackage))
+            {
+                itemPackages[itemPackage].RemoveItemAtSlot(slot);
+            }
+        }
+
+        public void RemoveItem(InventoryItem item)
+        {
+            RemoveItem(item, 1);
+        }
+
+        public void RemoveItem(InventoryItem item, int quantity)
+        {
+            if (itemPackages.ContainsKey(item.itemPackage))
+            {
+                itemPackages[item.itemPackage].RemoveItem(item, quantity);
+            }
+        }
+
+        public bool HasItem(uint catalogID)
+        {
+            return HasItem(catalogID, 1);
+        }
+
+        public bool HasItem(uint catalogID, int minQuantity)
+        {
+            return HasItem(catalogID, minQuantity, 1);
+        }
+
+        public bool HasItem(uint catalogID, int minQuantity, byte quality)
+        {
+            ushort itemPackage = GetPackageForItem(catalogID);
+            if (itemPackages.ContainsKey(itemPackage))
+            {
+                return itemPackages[itemPackage].HasItem(catalogID, minQuantity, quality);
+            }
+            return false;
+        }
+
+        public bool HasItem(InventoryItem item)
+        {
+            ushort itemPackage = GetPackageForItem(item.GetItemData().catalogID);
+            if (itemPackages.ContainsKey(itemPackage))
+            {
+                //return itemPackages[itemPackage].HasItem(item);
+                return false; //TODO FIX
+            }
+            else
+                return false;
+        }
+
+
+        public InventoryItem GetItem(LuaUtils.ItemRefParam reference)
+        {
+            if (reference.actorId != actorId)
+                return null;
+            if (itemPackages.ContainsKey(reference.itemPackage))
+            {
+                return itemPackages[reference.itemPackage].GetItemAtSlot(reference.slot);
+            }
+            return null;
+        }
+
+        public ItemPackage GetItemPackage(ushort package)
+        {
+            if (itemPackages.ContainsKey(package))
+                return itemPackages[package];
+            else
+                return null;
+        }
+
+        public ushort GetPackageForItem(uint catalogID)
+        {
+            ItemData data = Server.GetItemGamedata(catalogID);
+
+            if (data == null)
+                return ItemPackage.NORMAL;
+            else
+            {
+                if (data.IsMoney())
+                    return ItemPackage.CURRENCY_CRYSTALS;
+                else if (data.IsImportant())
+                    return ItemPackage.KEYITEMS;
+                else
+                    return ItemPackage.NORMAL;
+            }
+        }
+
+        //public void removeItem(byUniqueId)
+        //public void removeItem(byUniqueId, quantity)
+        //public void removeItem(slot)
+        //public void removeItem(slot, quantity)
+
+        #endregion
+
     }
 }

@@ -27,7 +27,7 @@ function onTrigger(player, argc, qty, name, lastName)
         qty = tonumber(qty) or 1;
         location = INVENTORY_CURRENCY;
         
-        local added = player:GetInventory(location):AddItem(currency, qty, 1);
+        local added = player:GetItemPackage(location):AddItem(currency, qty, 1);
         local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
         local message = "unable to add gil";
         

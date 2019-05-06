@@ -1,11 +1,5 @@
-﻿using FFXIVClassic.Common;
-using FFXIVClassic_World_Server.DataObjects;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_World_Server.Packets.WorldPackets.Receive
 {

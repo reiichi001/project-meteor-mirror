@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using FFXIVClassic.Common;
 using System.Collections.Concurrent;
 using System.Net;
-using System.Collections.Generic;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Send;
 
 namespace FFXIVClassic_Map_Server.dataobjects
@@ -19,7 +18,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public void QueuePacket(SubPacket subpacket)
         {
-            if(SendPacketQueue.Count == 1000)
+            if (SendPacketQueue.Count == SendPacketQueue.BoundedCapacity - 1)
                 FlushQueuedSendPackets();
 
             SendPacketQueue.Add(subpacket);

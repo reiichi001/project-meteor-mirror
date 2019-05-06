@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
-using NLog;
-using System.Data;
-using System.Data.Common;
+﻿using NLog;
 
 namespace FFXIVClassic.Common
 {

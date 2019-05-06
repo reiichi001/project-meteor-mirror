@@ -58,7 +58,7 @@ function onEventStarted(player, actor, triggerName, invActionInfo, param1, param
 	
 	--Equip Item
 	if (invActionInfo ~= nil) then		
-		item = player:GetInventory(0):GetItemAtSlot(invActionInfo.slot);		
+		item = player:GetItemPackage(0):GetItemAtSlot(invActionInfo.slot);		
 		equipItem(player, equipSlot, item);			
 		player:SendAppearance();
 	--Unequip Item

@@ -11,8 +11,6 @@ using MoonSharp.Interpreter.Loaders;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
-using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.area;
 using System.Threading;
@@ -93,7 +91,7 @@ namespace FFXIVClassic_Map_Server.lua
             }
         }
 
-        public void OnSignal(string signal)
+        public void OnSignal(string signal, params object[] args)
         {
             List<Coroutine> mToAwake = new List<Coroutine>();
 
@@ -105,7 +103,7 @@ namespace FFXIVClassic_Map_Server.lua
 
             foreach (Coroutine key in mToAwake)
             {
-                DynValue value = key.Resume();
+                DynValue value = key.Resume(args);
                 ResolveResume(null, key, value);
             }
         }
@@ -642,6 +640,7 @@ namespace FFXIVClassic_Map_Server.lua
         public static void RunGMCommand(Player player, String cmd, string[] param, bool help = false)
         {
             bool playerNull = player == null;
+
             if (playerNull)
             {
                 if (param.Length >= 2 && param[1].Contains("\""))
@@ -649,6 +648,10 @@ namespace FFXIVClassic_Map_Server.lua
                 else if (param.Length > 2)
                     player = Server.GetWorldManager().GetPCInWorld(param[1] + param[2]);
             }
+
+            if (playerNull && param.Length >= 3)
+                player = Server.GetWorldManager().GetPCInWorld(param[1] + " " + param[2]);
+            
             // load from scripts/commands/gm/ directory
             var path = String.Format("./scripts/commands/gm/{0}.lua", cmd.ToLower());
 

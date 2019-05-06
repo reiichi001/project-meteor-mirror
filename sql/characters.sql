@@ -48,4 +48,4 @@ CREATE TABLE `characters` (
   `homepoint` int(10) unsigned NOT NULL DEFAULT '0',
   `homepointInn` tinyint(3) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=166 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8;

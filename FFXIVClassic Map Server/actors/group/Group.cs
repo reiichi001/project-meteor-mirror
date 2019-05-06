@@ -2,7 +2,6 @@
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send.group;
 using FFXIVClassic_Map_Server.packets.send.groups;
-using System;
 using System.Collections.Generic;
 
 namespace FFXIVClassic_Map_Server.actors.group

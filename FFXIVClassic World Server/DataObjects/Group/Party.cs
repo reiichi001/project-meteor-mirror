@@ -3,9 +3,6 @@ using FFXIVClassic_World_Server.Actor.Group.Work;
 using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_World_Server.DataObjects.Group
 {

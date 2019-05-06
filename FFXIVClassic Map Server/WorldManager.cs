@@ -1,30 +1,24 @@
-﻿using FFXIVClassic_Map_Server;
-using FFXIVClassic.Common;
+﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Map_Server.dataobjects.chara;
 using FFXIVClassic_Map_Server.lua;
 using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
-using FFXIVClassic_Map_Server.packets.send.login;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.actors.group;
-using FFXIVClassic_Map_Server.packets.send.group;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Receive;
 using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
 using System.Threading;
-using System.Diagnostics;
 using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.actors.chara;
 using FFXIVClassic_Map_Server.Actors.Chara;
+using FFXIVClassic_Map_Server.actors.chara.player;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -51,9 +45,12 @@ namespace FFXIVClassic_Map_Server
         private const int MILIS_LOOPTIME = 333;
         private Timer mZoneTimer;
 
-        //Content Groups
+        //Zone Server Groups
         public Dictionary<ulong, Group> mContentGroups = new Dictionary<ulong, Group>();
+        public Dictionary<ulong, RelationGroup> mRelationGroups = new Dictionary<ulong, RelationGroup>();
+        public Dictionary<ulong, TradeGroup> mTradeGroups = new Dictionary<ulong, TradeGroup>();
         private Object groupLock = new Object();
+        private Object tradeLock = new Object();
         public ulong groupIndexId = 1;
 
         public WorldManager(Server server)
@@ -1032,9 +1029,7 @@ namespace FFXIVClassic_Map_Server
             player.SendInstanceUpdate();
 
             player.playerSession.LockUpdates(false);
-
-            
-
+        
             LuaEngine.GetInstance().CallLuaFunction(player, contentArea, "onZoneIn", true);
         }
 
@@ -1185,11 +1180,342 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public RelationGroup CreateRelationGroup(Actor inviter, Actor invitee, ulong groupType)
+        {
+            lock (groupLock)
+            {                
+                groupIndexId = groupIndexId | 0x0000000000000000;
+
+                RelationGroup group = new RelationGroup(groupIndexId, inviter.actorId, invitee.actorId, 0, groupType);
+                mRelationGroups.Add(groupIndexId, group);
+                groupIndexId++;
+
+                group.SendGroupPacketsAll(inviter.actorId, invitee.actorId);
+
+                return group;
+            }
+        }
+
+        public RelationGroup GetRelationGroup(uint actorId)
+        {
+            lock (groupLock)
+            {
+                foreach (RelationGroup relation in mRelationGroups.Values)
+                {
+                    if (relation.GetHost() == actorId || relation.GetOther() == actorId)
+                        return relation;
+                }
+                return null;
+            }
+        }
+
+        public void DeleteRelationGroup(ulong groupid)
+        {
+            lock (groupLock)
+            {
+                if (mRelationGroups.ContainsKey(groupid))
+                    mRelationGroups.Remove(groupid);
+            }
+        }
+
+        public TradeGroup CreateTradeGroup(Player inviter, Player invitee)
+        {            
+            lock (groupLock)
+            {
+                groupIndexId = groupIndexId | 0x0000000000000000;
+
+                TradeGroup group = new TradeGroup(groupIndexId, inviter.actorId, invitee.actorId);
+                mTradeGroups.Add(groupIndexId, group);
+                groupIndexId++;
+
+                group.SendGroupPacketsAll(inviter.actorId, invitee.actorId);
+
+                inviter.SendGameMessage(GetActor(), 25101, 0x20, (object)invitee); //You request to trade with X
+                invitee.SendGameMessage(GetActor(), 25037, 0x20, (object)inviter); //X wishes to trade with you
+
+                return group;
+            }
+        }
+
+        public TradeGroup GetTradeGroup(uint actorId)
+        {
+            lock (groupLock)
+            {
+                foreach (TradeGroup group in mTradeGroups.Values)
+                {
+                    if (group.GetHost() == actorId || group.GetOther() == actorId)
+                        return (TradeGroup)group;
+                }
+                return null;
+            }
+        }
+
+        public void DeleteTradeGroup(ulong groupid)
+        {
+            lock (groupLock)
+            {
+                if (mTradeGroups.ContainsKey(groupid))
+                {
+                    TradeGroup group = mTradeGroups[groupid];
+                    group.SendDeletePackets(group.GetHost(), group.GetOther());
+                    mTradeGroups.Remove(groupid);
+                }
+            }
+        }
+
+        public void TradeTEST(Player player)
+        {
+            player.KickEventSpecial(Server.GetStaticActors("TradeExecuteCommand"), 0, "commandContent", null, null, null, 16, null, null, null, null, null);
+        }
+
+        public void AcceptTrade(Player invitee)
+        {
+            TradeGroup group = GetTradeGroup(invitee.actorId);
+
+            if (group == null)
+            {
+                invitee.SendMessage(0x20, "", "MASSIVE ERROR: No tradegroup found!!!");
+                return;
+            }
+
+            Player inviter = (Player)invitee.GetZone().FindActorInArea(group.GetHost());
+
+            //DeleteTradeGroup(group.groupIndex);
+
+            inviter.StartTradeTransaction(invitee);
+            invitee.StartTradeTransaction(inviter);
+
+            inviter.KickEventSpecial(Server.GetStaticActors("TradeExecuteCommand"), 0, "commandContent", null, null, null, 16, null, null, null, null, null);
+            invitee.KickEventSpecial(Server.GetStaticActors("TradeExecuteCommand"), 0, "commandContent", null, null, null, 16, null, null, null, null, null);
+        }
+
+        public void CancelTradeTooFar(Player inviter)
+        {
+            TradeGroup group = GetTradeGroup(inviter.actorId);
+
+            if (group == null)
+            {
+                inviter.SendMessage(0x20, "", "MASSIVE ERROR: No tradegroup found!!!");
+                return;
+            }
+
+            Player invitee = (Player)inviter.GetZone().FindActorInArea(group.GetOther());
+
+            inviter.SendGameMessage(GetActor(), 25042, 0x20); //You cancel the trade.
+            if (invitee != null)
+                invitee.SendGameMessage(GetActor(), 25042, 0x20); //The trade has been canceled.
+
+            DeleteTradeGroup(group.groupIndex);
+        }
+
+        public void CancelTrade(Player inviter)
+        {
+            TradeGroup group = GetTradeGroup(inviter.actorId);
+
+            if (group == null)
+            {
+                inviter.SendMessage(0x20, "", "MASSIVE ERROR: No tradegroup found!!!");
+                return;
+            }
+
+            Player invitee = (Player)inviter.GetZone().FindActorInArea(group.GetOther());            
+
+            inviter.SendGameMessage(GetActor(), 25041, 0x20); //You cancel the trade.
+            if (invitee != null)
+                invitee.SendGameMessage(GetActor(), 25040, 0x20); //The trade has been canceled.
+
+            DeleteTradeGroup(group.groupIndex);
+        }
+
+        public void RefuseTrade(Player invitee)
+        {
+            TradeGroup group = GetTradeGroup(invitee.actorId);
+
+            if (group == null)
+            {
+                invitee.SendMessage(0x20, "", "MASSIVE ERROR: No tradegroup found!!!");
+                return;
+            }
+
+            Player inviter = (Player)invitee.GetZone().FindActorInArea(group.GetHost());
+
+            if (inviter != null)
+                inviter.SendGameMessage(GetActor(), 25038, 0x20); //Your trade request fails
+
+            DeleteTradeGroup(group.groupIndex);
+        }
+
+        public void SwapTradedItems(Player p1, Player p2)
+        {
+            lock (tradeLock)
+            {
+                if (p1.IsTradeAccepted() && p2.IsTradeAccepted())
+                {
+                    //move items around
+
+                    p1.FinishTradeTransaction();
+                    p2.FinishTradeTransaction();
+                }
+            }
+        }
+
+        public InventoryItem CreateItem(uint itemId, int amount, byte quality = 1, InventoryItem.ItemModifier modifiers = null)
+        {
+            return Database.CreateItem(itemId, amount, quality, modifiers);
+        }
+
+        public bool BazaarBuyOperation(Player bazaar, Player buyer, InventoryItem itemToBuy, int quantity, int cost)
+        {
+            if (bazaar == null || buyer == null || itemToBuy == null)
+                return false;
+
+            if (quantity <= 0)
+                return false;
+
+            if (cost < 0)
+                return false;
+
+            if (itemToBuy.GetBazaarMode() == InventoryItem.TYPE_SINGLE || itemToBuy.GetBazaarMode() == InventoryItem.TYPE_MULTI || itemToBuy.GetBazaarMode() == InventoryItem.TYPE_STACK)
+            {
+                itemToBuy.ChangeQuantity(-quantity);
+                buyer.AddItem(itemToBuy.itemId, quantity, itemToBuy.quality);
+                buyer.GetItemPackage(ItemPackage.CURRENCY_CRYSTALS).RemoveItem(1000001, cost);
+            }
+           
+            if (itemToBuy.quantity == 0)
+                Database.ClearBazaarEntry(bazaar, itemToBuy);
+
+            bazaar.CheckBazaarFlags();
+
+            return true;
+        }
+
+        public bool BazaarSellOperation(Player bazaar, Player buyer, InventoryItem reward, int rewardQuantity, InventoryItem seek, int seekQuantity)
+        {
+            if (bazaar == null || buyer == null || reward == null || seek == null)
+                return false;
+
+            if (rewardQuantity <= 0 || seekQuantity <= 0)
+                return false;
+
+            if (reward.GetBazaarMode() == InventoryItem.TYPE_SEEK_ITEM)
+            {
+                InventoryItem seekBazaar = bazaar.GetItemPackage(ItemPackage.BAZAAR).GetItemAttachedTo(reward);
+                bazaar.RemoveItem(reward, rewardQuantity);
+                bazaar.RemoveItem(seekBazaar, seekQuantity);
+                bazaar.AddItem(seekBazaar);
+                bazaar.AddItem(seek.itemId, seekQuantity, seek.quality);
+
+                buyer.RemoveItem(seek, seekQuantity);
+                buyer.AddItem(reward);
+            }
+
+            Database.ClearBazaarEntry(bazaar, reward);
+
+            bazaar.CheckBazaarFlags();
+
+            return true;
+        }
+
+        public void AddToBazaar(Player player, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount, byte bazaarMode)
+        {
+            bool succ = false;
+
+            if (bazaarMode == InventoryItem.TYPE_SINGLE || bazaarMode == InventoryItem.TYPE_MULTI || bazaarMode == InventoryItem.TYPE_STACK)
+                succ = Database.CreateBazaarEntry(player, reward, seek, rewardAmount, 0, bazaarMode, seekAmount);
+            else
+                succ = Database.CreateBazaarEntry(player, reward, seek, rewardAmount, seekAmount, bazaarMode);
+
+            if (succ)
+            {                
+                if (bazaarMode != InventoryItem.TYPE_SINGLE && bazaarMode != InventoryItem.TYPE_MULTI && bazaarMode != InventoryItem.TYPE_STACK)
+                {
+                    reward.SetDealingAttached(bazaarMode, seek.uniqueId);
+                    seek.SetHasAttached(true);
+                    player.GetItemPackage(ItemPackage.BAZAAR).StartSendUpdate();
+                    player.GetItemPackage(ItemPackage.BAZAAR).AddItem(reward);
+                    player.GetItemPackage(ItemPackage.BAZAAR).AddItem(seek);
+                    reward.SetAttachedIndex(ItemPackage.BAZAAR, seek.slot);
+                    player.GetItemPackage(ItemPackage.BAZAAR).DoneSendUpdate();
+                }
+                else
+                {
+                    reward.SetDealing(bazaarMode, seekAmount);
+                    player.GetItemPackage(ItemPackage.BAZAAR).StartSendUpdate();
+                    player.GetItemPackage(ItemPackage.BAZAAR).AddItem(reward);
+                    player.GetItemPackage(ItemPackage.BAZAAR).DoneSendUpdate();
+                }
+                
+            }
+
+            player.CheckBazaarFlags();
+        }
+
+        
+        public void RemoveFromBazaar(Player player, InventoryItem rewardRef)
+        {
+            ushort attachedItemPackage = (ushort)((rewardRef.dealingAttached1 >> 16) & 0xFF);
+            ushort attachedSlot = (ushort) (rewardRef.dealingAttached1 & 0xFF);
+
+            InventoryItem seekRef = rewardRef.IsSelling() ? null : player.GetItemPackage(attachedItemPackage).GetItemAtSlot(attachedSlot);           
+
+            Database.ClearBazaarEntry(player, rewardRef);
+
+            player.GetItemPackage(ItemPackage.BAZAAR).RemoveItem(rewardRef);
+
+            bool isSelling = rewardRef.IsSelling();
+            rewardRef.SetNormal();
+
+            if (seekRef != null)
+                player.GetItemPackage(ItemPackage.BAZAAR).RemoveItem(seekRef);
+
+            player.AddItem(rewardRef);
+
+            if (!isSelling)
+            {
+                seekRef.SetNormal();
+                player.AddItem(seekRef);
+            }
+
+            player.CheckBazaarFlags();
+        }
+        /*
+        public void TransactionBazaar(Player owner, Player other, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount)
+        {
+            Database.ClearBazaarEntry(owner, reward, seek);
+
+            //Remove Bazaar Items from owner
+            owner.GetInventory(Inventory.BAZAAR).RemoveItem(reward);
+            owner.GetInventory(Inventory.BAZAAR).RemoveItem(seek);
+
+            //Remove Seek item from other
+            if (seek.GetItemData().IsMoney())
+                other.GetInventory(Inventory.CURRENCY_CRYSTALS).RemoveItem(seek.itemId, seekAmount);
+            else
+                other.GetInventory(Inventory.NORMAL).RemoveItem(seek.itemId, seekAmount);
+
+            //Add reward to other, seek to owner
+            if (reward.GetItemData().IsMoney())
+                other.GetInventory(Inventory.CURRENCY_CRYSTALS).AddItem(reward.itemId, rewardAmount);
+            else
+                other.GetInventory(Inventory.NORMAL).AddItem(reward);
+
+            if (seek.GetItemData().IsMoney())
+                owner.GetInventory(Inventory.CURRENCY_CRYSTALS).AddItem(seek.itemId, seekAmount);
+            else
+                other.GetInventory(Inventory.NORMAL).AddItem(seek);
+        }*/
+
         public bool SendGroupInit(Session session, ulong groupId)
         {
             if (mContentGroups.ContainsKey(groupId))
             {
                 mContentGroups[groupId].SendInitWorkValues(session);
+                return true;
+            }
+            else if (mTradeGroups.ContainsKey(groupId))
+            {
+                mTradeGroups[groupId].SendInitWorkValues(session);
                 return true;
             }
             return false;

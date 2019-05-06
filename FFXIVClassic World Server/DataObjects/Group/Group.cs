@@ -1,6 +1,5 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
-using System;
 using System.Collections.Generic;
 
 namespace FFXIVClassic_World_Server.DataObjects.Group
