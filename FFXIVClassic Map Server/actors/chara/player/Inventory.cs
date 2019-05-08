@@ -597,7 +597,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             //Send Remove packets for tail end
             SendInventoryRemovePackets(player, slotsToRemove);
             player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
-            player.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));           
+            //If player is updating their normal inventory, we need to send
+            //an equip update as well to resync the slots.
+            if (player.Equals(owner) && itemPackageCode == NORMAL)            
+                player.GetEquipment().SendFullEquipment(true);            
+            player.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));                        
         }
 
         public void StartSendUpdate()
