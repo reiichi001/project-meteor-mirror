@@ -121,7 +121,32 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             return AddItem(itemId, quantity, 1);
         }
-        
+
+        public bool AddItems(uint[] itemIds)
+        {
+            bool canAdd = GetFreeSlots() - itemIds.Length >= 0;
+            if (canAdd)
+            {
+                foreach (uint id in itemIds)
+                {
+                    ItemData gItem = Server.GetItemGamedata(id);
+                    InventoryItem.ItemModifier modifiers = null;
+                    if (gItem.durability != 0)
+                    {
+                        modifiers = new InventoryItem.ItemModifier();
+                        modifiers.durability = (uint)gItem.durability;
+                    }
+
+                    InventoryItem addedItem = Database.CreateItem(id, Math.Min(1, gItem.maxStack), 0, modifiers);
+                    addedItem.RefreshPositioning(owner, itemPackageCode, (ushort)endOfListIndex);
+                    isDirty[endOfListIndex] = true;
+                    list[endOfListIndex++] = addedItem;
+                    DoDatabaseAdd(addedItem);
+                }                            
+            }
+            return canAdd;
+        }
+
         public INV_ERROR AddItem(InventoryItem itemRef)
         {
             //If it isn't a single item (ie: armor) just add like normal (not valid for BAZAAR)
@@ -600,7 +625,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             //If player is updating their normal inventory, we need to send
             //an equip update as well to resync the slots.
             if (player.Equals(owner) && itemPackageCode == NORMAL)            
-                player.GetEquipment().SendFullEquipment(true);            
+                player.GetEquipment().SendFullEquipment();            
             player.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));                        
         }
 
@@ -624,7 +649,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             return endOfListIndex >= itemPackageCapacity;
         }
-        
+
+        public int GetFreeSlots()
+        {
+            return itemPackageCapacity - endOfListIndex;
+        }
+
         public bool IsSpaceForAdd(uint itemId, int quantity, int quality)
         {
             int quantityCount = quantity;

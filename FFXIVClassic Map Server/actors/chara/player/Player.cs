@@ -537,7 +537,7 @@ namespace FFXIVClassic_Map_Server.Actors
             itemPackages[ItemPackage.BAZAAR].SendFullInventory(this);
             itemPackages[ItemPackage.MELDREQUEST].SendFullInventory(this);
             itemPackages[ItemPackage.LOOT].SendFullInventory(this);
-            equipment.SendFullEquipment(false);   
+            equipment.SendFullEquipment();   
             playerSession.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
             #endregion
 
@@ -1675,7 +1675,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 return;
 
             QueuePacket(InventoryBeginChangePacket.BuildPacket(toBeExamined.actorId));
-            toBeExamined.GetEquipment().SendCheckEquipmentToPlayer(this);
+            toBeExamined.GetEquipment().SendFullEquipment(this);
             QueuePacket(InventoryEndChangePacket.BuildPacket(toBeExamined.actorId));
         }
 
