@@ -150,7 +150,7 @@ namespace FFXIVClassic_Map_Server.Actors
             itemPackages[ItemPackage.BAZAAR] = new ItemPackage(this, MAXSIZE_INVENTORY_BAZAAR, ItemPackage.BAZAAR);
             itemPackages[ItemPackage.LOOT] = new ItemPackage(this, MAXSIZE_INVENTORY_LOOT, ItemPackage.LOOT);
 
-            equipment = new Equipment(this, itemPackages[ItemPackage.NORMAL], MAXSIZE_INVENTORY_EQUIPMENT, ItemPackage.EQUIPMENT);
+            equipment = new Equipment(this, itemPackages[ItemPackage.NORMAL]);
 
             //Set the Skill level caps of all FFXIV (classes)skills to 50
             for (int i = 0; i < charaWork.battleSave.skillLevelCap.Length; i++)
