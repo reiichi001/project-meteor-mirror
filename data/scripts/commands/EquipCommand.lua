@@ -163,8 +163,9 @@ function equipItem(player, equipSlot, item)
 		elseif (equipSlot == EQUIPSLOT_HANDS) then graphicSlot = GRAPHICSLOT_HANDS;
 		elseif (equipSlot == EQUIPSLOT_FEET) then graphicSlot = GRAPHICSLOT_FEET;
 		elseif (equipSlot == EQUIPSLOT_WAIST) then graphicSlot = GRAPHICSLOT_WAIST;
-		elseif (equipSlot == EQUIPSLOT_RFINGER) then graphicSlot = GRAPHICSLOT_RFINGER;
-		elseif (equipSlot == EQUIPSLOT_LFINGER) then graphicSlot = GRAPHICSLOT_LFINGER;
+		elseif (equipSlot == EQUIPSLOT_NECK) then graphicSlot = GRAPHICSLOT_NECK;	
+		elseif (equipSlot == EQUIPSLOT_RFINGER) then graphicSlot = GRAPHICSLOT_R_RINGFINGER;
+		elseif (equipSlot == EQUIPSLOT_LFINGER) then graphicSlot = GRAPHICSLOT_L_RINGFINGER;
 		end
 		
 		--Graphic Slot was set, otherwise it's a special case
@@ -172,10 +173,13 @@ function equipItem(player, equipSlot, item)
 			player:GraphicChange(graphicSlot, item);
 		elseif (gItem:IsNailWeapon()) then
 			player:GraphicChange(GRAPHICSLOT_MAINHAND, item);
-			player:GraphicChange(GRAPHICSLOT_OFFHAND, item);
+			player:GraphicChange(GRAPHICSLOT_OFFHAND, item);		
 		elseif (equipSlot == EQUIPSLOT_EARS) then
 			player:GraphicChange(GRAPHICSLOT_R_EAR, item);
 			player:GraphicChange(GRAPHICSLOT_L_EAR, item);
+		elseif (equipSlot == EQUIPSLOT_WRIST) then
+			player:GraphicChange(GRAPHICSLOT_R_WRIST, item);
+			player:GraphicChange(GRAPHICSLOT_L_WRIST, item);
 		end		
 	end
 end
@@ -204,9 +208,11 @@ function unequipItem(player, equipSlot, item)
 			elseif (equipSlot == EQUIPSLOT_PACK) then player:GraphicChange(GRAPHICSLOT_PACK, nil);
 			elseif (equipSlot == EQUIPSLOT_HEAD) then player:GraphicChange(GRAPHICSLOT_HEAD, nil);
 			elseif (equipSlot == EQUIPSLOT_WAIST) then player:GraphicChange(GRAPHICSLOT_WAIST, nil);
+			elseif (equipSlot == EQUIPSLOT_NECK) then  player:GraphicChange(GRAPHICSLOT_NECK, nil);
 			elseif (equipSlot == EQUIPSLOT_EARS) then player:GraphicChange(GRAPHICSLOT_L_EAR, nil); player:GraphicChange(GRAPHICSLOT_R_EAR, nil);
-			elseif (equipSlot == EQUIPSLOT_RFINGER) then player:GraphicChange(GRAPHICSLOT_RFINGER, nil);
-			elseif (equipSlot == EQUIPSLOT_LFINGER) then player:GraphicChange(GRAPHICSLOT_LFINGER, nil);
+			elseif (equipSlot == EQUIPSLOT_WRIST) then player:GraphicChange(GRAPHICSLOT_L_WRIST, nil); player:GraphicChange(GRAPHICSLOT_R_WRIST, nil);
+			elseif (equipSlot == EQUIPSLOT_RFINGER) then player:GraphicChange(GRAPHICSLOT_R_RINGFINGER, nil);
+			elseif (equipSlot == EQUIPSLOT_LFINGER) then player:GraphicChange(GRAPHICSLOT_L_RINGFINGER, nil);
 			end
 		end	
 		return true;
