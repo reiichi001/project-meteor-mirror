@@ -11,13 +11,24 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
     //These flags can be stacked and mixed, but the client will prioritize certain flags over others.
     [Flags]
     public enum HitEffect : uint
-    {        
-        //All HitEffects have the last byte 0x8
+    {
+        //This is used for physical attacks
         HitEffectType = 8 << 24,
+        //This is used for additioanl effect hits. Only difference from HitEffectType is that it does not play audio.
+        AdditionalEffectType = 24 << 24,
         //Status effects use 32 << 24
         StatusEffectType = 32 << 24,
-        //Magic effects use 48 << 24
+        //When losing a status effect while using a skill, this prevents the hit effect from playing on the actor playing the animation
+        StatusLossType = 40 << 24,
+        //Magic effects use 48 << 24, this is also used for when statuses are lost on attack
         MagicEffectType = 48 << 24,
+        //This places the number on the user regardless of the target this hit effect is for, used for things like bloodbath
+        SelfHealType = 72 << 24,
+
+        //Each Type has it's own set of flags. These should be split into their own enums,
+        //but for now just keep them all under HitEffect so we don't have to change anything.
+
+        //HitEffectType flags
 
         //Not setting RecoilLv2 or RecoilLv3 results in the weaker RecoilLv1.
         //These are the recoil animations that play on the target, ranging from weak to strong.
@@ -61,11 +72,6 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         Shell = 1 << 7 | HitEffectType,
         ProtectShellSpecial = Protect | Shell,
 
-        // Required for heal text to be blue, not sure if that's all it's used for
-        Heal = 1 << 8,
-        MP = 1 << 9, //Causes "MP" text to appear when used with MagicEffectType. | with Heal to make text blue
-        TP = 1 << 10,//Causes "TP" text to appear when used with MagicEffectType. | with Heal to make text blue
-
         //If only HitEffect1 is set out of the hit effects, the "Evade!" pop-up text triggers along with the evade visual.
         //If no hit effects are set, the "Miss!" pop-up is triggered and no hit visual is played.
         HitEffect1 = 1 << 9,
@@ -106,17 +112,69 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         UnknownShieldEffect = HitEffect5 | HitEffect4,
         Stoneskin = HitEffect5 | HitEffect4 | HitEffect1,
 
-        //Unknown = 1 << 14, -- Not sure what this flag does; might be another HitEffect.
-
         //A special effect when performing appropriate skill combos in succession.
         //Ex: Thunder (SkillCombo1 Effect) -> Thundara (SkillCombo2 Effect) -> Thundaga (SkillCombo3 Effect)
         //Special Note: SkillCombo4 was never actually used in 1.0 since combos only chained up to 3 times maximum.
         SkillCombo1 = 1 << 15,
         SkillCombo2 = 1 << 16,
         SkillCombo3 = SkillCombo1 | SkillCombo2,
-        SkillCombo4 = 1 << 17
+        SkillCombo4 = 1 << 17,
 
-        //Flags beyond here are unknown/untested.
+        //This is used in the absorb effect for some reason
+        Unknown = 1 << 19,
+
+        //AdditionalEffectType flags
+        //The AdditionalEffectType is used for the additional effects some weapons have.
+        //These effect ids do not repeat the effect of the attack and will not show without a preceding HitEffectType or MagicEffectType
+
+        //It's unclear what this is for. The ifrit fight capture has a BLM using the garuda weapon
+        //and this flag is set every time but has no apparent effect.
+        UnknownAdditionalFlag = 1,
+
+        //These play effects on the target
+        FireEffect = 1 << 10,
+        IceEffect = 2 << 10,
+        WindEffect = 3 << 10,
+        EarthEffect = 4 << 10,
+        LightningEffect = 5 << 10,
+        WaterEffect = 6 << 10,
+        AstralEffect = 7 << 10,         //Possibly for blind?
+        UmbralEffect = 8 << 10,         //Posibly for poison?
+
+        //Unknown status effect effects
+        StatusEffect1 = 12 << 10,
+        StatusEffect2 = 13 << 10,
+
+        HPAbsorbEffect = 14 << 10,
+        MPAbsorbEffect = 15 << 10,
+        TPAbsorbEffect = 16 << 10,
+        TripleAbsorbEffect = 17 << 10,  //Not sure about this
+        MoogleEffect = 18 << 10,
+
+        //MagicEffectType Flags
+        //THese are used for magic effects that deal or heal damage as well as damage over time effects
+        //Crit is the same as HitEffectType
+        FullResist = 0,
+        WeakResist = 1 << 0,    //Used for level 1, 2, and 3 resists probably
+        NoResist = 1 << 1,
+
+        MagicShell = 1 << 4,    //Used when casting on target with shell effects. MagicEffectType doesnt have a flag for protect or stoneskin
+        MagicShield = 1 << 5,   //When used with an command that has an animation, this plays a purple shield effect. DoTs also have this flag set (at least on ifrit) but they have no animations so it doesnt show
+
+        // Required for heal text to be blue, not sure if that's all it's used for
+        Heal = 1 << 8,
+        MP = 1 << 9,            //Causes "MP" text to appear when used with MagicEffectType. | with Heal to make text blue
+        TP = 1 << 10,           //Causes "TP" text to appear when used with MagicEffectType. | with Heal to make text blue
+
+        //SelfHealType flags
+        //This category causes numbers to appear on the user rather regardless of the target associated with the hit effect and do not play an animation
+        //These determine the text that displays (HP has no text)
+        SelfHealHP = 0,
+        SelfHealMP = 1 << 0,    //Shows MP text on self. | with SelfHeal to make blue
+        SelfHealTP = 1 << 1,    //Shows TP text on self. | with SelfHeal to make blue
+
+        //Causes self healing numbers to be blue
+        SelfHeal = 1 << 10,
     }
 
     //Mixing some of these flags will cause the client to crash.
