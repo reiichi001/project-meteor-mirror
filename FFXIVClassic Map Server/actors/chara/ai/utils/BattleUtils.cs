@@ -762,7 +762,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                 return 0;
 
             int baseLevel = Math.Min(player.GetLevel(), mob.GetLevel());
-            ushort baseEXP = BASEEXP[baseLevel];
+            ushort baseEXP = BASEEXP[baseLevel - 1];
 
             double dlvlModifier = 1.0;
 
