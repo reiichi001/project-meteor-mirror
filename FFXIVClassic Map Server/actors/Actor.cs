@@ -94,6 +94,7 @@ namespace FFXIVClassic_Map_Server.Actors
             this.moveSpeeds[1] = SetActorSpeedPacket.DEFAULT_WALK;
             this.moveSpeeds[2] = SetActorSpeedPacket.DEFAULT_RUN;
             this.moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_ACTIVE;
+            positionUpdates = new List<Vector3>();
         }
 
         public void SetPushCircleRange(string triggerName, float size)
