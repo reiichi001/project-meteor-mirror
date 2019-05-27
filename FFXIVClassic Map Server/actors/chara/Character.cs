@@ -1109,7 +1109,7 @@ namespace FFXIVClassic_Map_Server.Actors
                         lua.LuaEngine.CallLuaBattleCommandFunction(this, command, folder, "onSkillFinish", this, chara, command, action, actions);
                         //cached script
                         //skill.CallLuaFunction(owner, "onSkillFinish", this, chara, command, action, actions);
-                        if (action.hitType > HitType.Evade && action.hitType != HitType.Resist)
+                        if (action.ActionLanded())
                         {
                             hitTarget = true;
                             hitCount++;

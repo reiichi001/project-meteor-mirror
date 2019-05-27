@@ -195,9 +195,12 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         Evade = 1,
         Parry = 2,
         Block = 3,
-        Resist = 4,
-        Hit = 5,
-        Crit = 6
+        SingleResist = 4,
+        DoubleResist = 5,
+        TripleResist = 6,
+        FullResist = 7,
+        Hit = 8,
+        Crit = 9
     }
 
     //Type of action
@@ -386,6 +389,12 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         public ushort GetHitType()
         {
             return (ushort)hitType;
+        }
+
+        //Whether this action didn't miss, and wasn't evaded or resisted
+        public bool ActionLanded()
+        {
+            return hitType > HitType.Evade && hitType != HitType.SingleResist && hitType != HitType.DoubleResist && hitType != HitType.FullResist;
         }
     }
 }
