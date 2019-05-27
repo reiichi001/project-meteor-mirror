@@ -311,7 +311,7 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 modifiers.Add((Modifier)modifier, val);
 
-            if (modifier <= 35)
+            if (modifier >= 3 && modifier <= 35)
                 updateFlags |= ActorUpdateFlags.Stats;
         }
 
@@ -337,6 +337,29 @@ namespace FFXIVClassic_Map_Server.Actors
             double newVal = GetMod(modifier) - val;
             SetMod(modifier, newVal);
         }
+
+        public void MultiplyMod(Modifier modifier, double val)
+        {
+            MultiplyMod((uint)modifier, val);
+        }
+
+        public void MultiplyMod(uint modifier, double val)
+        {
+            double newVal = GetMod(modifier) * val;
+            SetMod(modifier, newVal);
+        }
+
+        public void DivideMod(Modifier modifier, double val)
+        {
+            DivideMod((uint)modifier, val);
+        }
+
+        public void DivideMod(uint modifier, double val)
+        {
+            double newVal = GetMod(modifier) / val;
+            SetMod(modifier, newVal);
+        }
+
 
         public virtual void OnPath(Vector3 point)
         {
