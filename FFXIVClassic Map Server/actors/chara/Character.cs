@@ -638,8 +638,9 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.parameterSave.mp = (short)mp;
             updateFlags |= ActorUpdateFlags.HpTpMp;
         }
+
         // todo: the following functions are virtuals since we want to check hidden item bonuses etc on player for certain conditions
-        public virtual void AddHP(int hp)
+        public virtual void AddHP(int hp, CommandResultContainer resultContainer = null)
         {
             // dont wanna die ded, don't want to send update if hp isn't actually changed
             if (IsAlive() && hp != 0)
@@ -651,6 +652,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.parameterSave.hp[0] = (short)addHp;
 
                 updateFlags |= ActorUpdateFlags.HpTpMp;
+
+                if (charaWork.parameterSave.hp[0] < 1)
+                    Die(Program.Tick, resultContainer);
             }
         }
 
@@ -692,9 +696,9 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public void DelHP(int hp)
+        public void DelHP(int hp, CommandResultContainer resultContainer = null)
         {
-            AddHP((short)-hp);
+            AddHP((short)-hp, resultContainer);
         }
 
         public void DelMP(int mp)
@@ -883,10 +887,6 @@ namespace FFXIVClassic_Map_Server.Actors
             //Don't know if store tp impacts this
             double tpModifier = 5 * Math.Pow(Math.E, (-0.0667 * GetLevel()));
             AddTP((int)Math.Ceiling(tpModifier * action.amount));
-            
-
-            if (charaWork.parameterSave.hp[0] < 1)
-                Die(Program.Tick, actionContainer);
         }
 
         public UInt64 GetTempVar(string name)

@@ -287,6 +287,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     // <actor> defeat/defeats <target>
                     if (actionContainer != null)
                         actionContainer.AddEXPAction(new CommandResult(actorId, 30108, 0));
+
                     if (lastAttacker.currentParty != null && lastAttacker.currentParty is Party)
                     {
                         foreach (var memberId in ((Party)lastAttacker.currentParty).members)
@@ -310,6 +311,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if (positionUpdates != null)
                     positionUpdates.Clear();
+
                 aiContainer.InternalDie(tick, despawnTime);
                 //this.ResetMoveSpeeds();
                 // todo: reset cooldowns
