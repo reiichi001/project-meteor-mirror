@@ -36,13 +36,13 @@ function onTick(owner, effect)
     --Enduring march prevents fading of rampage effect
     if not owner.statusEffects.HasStatusEffect(223078) and (effect.GetExtra() > 0) then
         --Going to assume that every 5 seconds a single hits worth of rampage is lost.
-        attacker.SubtractMod(modifiersGlobal.Parry, parryPerDT);
-        attacker.AddMod(modifiersGlobal.Delay, delayMsPerDT);
+        owner.SubtractMod(modifiersGlobal.Parry, parryPerDT);
+        owner.AddMod(modifiersGlobal.Delay, delayMsPerDT);
         effect.SetExtra(effect.GetExtra() - 1);
     end
 end
 
 function onLose(owner, effect)
-    attacker.SubtractMod(modifiersGlobal.Parry, effect.GetExtra() * parryPerDT);
-    attacker.AddMod(modifiersGlobal.Delay, effect.GetExtra() * delayMsPerDT);
+    owner.SubtractMod(modifiersGlobal.Parry, effect.GetExtra() * parryPerDT);
+    owner.AddMod(modifiersGlobal.Delay, effect.GetExtra() * delayMsPerDT);
 end

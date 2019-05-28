@@ -706,10 +706,11 @@ namespace FFXIVClassic_Map_Server.Actors
             this.positionZ = destinationZ;
             this.rotation = destinationRot;
 
+            this.statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnZoning);
+
             //Save Player
             Database.SavePlayerPlayTime(this);
             Database.SavePlayerPosition(this);
-            this.statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnZoning, true);
             Database.SavePlayerStatusEffects(this);
         }
 
@@ -2476,7 +2477,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 StatusEffect comboEffect = new StatusEffect(this, Server.GetWorldManager().GetStatusEffect((uint) StatusEffectId.Combo));
                 comboEffect.SetDuration(13);
                 comboEffect.SetOverwritable(1);
-                statusEffects.AddStatusEffect(comboEffect, this, true);
+                statusEffects.AddStatusEffect(comboEffect, this);
                 playerWork.comboCostBonusRate = 1;
             }
             //Otherwise we're ending a combo, remove the status
@@ -2512,10 +2513,10 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             var hasShield = equip.GetItemAtSlot(Equipment.SLOT_OFFHAND) != null ? 1 : 0;
-            SetMod((uint)Modifier.HasShield, hasShield);
+            SetMod((uint)Modifier.CanBlock, hasShield);
 
             SetMod((uint)Modifier.AttackType, damageAttribute);
-            SetMod((uint)Modifier.AttackDelay, attackDelay);
+            SetMod((uint)Modifier.Delay, attackDelay);
             SetMod((uint)Modifier.HitCount, hitCount);
 
             //These stats all correlate in a 3:2 fashion
@@ -2525,13 +2526,13 @@ namespace FFXIVClassic_Map_Server.Actors
             AddMod((uint)Modifier.Defense, (long)(GetMod(Modifier.Vitality) * 0.667));
 
             //These stats correlate in a 4:1 fashion. (Unsure if MND is accurate but it would make sense for it to be)
-            AddMod((uint)Modifier.MagicAttack, (long)((float)GetMod(Modifier.Intelligence) * 0.25));
+            AddMod((uint)Modifier.AttackMagicPotency, (long)((float)GetMod(Modifier.Intelligence) * 0.25));
 
             AddMod((uint)Modifier.MagicAccuracy, (long)((float)GetMod(Modifier.Mind) * 0.25));
-            AddMod((uint)Modifier.MagicHeal, (long)((float)GetMod(Modifier.Mind) * 0.25));
+            AddMod((uint)Modifier.HealingMagicPotency, (long)((float)GetMod(Modifier.Mind) * 0.25));
 
             AddMod((uint)Modifier.MagicEvasion, (long)((float)GetMod(Modifier.Piety) * 0.25));
-            AddMod((uint)Modifier.MagicEnfeeblingPotency, (long)((float)GetMod(Modifier.Piety) * 0.25));
+            AddMod((uint)Modifier.EnfeeblingMagicPotency, (long)((float)GetMod(Modifier.Piety) * 0.25));
 
             //VIT correlates to HP in a 1:1 fashion
             AddMod((uint)Modifier.Hp, (long)((float)Modifier.Vitality));

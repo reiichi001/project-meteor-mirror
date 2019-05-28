@@ -210,7 +210,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
                 Disengage();
                 return;
             }
-            owner.SetMod((uint)Modifier.Speed, 5);
+            owner.SetMod((uint)Modifier.MovementSpeed, 5);
             if ((tick - lastCombatTickScript).TotalSeconds > 3)
             {
                 Move();
@@ -363,7 +363,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
             // todo: seems ffxiv doesnt even differentiate between sneak/invis?
             {
-                hasSneak = target.statusEffects.HasStatusEffectsByFlag((uint)StatusEffectFlags.Stealth);
+                hasSneak = target.GetMod(Modifier.Stealth) > 0;
                 hasInvisible = hasSneak;
             }
 

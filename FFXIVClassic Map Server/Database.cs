@@ -926,13 +926,13 @@ namespace FFXIVClassic_Map_Server
                     {
                         while (reader.Read())
                         {
-                            var id = reader.GetUInt32(0);
-                            var duration = reader.GetUInt32(1);
-                            var magnitude = reader.GetUInt64(2);
-                            var tick = reader.GetUInt32(3);
-                            var tier = reader.GetByte(4);
-                            var extra = reader.GetUInt64(5);
-                            
+                            var id = reader.GetUInt32("statusId");
+                            var duration = reader.GetUInt32("duration");
+                            var magnitude = reader.GetUInt64("magnitude");
+                            var tick = reader.GetUInt32("tick");
+                            var tier = reader.GetByte("tier");
+                            var extra = reader.GetUInt64("extra");
+
                             var effect = Server.GetWorldManager().GetStatusEffect(id);
                             if (effect != null)
                             {
@@ -943,7 +943,7 @@ namespace FFXIVClassic_Map_Server
                                 effect.SetExtra(extra);
 
                                 // dont wanna send ton of messages on login (i assume retail doesnt)
-                                player.statusEffects.AddStatusEffect(effect, null, true);
+                                player.statusEffects.AddStatusEffect(effect, null);
                             }
                         }
                     }
@@ -2303,7 +2303,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Open();
 
-                    var query = @"SELECT id, name, flags, overwrite, tickMs FROM server_statuseffects;";
+                    var query = @"SELECT id, name, flags, overwrite, tickMs, hidden, silentOnGain, silentOnLoss FROM server_statuseffects;";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -2316,7 +2316,12 @@ namespace FFXIVClassic_Map_Server
                             var flags = reader.GetUInt32("flags");
                             var overwrite = reader.GetByte("overwrite");
                             var tickMs = reader.GetUInt32("tickMs");
-                            var effect = new StatusEffect(id, name, flags, overwrite, tickMs);
+                            var hidden = reader.GetBoolean("hidden");
+                            var silentOnGain = reader.GetBoolean("silentOnGain");
+                            var silentOnLoss = reader.GetBoolean("silentOnLoss");
+
+                            var effect = new StatusEffect(id, name, flags, overwrite, tickMs, hidden, silentOnGain, silentOnLoss);
+
                             lua.LuaEngine.LoadStatusEffectScript(effect);
                             effects.Add(id, effect);
                         }

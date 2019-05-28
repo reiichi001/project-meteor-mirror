@@ -455,11 +455,11 @@ namespace FFXIVClassic_Map_Server.Actors
                 mobModifiers.Add((MobModifier)mobModId, val);
         }
 
-        public override void OnDamageTaken(Character attacker, CommandResult action,  CommandResultContainer actionContainer = null)
+        public override void OnDamageTaken(Character attacker, BattleCommand skill, CommandResult action,  CommandResultContainer actionContainer = null)
         {
             if (GetMobMod((uint)MobModifier.DefendScript) != 0)
                 lua.LuaEngine.CallLuaBattleFunction(this, "onDamageTaken", this, attacker, action.amount);
-            base.OnDamageTaken(attacker, action, actionContainer);
+            base.OnDamageTaken(attacker, skill, action, actionContainer);
         }
     }
 }

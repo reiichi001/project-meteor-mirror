@@ -303,7 +303,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         public static double GetParryRate(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             //Can't parry with shield, can't parry rear attacks
-            if (defender.GetMod((uint)Modifier.HasShield) != 0 || action.param == (byte) HitDirection.Rear)
+            if (defender.GetMod((uint)Modifier.CanBlock) != 0 || action.param == (byte) HitDirection.Rear)
                 return 0;
 
             double parryRate = 10.0;
@@ -348,7 +348,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         public static double GetBlockRate(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             //Shields are required to block and can't block from rear.
-            if (defender.GetMod((uint)Modifier.HasShield) == 0 || action.param == (byte)HitDirection.Rear)
+            if (defender.GetMod((uint)Modifier.CanBlock) == 0 || action.param == (byte)HitDirection.Rear)
                 return 0;
 
             short dlvl = (short)(defender.GetLevel() - attacker.GetLevel());
@@ -894,10 +894,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                 totalBonus += GetChainBonus(expChainNumber);
 
                 StatusEffect newChain = Server.GetWorldManager().GetStatusEffect((uint)StatusEffectId.EXPChain);
-                newChain.SetSilent(true);
                 newChain.SetDuration(timeLimit);
                 newChain.SetTier((byte)(Math.Min(expChainNumber + 1, 255)));
-                attacker.statusEffects.AddStatusEffect(newChain, attacker, true, true);
+                attacker.statusEffects.AddStatusEffect(newChain, attacker);
 
                 actionContainer?.AddEXPActions(attacker.AddExp(baseExp, (byte)attacker.GetClass(), (byte)(totalBonus.Min(255))));
             }

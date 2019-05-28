@@ -143,8 +143,8 @@ namespace FFXIVClassic_Map_Server.Actors
             // todo: move this somewhere more appropriate
             // todo: base this on equip and shit
             SetMod((uint)Modifier.AttackRange, 3);
-            SetMod((uint)Modifier.AttackDelay, (Program.Random.Next(30, 60) * 100));
-            SetMod((uint)Modifier.Speed, (uint)moveSpeeds[2]);
+            SetMod((uint)Modifier.Delay, (Program.Random.Next(30, 60) * 100));
+            SetMod((uint)Modifier.MovementSpeed, (uint)moveSpeeds[2]);
 
             spawnX = positionX;
             spawnY = positionY;
@@ -407,6 +407,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if ((updateFlags & ActorUpdateFlags.Status) != 0)
                 {
+
                     List<SubPacket> statusPackets = statusEffects.GetStatusPackets();
                     packets.AddRange(statusPackets);
                     statusPackets.Clear();
@@ -462,7 +463,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public virtual uint GetAttackDelayMs()
         {
-            return (uint)GetMod((uint)Modifier.AttackDelay);
+            return (uint)GetMod((uint)Modifier.Delay);
         }
 
         public virtual uint GetAttackRange()
@@ -764,7 +765,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public virtual float GetSpeed()
         {
             // todo: for battlenpc/player calculate speed
-            return (float) GetMod((uint)Modifier.Speed);
+            return (float) GetMod((uint)Modifier.MovementSpeed);
         }
 
         public virtual void OnAttack(State state, CommandResult action, ref CommandResult error)
@@ -863,8 +864,8 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 //TP gained on an attack is usually 100 * delay.
                 //Store TP seems to add .1% per point.
-                double weaponDelay = GetMod(Modifier.AttackDelay) / 1000.0;
-                var storeTPPercent = 1 + (GetMod(Modifier.StoreTP) * 0.001);
+                double weaponDelay = GetMod(Modifier.Delay) / 1000.0;
+                var storeTPPercent = 1 + (GetMod(Modifier.StoreTp) * 0.001);
                 AddTP((int)(weaponDelay * 100 * storeTPPercent));
             }
         }
@@ -999,8 +1000,7 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 StatusEffect procEffect = Server.GetWorldManager().GetStatusEffect(effectId);
                 procEffect.SetDuration(5);
-                procEffect.SetSilent(true);
-                statusEffects.AddStatusEffect(procEffect, this, true, true);
+                statusEffects.AddStatusEffect(procEffect, this);
             }
             //Otherwise we're reseting a proc, remove the status
             else
