@@ -35,15 +35,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void Update(DateTime tick)
         {
+            CommandResultContainer resultContainer = new CommandResultContainer();
+
             //Regen/Refresh/Regain effects tick every 3 seconds
             if ((DateTime.Now - lastTick).Seconds >= 3)
             {
-                RegenTick(tick);
+                RegenTick(tick, resultContainer);
                 lastTick = DateTime.Now;
             }
-            // list of effects to remove
 
-           // if (owner is Player) UpdateTimeAtIndex(4, 4294967295);
+            // list of effects to remove
             var removeEffects = new List<StatusEffect>();
             for (int i = 0; i < effects.Values.Count; i++)
             {
@@ -59,15 +60,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                 RemoveStatusEffect(effect);
             }
 
-            if (sendUpdate)
+            resultContainer.CombineLists();
+
+            if (resultContainer.GetList().Count > 0)
             {
-                owner.zone.BroadcastPacketsAroundActor(owner, owner.GetActorStatusPackets());
-                sendUpdate = false;
+                owner.DoBattleAction(0, 0x7c000062, resultContainer.GetList());
             }
         }
 
         //regen/refresh/regain
-        public void RegenTick(DateTime tick)
+        public void RegenTick(DateTime tick, CommandResultContainer resultContainer)
         {
             ushort dotTick = (ushort) owner.GetMod(Modifier.RegenDown);
             ushort regenTick = (ushort) owner.GetMod(Modifier.Regen);
@@ -77,18 +79,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             //DoTs tick before regen and the full dot damage is displayed, even if some or all of it is nullified by regen. Only effects like stoneskin actually alter the number shown
             if (dotTick > 0)
             {
-                CommandResult action = new CommandResult(owner.actorId, 30331, (uint)(HitEffect.HitEffectType | HitEffect.Hit), dotTick);
+                //Unsure why 10105 is the textId used
+                //Also unsure why magicshield is used
+                CommandResult action = new CommandResult(owner.actorId, 10105, (uint)(HitEffect.MagicEffectType | HitEffect.MagicShield | HitEffect.NoResist), dotTick);
                 utils.BattleUtils.HandleStoneskin(owner, action);
                 // todo: figure out how to make red numbers appear for enemies getting hurt by dots
-                //owner.DelHP(action.amount);
-                utils.BattleUtils.DamageTarget(owner, owner, action, null);
-                owner.DoBattleAction(0, 0, action);
+                resultContainer.AddAction(action);
+                owner.DelHP(action.amount, resultContainer);
             }
 
             //DoTs are the only effect to show numbers, so that doesnt need to be handled for these
-            owner.AddHP(regenTick);
-            owner.AddMP(refreshtick);
-            owner.AddTP(regainTick);
+            if (regenTick != 0)
+                owner.AddHP(regenTick);
+
+            if (refreshtick != 0)
+                owner.AddMP(refreshtick);
+
+            if (regainTick != 0)
+                owner.AddTP(regainTick);
         }
 
         public bool HasStatusEffect(uint id)

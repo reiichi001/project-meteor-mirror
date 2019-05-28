@@ -842,15 +842,19 @@ namespace FFXIVClassic_Map_Server.Actors
 
         }
 
-        public virtual void OnDamageDealt(Character defender, CommandResult action, CommandResultContainer actionContainer = null)
+        public virtual void OnDamageDealt(Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             switch (action.hitType)
             {
                 case (HitType.Miss):
-                    OnMiss(this, action, actionContainer);
+                    OnMiss(defender, skill, action, actionContainer);
+                    break;
+                case (HitType.Crit):
+                    OnCrit(defender, skill, action, actionContainer);
+                    OnHit(defender, skill, action, actionContainer);
                     break;
                 default:
-                    OnHit(defender, action, actionContainer);
+                    OnHit(defender, skill, action, actionContainer);
                     break;
             }
 
@@ -865,18 +869,18 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public virtual void OnDamageTaken(Character attacker, CommandResult action, CommandResultContainer actionContainer = null)
+        public virtual void OnDamageTaken(Character attacker, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             switch (action.hitType)
             {
                 case (HitType.Miss):
-                    OnEvade(attacker, action, actionContainer);
+                    OnEvade(attacker, skill, action, actionContainer);
                     break;
                 case (HitType.Parry):
-                    OnParry(attacker, action, actionContainer);
+                    OnParry(attacker, skill, action, actionContainer);
                     break;
                 case (HitType.Block):
-                    OnBlock(attacker, action, actionContainer);
+                    OnBlock(attacker, skill, action, actionContainer);
                     break;
             }
 
@@ -1030,38 +1034,42 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         //Called when this character evades attacker's action
-        public void OnEvade(Character attacker, CommandResult action, CommandResultContainer actionContainer = null)
+        public void OnEvade(Character attacker, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Evade);
             statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnEvade, "onEvade", attacker, this, action, actionContainer);
         }
 
         //Called when this character blocks attacker's action
-        public void OnBlock(Character attacker, CommandResult action, CommandResultContainer actionContainer = null)
+        public void OnBlock(Character attacker, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Block);
             statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnBlock, "onBlock", attacker, this, action, actionContainer);
         }
 
         //Called when this character parries attacker's action
-        public void OnParry(Character attacker, CommandResult action, CommandResultContainer actionContainer = null)
+        public void OnParry(Character attacker, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Parry);
             statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnParry, "onParry", attacker, this, action, actionContainer);
         }
 
         //Called when this character misses
-        public void OnMiss(Character defender, CommandResult action, CommandResultContainer actionContainer = null)
+        public void OnMiss(Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Miss);
             statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnMiss, "onMiss", this, defender, action, actionContainer);
         }
 
-        public void OnHit(Character defender, CommandResult action, CommandResultContainer actionContainer = null)
+        public void OnHit(Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnHit, "onHit", this, defender, action, actionContainer);
         }
 
+        public void OnCrit(Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
+        {
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnHit, "onCrit", this, defender, action, actionContainer);
+        }
         //The order of messages that appears after using a command is:
 
         //1. Cast start messages. (ie "You begin casting... ")
@@ -1073,7 +1081,7 @@ namespace FFXIVClassic_Map_Server.Actors
         //5. The hit itself. For single hit commands this message is "Your [command] hits [target] for x damage" for multi hits it's "[Target] takes x points of damage"
         //6. Stoneskin falling off
         //6. Buffs that activate after a command hits, like Aegis Boon and Divine Veil
-        
+
         //After all hits
         //7. If it's a multi-hit command there's a "{numhits]fold attack..." message or if all hits miss an "All attacks missed" message
         //8. Buffs that fall off after the skill ends, like Excruciate

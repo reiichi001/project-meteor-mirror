@@ -241,7 +241,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             defender.SubtractMod((uint)Modifier.Stoneskin, mitigation);
         }
 
-        public static void DamageTarget(Character attacker, Character defender, CommandResult action, CommandResultContainer actionContainer= null)
+        public static void DamageTarget(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer= null)
         {
             if (defender != null)
             {
@@ -254,9 +254,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                         bnpc.lastAttacker = attacker;
                 }
 
-                defender.DelHP((short)action.amount);
-                attacker.OnDamageDealt(defender, action, actionContainer);
-                defender.OnDamageTaken(attacker, action, actionContainer);
+                defender.DelHP((short)action.amount, actionContainer);
+                attacker.OnDamageDealt(defender, skill, action, actionContainer);
+                defender.OnDamageTaken(attacker, skill, action, actionContainer);
 
                 // todo: other stuff too
                 if (defender is BattleNpc)
@@ -272,11 +272,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             }
         }
 
-        public static void HealTarget(Character caster, Character target, CommandResult action, CommandResultContainer actionContainer = null)
+        public static void HealTarget(Character caster, Character target, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             if (target != null)
             {
-                target.AddHP(action.amount);
+                target.AddHP(action.amount, actionContainer);
 
                 target.statusEffects.CallLuaFunctionByFlag((uint) StatusEffectFlags.ActivateOnHealed, "onHealed", caster, target, action, actionContainer);
             }
@@ -512,8 +512,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 
             actionContainer.AddAction(action);
             action.enmity = (ushort) (action.enmity * (skill != null ? skill.enmityModifier : 1));
+
             //Damage the target
-            DamageTarget(attacker, defender, action, actionContainer);
+            DamageTarget(attacker, defender, skill, action, actionContainer);
         }
 
         public static void FinishActionSpell(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
@@ -542,7 +543,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 
             actionContainer.AddAction(action);
 
-            DamageTarget(attacker, defender, action, actionContainer);
+            DamageTarget(attacker, defender, skill, action, actionContainer);
         }
 
         public static void FinishActionHeal(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
@@ -552,7 +553,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 
             actionContainer.AddAction(action);
 
-            HealTarget(attacker, defender, action, actionContainer);
+            HealTarget(attacker, defender, skill, action, actionContainer);
         }
 
         public static void FinishActionStatus(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
