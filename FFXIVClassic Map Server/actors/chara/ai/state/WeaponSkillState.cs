@@ -22,7 +22,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.startTime = DateTime.Now;
             this.skill = Server.GetWorldManager().GetBattleCommand(skillId);
 
-            var returnCode = skill.CallLuaFunction(owner, "weaponskill", "onSkillPrepare", owner, target, skill);
+            var returnCode = skill.CallLuaFunction(owner, "onSkillPrepare", owner, target, skill);
 
             this.target = (skill.mainTarget & ValidTarget.SelfOnly) != 0 ? owner : target;
 
@@ -40,7 +40,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnStart()
         {
-            var returnCode = skill.CallLuaFunction(owner, "weaponskill", "onSkillStart", owner, target, skill);
+            var returnCode = skill.CallLuaFunction(owner, "onSkillStart", owner, target, skill);
 
             if (returnCode != 0)
             {
@@ -69,7 +69,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                             //If owner is a player and the skill being used is part of the current combo
                             if (p.playerWork.comboNextCommandId[0] == skill.id || p.playerWork.comboNextCommandId[1] == skill.id)
                             {
-                                skill.CallLuaFunction(owner, "weaponskill", "onCombo", owner, target, skill);
+                                skill.CallLuaFunction(owner, "onCombo", owner, target, skill);
                                 skill.isCombo = true;
                             }
                             //or if this just the start of a combo

@@ -24,7 +24,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.startPos = owner.GetPosAsVector3();
             this.startTime = DateTime.Now;
             this.spell = Server.GetWorldManager().GetBattleCommand(spellId);
-            var returnCode = spell.CallLuaFunction(owner, "magic", "onMagicPrepare", owner, target, spell);
+            var returnCode = spell.CallLuaFunction(owner, "onMagicPrepare", owner, target, spell);
 
             //Modify spell based on status effects. Need to do it here because they can modify cast times
             List<StatusEffect> effects = owner.statusEffects.GetStatusEffectsByFlag((uint)(StatusEffectFlags.ActivateOnCastStart));
@@ -49,7 +49,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnStart()
         {
-            var returnCode = spell.CallLuaFunction(owner, "magic", "onMagicStart", owner, target, spell);
+            var returnCode = spell.CallLuaFunction(owner, "onMagicStart", owner, target, spell);
 
             if (returnCode != 0)
             {
@@ -68,7 +68,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                     Player p = (Player)owner;
                     if (spell.comboStep == 1 || ((p.playerWork.comboNextCommandId[0] == spell.id || p.playerWork.comboNextCommandId[1] == spell.id)))
                     {
-                        spell.CallLuaFunction(owner, "magic", "onCombo", owner, target, spell);
+                        spell.CallLuaFunction(owner, "onCombo", owner, target, spell);
                         spell.isCombo = true;
                     }
                 }

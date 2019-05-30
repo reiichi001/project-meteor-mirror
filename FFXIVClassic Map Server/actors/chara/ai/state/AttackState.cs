@@ -112,8 +112,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             attackCommand.range = 5;
             attackCommand.rangeHeight = 10;
             attackCommand.worldMasterTextId = 0x765D;
-            attackCommand.mainTarget = (ValidTarget)384;
-            attackCommand.validTarget = (ValidTarget)384;
+            attackCommand.mainTarget = (ValidTarget)768;
+            attackCommand.validTarget = (ValidTarget)17152;
             attackCommand.commandType = CommandType.AutoAttack;
             attackCommand.numHits = (byte)owner.GetMod(Modifier.HitCount);
             attackCommand.basePotency = 100;

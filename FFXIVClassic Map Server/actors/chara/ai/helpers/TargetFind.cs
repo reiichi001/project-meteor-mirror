@@ -18,20 +18,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
     public enum ValidTarget : ushort
     {
         None = 0x00,
-        Self = 0x01,        //Can be used on self (if this flag isn't set and target is self, return false)
-        SelfOnly = 0x02,    //Must be used on self (if this flag is set and target isn't self, return false)
-        Party = 0x4,        //Can be used on party members
-        PartyOnly = 0x8,    //Must be used on party members
-        Ally = 0x10,        //Can be used on allies
-        AllyOnly = 0x20,    //Must be used on allies
-        NPC = 0x40,         //Can be used on static NPCs
-        NPCOnly = 0x60,    //Must be used on static NPCs
-        Enemy = 0x80,      //Can be used on enemies
-        EnemyOnly = 0x100,  //Must be used on enemies
-        Object = 0x200,     //Can be used on objects
-        ObjectOnly = 0x400, //Must be used on objects
-        Corpse = 0x600,     //Can be used on corpses
-        CorpseOnly = 0x800, //Must be used on corpses
+        Self = 0x01,                    //Can be used on self (if this flag isn't set and target is self, return false)
+        SelfOnly = 0x02,                //Must be used on self (if this flag is set and target isn't self, return false)
+        Party = 0x4,                    //Can be used on party members
+        PartyOnly = 0x8,                //Must be used on party members
+        Ally = 0x10,                    //Can be used on allies
+        AllyOnly = 0x20,                //Must be used on allies
+        NPC = 0x40,                     //Can be used on static NPCs
+        NPCOnly = 0x80,                 //Must be used on static NPCs
+        Enemy = 0x100,                  //Can be used on enemies
+        EnemyOnly = 0x200,              //Must be used on enemies
+        Object = 0x400,                 //Can be used on objects
+        ObjectOnly = 0x800,             //Must be used on objects
+        Corpse = 0x1000,                //Can be used on corpses
+        CorpseOnly = 0x2000,            //Must be used on corpses
+
+        //These are only used for ValidTarget, not MainTarget
+        MainTargetParty = 0x4000,       //Can be used on main target's party (This will basically always be true.)
+        MainTargetPartyOnly = 0x8000,   //Must be used on main target's party (This is for Protect basically.)
     }
 
     /// <summary> Targeting from/to different entity types </summary>
@@ -94,7 +98,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             Reset();
             this.owner = owner;
-            this.masterTarget = mainTarget == null ? owner : mainTarget;
+            this.mainTarget = mainTarget == null ? owner : mainTarget;
         }
 
         public void Reset()
@@ -392,6 +396,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             if (validTarget == ValidTarget.Self && aoeType == TargetFindAOEType.None && owner != target)
                 return false;
+
+            //This skill can't be used on main target's party members and target is a party member of main target
+            if ((validTarget & ValidTarget.MainTargetParty) == 0 && target.currentParty == mainTarget.currentParty)
+                return false;
+
+            //This skill must be used on main target's party members  and target is not a party member of main target
+            if ((validTarget & ValidTarget.MainTargetPartyOnly) != 0 && target.currentParty != mainTarget.currentParty)
+                return false;
+
 
             // this is fuckin retarded, think of a better way l8r
             if (!ignoreAOE)

@@ -127,13 +127,14 @@ namespace FFXIVClassic_Map_Server.actors.group
 
             while (true)
             {
-                if (GetMemberCount() - currentIndex >= 64)
+                int memberCount = Math.Min(GetMemberCount(), members.Count);
+                if (memberCount - currentIndex >= 64)
                     session.QueuePacket(GroupMembersX64Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex));
-                else if (GetMemberCount() - currentIndex >= 32)
+                else if (memberCount - currentIndex >= 32)
                     session.QueuePacket(GroupMembersX32Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex));
-                else if (GetMemberCount() - currentIndex >= 16)
+                else if (memberCount - currentIndex >= 16)
                     session.QueuePacket(GroupMembersX16Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex));
-                else if (GetMemberCount() - currentIndex > 0)
+                else if (memberCount - currentIndex > 0)
                     session.QueuePacket(GroupMembersX08Packet.buildPacket(session.id, session.GetActor().zoneId, time, members, ref currentIndex));
                 else
                     break;

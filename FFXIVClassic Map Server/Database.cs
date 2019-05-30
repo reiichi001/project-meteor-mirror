@@ -2413,8 +2413,8 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.job = reader.GetByte("classJob");
                             battleCommand.level = reader.GetByte("lvl");
                             battleCommand.requirements = (BattleCommandRequirements)reader.GetUInt16("requirements");
-                            battleCommand.mainTarget = (ValidTarget)reader.GetByte("mainTarget");
-                            battleCommand.validTarget = (ValidTarget)reader.GetByte("validTarget");
+                            battleCommand.mainTarget = (ValidTarget)reader.GetUInt16("mainTarget");
+                            battleCommand.validTarget = (ValidTarget)reader.GetUInt16("validTarget");
                             battleCommand.aoeType = (TargetFindAOEType)reader.GetByte("aoeType");
                             battleCommand.basePotency = reader.GetUInt16("basePotency");
                             battleCommand.numHits = reader.GetByte("numHits");
@@ -2454,7 +2454,26 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.actionType = (ActionType)reader.GetInt16("actionType");
                             battleCommand.accuracyModifier = reader.GetFloat("accuracyMod");
                             battleCommand.worldMasterTextId = reader.GetUInt16("worldMasterTextId");
-                            lua.LuaEngine.LoadBattleCommandScript(battleCommand, "weaponskill");
+
+                            string folderName = "";
+
+                            switch (battleCommand.commandType)
+                            {
+                                case CommandType.AutoAttack:
+                                    folderName = "autoattack";
+                                    break;
+                                case CommandType.WeaponSkill:
+                                    folderName = "weaponskill";
+                                    break;
+                                case CommandType.Ability:
+                                    folderName = "ability";
+                                    break;
+                                case CommandType.Spell:
+                                    folderName = "magic";
+                                    break;
+                            }
+
+                            lua.LuaEngine.LoadBattleCommandScript(battleCommand, folderName);
                             battleCommandDict.Add(id, battleCommand);
 
                             Tuple<byte, short> tuple = Tuple.Create<byte, short>(battleCommand.job, battleCommand.level);
