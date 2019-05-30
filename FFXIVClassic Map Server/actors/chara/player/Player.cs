@@ -964,6 +964,12 @@ namespace FFXIVClassic_Map_Server.Actors
 
             //Check if bonus point available... set
 
+            //Remove buffs that fall off when changing class
+            CommandResultContainer resultContainer = new CommandResultContainer();
+            statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnClassChange, resultContainer);
+            resultContainer.CombineLists();
+            DoBattleAction(0, 0x7c000062, resultContainer.GetList());
+
             //Set rested EXP
             charaWork.parameterSave.state_mainSkill[0] = classId;
             charaWork.parameterSave.state_mainSkillLevel = charaWork.battleSave.skillLevel[classId-1];
