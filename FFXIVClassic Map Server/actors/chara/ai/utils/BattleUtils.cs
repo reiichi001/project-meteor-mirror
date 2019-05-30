@@ -278,7 +278,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             {
                 target.AddHP(action.amount, actionContainer);
 
-                target.statusEffects.CallLuaFunctionByFlag((uint) StatusEffectFlags.ActivateOnHealed, "onHealed", caster, target, action, actionContainer);
+                target.statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnHealed, "onHealed", caster, target, skill, action, actionContainer);
             }
         }
 

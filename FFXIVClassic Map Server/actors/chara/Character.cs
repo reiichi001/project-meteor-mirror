@@ -872,8 +872,8 @@ namespace FFXIVClassic_Map_Server.Actors
                     break;
             }
 
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnDamageTaken, "onDamageTaken", attacker, this, action);
-            
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnDamageTaken, "onDamageTaken", attacker, this, skill, action, actionContainer);
+
             //TP gain formula seems to be something like 5 * e ^ ( -0.667 * [defender's level] ) * damage taken, rounded up
             //This should be completely accurate at level 50, but isn't totally accurate at lower levels.
             //Don't know if store tp impacts this
@@ -1024,38 +1024,38 @@ namespace FFXIVClassic_Map_Server.Actors
         public void OnEvade(Character attacker, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Evade);
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnEvade, "onEvade", attacker, this, action, actionContainer);
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnEvade, "onEvade", attacker, this, skill, action, actionContainer);
         }
 
         //Called when this character blocks attacker's action
         public void OnBlock(Character attacker, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Block);
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnBlock, "onBlock", attacker, this, action, actionContainer);
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnBlock, "onBlock", attacker, this, skill, action, actionContainer);
         }
 
         //Called when this character parries attacker's action
         public void OnParry(Character attacker, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Parry);
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnParry, "onParry", attacker, this, action, actionContainer);
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnParry, "onParry", attacker, this, skill, action, actionContainer);
         }
 
         //Called when this character misses
         public void OnMiss(Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Miss);
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnMiss, "onMiss", this, defender, action, actionContainer);
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnMiss, "onMiss", this, defender, skill, action, actionContainer);
         }
 
         public void OnHit(Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnHit, "onHit", this, defender, action, actionContainer);
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnHit, "onHit", this, defender, skill, action, actionContainer);
         }
 
         public void OnCrit(Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnHit, "onCrit", this, defender, action, actionContainer);
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnCrit, "onCrit", this, defender, skill, action, actionContainer);
         }
 
         //The order of messages that appears after using a command is:

@@ -46,12 +46,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             // list of effects to remove
             var removeEffects = new List<StatusEffect>();
-            for (int i = 0; i < effects.Values.Count; i++)
+            var effectsList = effects.Values;
+            for (int i = effectsList.Count - 1; i >= 0; i--)
             {
                 // effect's update function returns true if effect has completed
-                if (effects.Values.ElementAt(i).Update(tick))
-                     removeEffects.Add(effects.Values.ElementAt(i));
-
+                if (effectsList.ElementAt(i).Update(tick, resultContainer))
+                    removeEffects.Add(effectsList.ElementAt(i));
             }
 
             // remove effects from this list

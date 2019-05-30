@@ -20,9 +20,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             base(owner, target)
         {
             this.startTime = DateTime.Now;
-            //this.target = skill.targetFind.
             this.skill = Server.GetWorldManager().GetBattleCommand(skillId);
-            var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillPrepare", owner, target, skill);
+
+            var returnCode = skill.CallLuaFunction(owner, "weaponskill", "onSkillPrepare", owner, target, skill);
 
             this.target = (skill.mainTarget & ValidTarget.SelfOnly) != 0 ? owner : target;
 
@@ -40,7 +40,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnStart()
         {
-            var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillStart", owner, target, skill);
+            var returnCode = skill.CallLuaFunction(owner, "weaponskill", "onSkillStart", owner, target, skill);
 
             if (returnCode != 0)
             {
@@ -57,8 +57,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 {
                     //If there is a position bonus
                     if (skill.positionBonus != BattleCommandPositionBonus.None)
-                        //lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onPositional", owner, target, skill);
-                        skill.CallLuaFunction(owner, "onPositional", owner, target, skill);
+                        skill.CallLuaFunction(owner, "weaponskill", "onPositional", owner, target, skill);
 
                     //Combo stuff
                     if (owner is Player)
@@ -70,8 +69,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                             //If owner is a player and the skill being used is part of the current combo
                             if (p.playerWork.comboNextCommandId[0] == skill.id || p.playerWork.comboNextCommandId[1] == skill.id)
                             {
-                                lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onCombo", owner, target, skill);
-                                skill.CallLuaFunction(owner, "onCombo", owner, target, skill);
+                                skill.CallLuaFunction(owner, "weaponskill", "onCombo", owner, target, skill);
                                 skill.isCombo = true;
                             }
                             //or if this just the start of a combo
