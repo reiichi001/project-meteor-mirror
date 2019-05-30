@@ -34,8 +34,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             foreach (var effect in effects)
                 lua.LuaEngine.CallLuaStatusEffectFunction(owner, effect, "onMagicCast", owner, effect, spell);
 
-            this.target = target != null ? target : owner;
+            this.target = (spell.mainTarget & ValidTarget.SelfOnly) != 0 ? owner : target;
 
+            errorResult = new CommandResult(owner.actorId, 32553, 0);
             if (returnCode == 0 && owner.CanUse(this.target, spell, errorResult))
             {
                 OnStart();

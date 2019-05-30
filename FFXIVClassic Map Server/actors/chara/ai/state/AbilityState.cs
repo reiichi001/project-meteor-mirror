@@ -23,8 +23,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.skill = Server.GetWorldManager().GetBattleCommand(skillId);
             var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "ability", "onAbilityPrepare", owner, target, skill);
 
-            this.target = target != null ? target : owner;
+            this.target = (skill.mainTarget & ValidTarget.SelfOnly) != 0 ? owner : target;
 
+            errorResult = new CommandResult(owner.actorId, 32553, 0);
             if (returnCode == 0)
             {
                 OnStart();
