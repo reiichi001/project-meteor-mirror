@@ -239,7 +239,14 @@ namespace FFXIVClassic.Common
             {
                 var subpacketData = subpacket.GetBytes();
                 Array.Copy(subpacketData, 0, data, offset, subpacketData.Length);
-                offset += (ushort) subpacketData.Length;
+                offset += (ushort)subpacketData.Length;
+            }
+
+            //Compress this array into a new one if needed
+            if (isCompressed)
+            {
+                data = CompressData(data);
+                header.packetSize = (ushort)(BASEPACKET_SIZE + data.Length);
             }
 
             Debug.Assert(data != null && offset == data.Length && header.packetSize == 0x10 + offset);
@@ -266,7 +273,15 @@ namespace FFXIVClassic.Common
             data = new byte[header.packetSize - 0x10];
 
             //Add Subpackets
-            var subpacketData = subpacket.GetBytes();
+            byte[] subpacketData = subpacket.GetBytes();
+
+            //Compress this array into a new one if needed
+            if (isCompressed)
+            {
+                subpacketData = CompressData(subpacketData);
+                header.packetSize = (ushort)(BASEPACKET_SIZE + data.Length);
+            }
+
             Array.Copy(subpacketData, 0, data, 0, subpacketData.Length);
 
             Debug.Assert(data != null);
@@ -290,6 +305,13 @@ namespace FFXIVClassic.Common
 
             //Get packet size
             header.packetSize += (ushort) data.Length;
+
+            //Compress this array into a new one if needed
+            if (isCompressed)
+            {
+                data = CompressData(data);
+                header.packetSize = (ushort)(BASEPACKET_SIZE + data.Length);
+            }
 
             var packet = new BasePacket(header, data);
             return packet;
@@ -390,17 +412,31 @@ namespace FFXIVClassic.Common
             {
                 zipStream.CopyTo(resultStream);
                 packet.data = resultStream.ToArray();
+                packet.header.isCompressed = 0;
+                packet.header.packetSize = (ushort)(BASEPACKET_SIZE + packet.data.Length);
             }
         }
 
-        public static unsafe void CompressPacket(ref BasePacket packet)
+        public static unsafe BasePacket CompressPacket(BasePacket uncompressedPacket)
         {
-            using (var compressedStream = new MemoryStream(packet.data))
+            using (var compressedStream = new MemoryStream(uncompressedPacket.data))
             using (var zipStream = new ZlibStream(compressedStream, Ionic.Zlib.CompressionMode.Compress))
             using (var resultStream = new MemoryStream())
             {
                 zipStream.CopyTo(resultStream);
-                packet.data = resultStream.ToArray();
+                BasePacket compressedPacket = BasePacket.CreatePacket(resultStream.ToArray(), uncompressedPacket.header.isAuthenticated == 1, true);
+                return compressedPacket;
+            }
+        }
+
+        public static unsafe byte[] CompressData(byte[] data)
+        {
+            using (var compressedStream = new MemoryStream(data))
+            using (var zipStream = new ZlibStream(compressedStream, Ionic.Zlib.CompressionMode.Compress))
+            using (var resultStream = new MemoryStream())
+            {
+                zipStream.CopyTo(resultStream);
+                return resultStream.ToArray();
             }
         }
 

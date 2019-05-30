@@ -56,13 +56,13 @@ namespace FFXIVClassic_World_Server
                         mServer.AddSession(client, Session.Channel.ZONE, hello.sessionId);
                         Session session = mServer.GetSession(hello.sessionId);
                         session.routing1 = mServer.GetWorldManager().GetZoneServer(session.currentZoneId);
-                        session.routing1.SendSessionStart(session);       
+                        session.routing1.SendSessionStart(session, true);       
                     }
                     else if (packet.header.connectionType == BasePacket.TYPE_CHAT)
                         mServer.AddSession(client, Session.Channel.CHAT, hello.sessionId);
 
-                    client.QueuePacket(_0x7Packet.BuildPacket(0x0E016EE5), true, false);
-                    client.QueuePacket(_0x2Packet.BuildPacket(hello.sessionId), true, false);
+                    client.QueuePacket(_0x7Packet.BuildPacket(0x0E016EE5));
+                    client.QueuePacket(_0x2Packet.BuildPacket(hello.sessionId));
                 }
                 //Ping from World Server
                 else if (subpacket.header.type == 0x07)
@@ -162,7 +162,7 @@ namespace FFXIVClassic_World_Server
                         Session thatSession = mServer.GetSession(playerParty.members[i]);
                         if (thatSession != null && !session.Equals(thatSession))
                         {
-                            thatSession.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, thatSession.sessionId, SendMessagePacket.MESSAGE_TYPE_PARTY, mServer.GetNameForId(session.sessionId), partyChatMessagePacket.message), true, false);
+                            thatSession.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, thatSession.sessionId, SendMessagePacket.MESSAGE_TYPE_PARTY, mServer.GetNameForId(session.sessionId), partyChatMessagePacket.message));
                         }
                     }                    
                     break;
@@ -173,7 +173,7 @@ namespace FFXIVClassic_World_Server
                 case 0x133:            
                     GroupCreatedPacket groupCreatedPacket = new GroupCreatedPacket(subpacket.data);
                     if (!mServer.GetWorldManager().SendGroupInit(session, groupCreatedPacket.groupId))                                    
-                        session.clientConnection.QueuePacket(subpacket, true, false);
+                        session.clientConnection.QueuePacket(subpacket);
                     break;
             }
         }

@@ -1,39 +1,44 @@
+require("global");
+
 local initClassItems, initRaceItems;
 
-function onBeginLogin(player)
-		
+function onBeginLogin(player)		
 	--New character, set the initial quest
 	if (player:GetPlayTime(false) == 0) then
 		initialTown = player:GetInitialTown();
-		
 		if (initialTown == 1 and player:HasQuest(110001) == false) then
-			player:AddQuest(110001);			
+			--player:AddQuest(110001);
+			player:SetHomePoint(1280001);
 		elseif (initialTown == 2 and player:HasQuest(110005) == false) then
-			player:AddQuest(110005);
+			--player:AddQuest(110005);
+			player:SetHomePoint(1280061);
 		elseif (initialTown == 3 and player:HasQuest(110009) == false) then
-			player:AddQuest(110009);
+			--player:AddQuest(110009);
+			player:SetHomePoint(1280031);
 		end		
 		
 	end
-			
+
 	--For Opening. Set Director and reset position incase d/c
-	if	   (player:HasQuest(110001) == true) then
-		director = player:GetZone():CreateDirector("OpeningDirector");
+	if (player:HasQuest(110001) == true and player:GetZoneID() == 193) then
+		director = player:GetZone():CreateDirector("OpeningDirector", false);		
 		player:AddDirector(director);
+		director:StartDirector(true);
 		player:SetLoginDirector(director);		
 		player:KickEvent(director, "noticeEvent", true);
-		
+				
 		player.positionX = 0.016;
 		player.positionY = 10.35;
 		player.positionZ = -36.91;
 		player.rotation = 0.025;
 		player:GetQuest(110001):ClearQuestData();
 		player:GetQuest(110001):ClearQuestFlags();
-	elseif (player:HasQuest(110005) == true) then 
-		director = player:GetZone():CreateDirector("OpeningDirector");
+	elseif (player:HasQuest(110005) == true and player:GetZoneID() == 166) then 
+		director = player:GetZone():CreateDirector("OpeningDirector", false);		
 		player:AddDirector(director);
-		player:SetLoginDirector(director);
-		player:KickEvent(director, "noticeEvent", "noticeEvent");
+		director:StartDirector(false);		
+		player:SetLoginDirector(director);		
+		player:KickEvent(director, "noticeEvent", true);
 		
 		player.positionX = 369.5434;
 		player.positionY = 4.21;
@@ -41,12 +46,13 @@ function onBeginLogin(player)
 		player.rotation = -1.26721;
 		player:GetQuest(110005):ClearQuestData();
 		player:GetQuest(110005):ClearQuestFlags();
-	elseif (player:HasQuest(110009) == true) then
-		director = player:GetZone():CreateDirector("OpeningDirector");
-		player:AddDirector(director);
-		player:SetLoginDirector(director);
-		player:KickEvent(director, "noticeEvent", "noticeEvent");
-		
+	elseif (player:HasQuest(110009) == true and player:GetZoneID() == 184) then
+		--director = player:GetZone():CreateDirector("OpeningDirector", false);		
+		--player:AddDirector(director);
+		--director:StartDirector(false);		
+		--player:SetLoginDirector(director);		
+		--player:KickEvent(director, "noticeEvent", true);
+		--
 		player.positionX = 5.364327;
 		player.positionY = 196.0;
 		player.positionZ = 133.6561;
@@ -54,12 +60,10 @@ function onBeginLogin(player)
 		player:GetQuest(110009):ClearQuestData();
 		player:GetQuest(110009):ClearQuestFlags();
 	end	
-	
 end
 
 function onLogin(player)
-	player:SendMessage(0x1D,"",">Callback \"onLogin\" for player script:Running.");
-	
+
 	if (player:GetPlayTime(false) == 0) then
 		player:SendMessage(0x1D,"",">PlayTime == 0, new player!");
 		

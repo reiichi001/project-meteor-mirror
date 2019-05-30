@@ -31,7 +31,7 @@ namespace FFXIVClassic_Map_Server.packets.WorldPackets.Send
                 }
             }
 
-            return new SubPacket(OPCODE, sessionId, sessionId, data);
+            return new SubPacket(OPCODE, sessionId, data);
         }
     }
 }

@@ -90,14 +90,15 @@ namespace FFXIVClassic_Lobby_Server
 
             if (userId == 0)
             {
-                    ErrorPacket errorPacket = new ErrorPacket(sessionPacket.sequence, 0, 0, 13001, "Your session has expired, please login again.");
-                    SubPacket subpacket = errorPacket.BuildPacket();
-                    BasePacket errorBasePacket = BasePacket.CreatePacket(subpacket, true, false);
-                    BasePacket.EncryptPacket(client.blowfish, errorBasePacket);
-                    client.QueuePacket(errorBasePacket);
+                ErrorPacket errorPacket = new ErrorPacket(sessionPacket.sequence, 0, 0, 13001, "Your session has expired, please login again.");
+                SubPacket subpacket = errorPacket.BuildPacket();
+                subpacket.SetTargetId(0xe0006868);
+                BasePacket errorBasePacket = BasePacket.CreatePacket(subpacket, true, false);
+                BasePacket.EncryptPacket(client.blowfish, errorBasePacket);
+                client.QueuePacket(errorBasePacket);
 
-                    Program.Log.Info("Invalid session, kicking...");
-                    return;
+                Program.Log.Info("Invalid session, kicking...");
+                return;
             }
 
             Program.Log.Info("USER ID: {0}", userId);

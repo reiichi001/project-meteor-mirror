@@ -27,7 +27,8 @@ namespace FFXIVClassic_Map_Server
         private static CommandProcessor mCommandProcessor = new CommandProcessor();
         private static ZoneConnection mWorldConnection = new ZoneConnection();
         private static WorldManager mWorldManager;
-        private static Dictionary<uint, Item> mGamedataItems;
+        private static Dictionary<uint, ItemData> mGamedataItems;
+        private static Dictionary<uint, GuildleveData> mGamedataGuildleves;
         private static StaticActors mStaticActors;
 
         private PacketProcessor mProcessor;        
@@ -43,6 +44,8 @@ namespace FFXIVClassic_Map_Server
 
             mGamedataItems = Database.GetItemGamedata();
             Program.Log.Info("Loaded {0} items.", mGamedataItems.Count);
+            mGamedataGuildleves = Database.GetGuildleveGamedata();
+            Program.Log.Info("Loaded {0} guildleves.", mGamedataGuildleves.Count);
 
             mWorldManager = new WorldManager(this);
             mWorldManager.LoadZoneList();
@@ -50,6 +53,10 @@ namespace FFXIVClassic_Map_Server
             mWorldManager.LoadSeamlessBoundryList();
             mWorldManager.LoadActorClasses();
             mWorldManager.LoadSpawnLocations();
+            mWorldManager.LoadBattleNpcs();
+            mWorldManager.LoadStatusEffects();
+            mWorldManager.LoadBattleCommands();
+            mWorldManager.LoadBattleTraits();
             mWorldManager.SpawnAllActors();
             mWorldManager.StartZoneThread();
 
@@ -267,7 +274,7 @@ namespace FFXIVClassic_Map_Server
             return mWorldManager;
         }
         
-        public static Dictionary<uint, Item> GetGamedataItems()
+        public static Dictionary<uint, ItemData> GetGamedataItems()
         {
             return mGamedataItems;
         }
@@ -282,10 +289,18 @@ namespace FFXIVClassic_Map_Server
             return mStaticActors.FindStaticActor(name);
         }
 
-        public static Item GetItemGamedata(uint id)
+        public static ItemData GetItemGamedata(uint id)
         {
             if (mGamedataItems.ContainsKey(id))
                 return mGamedataItems[id];
+            else
+                return null;
+        }
+
+        public static GuildleveData GetGuildleveGamedata(uint id)
+        {
+            if (mGamedataGuildleves.ContainsKey(id))
+                return mGamedataGuildleves[id];
             else
                 return null;
         }

@@ -23,8 +23,11 @@ namespace FFXIVClassic_World_Server
             SendPacketQueue.Add(packet);
         }
 
-        public void QueuePacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)
+        public void QueuePacket(SubPacket subpacket)
         {
+            bool isAuthed = true;
+            bool isEncrypted = false;
+            subpacket.SetTargetId(owner.sessionId);
             SendPacketQueue.Add(BasePacket.CreatePacket(subpacket, isAuthed, isEncrypted));
         }
 
@@ -44,7 +47,7 @@ namespace FFXIVClassic_World_Server
                     socket.Send(packetBytes);
                 }
                 catch (Exception e)
-                { Program.Log.Error("Weird case, socket was d/ced: {0}", e); }
+                { Program.Log.Error(e, "Weird case, socket was d/ced: {0}"); }
             }
         }
 

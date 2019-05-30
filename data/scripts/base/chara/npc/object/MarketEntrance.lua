@@ -4,7 +4,7 @@ MarketEntrance Script
 
 Functions:
 
-eventPushChoiceAreaOrQuest(0xc13, 0xc1a, 0xdba,0, false, 0) - 
+eventPushChoiceAreaOrQuest(gcLeaderPlaceName[Fronds, etc], showMarketWards/Houses (must be 0xc1a), gcHQPlaceName, anotherPlaceName, showItemSearchCounter, stopSearchingItemId) - 
 eventPushStepPrvMarket(?, ?, ?) -
 
 --]]
@@ -16,7 +16,6 @@ function init(npc)
 end
 
 function onEventStarted(player, npc, triggerName)	
-	callClientFunction(player, "eventPushChoiceAreaOrQuest", 0xc13, 0xc1a, 0xdba,0, false, 0);
-		
+	callClientFunction(player, "eventPushChoiceAreaOrQuest", 0xc13, 0xc1a, 0xdba, 0, true, 1);
 	player:EndEvent();	
 end

@@ -1,7 +1,7 @@
 require ("global")
 
 function onEventStarted(player, npc)
-    defaultFst = GetStaticActor("DftFst");
-	callClientFunction(player, "delegateEvent", player, defaultFst, "defaultTalkWithSerpent_sergeant_frilaix_001", nil, nil, nil);
+    Spl = GetStaticActor("Spl000");
+	callClientFunction(player, "delegateEvent", player, Spl, "processEventARISMONT");
 	player:endEvent();
 end

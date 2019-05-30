@@ -91,15 +91,15 @@ function onEventStarted(player, actor, triggerName, isTeleport)
 		local choice, isInn = callClientFunction(player, "delegateCommand", actor, "eventConfirm", true, false, player:GetHomePointInn(), player:GetHomePoint(), false);		
 		if (choice == 1) then
 			player:PlayAnimation(0x4000FFB);
-			player:SendGameMessage(worldMaster, 34104, 0x20);	
+			player:SendGameMessage(worldMaster, 34104, 0x20);
 			if (isInn) then
 				--Return to Inn		
 				if (player:GetHomePointInn() == 1) then
-					GetWorldManager():DoZoneChange(player, 12);
+					GetWorldManager():DoZoneChange(player, 244, nil, 0, 15, -160.048, 0, -165.737, 0);
 				elseif (player:GetHomePointInn() == 2) then
-					GetWorldManager():DoZoneChange(player, 13);
+					GetWorldManager():DoZoneChange(player, 244, nil, 0, 15, 160.048, 0, 154.263, 0);
 				elseif (player:GetHomePointInn() == 3) then
-					GetWorldManager():DoZoneChange(player, 11);
+					GetWorldManager():DoZoneChange(player, 244, nil, 0, 15, 0.048, 0, -5.737, 0);
 				end			
 			elseif (choice == 1 and isInn == nil) then			
 				--Return to Homepoint
@@ -107,7 +107,14 @@ function onEventStarted(player, actor, triggerName, isTeleport)
 				if (destination ~= nil) then
 					randoPos = getRandomPointInBand(destination[2], destination[4], 3, 5);
 					rotation = getAngleFacing(randoPos.x, randoPos.y, destination[2], destination[4]);
+					--bandaid fix for returning while dead, missing things like weakness and the heal number
+					if (player:IsDead()) then
+						player:SetHP(player.GetMaxHP());
+						player:ChangeState(0);
+						player:PlayAnimation(0x01000066);
+					end
 					GetWorldManager():DoZoneChange(player, destination[1], nil, 0, 2, randoPos.x, destination[3], randoPos.y, rotation);
+
 				end
 			end
 		end

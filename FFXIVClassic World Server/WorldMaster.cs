@@ -217,6 +217,7 @@ namespace FFXIVClassic_World_Server
             SendPartySync(pt);   
 
             mRetainerGroupManager.GetRetainerGroup(session.sessionId).SendGroupPackets(session);
+
             List<Linkshell> linkshells = mLinkshellManager.GetPlayerLinkshellMembership(session.sessionId);
             foreach (Linkshell ls in linkshells)
                 ls.SendGroupPackets(session);
@@ -237,15 +238,15 @@ namespace FFXIVClassic_World_Server
                 }
             }
             SubPacket activeLsPacket = SetActiveLinkshellPacket.BuildPacket(session.sessionId, activeGroupIndex);
-            session.clientConnection.QueuePacket(activeLsPacket, true, false);
+            session.clientConnection.QueuePacket(activeLsPacket);
         }
 
         private void SendMotD(Session session)
         {
-            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "-------- Login Message --------"), true, false);
-            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Welcome to {0}!", ConfigConstants.PREF_SERVERNAME)), true, false);
-            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Welcome to Eorzea!"), true, false);
-            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Here is a test Message of the Day from the World Server!"), true, false);
+            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "-------- Login Message --------"));
+            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", String.Format("Welcome to {0}!", ConfigConstants.PREF_SERVERNAME)));
+            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Welcome to Eorzea!"));
+            session.clientConnection.QueuePacket(SendMessagePacket.BuildPacket(session.sessionId, session.sessionId, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", "Here is a test Message of the Day from the World Server!"));
         }
 
         public void SendPartySync(Party party)
@@ -433,7 +434,7 @@ namespace FFXIVClassic_World_Server
             {
                 requestSession.SetActiveLS(lsName);
                 SubPacket activeLsPacket = SetActiveLinkshellPacket.BuildPacket(requestSession.sessionId, 0);
-                requestSession.clientConnection.QueuePacket(activeLsPacket, true, false);
+                requestSession.clientConnection.QueuePacket(activeLsPacket);
                 requestSession.SendGameMessage(25132, 0x20, (object)1);
             }
             else
@@ -448,7 +449,7 @@ namespace FFXIVClassic_World_Server
                 {
                     requestSession.SetActiveLS(lsName);
                     SubPacket activeLsPacket = SetActiveLinkshellPacket.BuildPacket(requestSession.sessionId, ls.groupIndex);
-                    requestSession.clientConnection.QueuePacket(activeLsPacket, true, false);
+                    requestSession.clientConnection.QueuePacket(activeLsPacket);
                     requestSession.SendGameMessage(25131, 0x20, (object)1, (object)lsName);                    
                 }
             }

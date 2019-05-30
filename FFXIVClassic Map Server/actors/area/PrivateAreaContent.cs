@@ -14,7 +14,6 @@ namespace FFXIVClassic_Map_Server.actors.area
     class PrivateAreaContent : PrivateArea
     {
         private Director currentDirector;
-        private ContentGroup currentContentGroup;
         private bool isContentFinished = false;
 
         public static PrivateAreaContent CreateContentArea(String scriptPath)
@@ -26,18 +25,12 @@ namespace FFXIVClassic_Map_Server.actors.area
             : base(parent, parent.actorId, classPath, privateAreaName, privateAreaType, 0, 0, 0)
         {
             currentDirector = director;
-            currentContentGroup = Server.GetWorldManager().CreateContentGroup(director);
-            LuaEngine.GetInstance().CallLuaFunction(contentStarter, this, "onCreate", false, currentContentGroup, currentDirector);
+            LuaEngine.GetInstance().CallLuaFunction(contentStarter, this, "onCreate", false, currentDirector);
         }
         
         public Director GetContentDirector()
         {
             return currentDirector;
-        }
-
-        public ContentGroup GetContentGroup()
-        {
-            return currentContentGroup;
         }
 
         public void ContentFinished()
@@ -47,17 +40,20 @@ namespace FFXIVClassic_Map_Server.actors.area
 
         public void CheckDestroy()
         {
-            if (isContentFinished)
+            lock (mActorList)
             {
-                bool noPlayersLeft = true;
-                foreach (Actor a in mActorList.Values)
+                if (isContentFinished)
                 {
-                    if (a is Player)
-                        noPlayersLeft = false;
+                    bool noPlayersLeft = true;
+                    foreach (Actor a in mActorList.Values)
+                    {
+                        if (a is Player)
+                            noPlayersLeft = false;
+                    }
+                    if (noPlayersLeft)
+                        GetParentZone().DeleteContentArea(this);
                 }
-                if (noPlayersLeft)
-                    GetParentZone().DeleteContentArea(this);
-            }                
+            }
         }
 
     }

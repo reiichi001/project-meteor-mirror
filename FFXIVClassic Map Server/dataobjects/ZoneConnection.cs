@@ -17,21 +17,17 @@ namespace FFXIVClassic_Map_Server.dataobjects
         private BlockingCollection<SubPacket> SendPacketQueue = new BlockingCollection<SubPacket>(1000);
         public int lastPartialSize = 0;
 
-        public void QueuePacket(BasePacket packet)
+        public void QueuePacket(SubPacket subpacket)
         {
-            List<SubPacket> subPackets = packet.GetSubpackets();
-            foreach (SubPacket s in subPackets)
-                SendPacketQueue.Add(s);
-        }
+            if(SendPacketQueue.Count == 1000)
+                FlushQueuedSendPackets();
 
-        public void QueuePacket(SubPacket subpacket, bool isAuthed, bool isEncrypted)
-        {
             SendPacketQueue.Add(subpacket);
         }
 
         public void FlushQueuedSendPackets()
         {
-            if (!socket.Connected)
+            if (socket == null || !socket.Connected)
                 return;
 
             while (SendPacketQueue.Count > 0)
@@ -45,7 +41,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
                     socket.Send(packetBytes);
                 }
                 catch (Exception e)
-                { Program.Log.Error("Weird case, socket was d/ced: {0}", e); }
+                { Program.Log.Error(e, "Weird case, socket was d/ced: {0}"); }
             }
         }
 
@@ -68,7 +64,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public void RequestZoneChange(uint sessionId, uint destinationZoneId, byte spawnType, float spawnX, float spawnY, float spawnZ, float spawnRotation)
         {
             WorldRequestZoneChangePacket.BuildPacket(sessionId, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation).DebugPrintSubPacket();
-            QueuePacket(WorldRequestZoneChangePacket.BuildPacket(sessionId, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation), true, false);
+            QueuePacket(WorldRequestZoneChangePacket.BuildPacket(sessionId, destinationZoneId, spawnType, spawnX, spawnY, spawnZ, spawnRotation));
         }
     }
 }

@@ -17,8 +17,9 @@ namespace FFXIVClassic_Map_Server.actors.group
         public MonsterParty(ulong groupIndex, uint[] initialMonsterMembers)
             : base(groupIndex)
         {
-            for (int i = 0; i < initialMonsterMembers.Length; i++)
-                monsterMembers.Add(initialMonsterMembers[i]);
+            if(initialMonsterMembers != null)
+                for (int i = 0; i < initialMonsterMembers.Length; i++)
+                    monsterMembers.Add(initialMonsterMembers[i]);
         }
 
         public void AddMember(uint memberId)
@@ -47,11 +48,11 @@ namespace FFXIVClassic_Map_Server.actors.group
 
         public override void SendInitWorkValues(Session session)
         {
-            SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupIndex);            
+            SynchGroupWorkValuesPacket groupWork = new SynchGroupWorkValuesPacket(groupIndex);
             groupWork.setTarget("/_init");
 
-            SubPacket test = groupWork.buildPacket(session.id, session.id);
-            session.QueuePacket(test, true, false);
+            SubPacket test = groupWork.buildPacket(session.id);
+            session.QueuePacket(test);
         }
 
         public override uint GetTypeId()

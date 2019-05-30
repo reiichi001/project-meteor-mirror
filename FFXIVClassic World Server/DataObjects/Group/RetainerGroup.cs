@@ -49,8 +49,8 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             
             groupWork.setTarget("/_init");
 
-            SubPacket test = groupWork.buildPacket(session.sessionId, session.sessionId);
-            session.clientConnection.QueuePacket(test, true, false);
+            SubPacket test = groupWork.buildPacket(session.sessionId);
+            session.clientConnection.QueuePacket(test);
         }
         
         public override int GetMemberCount()

@@ -1,7 +1,5 @@
 ﻿using FFXIVClassic.Common;
 
-using FFXIVClassic.Common;
-
 namespace FFXIVClassic_Map_Server.packets.send.supportdesk
 {
     class GMTicketSentResponsePacket
@@ -15,7 +13,7 @@ namespace FFXIVClassic_Map_Server.packets.send.supportdesk
 
             data[0] = (byte)(wasSent ? 0x1 : 0x0);
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, playerActorID, data);
         }
     }
 }

@@ -41,7 +41,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     byte byteOut = (Byte)(byteIn ^ 0x73);
                     binWriter.Write((Byte)byteOut);
                 }
-                catch (EndOfStreamException e) { break; }
+                catch (EndOfStreamException) { break; }
             }
 
             binReader.Close();
@@ -88,7 +88,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     }
                 }
             }
-            catch(FileNotFoundException e)
+            catch(FileNotFoundException)
             { Program.Log.Error("Could not find staticactors file."); return false; }
 
             Program.Log.Info("Loaded {0} static actors.", mStaticActors.Count());

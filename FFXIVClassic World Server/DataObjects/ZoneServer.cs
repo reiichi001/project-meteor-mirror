@@ -59,7 +59,7 @@ namespace FFXIVClassic_World_Server.DataObjects
                     throw new ApplicationException("Error occured starting listeners, check inner exception", e);
                 }
             }
-            catch (Exception e)
+            catch (Exception)
             { Program.Log.Error("Failed to connect"); return false; }
 
             return true;
@@ -76,7 +76,7 @@ namespace FFXIVClassic_World_Server.DataObjects
                     zoneServerConnection.Send(packetBytes);
                 }
                 catch (Exception e)
-                { Program.Log.Error("Weird case, socket was d/ced: {0}", e); }
+                { Program.Log.Error(e, "Weird case, socket was d/ced: {0}"); }
             }
             else
             {
@@ -150,9 +150,9 @@ namespace FFXIVClassic_World_Server.DataObjects
             }
         }
 
-        public void SendSessionStart(Session session)
+        public void SendSessionStart(Session session, bool isLogin = false)
         {
-            SendPacket(SessionBeginPacket.BuildPacket(session));
+            SendPacket(SessionBeginPacket.BuildPacket(session, isLogin));
         }
 
         public void SendSessionEnd(Session session)

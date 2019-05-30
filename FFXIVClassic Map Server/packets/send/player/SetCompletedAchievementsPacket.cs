@@ -1,8 +1,6 @@
 ﻿using FFXIVClassic.Common;
 using System.IO;
 
-using FFXIVClassic.Common;
-
 namespace FFXIVClassic_Map_Server.packets.send.player
 {
     class SetCompletedAchievementsPacket
@@ -26,7 +24,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
 
         public bool[] achievementFlags = new bool[1024];
 
-        public SubPacket BuildPacket(uint playerActorID)
+        public SubPacket BuildPacket(uint sourceActorId)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -42,7 +40,7 @@ namespace FFXIVClassic_Map_Server.packets.send.player
                 }
             }
 
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);            
+            return new SubPacket(OPCODE, sourceActorId, data);            
         }
         
     }

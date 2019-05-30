@@ -96,5 +96,31 @@ namespace FFXIVClassic_Map_Server.utils
             }
         }
 
+        public static string GetClassNameForId(short id)
+        {
+            switch (id)
+            {
+                case 2: return "pug";
+                case 3: return "gla";
+                case 4: return "mrd";
+                case 7: return "arc";
+                case 8: return "lnc";
+                case 22: return "thm";
+                case 23: return "cnj";
+                case 29: return "crp";
+                case 30: return "bsm";
+                case 31: return "arm";
+                case 32: return "gsm";
+                case 33: return "ltw";
+                case 34: return "wvr";
+                case 35: return "alc";
+                case 36: return "cul";
+                case 39: return "min";
+                case 40: return "btn";
+                case 41: return "fsh";
+                default: return "undefined";
+            }
+        }
+
     }
 }

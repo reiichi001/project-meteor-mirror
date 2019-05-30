@@ -25,7 +25,7 @@ namespace FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group
                     binWriter.Write((UInt32)result);
                 }
             }
-            return new SubPacket(true, OPCODE, session.id, session.id, data);
+            return new SubPacket(true, OPCODE, session.id, data);
         }
 
     }

@@ -11,7 +11,7 @@ namespace FFXIVClassic_Map_Server.packets.send.supportdesk
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
             data[0] = (byte)(startGM ? 1 : 0);
-            return new SubPacket(OPCODE, playerActorID, playerActorID, data);
+            return new SubPacket(OPCODE, playerActorID, data);
         }
     }
 }

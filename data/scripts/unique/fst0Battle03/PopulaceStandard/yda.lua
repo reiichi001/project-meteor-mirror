@@ -7,9 +7,10 @@ end
 
 function onEventStarted(player, npc, triggerName)
 	man0g0Quest = player:GetQuest("Man0g0");
-	
+	print("Got Quest Man0g0");
 	if (man0g0Quest ~= nil) then	
-	
+		
+		print("Man0g0Quest is not nil");
 		if (triggerName == "pushDefault") then
 			callClientFunction(player, "delegateEvent", player, man0g0Quest, "processTtrNomal002", nil, nil, nil);			
 		elseif (triggerName == "talkDefault") then		
@@ -23,20 +24,29 @@ function onEventStarted(player, npc, triggerName)
 				player:GetDirector("OpeningDirector"):onTalkEvent(player, npc);
 			--Was she talked to after papalymo?
 			else
+				print("Making content area");
 				if (man0g0Quest:GetQuestFlag(MAN0G0_FLAG_MINITUT_DONE1) == true) then				
 
 					player:EndEvent();
 		
-					worldMaster = GetWorldMaster();
-					player:SendGameMessage(player, worldMaster, 34108, 0x20);	
-					player:SendGameMessage(player, worldMaster, 50011, 0x20);	
-
-					director = player:GetZone():CreateDirector("Quest/QuestDirectorMan0g001");
-					player:KickEvent(director, "noticeEvent", true);
-					player:AddDirector(director);
-					player:SetLoginDirector(director);
+					contentArea = player:GetZone():CreateContentArea(player, "/Area/PrivateArea/Content/PrivateAreaMasterSimpleContent", "man0g01", "SimpleContent30010", "Quest/QuestDirectorMan0g001");
+		
+					if (contentArea == nil) then
+						player:EndEvent();
+						return;
+					end
+		
+					director = contentArea:GetContentDirector();		
+					--player:AddDirector(director);		
+					director:StartDirector(false);
 					
-					GetWorldManager():DoZoneChange(player, 166, "ContentSimpleContent30010", 1, 16, 362.4087, 4, -703.8168, 1.5419);
+					player:KickEvent(director, "noticeEvent", true);
+					player:SetLoginDirector(director);		
+					
+					print("Content area and director made");
+					player:ChangeState(0);
+					GetWorldManager():DoZoneChangeContent(player, contentArea, 362.4087, 4, -703.8168, 1.5419, 16);
+					print("Zone Change");
 					return;
 				else
 					callClientFunction(player, "delegateEvent", player, man0g0Quest, "processEvent000_1", nil, nil, nil);

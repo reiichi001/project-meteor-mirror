@@ -19,7 +19,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor
         public const ushort SPAWNTYPE_WARP_DUTY2 = 6;
         public const ushort SPAWNTYPE_WARP_LIGHT = 7;
         
-        public static SubPacket BuildPacket(uint sourceActorID, uint targetActorID, uint actorId, float x, float y, float z, float rotation, ushort spawnType, bool isZoningPlayer)
+        public static SubPacket BuildPacket(uint sourceActorId, uint actorId, float x, float y, float z, float rotation, ushort spawnType, bool isZoningPlayer)
         {
             byte[] data = new byte[PACKET_SIZE-0x20];
 
@@ -41,7 +41,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor
                 }
             }
 
-            return new SubPacket(OPCODE, sourceActorID, targetActorID, data);
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
 
     }

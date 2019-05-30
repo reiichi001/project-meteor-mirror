@@ -2,11 +2,11 @@ require("global");
 
 properties = {
     permissions = 0,
-    parameters = "ssss",
+    parameters = "sssss",
     description = ""
 }
 
-function onTrigger(player, argc, actorClassId, regionId, layoutId, maxLayoutId)
+function onTrigger(player, argc, animation, regionId, layoutId, maxLayoutId)
 	layoutId = tonumber(layoutId);
 	
 	if (maxLayoutId ~= nil) then
@@ -15,6 +15,7 @@ function onTrigger(player, argc, actorClassId, regionId, layoutId, maxLayoutId)
 		maxLayoutId = layoutId;
 	end
 	
+	actorClassId = 5900001;
 	while (layoutId <= maxLayoutId) do
 		if (actorClassId == nil) then
 			player:SendMessage(0x20, "", "No actor class id provided.");
@@ -33,7 +34,7 @@ function onTrigger(player, argc, actorClassId, regionId, layoutId, maxLayoutId)
 			zone = player:GetZone();
 			actor = zone:SpawnActor(actorClassId, "mapobj", pos[0], pos[1], pos[2], tonumber(regionId), tonumber(layoutId));
 			wait(0.8);
-			actor:PlayMapObjAnimation(player, "open");
+			actor:PlayMapObjAnimation(player, animation);
 			zone:DespawnActor("mapobj");
 			wait(0.5);
 			player:SendMessage(0x20, "", "Layout ID: "..layoutId);
@@ -46,8 +47,8 @@ end;
 --dun4 (0x19e) - Copperbell Mines
 --dun1 - Mun Tuy
 --dun2 - Tam Tara
+--debug:_getAllCharacter("MapObjStandard")[1]
+
 
 --Ferry (Thanalan, Z=-130): 5145, 252
 --Ferry (La Noscea, Z=+130): 5144, 201
---Ferry (5142, Z=-130) Doors: 323, 326, 
---Ferry (5143, Z=+130) Doors: 323, 326, 

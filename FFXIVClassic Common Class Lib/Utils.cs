@@ -7,6 +7,7 @@ namespace FFXIVClassic.Common
     public static class Utils
     {
         private static readonly uint[] _lookup32 = CreateLookup32();
+        private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         private static uint[] CreateLookup32()
         {
@@ -84,10 +85,10 @@ namespace FFXIVClassic.Common
             return sb.ToString().TrimEnd(Environment.NewLine.ToCharArray());
         }
 
-        public static uint UnixTimeStampUTC()
+        public static uint UnixTimeStampUTC(DateTime? time = null)
         {
             uint unixTimeStamp;
-            var currentTime = DateTime.Now;
+            var currentTime = time ?? DateTime.Now;
             var zuluTime = currentTime.ToUniversalTime();
             var unixEpoch = new DateTime(1970, 1, 1);
             unixTimeStamp = (uint)zuluTime.Subtract(unixEpoch).TotalSeconds;
@@ -95,15 +96,20 @@ namespace FFXIVClassic.Common
             return unixTimeStamp;
         }
 
-        public static ulong MilisUnixTimeStampUTC()
+        public static ulong MilisUnixTimeStampUTC(DateTime? time = null)
         {
             ulong unixTimeStamp;
-            var currentTime = DateTime.Now;
+            var currentTime = time ?? DateTime.Now;
             var zuluTime = currentTime.ToUniversalTime();
             var unixEpoch = new DateTime(1970, 1, 1);
             unixTimeStamp = (ulong)zuluTime.Subtract(unixEpoch).TotalMilliseconds;
 
             return unixTimeStamp;
+        }
+
+        public static DateTime UnixTimeStampToDateTime(uint timestamp)
+        {
+            return epoch.AddSeconds(timestamp);
         }
 
         public static ulong SwapEndian(ulong input)
@@ -350,6 +356,96 @@ namespace FFXIVClassic.Common
         public static uint RotateRight(uint value, int bits)
         {
             return (value >> bits) | (value << (16 - bits));
+        }
+
+        public static T Clamp<T>(this T value, T min, T max) where T : IComparable<T>
+        {
+            if (value.CompareTo(min) < 0)
+                return min;
+            else if (value.CompareTo(max) > 0)
+                return max;
+            else
+                return value;
+        }
+
+        public static T Min<T>(this T value, T min) where T : IComparable<T>
+        {
+            if (value.CompareTo(min) > 0)
+                return min;
+            else
+                return value;
+        }
+
+        public static T Max<T>(this T value, T max) where T : IComparable<T>
+        {
+
+            if (value.CompareTo(max) < 0)
+                return max;
+            else
+                return value;
+        }
+
+        public static float DistanceSquared(Vector3 lhs, Vector3 rhs)
+        {
+            return DistanceSquared(lhs.X, lhs.Y, lhs.Z, rhs.X, rhs.Y, rhs.Z);
+        }
+
+        public static float Distance(Vector3 lhs, Vector3 rhs)
+        {
+            return Distance(lhs.X, lhs.Y, lhs.Z, rhs.X, rhs.Y, rhs.Z);
+        }
+
+        public static float Distance(float x, float y, float z, float x2, float y2, float z2)
+        {
+            if (x == x2 && y == y2 && z == z2)
+                return 0.0f;
+
+            return (float)Math.Sqrt(DistanceSquared(x, y, z, x2, y2, z2));
+        }
+
+        public static float DistanceSquared(float x, float y, float z, float x2, float y2, float z2)
+        {
+            if (x == x2 && y == y2 && z == z2)
+                return 0.0f;
+
+            // todo: my maths is shit
+            var dx = x - x2;
+            var dy = y - y2;
+            var dz = z - z2;
+
+            return dx * dx + dy * dy + dz * dz;
+        }
+
+        //Distance of just the x and z valeus, ignoring y
+        public static float XZDistanceSquared(Vector3 lhs, Vector3 rhs)
+        {
+            return XZDistanceSquared(lhs.X, lhs.Z, rhs.X, rhs.Z);
+        }
+
+        public static float XZDistance(Vector3 lhs, Vector3 rhs)
+        {
+            return XZDistance(lhs.X, lhs.Z, rhs.X, rhs.Z);
+        }
+
+        public static float XZDistance(float x, float z, float x2, float z2)
+        {
+            if (x == x2 && z == z2)
+                return 0.0f;
+
+            return (float)Math.Sqrt(XZDistanceSquared(x, z, x2, z2));
+        }
+
+
+        public static float XZDistanceSquared(float x, float z, float x2, float z2)
+        {
+            if (x == x2 && z == z2)
+                return 0.0f;
+
+            // todo: mz maths is shit
+            var dx = x - x2;
+            var dz = z - z2;
+
+            return dx * dx + dz * dz;
         }
     }
 }

@@ -1,7 +1,12 @@
 properties = {
     permissions = 0,
     parameters = "ssss",
-    description = "<name> <target name>",
+    description =
+[[
+Sends a custom <packet> to player or <targetname>
+!sendpacket <packet> |
+!sendpacket <packet> <targetname> |
+]],
 }
 
 function onTrigger(player, argc, path, name, lastName)

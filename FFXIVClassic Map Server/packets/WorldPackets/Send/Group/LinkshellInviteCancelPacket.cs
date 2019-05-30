@@ -17,7 +17,7 @@ namespace FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group
         public static SubPacket BuildPacket(Session session)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];            
-            return new SubPacket(true, OPCODE, session.id, session.id, data);
+            return new SubPacket(true, OPCODE, session.id, data);
         }      
     }
 }

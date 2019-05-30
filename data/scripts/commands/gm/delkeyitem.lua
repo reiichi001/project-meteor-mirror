@@ -3,7 +3,12 @@ require("global");
 properties = {
     permissions = 0,
     parameters = "ssss",
-    description = "removes <keyitem> <qty> from <target>, keyitem is removed from user if <target> is nil",
+    description = 
+[[
+Removes <keyitem> from player or <targetname>.
+!delkeyitem <keyitem> |
+!delkeyitem <keyitem> <target name> |
+]],
 }
 
 function onTrigger(player, argc, keyitem, qty, name, lastName)
@@ -19,16 +24,16 @@ function onTrigger(player, argc, keyitem, qty, name, lastName)
     
     if player then
         keyitem = tonumber(keyitem) or nil;
-        qty = 1;
-        location = INVENTORY_KEYITEMS;
-        
-        local removed = player:GetInventory(location):removeItem(item, qty);
+        qty = tonumber(qty) or 1;
+        local location = INVENTORY_KEYITEMS;
+       
+        local removed = player:GetInventory(location):RemoveItem(keyitem, qty);
         local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
-        local message = "unable to remove keyitem";
+        local message = "Attempting to remove keyitem" -- "unable to remove keyitem";
         
-        if keyitem and removed then
+        if removed then
             message = string.format("removed keyitem %u from %s", keyitem, player:GetName());
-        end
+        end;
         player:SendMessage(messageID, sender, message);
         print(message);
     else

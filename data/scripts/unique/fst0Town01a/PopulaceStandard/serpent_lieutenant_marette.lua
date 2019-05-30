@@ -1,7 +1,18 @@
 require ("global")
 
 function onEventStarted(player, npc)
-    defaultFst = GetStaticActor("DftFst");
-	callClientFunction(player, "delegateEvent", player, defaultFst, "defaultTalkWithSerpent_lieutenant_marette_001", nil, nil, nil);
-	player:endEvent();
+    Spl = GetStaticActor("Spl000");
+    magickedPrism = 3020615;
+
+    if not player:GetInventory(INVENTORY_NORMAL):HasItem(magickedPrism) then    
+        callClientFunction(player, "delegateEvent", player, Spl, "processEventELNAURE", 2);
+        local invCheck = player:GetInventory(INVENTORY_NORMAL):AddItem(magickedPrism, 10, 1);
+        if invCheck == INV_ERROR_SUCCESS then
+            player:SendGameMessage(player, GetWorldMaster(), 25246, MESSAGE_TYPE_SYSTEM, magickedPrism, 10);
+        end
+    else
+        callClientFunction(player, "delegateEvent", player, Spl, "processEventELNAURE", 1);
+    end
+    
+    player:endEvent();
 end

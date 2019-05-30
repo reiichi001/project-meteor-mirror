@@ -1,8 +1,6 @@
 ﻿using FFXIVClassic.Common;
 using System;
 
-using FFXIVClassic.Common;
-
 namespace  FFXIVClassic_Map_Server.packets.send.actor
 {
     class SetActorStatePacket
@@ -30,10 +28,10 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor
         public const ushort OPCODE = 0x134;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket BuildPacket(uint playerActorID, uint targetID, uint mainState, uint subState)
+        public static SubPacket BuildPacket(uint sourceActorId, uint mainState, uint subState)
         {            
             ulong combined = (mainState & 0xFF) | ((subState & 0xFF) << 8);
-            return new SubPacket(OPCODE, playerActorID, targetID, BitConverter.GetBytes(combined));
+            return new SubPacket(OPCODE, sourceActorId, BitConverter.GetBytes(combined));
         }
     }
 }

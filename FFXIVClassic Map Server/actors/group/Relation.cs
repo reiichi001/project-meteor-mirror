@@ -68,9 +68,9 @@ namespace FFXIVClassic_Map_Server.actors.group
             groupWork.addProperty(this, "work._globalTemp.variableCommand");
             groupWork.setTarget("/_init");
 
-            SubPacket test = groupWork.buildPacket(session.id, session.id);
+            SubPacket test = groupWork.buildPacket(session.id);
             test.DebugPrintSubPacket();
-            session.QueuePacket(test, true, false);
+            session.QueuePacket(test);
         }
 
     }

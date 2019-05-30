@@ -23,26 +23,24 @@ function onEventStarted(player, npc, triggerName)
 		print "AAAA"
 	end
 	
-	--if (man0u0Quest ~= nil and man0u0Quest:GetQuestFlag(MAN0U0_FLAG_MINITUT_DONE1) == true and man0u0Quest:GetQuestFlag(MAN0U0_FLAG_MINITUT_DONE2) == true and man0u0Quest:GetQuestFlag(MAN0U0_FLAG_MINITUT_DONE3) == true) then
-		
+	if (man0u0Quest ~= nil and man0u0Quest:GetQuestFlag(MAN0U0_FLAG_MINITUT_DONE1) == true and man0u0Quest:GetQuestFlag(MAN0U0_FLAG_MINITUT_DONE2) == true and man0u0Quest:GetQuestFlag(MAN0U0_FLAG_MINITUT_DONE3) == true) then		
 		player:EndEvent();
 		
-		worldMaster = GetWorldMaster();
-		player:SendGameMessage(player, worldMaster, 34108, 0x20);	
-		player:SendGameMessage(player, worldMaster, 50011, 0x20);	
-
-		director = player:GetZone():CreateDirector("Quest/QuestDirectorMan0u001");
-		player:KickEvent(director, "noticeEvent", true);
-		player:AddDirector(director);
-		player:SetLoginDirector(director);
+		contentArea = player:GetZone():CreateContentArea(player, "/Area/PrivateArea/Content/PrivateAreaMasterSimpleContent", "man0u01", "SimpleContent30079", "Quest/QuestDirectorMan0u001");
 		
-		GetWorldManager():DoZoneChange(player, 17);
-	
-	
+		if (contentArea == nil) then
+			player:EndEvent();
+			return;
+		end
+		
+		director = contentArea:GetContentDirector();		
+		player:AddDirector(director);		
+		director:StartDirector(false);
+		
+		player:KickEvent(director, "noticeEvent", true);
+		player:SetLoginDirector(director);		
+					
+		GetWorldManager():DoZoneChangeContent(player, contentArea, -24.34, 192, 34.22, 0.78, 16);
+	end
 	
 end
-
---[[AFTER GOOBBUE
-22.81, 196, 87.82
-]]
---0x45c00005

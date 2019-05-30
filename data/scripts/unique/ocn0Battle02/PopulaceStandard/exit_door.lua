@@ -10,8 +10,8 @@ function onSpawn(player, npc)
 			player:SetEventStatus(npc, "pushDefault", true, 0x2);
 			npc:SetQuestGraphic(player, 0x3);
 		else
-			player:SetEventStatus(npc, "pushDefault", true, 0x2);
-			npc:SetQuestGraphic(player, 0x3);
+			player:SetEventStatus(npc, "pushDefault", true, 0x0);
+			npc:SetQuestGraphic(player, 0x0);
 		end
 	end
 	
@@ -34,10 +34,11 @@ function onEventStarted(player, npc, triggerName)
 			return;
 		end
 		
-		director = contentArea:GetContentDirector();
+		director = contentArea:GetContentDirector();		
+		player:AddDirector(director);		
+		director:StartDirector(false);
 		
 		player:KickEvent(director, "noticeEvent", true);
-		player:AddDirector(director);
 		player:SetLoginDirector(director);		
 		
 		GetWorldManager():DoZoneChangeContent(player, contentArea, -5, 16.35, 6, 0.5, 16);		

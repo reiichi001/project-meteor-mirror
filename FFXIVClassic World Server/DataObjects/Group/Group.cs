@@ -12,6 +12,7 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
         public const uint GroupInvitationRelationGroup = 50001;
         public const uint TradeRelationGroup = 50002;
+        public const uint RetainerMeetingRelationGroup = 50003;
         public const uint BazaarBuyItemRelationGroup = 50009;
 
         public const uint RetainerGroup = 80001;
@@ -97,33 +98,34 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             ulong time = Utils.MilisUnixTimeStampUTC();
             List<GroupMember> members = BuildMemberList(session.sessionId);
 
-            session.clientConnection.QueuePacket(GroupHeaderPacket.buildPacket(session.sessionId, session.currentZoneId, time, this), true, false);
-            session.clientConnection.QueuePacket(GroupMembersBeginPacket.buildPacket(session.sessionId, session.currentZoneId, time, this), true, false);
+            session.clientConnection.QueuePacket(GroupHeaderPacket.buildPacket(session.sessionId, session.currentZoneId, time, this));
+            session.clientConnection.QueuePacket(GroupMembersBeginPacket.buildPacket(session.sessionId, session.currentZoneId, time, this));
 
             int currentIndex = 0;
 
             while (true)
             {
-                if (GetMemberCount() - currentIndex >= 64)
-                    session.clientConnection.QueuePacket(GroupMembersX64Packet.buildPacket(session.sessionId, session.currentZoneId, time, members, ref currentIndex), true, false);
-                else if (GetMemberCount() - currentIndex >= 32)
-                    session.clientConnection.QueuePacket(GroupMembersX32Packet.buildPacket(session.sessionId, session.currentZoneId, time, members, ref currentIndex), true, false);
-                else if (GetMemberCount() - currentIndex >= 16)
-                    session.clientConnection.QueuePacket(GroupMembersX16Packet.buildPacket(session.sessionId, session.currentZoneId, time, members, ref currentIndex), true, false);
-                else if (GetMemberCount() - currentIndex > 0)
-                    session.clientConnection.QueuePacket(GroupMembersX08Packet.buildPacket(session.sessionId, session.currentZoneId, time, members, ref currentIndex), true, false);
+                int memberCount = Math.Min(GetMemberCount(), members.Count);
+                if (memberCount - currentIndex >= 64)
+                    session.clientConnection.QueuePacket(GroupMembersX64Packet.buildPacket(session.sessionId, session.currentZoneId, time, members, ref currentIndex));
+                else if (memberCount - currentIndex >= 32)
+                    session.clientConnection.QueuePacket(GroupMembersX32Packet.buildPacket(session.sessionId, session.currentZoneId, time, members, ref currentIndex));
+                else if (memberCount - currentIndex >= 16)
+                    session.clientConnection.QueuePacket(GroupMembersX16Packet.buildPacket(session.sessionId, session.currentZoneId, time, members, ref currentIndex));
+                else if (memberCount - currentIndex > 0)
+                    session.clientConnection.QueuePacket(GroupMembersX08Packet.buildPacket(session.sessionId, session.currentZoneId, time, members, ref currentIndex));
                 else
                     break;
             }
             
-            session.clientConnection.QueuePacket(GroupMembersEndPacket.buildPacket(session.sessionId, session.currentZoneId, time, this), true, false);
+            session.clientConnection.QueuePacket(GroupMembersEndPacket.buildPacket(session.sessionId, session.currentZoneId, time, this));
 
         }
 
         public void SendDeletePacket(Session session)
         {            
             if (session != null)
-                session.clientConnection.QueuePacket(DeleteGroupPacket.buildPacket(session.sessionId, this), true, false);
+                session.clientConnection.QueuePacket(DeleteGroupPacket.buildPacket(session.sessionId, this));
         }
 
         public virtual void SendInitWorkValues(Session session)

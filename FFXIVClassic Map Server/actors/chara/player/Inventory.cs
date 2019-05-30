@@ -1,194 +1,206 @@
-﻿
-using FFXIVClassic.Common;
+﻿using FFXIVClassic.Common;
+using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace FFXIVClassic_Map_Server.actors.chara.player
 {
     class Inventory
     {       
-        public const ushort NORMAL = 0x0000; //Max 0xC8
-        public const ushort LOOT = 0x0004; //Max 0xA
-        public const ushort MELDREQUEST = 0x0005; //Max 0x04
-        public const ushort BAZAAR = 0x0007; //Max 0x0A
-        public const ushort CURRENCY = 0x0063; //Max 0x140
-        public const ushort KEYITEMS = 0x0064; //Max 0x500
-        public const ushort EQUIPMENT = 0x00FE; //Max 0x23
-        public const ushort EQUIPMENT_OTHERPLAYER = 0x00F9; //Max 0x23
+        public const ushort NORMAL                  = 0; //Max 0xC8
+        public const ushort TRADE                   = 1; //Max 0x96
+        public const ushort LOOT                    = 4; //Max 0xA
+        public const ushort MELDREQUEST             = 5; //Max 0x04
+        public const ushort BAZAAR                  = 7; //Max 0x0A
+        public const ushort CURRENCY_CRYSTALS       = 99; //Max 0x140
+        public const ushort KEYITEMS                = 100; //Max 0x500
+        public const ushort EQUIPMENT               = 0x00FE; //Max 0x23
+        public const ushort EQUIPMENT_OTHERPLAYER   = 0x00F9; //Max 0x23
+        
+        public enum INV_ERROR {
+            SUCCESS = 0,
+            INVENTORY_FULL,
+            ALREADY_HAS_UNIQUE,
+            SYSTEM_ERROR
+        };
 
-        private Player owner;
+        private Character owner;
         private ushort inventoryCapacity;
         private ushort inventoryCode;
-        private List<InventoryItem> list;
+        private bool isTemporary;
+        private InventoryItem[] list;
+        private bool[] isDirty;
 
-        public Inventory(Player ownerPlayer, ushort capacity, ushort code)
+        private int endOfListIndex = 0;
+
+        public Inventory(Character ownerPlayer, ushort capacity, ushort code, bool temporary = false)
         {
             owner = ownerPlayer;
             inventoryCapacity = capacity;
             inventoryCode = code;
+            isTemporary = temporary;
+            list = new InventoryItem[capacity];
+            isDirty = new bool[capacity];
         }
 
         #region Inventory Management
         public void InitList(List<InventoryItem> itemsFromDB)
         {
-            list = itemsFromDB;
+            int i = 0;
+            foreach (InventoryItem item in itemsFromDB)
+                list[i++] = item;
+            endOfListIndex = i;
         }
 
-        public InventoryItem GetItemBySlot(ushort slot)
+        public InventoryItem GetItemAtSlot(ushort slot)
         {
-            if (slot < list.Count)
+            if (slot < list.Length)
                 return list[slot];
             else
                 return null;
         }
 
-        public InventoryItem GetItemById(ulong itemId)
+        public InventoryItem GetItemByUniqueId(ulong uniqueItemId)
         {
-            foreach (InventoryItem item in list)
+            for (int i = 0; i < endOfListIndex; i++)
             {
-                if (item.uniqueId == itemId)
+                InventoryItem item = list[i];
+
+                Debug.Assert(item != null, "Item slot was null!!!");
+
+                if (item.uniqueId == uniqueItemId)
                     return item;
             }
             return null;
         }
 
-        public void RefreshItem(InventoryItem item)
+        public InventoryItem GetItemByCatelogId(ulong catelogId)
         {
-            owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
-            SendInventoryPackets(item);
-            owner.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
+            for (int i = 0; i < endOfListIndex; i++)
+            {
+                InventoryItem item = list[i];
+
+                Debug.Assert(item != null, "Item slot was null!!!");
+
+                if (item.itemId == catelogId)
+                    return item;
+            }
+            return null;
         }
 
-        public void RefreshItem(params InventoryItem[] items)
+
+        public int GetItemQuantity(uint itemId)
         {
-            owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
-            SendInventoryPackets(items.ToList());
-            owner.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
+            return GetItemQuantity(itemId, 1);
         }
 
-        public void RefreshItem(List<InventoryItem> items)
+        public int GetItemQuantity(uint itemId, uint quality)
         {
-            owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
-            SendInventoryPackets(items);
-            owner.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
+            int count = 0;
+
+            for (int i = endOfListIndex - 1; i >= 0; i--)
+            {
+                InventoryItem item = list[i];
+
+                if (item.itemId == itemId && item.quality == quality)
+                    count += item.quantity;
+
+            }
+
+            return count;
         }
 
-        public void AddItem(uint itemId)
+
+        public int AddItem(uint itemId)
         {
-            AddItem(itemId, 1, 1);
+            return AddItem(itemId, 1, 1);
         }
 
-        public void AddItem(uint itemId, int quantity)
+        public void AddItem(uint[] itemId)
         {
-            AddItem(itemId, quantity, 1);
+            for (int i = 0; i < itemId.Length; i++)
+                AddItem(itemId[i]);
         }
 
-        public bool AddItem(uint itemId, int quantity, byte quality)
+        public int AddItem(uint itemId, int quantity)
         {
-            if (!IsSpaceForAdd(itemId, quantity))
-                return false;
+            return AddItem(itemId, quantity, 1);
+        }
 
-            Item gItem = Server.GetItemGamedata(itemId);
-            List<ushort> slotsToUpdate = new List<ushort>();
-            List<SubPacket> addItemPackets = new List<SubPacket>();
+        public int AddItem(uint itemId, int quantity, byte quality)
+        {
+            if (!IsSpaceForAdd(itemId, quantity, quality))
+                return (int)INV_ERROR.INVENTORY_FULL;
+
+            ItemData gItem = Server.GetItemGamedata(itemId);
 
             if (gItem == null)
             {
                 Program.Log.Error("Inventory.AddItem: unable to find item %u", itemId);
-                return false;
+                return (int)INV_ERROR.SYSTEM_ERROR;
             }
 
             //Check if item id exists 
             int quantityCount = quantity;
-            for (int i = 0; i < list.Count; i++)
+            for (int i = 0; i < endOfListIndex; i++)
             {                
                 InventoryItem item = list[i];
-                if (item.itemId == itemId && item.quantity < gItem.maxStack)
+
+                Debug.Assert(item != null, "Item slot was null!!!");
+
+                if (item.itemId == itemId && item.quality == quality && item.quantity < gItem.maxStack)
                 {
-                    slotsToUpdate.Add(item.slot);
                     int oldQuantity = item.quantity;
                     item.quantity = Math.Min(item.quantity + quantityCount, gItem.maxStack);
+                    isDirty[i] = true;
                     quantityCount -= (gItem.maxStack - oldQuantity);
+
+                    DoDatabaseQuantity(item.uniqueId, item.quantity);
+                    
                     if (quantityCount <= 0)
                         break;
                 }
             }
                   
             //If it's unique, abort
-            //if (quantityCount > 0 && storedItem.isUnique)
-          //      return ITEMERROR_UNIQUE;
-
-            //If Inventory is full
-            //if (quantityCount > 0 && isInventoryFull())
-         //       return ITEMERROR_FULL;
-
-            //Update lists and db
-            owner.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
-            owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
-
-            //These had their quantities Changed
-            foreach (ushort slot in slotsToUpdate)
-            {
-                Database.SetQuantity(owner, slot, inventoryCode, list[slot].quantity);
-
-                if (inventoryCode != CURRENCY && inventoryCode != KEYITEMS)
-                    SendInventoryPackets(list[slot]);
-            }
+            if (HasItem(itemId) && gItem.isRare)
+                return (int)INV_ERROR.ALREADY_HAS_UNIQUE;
 
             //New item that spilled over
             while (quantityCount > 0)
             {
-                InventoryItem addedItem = Database.AddItem(owner, itemId, Math.Min(quantityCount, gItem.maxStack), quality, gItem.isExclusive ? (byte)0x3 : (byte)0x0, gItem.durability, inventoryCode);
-
-                
-                list.Add(addedItem);
-
-                if (inventoryCode != CURRENCY && inventoryCode != KEYITEMS)
-                    SendInventoryPackets(addedItem);
-
+                InventoryItem addedItem = Database.CreateItem(itemId, Math.Min(quantityCount, gItem.maxStack), quality, gItem.isExclusive ? (byte)0x3 : (byte)0x0, gItem.durability);
+                addedItem.slot = (ushort)endOfListIndex;
+                isDirty[endOfListIndex] = true;
+                list[endOfListIndex++] = addedItem;                
                 quantityCount -= gItem.maxStack;
+
+                DoDatabaseAdd(addedItem);
             }
 
-            if (inventoryCode == CURRENCY || inventoryCode == KEYITEMS)
-                SendFullInventory();
+            SendUpdatePackets();
 
-            owner.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
-            owner.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
-            return true;
+            return (int)INV_ERROR.SUCCESS;
         }
 
-        public void AddItem(uint[] itemId)
+        public void RemoveItem(uint itemId)
         {
-            if (!IsSpaceForAdd(itemId[0], itemId.Length))
-                return;
-
-            //Update lists and db
-            owner.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
-            owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
-
-            int startPos = list.Count;
-
-            //New item that spilled over
-            for (int i = 0; i < itemId.Length; i++)
-            {
-                Item gItem = Server.GetItemGamedata(itemId[i]);
-                InventoryItem addedItem = Database.AddItem(owner, itemId[i], 1, (byte)1, gItem.isExclusive ? (byte)0x3 : (byte)0x0, gItem.durability, inventoryCode);
-                list.Add(addedItem);
-            }
-
-            SendInventoryPackets(startPos);
-
-            owner.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
-            owner.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
+            RemoveItem(itemId, 1);
         }
-
+        
         public void RemoveItem(uint itemId, int quantity)
         {
-            if (!HasItem(itemId, quantity))
+            RemoveItem(itemId, quantity, 1);
+        }
+
+        public void RemoveItem(uint itemId, int quantity, int quality)
+        {
+            if (!HasItem(itemId, quantity, quality))
                 return;
 
             List<ushort> slotsToUpdate = new List<ushort>();
@@ -199,23 +211,29 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             //Remove as we go along
             int quantityCount = quantity;
             ushort lowestSlot = 0;
-            for (int i = list.Count - 1; i >= 0; i--)
+            for (int i = endOfListIndex - 1; i >= 0; i--)
             {
                 InventoryItem item = list[i];
-                if (item.itemId == itemId)
+
+                Debug.Assert(item != null, "Item slot was null!!!");
+
+                if (item.itemId == itemId && item.quality == quality)
                 {
                     int oldQuantity = item.quantity;
                     //Stack nomnomed
                     if (item.quantity - quantityCount <= 0)
                     {
-                        itemsToRemove.Add(item);
-                        slotsToRemove.Add(item.slot);
+                        DoDatabaseRemove(list[i].uniqueId);                        
+                        list[i] = null;
                     }
+                    //Stack reduced
                     else
                     {
-                        slotsToUpdate.Add(item.slot);
-                        item.quantity -= quantityCount; //Stack reduced
-                    }
+                        item.quantity -= quantityCount;
+                        DoDatabaseQuantity(list[i].uniqueId, list[i].quantity);
+                    }                        
+
+                    isDirty[i] = true;
 
                     quantityCount -= oldQuantity;
                     lowestSlot = item.slot;
@@ -225,49 +243,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 }
             }
 
-            for (int i = 0; i < slotsToUpdate.Count; i++)
-            {
-                Database.SetQuantity(owner, slotsToUpdate[i], inventoryCode, list[slotsToUpdate[i]].quantity);
-            }
-
-            int oldListSize = list.Count;
-            for (int i = 0; i < itemsToRemove.Count; i++)
-            {
-                Database.RemoveItem(owner, itemsToRemove[i].uniqueId, inventoryCode);
-                list.Remove(itemsToRemove[i]);
-            }
-
-            //Realign slots
-            for (int i = lowestSlot; i < list.Count; i++)
-                list[i].slot = (ushort)i;
-
-            //Added tail end items that need to be cleared for slot realignment
-            for (int i = oldListSize-1; i >= oldListSize - itemsToRemove.Count; i--)
-            {
-                if (!slotsToRemove.Contains((ushort)i))
-                    slotsToRemove.Add((ushort)i);
-            }
-
-            owner.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
-            owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
-
-            SendInventoryPackets(lowestSlot);
-            SendInventoryRemovePackets(slotsToRemove);
-
-            owner.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
-
-            if (inventoryCode == NORMAL)
-                owner.GetEquipment().SendFullEquipment(false);
-
-            owner.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
+            DoRealign();
+            SendUpdatePackets();
         }
 
-        public void RemoveItem(ulong itemDBId)
+        public void RemoveItemByUniqueId(ulong itemDBId)
         {
             ushort slot = 0;
             InventoryItem toDelete = null;
-            foreach (InventoryItem item in list)
+            for (int i = endOfListIndex - 1; i >= 0; i--)
             {
+                InventoryItem item = list[i];
+
+                Debug.Assert(item != null, "Item slot was null!!!");
+
                 if (item.uniqueId == itemDBId)
                 {
                     toDelete = item;
@@ -278,107 +267,100 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             if (toDelete == null)
                 return;
+            
+            DoDatabaseRemove(toDelete.uniqueId);
 
-            int oldListSize = list.Count;
-            list.RemoveAt(slot);
-            Database.RemoveItem(owner, itemDBId, inventoryCode);
+            list[slot] = null;
+            isDirty[slot] = true;
 
-            //Realign slots
-            for (int i = slot; i < list.Count; i++)
-                list[i].slot = (ushort)i;
-           
-            owner.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
-            owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
-
-            SendInventoryPackets(slot);
-            SendInventoryRemovePackets(slot);
-            if (slot != oldListSize - 1)
-                SendInventoryRemovePackets((ushort)(oldListSize - 1));
-
-            owner.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
-
-            if (inventoryCode == NORMAL)
-                owner.GetEquipment().SendFullEquipment(false);
-
-            owner.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
-
+            DoRealign();
+            SendUpdatePackets();
         }
 
-        public void RemoveItem(ushort slot)
+        public void RemoveItemAtSlot(ushort slot)
         {
-            if (slot >= list.Count)
+            if (slot >= endOfListIndex)
                 return;
 
-            int oldListSize = list.Count;
-            list.RemoveAt((int)slot);
-            Database.RemoveItem(owner, slot, inventoryCode);
+            DoDatabaseRemove(list[slot].uniqueId);
 
-            //Realign slots
-            for (int i = slot; i < list.Count; i++)
-                list[i].slot = (ushort)i;
+            list[slot] = null;
+            isDirty[slot] = true;
+            
+            DoRealign();
+            SendUpdatePackets();
+        }
 
-            owner.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
-            owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+        public void RemoveItemAtSlot(ushort slot, int quantity)
+        {
+            if (slot >= endOfListIndex)
+                return;
 
-            SendInventoryPackets(slot);
-            SendInventoryRemovePackets(slot);
-            if (slot != oldListSize - 1)
-                SendInventoryRemovePackets((ushort)(oldListSize - 1));
+            if (list[slot] != null)
+            {
+                list[slot].quantity -= quantity;
 
-            owner.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
+                if (list[slot].quantity <= 0)
+                {
+                    DoDatabaseRemove(list[slot].uniqueId);
 
-            if (inventoryCode == NORMAL)
-                owner.GetEquipment().SendFullEquipment(false);
+                    list[slot] = null;
+                    DoRealign();
+                }
+                else                
+                    DoDatabaseQuantity(list[slot].uniqueId, list[slot].quantity);                
 
-            owner.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
+                isDirty[slot] = true;
+                SendUpdatePackets();
+            }                                  
         }
 
         public void ChangeDurability(uint slot, uint durabilityChange)
         {
-
+            isDirty[slot] = true;
         }
 
         public void ChangeSpiritBind(uint slot, uint spiritBindChange)
         {
-
+            isDirty[slot] = true;
         }
 
         public void ChangeMateria(uint slot, byte materiaSlot, byte materiaId)
         {
-
+            isDirty[slot] = true;
         }
         #endregion
 
         #region Packet Functions
-        public void SendFullInventory()
-        {            
-            owner.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
-            SendInventoryPackets(0);
-            owner.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
-        }
-
-        private void SendInventoryPackets(InventoryItem item)
+        public void SendFullInventory(Player player)
         {
-            owner.QueuePacket(InventoryListX01Packet.BuildPacket(owner.actorId, item));
+            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            SendInventoryPackets(player, 0);
+            player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
         }
 
-        private void SendInventoryPackets(List<InventoryItem> items)
+        private void SendInventoryPackets(Player player, InventoryItem item)
+        {
+            player.QueuePacket(InventoryListX01Packet.BuildPacket(owner.actorId, item));
+        }
+
+        private void SendInventoryPackets(Player player, List<InventoryItem> items)
         {
             int currentIndex = 0;
 
             while (true)
             {
                 if (items.Count - currentIndex >= 64)
-                    owner.QueuePacket(InventoryListX64Packet.BuildPacket(owner.actorId, items, ref currentIndex));
+                    player.QueuePacket(InventoryListX64Packet.BuildPacket(owner.actorId, items, ref currentIndex));
                 else if (items.Count - currentIndex >= 32)
-                    owner.QueuePacket(InventoryListX32Packet.BuildPacket(owner.actorId, items, ref currentIndex));
+                    player.QueuePacket(InventoryListX32Packet.BuildPacket(owner.actorId, items, ref currentIndex));
                 else if (items.Count - currentIndex >= 16)
-                    owner.QueuePacket(InventoryListX16Packet.BuildPacket(owner.actorId, items, ref currentIndex));
+                    player.QueuePacket(InventoryListX16Packet.BuildPacket(owner.actorId, items, ref currentIndex));
                 else if (items.Count - currentIndex > 1)
-                    owner.QueuePacket(InventoryListX08Packet.BuildPacket(owner.actorId, items, ref currentIndex));
+                    player.QueuePacket(InventoryListX08Packet.BuildPacket(owner.actorId, items, ref currentIndex));
                 else if (items.Count - currentIndex == 1)
                 {
-                    owner.QueuePacket(InventoryListX01Packet.BuildPacket(owner.actorId, items[currentIndex]));
+                    player.QueuePacket(InventoryListX01Packet.BuildPacket(owner.actorId, items[currentIndex]));
                     currentIndex++;
                 }
                 else
@@ -387,23 +369,27 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         }
 
-        private void SendInventoryPackets(int startOffset)
+        private void SendInventoryPackets(Player player, int startOffset)
         {
             int currentIndex = startOffset;
 
+            List<InventoryItem> lst = new List<InventoryItem>();
+            for (int i = 0; i < endOfListIndex; i++)
+                lst.Add(list[i]);
+
             while (true)
             {
-                if (list.Count - currentIndex >= 64)
-                    owner.QueuePacket(InventoryListX64Packet.BuildPacket(owner.actorId, list, ref currentIndex));
-                else if (list.Count - currentIndex >= 32)
-                    owner.QueuePacket(InventoryListX32Packet.BuildPacket(owner.actorId, list, ref currentIndex));
-                else if (list.Count - currentIndex >= 16)
-                    owner.QueuePacket(InventoryListX16Packet.BuildPacket(owner.actorId, list, ref currentIndex));
-                else if (list.Count - currentIndex > 1)
-                    owner.QueuePacket(InventoryListX08Packet.BuildPacket(owner.actorId, list, ref currentIndex));
-                else if (list.Count - currentIndex == 1)
+                if (endOfListIndex - currentIndex >= 64)
+                    player.QueuePacket(InventoryListX64Packet.BuildPacket(owner.actorId, lst, ref currentIndex));
+                else if (endOfListIndex - currentIndex >= 32)
+                    player.QueuePacket(InventoryListX32Packet.BuildPacket(owner.actorId, lst, ref currentIndex));
+                else if (endOfListIndex - currentIndex >= 16)
+                    player.QueuePacket(InventoryListX16Packet.BuildPacket(owner.actorId, lst, ref currentIndex));
+                else if (endOfListIndex - currentIndex > 1)
+                    player.QueuePacket(InventoryListX08Packet.BuildPacket(owner.actorId, lst, ref currentIndex));
+                else if (endOfListIndex - currentIndex == 1)
                 {
-                    owner.QueuePacket(InventoryListX01Packet.BuildPacket(owner.actorId, list[currentIndex]));
+                    player.QueuePacket(InventoryListX01Packet.BuildPacket(owner.actorId, list[currentIndex]));
                     currentIndex++;
                 }
                 else
@@ -412,34 +398,137 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         }
 
-        private void SendInventoryRemovePackets(ushort index)
+        private void SendInventoryRemovePackets(Player player, ushort index)
         {
-            owner.QueuePacket(InventoryRemoveX01Packet.BuildPacket(owner.actorId, index));
+            player.QueuePacket(InventoryRemoveX01Packet.BuildPacket(owner.actorId, index));
         }
 
-        private void SendInventoryRemovePackets(List<ushort> indexes)
+        private void SendInventoryRemovePackets(Player player, List<ushort> indexes)
         {
             int currentIndex = 0;
 
             while (true)
             {
                 if (indexes.Count - currentIndex >= 64)
-                    owner.QueuePacket(InventoryRemoveX64Packet.BuildPacket(owner.actorId, indexes, ref currentIndex));
+                    player.QueuePacket(InventoryRemoveX64Packet.BuildPacket(owner.actorId, indexes, ref currentIndex));
                 else if (indexes.Count - currentIndex >= 32)
-                    owner.QueuePacket(InventoryRemoveX32Packet.BuildPacket(owner.actorId, indexes, ref currentIndex));
+                    player.QueuePacket(InventoryRemoveX32Packet.BuildPacket(owner.actorId, indexes, ref currentIndex));
                 else if (indexes.Count - currentIndex >= 16)
-                    owner.QueuePacket(InventoryRemoveX16Packet.BuildPacket(owner.actorId, indexes, ref currentIndex));
+                    player.QueuePacket(InventoryRemoveX16Packet.BuildPacket(owner.actorId, indexes, ref currentIndex));
                 else if (indexes.Count - currentIndex > 1)
-                    owner.QueuePacket(InventoryRemoveX08Packet.BuildPacket(owner.actorId, indexes, ref currentIndex));
+                    player.QueuePacket(InventoryRemoveX08Packet.BuildPacket(owner.actorId, indexes, ref currentIndex));
                 else if (indexes.Count - currentIndex == 1)
                 {
-                    owner.QueuePacket(InventoryRemoveX01Packet.BuildPacket(owner.actorId, indexes[currentIndex]));
+                    player.QueuePacket(InventoryRemoveX01Packet.BuildPacket(owner.actorId, indexes[currentIndex]));
                     currentIndex++;
                 }
                 else
                     break;
             }
 
+        }
+
+        public void RefreshItem(Player player, InventoryItem item)
+        {
+            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            SendInventoryPackets(player, item);
+            player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
+        }
+
+        public void RefreshItem(Player player, params InventoryItem[] items)
+        {
+            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            SendInventoryPackets(player, items.ToList());
+            player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
+        }
+
+        public void RefreshItem(Player player, List<InventoryItem> items)
+        {
+            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));
+            SendInventoryPackets(player, items);
+            player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
+        }
+
+        #endregion
+
+        #region Automatic Client and DB Updating
+
+        private void DoDatabaseAdd(InventoryItem addedItem)
+        {
+            if (isTemporary)
+                return;
+
+            if (owner is Player)            
+                Database.AddItem((Player)owner, addedItem, inventoryCode);            
+            else if (owner is Retainer)
+                Database.AddItem((Retainer)owner, addedItem, inventoryCode);
+        }
+
+        private void DoDatabaseQuantity(ulong itemDBId, int quantity)
+        {
+            if (isTemporary)
+                return;
+
+            if (owner is Player)            
+                Database.SetQuantity((Player)owner, itemDBId, inventoryCode);            
+            else if (owner is Retainer)
+                Database.SetQuantity((Retainer)owner, itemDBId, inventoryCode);
+        }
+
+        private void DoDatabaseRemove(ulong itemDBId)
+        {
+            if (isTemporary)
+                return;
+
+            if (owner is Player)            
+                Database.RemoveItem((Player)owner, itemDBId);            
+            else if (owner is Retainer)
+                Database.RemoveItem((Retainer)owner, itemDBId);
+        }
+
+        private void SendUpdatePackets()
+        {
+            if (owner is Player)
+            {
+                SendUpdatePackets((Player)owner, true);
+            }                
+        }
+
+        public void SendUpdatePackets(Player player, bool doneImmediate = false)
+        {
+            List<InventoryItem> items = new List<InventoryItem>();
+            List<ushort> slotsToRemove = new List<ushort>();
+
+            for (int i = 0; i < list.Length; i++)
+            {
+                if (i == endOfListIndex)
+                    break;
+                if (isDirty[i])
+                    items.Add(list[i]);
+            }
+
+            for (int i = endOfListIndex; i < list.Length; i++)
+            {
+                if (isDirty[i])
+                    slotsToRemove.Add((ushort)i);
+            }
+
+            if (doneImmediate)
+                DoneSendUpdate();
+
+            player.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
+            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, inventoryCapacity, inventoryCode));                        
+            //Send Updated Slots
+            SendInventoryPackets(player, items);
+            //Send Remove packets for tail end
+            SendInventoryRemovePackets(player, slotsToRemove);
+            player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
+            player.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
+        }
+
+        public void DoneSendUpdate()
+        {
+            Array.Clear(isDirty, 0, isDirty.Length);
         }
 
         #endregion
@@ -448,17 +537,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public bool IsFull()
         {
-            return list.Count >= inventoryCapacity;
+            return endOfListIndex >= inventoryCapacity;
         }
         
-        public bool IsSpaceForAdd(uint itemId, int quantity)
+        public bool IsSpaceForAdd(uint itemId, int quantity, int quality)
         {
             int quantityCount = quantity;
-            for (int i = 0; i < list.Count; i++)
+            for (int i = 0; i < endOfListIndex; i++)
             {
                 InventoryItem item = list[i];
-                Item gItem = Server.GetItemGamedata(item.itemId);
-                if (item.itemId == itemId && item.quantity < gItem.maxStack)
+                ItemData gItem = Server.GetItemGamedata(item.itemId);
+                if (item.itemId == itemId && item.quality == quality && item.quantity < gItem.maxStack)
                 {
                     quantityCount -= (gItem.maxStack - item.quantity);
                     if (quantityCount <= 0)
@@ -476,11 +565,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public bool HasItem(uint itemId, int minQuantity)
         {
+            return HasItem(itemId, minQuantity, 1);
+        }
+
+        public bool HasItem(uint itemId, int minQuantity, int quality)
+        {
             int count = 0;
 
-            foreach (InventoryItem item in list)
+            for (int i = endOfListIndex - 1; i >= 0; i--)
             {
-                if (item.itemId == itemId)
+                InventoryItem item = list[i];
+
+                Debug.Assert(item != null, "Item slot was null!!!");
+
+                if (item.itemId == itemId && item.quality == quality)
                     count += item.quantity;
 
                 if (count >= minQuantity)
@@ -492,7 +590,33 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public int GetNextEmptySlot()
         {
-            return list.Count == 0 ? 0 : list.Count();                
+            return endOfListIndex;
+        }
+
+        private void DoRealign()
+        {
+            int lastNullSlot = -1;            
+
+            for (int i = 0; i < endOfListIndex; i++)
+            {
+                if (list[i] == null && lastNullSlot == -1)
+                {
+                    lastNullSlot = i;                    
+                    continue;
+                }
+                else if (list[i] != null && lastNullSlot != -1)
+                {
+                    list[lastNullSlot] = list[i];
+                    list[lastNullSlot].slot = (ushort)lastNullSlot;
+                    list[i] = null;
+                    isDirty[lastNullSlot] = true;
+                    isDirty[i] = true;
+                    lastNullSlot++;
+                }
+            }
+
+            if (lastNullSlot != -1)
+                endOfListIndex = lastNullSlot;
         }
 
         #endregion

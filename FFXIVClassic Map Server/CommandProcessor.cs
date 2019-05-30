@@ -14,7 +14,7 @@ namespace FFXIVClassic_Map_Server
 {
     class CommandProcessor
     {
-        private static Dictionary<uint, Item> gamedataItems = Server.GetGamedataItems();
+        private static Dictionary<uint, ItemData> gamedataItems = Server.GetGamedataItems();
 
         const UInt32 ITEM_GIL = 1000001;
       
@@ -27,12 +27,12 @@ namespace FFXIVClassic_Map_Server
         private void SendMessage(Session session, String message)
         {
             if (session != null)
-                session.GetActor().QueuePacket(SendMessagePacket.BuildPacket(session.id, session.id, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", message));
+                session.GetActor().QueuePacket(SendMessagePacket.BuildPacket(session.id, SendMessagePacket.MESSAGE_TYPE_GENERAL_INFO, "", message));
         }
 
         internal bool DoCommand(string input, Session session)
         {
-            if (!input.Any() || input.Equals(""))
+            if (!input.Any() || input.Equals("") || input.Length == 1)
                 return false;
 
             input.Trim();
@@ -47,10 +47,10 @@ namespace FFXIVClassic_Map_Server
 
             split = split.ToArray(); // Ignore case on commands
 
-            var cmd = split[0];
-
-            if (cmd.Any())
+            if (split.Length > 0)
             {
+                var cmd = split[0];
+
                 // if client isnt null, take player to be the player actor
                 Player player = null;
                 if (session != null)

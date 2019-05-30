@@ -16,10 +16,13 @@ namespace FFXIVClassic_Map_Server
     class Program
     {
         public static Logger Log;
+        public static Server Server;
+        public static Random Random;
+        public static DateTime LastTick = DateTime.Now;
+        public static DateTime Tick = DateTime.Now;
 
         static void Main(string[] args)
         {
-
             // set up logging
             Log = LogManager.GetCurrentClassLogger();
 #if DEBUG
@@ -28,7 +31,10 @@ namespace FFXIVClassic_Map_Server
 #endif
             bool startServer = true;
 
-            Program.Log.Info("---------FFXIV 1.0 Map Server---------");
+            Log.Info("==================================");
+            Log.Info("FFXIV Classic Map Server");
+            Log.Info("Version: 0.1");
+            Log.Info("==================================");
 
             //Load Config
             ConfigConstants.Load();
@@ -55,9 +61,10 @@ namespace FFXIVClassic_Map_Server
             //Start server if A-OK
             if (startServer)
             {
-                Server server = new Server();
-                
-                server.StartServer();
+                Random = new Random();
+                Server = new Server();
+                Tick = DateTime.Now;
+                Server.StartServer();
 
                 while (startServer)
                 {
