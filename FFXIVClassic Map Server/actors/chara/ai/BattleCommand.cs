@@ -114,8 +114,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public uint castTimeMs;                             //cast time in milliseconds
         public uint recastTimeMs;                           //recast time in milliseconds
         public uint maxRecastTimeSeconds;                   //maximum recast time in seconds
-        public ushort mpCost;
-        public ushort tpCost;
+        public short mpCost;                                //short in case these casts can have negative cost
+        public short tpCost;                                //short because there are certain cases where we want weaponskills to have negative costs (such as Feint)
         public byte animationType;
         public ushort effectAnimation;
         public ushort modelAnimation;
@@ -193,10 +193,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return castTimeMs == 0;
         }
 
-        //Checks whether the skill can be used on the given target
-        public bool IsValidMainTarget(Character user, Character target)
+        //Checks whether the skill can be used on the given targets, uses error to return specific text ids for errors
+        public bool IsValidMainTarget(Character user, Character target, CommandResult error = null)
         {
-            targetFind = new TargetFind(user);
+            targetFind = new TargetFind(user, target);
 
             if (aoeType == TargetFindAOEType.Box)
             {
@@ -209,6 +209,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             /*
             worldMasterTextId
+            32511   Target does not exist
             32512   cannot be performed on a KO'd target.
             32513	can only be performed on a KO'd target.
             32514	cannot be performed on yourself.
@@ -216,117 +217,112 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             32516	cannot be performed on a friendly target.
             32517	can only be performed on a friendly target.
             32518	cannot be performed on an enemy.
-            32519	can only be performed on an enemy,
-            32556   unable to execute [weaponskill]. Conditions for use are not met.
+            32519	can only be performed on an enemy.
+            32547   That command cannot be performed on the current target.
+            32548   That command cannot be performed on a party member
             */
-
-            // cant target dead
-            if ((mainTarget & (ValidTarget.Corpse | ValidTarget.CorpseOnly)) == 0 && target.IsDead())
+            if (target == null)
             {
-                // cannot be perfomed on
-                if (user is Player)
-                    ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32512, 0x20, (uint)id);
+                error?.SetTextId(32511);
                 return false;
             }
 
-            //level too high
-            if (level > user.GetLevel())
+            //This skill can't be used on a corpse and target is dead
+            if ((mainTarget & ValidTarget.Corpse) == 0 && target.IsDead())
             {
-                if (user is Player)
-                    ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32527, 0x20, (uint)id);
-                //return false;
-            }
-
-            //Proc requirement
-            if (procRequirement != BattleCommandProcRequirement.None && !user.charaWork.battleTemp.timingCommandFlag[(int) procRequirement - 1])
-            {
-                if (user is Player)
-                    ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32556, 0x20, (uint)id);
+                error?.SetTextId(32512);
                 return false;
             }
 
-            //costs too much tp
-            if (CalculateTpCost(user) > user.GetTP())
+            //This skill must be used on a corpse and target is alive
+            if ((mainTarget & ValidTarget.CorpseOnly) != 0 && target.IsAlive())
             {
-                if (user is Player)
-                    ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32546, 0x20, (uint)id);
+                error?.SetTextId(32513);
                 return false;
             }
 
-            // todo: calculate cost based on modifiers also (probably in BattleUtils)
-            if (BattleUtils.CalculateSpellCost(user, target, this) > user.GetMP())
+            //This skill can't be used on self and target is self
+            if ((mainTarget & ValidTarget.Self) == 0 && target == user)
             {
-                if (user is Player)
-                    ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32545, 0x20, (uint)id);
+                error?.SetTextId(32514);
                 return false;
             }
 
-            // todo: check target requirements
-            if (requirements != BattleCommandRequirements.None)
+            //This skill must be used on self and target isn't self
+            if ((mainTarget & ValidTarget.SelfOnly) != 0 && target != user)
             {
-                if (false)
-                {
-                    // Unable to execute [@SHEET(xtx/command,$E8(1),2)]. Conditions for use are not met.
-                    if (user is Player)
-                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32556, 0x20, (uint)id);
-                    return false;
-                }
+                error?.SetTextId(32515);
+                return false;
             }
 
-
-            // todo: i dont care to message for each scenario, just the most common ones..
-            if ((mainTarget & ValidTarget.CorpseOnly) != 0)
+            //This skill can't be used on an ally and target is an ally
+            if ((mainTarget & ValidTarget.Ally) == 0 && target.allegiance == user.allegiance)
             {
-                if (target != null && target.IsAlive())
-                {
-                    if (user is Player)
-                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32513, 0x20, (uint)id);
-                    return false;
-                }
+                error?.SetTextId(32516);
+                return false;
             }
 
-            if ((mainTarget & ValidTarget.Enemy) != 0)
+            //This skill must be used on an ally and target is not an ally
+            if ((mainTarget & ValidTarget.AllyOnly) != 0 && target.allegiance != user.allegiance)
             {
-                if (target == user || target != null &&
-                    user.allegiance == target.allegiance)
-                {
-                    if (user is Player)
-                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32519, 0x20, (uint)id);
-                    return false;
-                }
+                error?.SetTextId(32517);
+                return false;
             }
 
-            if ((mainTarget & ValidTarget.Ally) != 0)
+            //This skill can't be used on an enemu and target is an enemy
+            if ((mainTarget & ValidTarget.Enemy) == 0 && target.allegiance != user.allegiance)
             {
-                if (target == null || target.allegiance != user.allegiance)
-                {
-                    if (user is Player)
-                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32517, 0x20, (uint)id);
-                    return false;
-                }
+                error?.SetTextId(32518);
+                return false;
             }
 
-            if ((mainTarget & ValidTarget.PartyMember) != 0)
+            //This skill must be used on an enemy and target is an ally
+            if ((mainTarget & ValidTarget.EnemyOnly) != 0 && target.allegiance == user.allegiance)
             {
-                if (target == null || target.currentParty != user.currentParty)
-                {
-                    if (user is Player)
-                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32547, 0x20, (uint)id);
-                    return false;
-                }
+                error?.SetTextId(32519);
+                return false;
             }
 
-            if ((mainTarget & ValidTarget.Player) != 0)
+            //This skill can't be used on party members and target is a party member
+            if ((mainTarget & ValidTarget.Party) == 0 && target.currentParty == user.currentParty)
             {
-                if (!(target is Player))
-                {
-                    if (user is Player)
-                        ((Player)user).SendGameMessage(Server.GetWorldManager().GetActor(), 32517, 0x20, (uint)id);
-                    return false;
-                }
+                error?.SetTextId(32548);
+                return false;
             }
 
-            return true;// targetFind.CanTarget(target, true, true, true); //this will be done later
+            //This skill must be used on party members and target is not a party member
+            if ((mainTarget & ValidTarget.PartyOnly) != 0 && target.currentParty != user.currentParty)
+            {
+                error?.SetTextId(32547);
+                return false;
+            }
+
+            //This skill can't be used on NPCs and target is an npc
+            if ((mainTarget & ValidTarget.NPC) == 0 && target.isStatic)
+            {
+                error?.SetTextId(32547);
+                return false;
+            }
+
+            //This skill must be used on NPCs and target is not an npc
+            if ((mainTarget & ValidTarget.NPCOnly) != 0 && !target.isStatic)
+            {
+                error?.SetTextId(32547);
+                return false;
+            }
+
+            // todo: why is player always zoning?
+            // cant target if zoning
+            if (target is Player && ((Player)target).playerSession.isUpdatesLocked)
+            {
+                user.aiContainer.ChangeTarget(null);
+                return false;
+            }
+
+            if (target.zone != user.zone)
+                return false;
+
+            return true;
         }
 
         public ushort CalculateMpCost(Character user)
@@ -368,15 +364,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         //Calculate TP cost taking into considerating the combo bonus rate for players
         //Should this set tpCost or should it be called like CalculateMp where it gets calculated each time? 
         //Might cause issues with the delay between starting and finishing a WS
-        public ushort CalculateTpCost(Character user)
+        public short CalculateTpCost(Character user)
         {
-            ushort tp = tpCost;
+            short tp = tpCost;
             //Calculate tp cost
             if (user is Player)
             {
                 var player = user as Player;
                 if (player.playerWork.comboNextCommandId[0] == id || player.playerWork.comboNextCommandId[1] == id)
-                    tp  = (ushort)Math.Ceiling((float)tpCost * (1 - player.playerWork.comboCostBonusRate));
+                    tp  = (short)Math.Ceiling((float)tpCost * (1 - player.playerWork.comboCostBonusRate));
             }
 
             return tp;

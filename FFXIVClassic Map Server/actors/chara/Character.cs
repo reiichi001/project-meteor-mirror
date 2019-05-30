@@ -1160,8 +1160,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public List<Character> GetPartyMembersInRange(uint range)
         {
             TargetFind targetFind = new TargetFind(this);
-            targetFind.SetAOEType(ValidTarget.PartyMember, TargetFindAOEType.Circle, TargetFindAOETarget.Self, range, 0, 10, 0, 0);
-            targetFind.FindWithinArea(this, ValidTarget.PartyMember, TargetFindAOETarget.Self);
+            targetFind.SetAOEType(ValidTarget.Party, TargetFindAOEType.Circle, TargetFindAOETarget.Self, range, 0, 10, 0, 0);
+            targetFind.FindWithinArea(this, ValidTarget.Party, TargetFindAOETarget.Self);
             return targetFind.GetTargets();
         }
     }

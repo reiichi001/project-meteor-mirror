@@ -14,21 +14,24 @@ using FFXIVClassic_Map_Server.packets.send.actor;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai
 {
-    // https://github.com/Windower/POLUtils/blob/master/PlayOnline.FFXI/Enums.cs
     [Flags]
     public enum ValidTarget : ushort
     {
         None = 0x00,
-        Self = 0x01,
-        Player = 0x02,
-        PartyMember = 0x04,
-        Ally = 0x08,
-        NPC = 0x10,
-        Enemy = 0x20,
-        Unknown = 0x40,
-        Object = 0x60,
-        CorpseOnly = 0x80,
-        Corpse = 0x9D // CorpseOnly + NPC + Ally + Partymember + Self
+        Self = 0x01,        //Can be used on self (if this flag isn't set and target is self, return false)
+        SelfOnly = 0x02,    //Must be used on self (if this flag is set and target isn't self, return false)
+        Party = 0x4,        //Can be used on party members
+        PartyOnly = 0x8,    //Must be used on party members
+        Ally = 0x10,        //Can be used on allies
+        AllyOnly = 0x20,    //Must be used on allies
+        NPC = 0x40,         //Can be used on static NPCs
+        NPCOnly = 0x60,    //Must be used on static NPCs
+        Enemy = 0x80,      //Can be used on enemies
+        EnemyOnly = 0x100,  //Must be used on enemies
+        Object = 0x200,     //Can be used on objects
+        ObjectOnly = 0x400, //Must be used on objects
+        Corpse = 0x600,     //Can be used on corpses
+        CorpseOnly = 0x800, //Must be used on corpses
     }
 
     /// <summary> Targeting from/to different entity types </summary>
@@ -70,12 +73,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
     class TargetFind
     {
         private Character owner;
-        private Character masterTarget;         // if target is a pet, this is the owner
+        private Character mainTarget;           //This is the target that the skill is being used on
+        private Character masterTarget;         //If mainTarget is a pet, this is the owner
         private TargetFindCharacterType findType;
         private ValidTarget validTarget;
         private TargetFindAOETarget aoeTarget;
         private TargetFindAOEType aoeType;
-        private Vector3 aoeTargetPosition;      //This is the center of circle an cone AOEs and the position where line aoes come out
+        private Vector3 aoeTargetPosition;      //This is the center of circle of cone AOEs and the position where line aoes come out. If we have mainTarget this might not be needed?
         private float aoeTargetRotation;        //This is the direction the aoe target is facing
         private float maxDistance;              //Radius for circle and cone AOEs, length for line AOEs
         private float minDistance;              //Minimum distance to that target must be to be able to be hit
@@ -86,14 +90,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private float param;
         private List<Character> targets;
 
-        public TargetFind(Character owner)
+        public TargetFind(Character owner, Character mainTarget = null)
         {
-            this.owner = owner;
             Reset();
+            this.owner = owner;
+            this.masterTarget = mainTarget == null ? owner : mainTarget;
         }
 
         public void Reset()
         {
+            this.mainTarget = owner;
             this.findType = TargetFindCharacterType.None;
             this.validTarget = ValidTarget.Enemy;
             this.aoeType = TargetFindAOEType.None;
@@ -205,11 +211,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
             //if (targets.Count > 8)
                 //targets.RemoveRange(8, targets.Count - 8);
-
-            //Curaga starts with lowest health players, so the targets are definitely sorted at least for some abilities
-            //Other aoe abilities might be sorted by distance?
-            //Protect is random
-            targets.Sort(delegate (Character a, Character b) { return a.GetHP().CompareTo(b.GetHP()); });
         }
 
         /// <summary>
@@ -327,39 +328,55 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (target == null || !retarget && targets.Contains(target))
                 return false;
 
-            //This skill can't be used on self and target is self, return false
-            if ((validTarget & ValidTarget.Self) == 0 && target == owner)
+            if (target == null)
                 return false;
 
-            //This skill can't be used on NPCs and target is an NPC, return false
-            if ((validTarget & ValidTarget.NPC) == 0 && target.isStatic)
-                return false;
-
-            //This skill can't be used on corpses and target is dead, return false
+            //This skill can't be used on a corpse and target is dead
             if ((validTarget & ValidTarget.Corpse) == 0 && target.IsDead())
                 return false;
 
-            //This skill must be used on Allies and target is not an ally, return false
-            if ((validTarget & ValidTarget.Ally) != 0 && target.allegiance != owner.allegiance)
-                return false;
-
-
-            //This skill can't be used on players and target is a player, return false
-            //Do we need a player flag? Ally/Enemy flags probably serve the same purpose
-            //if ((validTarget & ValidTarget.Player) == 0 && target is Player)
-                //return false;
-
-
-            //This skill must be used on enemies an target is not an enemy
-            if ((validTarget & ValidTarget.Enemy) != 0 && target.allegiance == owner.allegiance)
-                return false;
-
-            //This skill must be used on a party member and target is not in owner's party, return false
-            if ((validTarget & ValidTarget.PartyMember) != 0 && target.currentParty != owner.currentParty)
-                return false;
-
-            //This skill must be used on a corpse and target is alive, return false
+            //This skill must be used on a corpse and target is alive
             if ((validTarget & ValidTarget.CorpseOnly) != 0 && target.IsAlive())
+                return false;
+
+            //This skill can't be used on self and target is self
+            if ((validTarget & ValidTarget.Self) == 0 && target == owner)
+                return false;
+
+            //This skill must be used on self and target isn't self
+            if ((validTarget & ValidTarget.SelfOnly) != 0 && target != owner)
+                return false;
+
+            //This skill can't be used on an ally and target is an ally
+            if ((validTarget & ValidTarget.Ally) == 0 && target.allegiance == owner.allegiance)
+                return false;
+
+            //This skill must be used on an ally and target is not an ally
+            if ((validTarget & ValidTarget.AllyOnly) != 0 && target.allegiance != owner.allegiance)
+                return false;
+
+            //This skill can't be used on an enemu and target is an enemy
+            if ((validTarget & ValidTarget.Enemy) == 0 && target.allegiance != owner.allegiance)
+                return false;
+
+            //This skill must be used on an enemy and target is an ally
+            if ((validTarget & ValidTarget.EnemyOnly) != 0 && target.allegiance == owner.allegiance)
+                return false;
+
+            //This skill can't be used on party members and target is a party member
+            if ((validTarget & ValidTarget.Party) == 0 && target.currentParty == owner.currentParty)
+                return false;
+
+            //This skill must be used on party members and target is not a party member
+            if ((validTarget & ValidTarget.PartyOnly) != 0 && target.currentParty != owner.currentParty)
+                return false;
+
+            //This skill can't be used on NPCs and target is an npc
+            if ((validTarget & ValidTarget.NPC) == 0 && target.isStatic)
+                return false;
+
+            //This skill must be used on NPCs and target is not an npc
+            if ((validTarget & ValidTarget.NPCOnly) != 0 && !target.isStatic)
                 return false;
 
             // todo: why is player always zoning?

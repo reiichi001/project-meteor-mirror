@@ -2431,8 +2431,8 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.castTimeMs = reader.GetUInt32("castTime");
                             battleCommand.maxRecastTimeSeconds = reader.GetUInt32("recastTime");
                             battleCommand.recastTimeMs = battleCommand.maxRecastTimeSeconds * 1000;
-                            battleCommand.mpCost = reader.GetUInt16("mpCost");
-                            battleCommand.tpCost = reader.GetUInt16("tpCost");
+                            battleCommand.mpCost = reader.GetInt16("mpCost");
+                            battleCommand.tpCost = reader.GetInt16("tpCost");
                             battleCommand.animationType = reader.GetByte("animationType");
                             battleCommand.effectAnimation = reader.GetUInt16("effectAnimation");
                             battleCommand.modelAnimation = reader.GetUInt16("modelAnimation");
