@@ -391,6 +391,11 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
             return (ushort)hitType;
         }
 
+        public void SetTextId(ushort id)
+        {
+            worldMasterTextId = id;
+        }
+
         //Whether this action didn't miss, and wasn't evaded or resisted
         public bool ActionLanded()
         {
