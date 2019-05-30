@@ -84,11 +84,11 @@ INSERT INTO `server_statuseffects` VALUES (223182,'regain',9,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223183,'tp_bleed',21,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223205,'combo',21,2,0,0,1,0);
 INSERT INTO `server_statuseffects` VALUES (223206,'goring_blade',21,2,0,0,0,0);
-INSERT INTO `server_statuseffects` VALUES (223207,'berserk2',1074807057,1,0,0,0,0);
-INSERT INTO `server_statuseffects` VALUES (223208,'rampage2',1075855633,1,5000,0,0,0);
-INSERT INTO `server_statuseffects` VALUES (223209,'fists_of_fire',1073743121,2,0,0,0,0);
-INSERT INTO `server_statuseffects` VALUES (223210,'fists_of_earth',1073743121,2,0,0,0,0);
-INSERT INTO `server_statuseffects` VALUES (223211,'fists_of_wind',1073743121,2,0,0,0,0);
+INSERT INTO `server_statuseffects` VALUES (223207,'berserk2',537936145,1,0,0,0,0);
+INSERT INTO `server_statuseffects` VALUES (223208,'rampage2',538984721,1,5000,0,0,0);
+INSERT INTO `server_statuseffects` VALUES (223209,'fists_of_fire',536872209,2,0,0,0,0);
+INSERT INTO `server_statuseffects` VALUES (223210,'fists_of_earth',536872209,2,0,0,0,0);
+INSERT INTO `server_statuseffects` VALUES (223211,'fists_of_wind',536872209,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223212,'power_surge_I',1297,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223213,'power_surge_II',1297,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223214,'power_surge_III',1297,2,0,0,0,0);
@@ -98,9 +98,9 @@ INSERT INTO `server_statuseffects` VALUES (223217,'life_surge_III',1048857,2,0,0
 INSERT INTO `server_statuseffects` VALUES (223218,'dread_spike',16649,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223219,'blood_for_blood',8209,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223220,'barrage',3081,2,0,0,0,0);
-INSERT INTO `server_statuseffects` VALUES (223221,'raging_strike2',1074856209,1,0,0,0,0);
+INSERT INTO `server_statuseffects` VALUES (223221,'raging_strike2',537985297,1,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223227,'cleric_stance',8209,1,0,0,0,0);
-INSERT INTO `server_statuseffects` VALUES (223228,'blissful_mind',1073742097,1,1000,0,0,0);
+INSERT INTO `server_statuseffects` VALUES (223228,'blissful_mind',536871185,1,1000,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223229,'dark_seal2',409,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223230,'resonance2',2569,1,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223231,'excruciate',2098185,2,3000,0,0,0);
@@ -114,7 +114,7 @@ INSERT INTO `server_statuseffects` VALUES (223238,'decoy2',4113,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223239,'protect2',9,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223240,'sanguine_rite3',16393,1,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223241,'bloodletter2',21,2,0,0,0,0);
-INSERT INTO `server_statuseffects` VALUES (223242,'fully_blissful_mind',1073742097,1,0,0,0,0);
+INSERT INTO `server_statuseffects` VALUES (223242,'fully_blissful_mind',536871185,1,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223243,'magic_evasion_down',9,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223244,'hundred_fists',257,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223245,'spinning_heel',9,1,0,0,0,0);
@@ -147,4 +147,4 @@ commit;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-05-27 23:04:30
+-- Dump completed on 2019-05-29 23:06:54
