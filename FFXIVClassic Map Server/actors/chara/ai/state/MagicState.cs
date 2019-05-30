@@ -36,13 +36,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
             this.target = target != null ? target : owner;
 
-            if (returnCode == 0 && owner.CanCast(this.target, spell))
+            if (returnCode == 0 && owner.CanUse(this.target, spell, errorResult))
             {
                 OnStart();
             }
             else
             {
-                errorResult = new CommandResult(owner.actorId, 32553, 0);
                 interrupt = true;
             }
         }
@@ -174,7 +173,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         private bool CanCast()
         {
-            return owner.CanCast(target, spell) && spell.IsValidMainTarget(owner, target) && !HasMoved();
+            return owner.CanUse(target, spell);
         }
 
         private bool HasMoved()

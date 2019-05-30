@@ -2169,109 +2169,74 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public override bool CanCast(Character target, BattleCommand spell)
+        //Do we need separate functions? they check the same things
+        public override bool CanUse(Character target, BattleCommand skill, CommandResult error = null)
         {
-            //Might want to do these with a CommandResult instead to be consistent with the rest of command stuff
-            if (GetHotbarTimer(spell.id) > Utils.UnixTimeStampUTC())
-            {
-                // todo: this needs confirming
-                // Please wait a moment and try again.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20, (uint)spell.id);
-                return false;
-            }
-            if (target == null)
-            {
-                // Target does not exist.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)spell.id);
-                return false;
-            }
-            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) > spell.range)
-            {
-                // The target is too far away.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20, (uint)spell.id);
-                return false;
-            }
-            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) < spell.minRange)
-            {
-                // The target is too close.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32538, 0x20, (uint)spell.id);
-                return false;
-            }
-            if (target.positionY - positionY > (spell.rangeHeight / 2))
-            {
-                // The target is too far above you.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32540, 0x20, (uint)spell.id);
-                return false;
-            }
-            if (positionY - target.positionY > (spell.rangeHeight / 2))
-            {
-                // The target is too far below you.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32541, 0x20, (uint)spell.id);
-                return false;
-            }
-            if (!IsValidTarget(target, spell.mainTarget) || !spell.IsValidMainTarget(this, target))
+            if (!skill.IsValidMainTarget(this, target, error) || !IsValidTarget(target, skill.mainTarget))
             {
                 // error packet is set in IsValidTarget
                 return false;
             }
-            return true;
-        }
 
-        public override bool CanWeaponSkill(Character target, BattleCommand skill)
-        {
-            // todo: see worldmaster ids 32558~32557 for proper ko message and stuff
+            //Might want to do these with a BattleAction instead to be consistent with the rest of command stuff
             if (GetHotbarTimer(skill.id) > Utils.UnixTimeStampUTC())
             {
                 // todo: this needs confirming
                 // Please wait a moment and try again.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20, (uint)skill.id);
+                error?.SetTextId(32535);
                 return false;
             }
 
-            if (target == null)
+            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) > skill.range)
             {
-                // Target does not exist.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)skill.id);
+                // The target is too far away.
+                error?.SetTextId(32539);
                 return false;
             }
 
-            //Original game checked height difference before horizontal distance
+            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) < skill.minRange)
+            {
+                // The target is too close.
+                error?.SetTextId(32538);
+                return false;
+            }
+
             if (target.positionY - positionY > (skill.rangeHeight / 2))
             {
                 // The target is too far above you.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32540, 0x20, (uint)skill.id);
+                error?.SetTextId(32540);
                 return false;
             }
 
             if (positionY - target.positionY > (skill.rangeHeight / 2))
             {
                 // The target is too far below you.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32541, 0x20, (uint)skill.id);
+                error?.SetTextId(32541);
                 return false;
             }
 
-            var targetDist = Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ);
-
-            if (targetDist > skill.range)
+            if (skill.CalculateMpCost(this) > GetMP())
             {
-                // The target is out of range.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32537, 0x20, (uint)skill.id);
+                // You do not have enough MP.
+                error?.SetTextId(32545);
                 return false;
             }
 
-            if (targetDist < skill.minRange)
+            if (skill.CalculateTpCost(this) > GetTP())
             {
-                // The target is too close.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32538, 0x20, (uint)skill.id);
+                // You do not have enough TP.
+                error?.SetTextId(32546);
                 return false;
             }
 
-
-            if (!IsValidTarget(target, skill.validTarget) || !skill.IsValidMainTarget(this, target))
+            //Proc requirement
+            if (skill.procRequirement != BattleCommandProcRequirement.None && !charaWork.battleTemp.timingCommandFlag[(int)skill.procRequirement - 1])
             {
-                // error packet is set in IsValidTarget
+                //Conditions for use are not met
+                error?.SetTextId(32556);
                 return false;
             }
+
 
             return true;
         }

@@ -232,8 +232,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void DoBattleAction(ushort commandId, uint animationId, CommandResult[] results)
         {
             int currentIndex = 0;
-            //AoE abilities only ever hit 16 people, so we probably won't need this loop anymore
-            //Apparently aoe are limited to 8?
+
             while (true)
             {
                 if (results.Length - currentIndex >= 10)
@@ -247,9 +246,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
                 else
                     break;
-                
-                //I think aoe effects play on all hit enemies. Firaga does at least
-                //animationId = 0; //If more than one packet is sent out, only send the animation once to avoid double playing.
             }
         }
 
@@ -446,20 +442,11 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public virtual bool CanCast(Character target, BattleCommand spell)
+        public virtual bool CanUse(Character target, BattleCommand skill, CommandResult error = null)
         {
             return false;
         }
 
-        public virtual bool CanWeaponSkill(Character target, BattleCommand skill)
-        {
-            return false;
-        }
-
-        public virtual bool CanUseAbility(Character target, BattleCommand ability)
-        {
-            return false;
-        }
 
         public virtual uint GetAttackDelayMs()
         {
@@ -628,7 +615,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void SetMP(uint mp)
         {
             charaWork.parameterSave.mpMax = (short)mp;
-            if (mp > charaWork.parameterSave.hpMax[0])
+            if (mp > charaWork.parameterSave.mpMax)
                 SetMaxMP(mp);
 
             updateFlags |= ActorUpdateFlags.HpTpMp;
@@ -1070,6 +1057,7 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnHit, "onCrit", this, defender, action, actionContainer);
         }
+
         //The order of messages that appears after using a command is:
 
         //1. Cast start messages. (ie "You begin casting... ")
@@ -1146,13 +1134,14 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 if (command.isCombo && hitTarget)
                     ((Player)this).SetCombos(command.comboNextCommandId);
-                else
+                //Only reset combo if the command is a spell or weaponskill, since abilities can be used between combo skills
+                else if (command.commandType == CommandType.Spell || command.commandType == CommandType.WeaponSkill)
                     ((Player)this).SetCombos();
             }
 
-            CommandResult error = new CommandResult(actorId, 0, 0);
             DelMP(command.CalculateMpCost(this));
             DelTP(command.CalculateTpCost(this));
+
             actions.CombineLists();
             DoBattleAction(command.id, command.battleAnimation, actions.GetList());
         }

@@ -24,7 +24,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.skill = Server.GetWorldManager().GetBattleCommand(skillId);
             var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillPrepare", owner, target, skill);
 
-            if (returnCode == 0 && owner.CanWeaponSkill(target, skill))
+            if (returnCode == 0 && owner.CanUse(this.target, skill, errorResult))
             {
                 OnStart();
             }
@@ -167,7 +167,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         private bool CanUse()
         {
-            return owner.CanWeaponSkill(target, skill) && skill.IsValidMainTarget(owner, target);
+            return owner.CanUse(target, skill);
         }
 
         public BattleCommand GetWeaponSkill()

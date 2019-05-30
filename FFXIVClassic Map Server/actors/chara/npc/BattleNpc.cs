@@ -188,7 +188,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public override bool CanCast(Character target, BattleCommand spell)
+        public override bool CanUse(Character target, BattleCommand spell, CommandResult error = null)
         {
             // todo:
             if (target == null)
@@ -207,18 +207,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 return false;
             }
             return true;
-        }
-
-        public override bool CanWeaponSkill(Character target, BattleCommand skill)
-        {
-            // todo:
-            return true;
-        }
-
-        public override bool CanUseAbility(Character target, BattleCommand ability)
-        {
-            // todo:
-            return false;
         }
 
         public uint GetDespawnTime()
@@ -264,7 +252,7 @@ namespace FFXIVClassic_Map_Server.Actors
             zone.BroadcastPacketsAroundActor(this, GetSpawnPackets(null, 0x01));
             zone.BroadcastPacketsAroundActor(this, GetInitPackets());
             charaWork.parameterSave.hp = charaWork.parameterSave.hpMax;
-            charaWork.parameterSave.mp = charaWork.parameterSave.mpMax;
+            charaWork.parameterSave.hp = (short[])charaWork.parameterSave.hpMax.Clone();
             RecalculateStats();
 
             OnSpawn();
