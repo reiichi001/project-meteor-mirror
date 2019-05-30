@@ -1,15 +1,15 @@
 require("modifiers")
 
-function onGain(target, effect)
+function onGain(owner, effect, actionContainer)
     --Parry is .1% per , Random guess but gonna say it gives 20% worth of parry.
-    target.AddMod(modifiersGlobal.Parry, 200);
+    owner.AddMod(modifiersGlobal.Parry, 200);
 end;
 
-function onParry(effect, attacker, defender, action, actionContainer)
+function onParry(effect, attacker, defender, skill, action, actionContainer)
     --Foresight is lost after parrying
-    actionContainer.AddAction(defender.statusEffects.RemoveStatusEffectForBattleAction(effect));
+    defender.statusEffects.RemoveStatusEffect(effect, actionContainer, 30331, false);
 end;
 
-function onLose(target, effect)
-    target.SubtractMod(modifiersGlobal.Parry, 200);
+function onLose(owner, effect, actionContainer)
+    owner.SubtractMod(modifiersGlobal.Parry, 200);
 end;

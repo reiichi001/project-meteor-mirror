@@ -1,3 +1,3 @@
-function onLose(target, effect)
-    target:SetProc(1, false);
+function onLose(owner, effect, actionContainer)
+    owner:SetProc(1, false);
 end;

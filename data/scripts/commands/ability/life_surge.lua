@@ -20,9 +20,9 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
     --223213: Power Surge II
     --223212: Power Surge III
     --No message is sent when PS is removed by Life Surge
-    caster.statusEffects.RemoveStatusEffect(223212, true);
-    caster.statusEffects.RemoveStatusEffect(223213, true);
-    caster.statusEffects.RemoveStatusEffect(223214, true);
+    caster.statusEffects.RemoveStatusEffect(223212);
+    caster.statusEffects.RemoveStatusEffect(223213);
+    caster.statusEffects.RemoveStatusEffect(223214);
 
 
     --Using this ability moves to the next LS buff
@@ -45,7 +45,6 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
     end
 
     if not (removeId == 0) then
-        --caster.statusEffects.RemoveStatusEffect(removeId, true);
         caster.statusEffects.ReplaceEffect(caster.statusEffects.GetStatusEffectById(removeId), skill.statusId, skill.statusTier, skill.statusMagnitude, skill.statusDuration);
     end
     --DoAction handles rates, buffs, dealing damage

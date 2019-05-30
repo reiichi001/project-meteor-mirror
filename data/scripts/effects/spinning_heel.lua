@@ -1,10 +1,10 @@
 require("modifiers")
 
-function onGain(target, effect)
-    target.SetMod(modifiersGlobal.HitCount, 3);
+function onGain(owner, effect, actionContainer)
+    owner.SetMod(modifiersGlobal.HitCount, 3);
 end;
 
-function onLose(target, effect)
-    target.SetMod(modifiersGlobal.HitCount, 2);
+function onLose(owner, effect, actionContainer)
+    owner.SetMod(modifiersGlobal.HitCount, 2);
 end;
 

@@ -1,6 +1,4 @@
-function onGain(target, effect)
-    target.statusEffects.RemoveStatusEffect(223209)
-    target.statusEffects.RemoveStatusEffect(223211)
+function onGain(owner, effect, actionContainer)
 end;
 
 --Need to do more research on these. 

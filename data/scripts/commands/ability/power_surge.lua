@@ -14,11 +14,17 @@ function onAbilityStart(caster, target, ability)
 end;
 
 function onSkillFinish(caster, target, skill, action, actionContainer)
-    --Need a better way to do this
-    actionContainer.AddAction(caster.statusEffects.RemoveStatusEffectForBattleAction(223215));
-    actionContainer.AddAction(caster.statusEffects.RemoveStatusEffectForBattleAction(223216));
-    actionContainer.AddAction(caster.statusEffects.RemoveStatusEffectForBattleAction(223217));
+    caster.statusEffects.RemoveStatusEffect(223215);
+    caster.statusEffects.RemoveStatusEffect(223216);
+    caster.statusEffects.RemoveStatusEffect(223217);
 
-    --DoAction handles rates, buffs, dealing damage
-    action.DoAction(caster, target, skill, actionContainer);
+    --If caster has any of the power surge effects
+    local buff = caster.statusEffects.GetStatusEffectById(223212) or caster.statusEffects.GetStatusEffectById(223213) or caster.statusEffects.GetStatusEffectById(223214);
+
+    if buff ~= nil then
+        caster.statusEffects.RemoveStatusEffect(buff, actionContainer, 30329);
+    else
+        --DoAction handles rates, buffs, dealing damage
+        action.DoAction(caster, target, skill, actionContainer);
+    end
 end;

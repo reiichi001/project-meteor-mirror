@@ -2,7 +2,7 @@ require("modifiers")
 require("battleutils")
 
 --Gradually increases critical rate of spells
-function onTick(owner, effect)
+function onTick(owner, effect, actionContainer)
     --No clue how fast the crit rate increases or how often it ticks
     --Only clue I have to go on is that the strategy seemed to be to use it 
     --before or after fire/thunder and you'd usually get a crit at firaga/thundaga
@@ -23,8 +23,8 @@ function onCommandStart(effect, owner, skill, actionContainer)
     skill.bonusCritRate = skill.bonusCritRate + effect.GetMagnitude();
 end
 
-function onCrit(effect, attacker, defender, action, actionContainer)
-    if action.commandType == CommandType.Spell then
-        actionContainer.AddAction(attacker.statusEffects.RemoveStatusEffectForBattleAction(effect));
+function onCrit(effect, attacker, defender, skill, action, actionContainer)
+    if skill.GetCommandType() == CommandType.Spell then
+        defender.statusEffects.RemoveStatusEffect(effect, actionContainer, 30331, false);
     end
 end

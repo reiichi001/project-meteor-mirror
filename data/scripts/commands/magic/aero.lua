@@ -12,7 +12,7 @@ end;
 function onSkillFinish(caster, target, skill, action, actionContainer)
     --calculate damage
     action.amount = skill.basePotency;
-    action.statusMagnitude = 15;
+    skill.statusMagnitude = 15;
     
     --DoAction handles rates, buffs, dealing damage
     action.DoAction(caster, target, skill, actionContainer);

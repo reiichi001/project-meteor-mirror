@@ -1,5 +1,5 @@
-function onGain(target, effect)
+function onGain(owner, effect, actionContainer)
 end;
 
-function onLose(target, effect)
+function onLose(owner, effect, actionContainer)
 end;

@@ -1,5 +1,6 @@
 require("global");
 require("magic");
+require("modifiers")
 
 function onMagicPrepare(caster, target, spell)
     return 0;
@@ -19,7 +20,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
         hpPerPoint = 1.96;
     end
 
-    spell.statusMagnitude = hpPerPoint * caster.GetMod(modifiersGlobal.MagicEnhancePotency);
+    skill.statusMagnitude = hpPerPoint * caster.GetMod(modifiersGlobal.EnhancementMagicPotency);
 
     --DoAction handles rates, buffs, dealing damage
     action.DoAction(caster, target, skill, actionContainer);

@@ -108,7 +108,7 @@ function onEventStarted(player, actor, triggerName, isTeleport)
 					randoPos = getRandomPointInBand(destination[2], destination[4], 3, 5);
 					rotation = getAngleFacing(randoPos.x, randoPos.y, destination[2], destination[4]);
 					--bandaid fix for returning while dead, missing things like weakness and the heal number
-					if (player:GetHP() == 0) then
+					if (player:IsDead()) then
 						player:SetHP(player.GetMaxHP());
 						player:ChangeState(0);
 						player:PlayAnimation(0x01000066);

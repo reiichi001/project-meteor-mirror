@@ -1,13 +1,12 @@
 require("modifiers");
 
-function onGain(owner, effect)
-    owner.statusEffects.RemoveStatusEffect(223208);
+function onGain(owner, effect, actionContainer)
 end
 
 --Increases attack power and reduces defense with each successful attack
 --Does this include weaponskills?
 --Is this on every hit or every succesfull skill useage?
-function onHit(effect, attacker, defender, action, actionContainer)
+function onHit(effect, attacker, defender, skill, action, actionContainer)
     --Trait increases effect by 20%. Does this include the reduced defense, 
     --does this increase the cap or the rate at which you get AP or both?
 
@@ -32,7 +31,7 @@ function onHit(effect, attacker, defender, action, actionContainer)
     end
 end;
 
-function onDamageTaken(effect, attacker, defender, action, actionContainer)
+function onDamageTaken(effect, attacker, defender, skill, action, actionContainer)
     local apPerHit = 20;
     local defPerHit = 20;
     
@@ -45,7 +44,7 @@ function onDamageTaken(effect, attacker, defender, action, actionContainer)
     effect.SetExtra(0);
 end
 
-function onLose(owner, effect)
+function onLose(owner, effect, actionContainer)
     local apPerHit = 20;
     local defPerHit = 20;
     

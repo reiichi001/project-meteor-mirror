@@ -14,6 +14,18 @@ function onAbilityStart(caster, target, ability)
 end;
 
 function onSkillFinish(caster, target, skill, action, actionContainer)
-    --DoAction handles rates, buffs, dealing damage
-    action.DoAction(caster, target, skill, actionContainer);
+    --223207: Berserk
+    --223208: Rampage
+    --Remove Berserk effect. I'm assuming no message is sent like LNC surges
+    caster.statusEffects.RemoveStatusEffect(223207);
+
+    --If caster has rampage already, remove it and send a message.
+    local buff = caster.statusEffects.GetStatusEffectById(223208)
+
+    if buff ~= nil then
+        caster.statusEffects.RemoveStatusEffect(buff, actionContainer, 30329);
+    else
+        --DoAction handles rates, buffs, dealing damage
+        action.DoAction(caster, target, skill, actionContainer);
+    end
 end;

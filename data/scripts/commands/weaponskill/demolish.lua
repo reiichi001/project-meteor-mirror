@@ -12,10 +12,7 @@ end;
 --Dispel
 --Does dispel have a text id?
 function onCombo(caster, target, skill)
-    local effects = target.statusEffects.GetStatusEffectsByFlag(16); --lose on dispel
-    if effects != nil then
-        target.statusEffects.RemoveStatusEffect(effects[0]);
-    end;
+    return 0;
 end;
 
 function onSkillFinish(caster, target, skill, action, actionContainer)
@@ -25,6 +22,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
     --DoAction handles rates, buffs, dealing damage
     action.DoAction(caster, target, skill, actionContainer);
 
-    --Try to apply status effect
-    action.TryStatus(caster, target, skill, actionContainer, true);
+    if skill.isCombo then
+        target.statusEffects.RemoveStatusEffect(GetRandomEffectByFlag(8), actionContainer, 30336);
+    end
 end;

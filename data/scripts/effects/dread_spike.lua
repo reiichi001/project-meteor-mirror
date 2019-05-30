@@ -7,8 +7,8 @@ require("battleutils")
 --It still shows the enemy's "Enemy used [command]." message but there is no 0 damage dealt message.
 --Don't know how this works with multi-hit attacks or even how it works with stoneskin or other buffs that respond to damage
 -- I dont really know how this should work...
-function onDamageTaken(effect, attacker, defender, action, actionContainer)
-    if action.actionType == ActionType.Physical then
+function onDamageTaken(effect, attacker, defender, skill, action, actionContainer)
+    if skill.GetActionType() == ActionType.Physical then
         --maybe this works?
         local absorbPercent = 0.5;
 
@@ -24,7 +24,6 @@ function onDamageTaken(effect, attacker, defender, action, actionContainer)
         --30451: You recover [absorbAmount] HP.
         actionContainer.AddHPAction(defender.actorId, 30451, absorbAmount)
         --Dread Spike is lost after absorbing hp
-        actionContainer.AddAction(defender.statusEffects.RemoveStatusEffectForBattleAction(effect));
+        defender.statusEffects.RemoveStatusEffect(effect, actionContainer, 30331, false);
     end
 end;
-
