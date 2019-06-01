@@ -24,6 +24,8 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         MagicEffectType = 48 << 24,
         //This places the number on the user regardless of the target this hit effect is for, used for things like bloodbath
         SelfHealType = 72 << 24,
+        //Plays the effect animation with no text or additional effects. Unsure if there are any flags. Used for things like Convert
+        AnimationEffectType = 96 << 24,
 
         //Each Type has it's own set of flags. These should be split into their own enums,
         //but for now just keep them all under HitEffect so we don't have to change anything.

@@ -15,4 +15,5 @@ end;
 
 --Not sure how raise works yet.
 function onSkillFinish(caster, target, skill, action, actionContainer)
+    action.DoAction(caster, target, skill, actionContainer)
 end;

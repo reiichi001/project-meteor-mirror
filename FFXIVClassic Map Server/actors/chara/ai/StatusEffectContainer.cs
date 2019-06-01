@@ -57,7 +57,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             // remove effects from this list
             foreach (var effect in removeEffects)
             {
-                RemoveStatusEffect(effect);
+                RemoveStatusEffect(effect, resultContainer);
             }
 
             resultContainer.CombineLists();
