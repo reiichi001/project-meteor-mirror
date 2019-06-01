@@ -3,7 +3,7 @@ require("magic");
 require("battleutils");
 
 function onMagicPrepare(caster, target, spell)
-    if not target.statusEffects.HasStatusEffectsByFlag(StatusEffectFlags.LoseOnDeath) then
+    if not target.statusEffects.HasStatusEffectsByFlag(StatusEffectFlags.LoseOnEsuna) then
         return -1
     end
 
@@ -16,7 +16,7 @@ end;
 
 function onSkillFinish(caster, target, skill, action, actionContainer)
 
-    removeEffect = target.statusEffects.GetRandomEffectByFlag(StatusEffectFlags.LoseOnDeath)
+    removeEffect = target.statusEffects.GetRandomEffectByFlag(StatusEffectFlags.LoseOnEsuna)
 
     target.statusEffects.RemoveStatusEffect(removeEffect, actionContainer, 30331);
 end;
