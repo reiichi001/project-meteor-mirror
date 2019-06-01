@@ -12,6 +12,8 @@ HitEffect =
     MagicEffectType = bit32.lshift(48, 24),
     --This places the number on the user regardless of the target this hit effect is for, used for things like bloodbath
     SelfHealType = bit32.lshift(72, 24),
+    --Plays the effect animation with no text or additional effects. Unsure if there are any flags. Used for things like Convert
+    AnimationEffectType = bit32.lshift(96, 24),
 
     --Each Type has it's own set of flags. These should be split into their own enums,
     --but for now just keep them all under HitEffect so we don't have to change anything.
@@ -29,7 +31,7 @@ HitEffect =
     RecoilLv3 = bit32.lshift(1, 1),
 
     --Setting both recoil flags triggers the "Critical!" pop-up text and hit visual effect.
-    CriticalHit = RecoilLv2 | RecoilLv3,
+    CriticalHit = 3,                        --RecoilLv2 | RecoilLv3
 
     --Hit visual and sound effects when connecting with the target.
     --Mixing these flags together will yield different results.
@@ -56,56 +58,56 @@ HitEffect =
     --Another effect plays when both Protect and Shell flags are activated.
     --Not sure what this effect is.
     --Random guess: if the attack was a hybrid of both physical and magical and the target had both Protect and Shell buffs applied.
-    Protect = bit32.bor(bit32.lshift(1, 6), HitEffectType),
-    Shell = bit32.bor(bit32.lshift(1, 7), HitEffectType),
-    ProtectShellSpecial = Protect | Shell,
+    Protect = bit32.lshift(1, 6),
+    Shell = bit32.lshift(1, 7),
+    ProtectShellSpecial = 192,              --Protect | Shell
 
     --If only HitEffect1 is set out of the hit effects, the "Evade!" pop-up text triggers along with the evade visual.
     --If no hit effects are set, the "Miss!" pop-up is triggered and no hit visual is played.
     HitEffect1 = bit32.lshift(1, 9),
-    HitEffect2 = bit32.lshift(1, 10),   --Plays the standard hit visual effect, but with no sound if used alone.
-    HitEffect3 = bit32.lshift(1, 11),   --Yellow effect, crit?
-    HitEffect4 = bit32.lshift(1, 12),   --Plays the blocking animation
+    HitEffect2 = bit32.lshift(1, 10),       --Plays the standard hit visual effect, but with no sound if used alone.
+    HitEffect3 = bit32.lshift(1, 11),       --Yellow effect, crit?
+    HitEffect4 = bit32.lshift(1, 12),       --Plays the blocking animation
     HitEffect5 = bit32.lshift(1, 13),
-    GustyHitEffect = bit32.bor(HitEffect3, HitEffect2),
-    GreenTintedHitEffect = bit32.bor(itEffect4, HitEffect1),
+    GustyHitEffect = 3072,                  --HitEffect3 | HitEffect2
+    GreenTintedHitEffect = 4608,            --HitEffect4 | HitEffect1
 
     --For specific animations
     Miss = 0,
     Evade = HitEffect1,
-    Hit = HitEffect1 | HitEffect2,
+    Hit = 1536,                             --HitEffect1 | HitEffect2,
     Crit = HitEffect3,
-    Parry = Hit | HitEffect3,
+    Parry = 3584,                           --Hit | HitEffect3,
     Block = HitEffect4,
 
     --Knocks you back away from the attacker.
-    KnockbackLv1 = bit32.bor(HitEffect4, HitEffect2, HitEffect1),
-    KnockbackLv2 = bit32.bor(HitEffect4, HitEffect3),
-    KnockbackLv3 = bit32.bor(HitEffect4, HitEffect3, HitEffect1),
-    KnockbackLv4 = bit32.bor(HitEffect4, HitEffect3, HitEffect2),
-    KnockbackLv5 = bit32.bor(HitEffect4, HitEffect3, HitEffect2, HitEffect1),
+    KnockbackLv1 = 5632,                    --HitEffect4 | HitEffect2 | HitEffect1
+    KnockbackLv2 = 6144,                    --HitEffect4 | HitEffect3
+    KnockbackLv3 = 6656,                    --HitEffect4 | HitEffect3 | HitEffect1
+    KnockbackLv4 = 7168,                    --HitEffect4 | HitEffect3 | HitEffect2
+    KnockbackLv5 = 7680,                    --HitEffect4 | HitEffect3 | HitEffect2 | HitEffect1
 
     --Knocks you away from the attacker in a counter-clockwise direction.
     KnockbackCounterClockwiseLv1 = HitEffect5,
-    KnockbackCounterClockwiseLv2 = bit32.bor(HitEffect5, HitEffect1),
+    KnockbackCounterClockwiseLv2 = 8704,    --HitEffect5 | HitEffect1
 
     --Knocks you away from the attacker in a clockwise direction.
-    KnockbackClockwiseLv1 = bit32.bor(HitEffect5, HitEffect2),
-    KnockbackClockwiseLv2 = bit32.bor(HitEffect5, HitEffect2, HitEffect1),
+    KnockbackClockwiseLv1 = 9216,           --HitEffect5 | HitEffect2
+    KnockbackClockwiseLv2 = 9728,           --HitEffect5 | HitEffect2 | HitEffect1
 
     --Completely drags target to the attacker, even across large distances.
-    DrawIn = bit32.bor(HitEffect5, HitEffect3),
+    DrawIn = 10240,                         --HitEffect5 | HitEffect3
 
     --An additional visual effect that plays on the target based on according buff.
-    UnknownShieldEffect = bit32.bor(HitEffect5, HitEffect4),
-    Stoneskin = bit32.bor(HitEffect5, HitEffect4, HitEffect1),
+    UnknownShieldEffect = 12288,            --HitEffect5 | HitEffect4
+    Stoneskin = 12800,                      --HitEffect5 | HitEffect4 | HitEffect1
 
     --A special effect when performing appropriate skill combos in succession.
     --Ex: Thunder (SkillCombo1 Effect) -> Thundara (SkillCombo2 Effect) -> Thundaga (SkillCombo3 Effect)
     --Special Note: SkillCombo4 was never actually used in 1.0 since combos only chained up to 3 times maximum.
     SkillCombo1 = bit32.lshift(1, 15),
     SkillCombo2 = bit32.lshift(1, 16),
-    SkillCombo3 = bit32.bor(SkillCombo1, SkillCombo2),
+    SkillCombo3 = 98304,                    --SkillCombo1 | SkillCombo2
     SkillCombo4 = bit32.lshift(1, 17),
 
     --This is used in the absorb effect for some reason

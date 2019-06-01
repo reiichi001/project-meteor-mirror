@@ -70,8 +70,8 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
         //Another effect plays when both Protect and Shell flags are activated.
         //Not sure what this effect is.
         //Random guess: if the attack was a hybrid of both physical and magical and the target had both Protect and Shell buffs applied.
-        Protect = 1 << 6 | HitEffectType,
-        Shell = 1 << 7 | HitEffectType,
+        Protect = 1 << 6,
+        Shell = 1 << 7,
         ProtectShellSpecial = Protect | Shell,
 
         //If only HitEffect1 is set out of the hit effects, the "Evade!" pop-up text triggers along with the evade visual.
