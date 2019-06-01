@@ -10,7 +10,7 @@ function onPreAction(effect, caster, target, skill, action, actionContainer)
         action.hitRate = 0.0;
         action.resistRate = 400;
         --Remove status and add message
-        defender.statusEffects.RemoveStatusEffect(effect, actionContainer, 30331, false);
+        caster.statusEffects.RemoveStatusEffect(effect, actionContainer, 30331, false);
     end
 
 end;

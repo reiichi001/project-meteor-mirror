@@ -223,7 +223,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.controllers
 
         protected virtual void Move()
         {
-            if (!owner.aiContainer.CanFollowPath())
+            if (!owner.aiContainer.CanFollowPath() || owner.statusEffects.HasStatusEffectsByFlag(StatusEffectFlags.PreventMovement))
             {
                 return;
             }
