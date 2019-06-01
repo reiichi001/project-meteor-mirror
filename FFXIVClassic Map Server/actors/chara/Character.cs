@@ -393,7 +393,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if ((updateFlags & ActorUpdateFlags.SubState) != 0)
                 {
-                   //packets.Add(SetActorSubStatePacket.BuildPacket(actorId, currentSubState));
+                    packets.Add(SetActorSubStatePacket.BuildPacket(actorId, currentSubState));
                     //packets.Add(CommandResultX00Packet.BuildPacket(actorId, 0x72000062, 0));
                     //packets.Add(CommandResultX01Packet.BuildPacket(actorId, 0x7C000062, 21001, new CommandResult(actorId, 0, 1)));
 
@@ -614,7 +614,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SetMP(uint mp)
         {
-            charaWork.parameterSave.mpMax = (short)mp;
+            charaWork.parameterSave.mp = (short)mp;
             if (mp > charaWork.parameterSave.mpMax)
                 SetMaxMP(mp);
 

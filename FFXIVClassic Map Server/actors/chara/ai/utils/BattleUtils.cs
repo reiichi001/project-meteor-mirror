@@ -464,6 +464,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                     FinishActionStatus(caster, target, skill, action, actionContainer);
                     break;
                 default:
+                    action.effectId = (uint) HitEffect.AnimationEffectType;
                     actionContainer.AddAction(action);
                     break;
             }
