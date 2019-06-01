@@ -387,5 +387,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             return (ushort) commandType;
         }
+
+        public ushort GetActionType()
+        {
+            return (ushort) actionType;
+        }
     }
 }
