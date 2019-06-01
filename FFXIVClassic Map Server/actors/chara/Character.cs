@@ -1129,6 +1129,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 actions.AddAction(new CommandResult(actorId, 30202, 0));
             }
 
+            DelMP(command.CalculateMpCost(this));
+            DelTP(command.CalculateTpCost(this));
+
             //Now that we know if we hit the target we can check if the combo continues
             if (this is Player)
             {
@@ -1139,8 +1142,6 @@ namespace FFXIVClassic_Map_Server.Actors
                     ((Player)this).SetCombos();
             }
 
-            DelMP(command.CalculateMpCost(this));
-            DelTP(command.CalculateTpCost(this));
 
             actions.CombineLists();
             DoBattleAction(command.id, command.battleAnimation, actions.GetList());
