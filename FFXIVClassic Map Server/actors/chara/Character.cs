@@ -847,7 +847,7 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             //TP is only gained from autoattacks and abilities
-            if (action.commandType == CommandType.AutoAttack || action.commandType == CommandType.Ability)
+            if ((action.commandType == CommandType.AutoAttack || action.commandType == CommandType.Ability) && action.hitType != HitType.Miss)
             {
                 //TP gained on an attack is usually 100 * delay.
                 //Store TP seems to add .1% per point.

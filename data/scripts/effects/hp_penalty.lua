@@ -1,11 +1,11 @@
 require("modifiers")
 
-function onGain(target, effect)
-    local newMaxHP = target.GetMaxHP() * 0.75;
+function onGain(owner, effect, actionContainer)
+    local newMaxHP = owner.GetMaxHP() * 0.75;
 
-    target.SetMaxHP(newMaxHP);
+    owner.SetMaxHP(newMaxHP);
 end;
 
-function onLose(target, effect)
-    target.SetMaxHP(target.GetMaxHP() / 0.75);
+function onLose(owner, effect, actionContainer)
+    owner.SetMaxHP(owner.GetMaxHP() / 0.75);
 end;
