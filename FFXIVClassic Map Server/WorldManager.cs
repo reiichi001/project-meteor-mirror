@@ -1218,7 +1218,25 @@ namespace FFXIVClassic_Map_Server
         }
 
         public TradeGroup CreateTradeGroup(Player inviter, Player invitee)
-        {            
+        {    
+            //Sanity Checks
+            if (inviter.Equals(invitee))
+            {
+                inviter.SendGameMessage(GetActor(), 25043, 0x20, (object)invitee); //You cannot trade with yourself.
+                return null;
+            }
+            else if (GetTradeGroup(inviter.actorId) != null)
+            {
+                inviter.SendGameMessage(GetActor(), 25045, 0x20, (object)invitee); //You may only trade with one person at a time.
+                return null;
+            }
+            else if (GetTradeGroup(invitee.actorId) != null)
+            {
+                inviter.SendGameMessage(GetActor(), 25044, 0x20, (object)invitee); //Your target is unable to trade.
+                return null;
+            }
+
+            //Create a trade group between these two players
             lock (groupLock)
             {
                 groupIndexId = groupIndexId | 0x0000000000000000;
