@@ -1,5 +1,4 @@
 ﻿using FFXIVClassic_Map_Server.Actors;
-using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using System;
 using System.IO;
 
@@ -27,9 +26,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public byte dealingVal       = 0;
         public byte dealingMode      = DEALINGMODE_NONE;
-        public uint dealingAttached1 = 0;
-        public uint dealingAttached2 = 0;
-        public uint dealingAttached3 = 0;
+        public int dealingAttached1 = 0;
+        public int dealingAttached2 = 0;
+        public int dealingAttached3 = 0;
 
         public byte[] tags = new byte[4];
         public byte[] tagValues = new byte[4];
@@ -131,25 +130,21 @@ namespace FFXIVClassic_Map_Server.dataobjects
             this.itemData = data;
             this.quantity = 1;
 
-            ItemData gItem = Server.GetItemGamedata(itemId);
-            tags[1] = gItem.isExclusive ? (byte)0x3 : (byte)0x0;
+            tags[1] = itemData.isExclusive ? TAG_EXCLUSIVE : (byte)0;
         }
 
-        //For check command
-        public InventoryItem(InventoryItem item, ushort equipSlot)
+        //For check and trade commands
+        public InventoryItem(InventoryItem item, ushort slot)
         {
             this.uniqueId = item.uniqueId;
             this.itemData = item.itemData;
             this.itemId = item.itemId;
             this.quantity = item.quantity;
-            this.slot = equipSlot;
-
+            this.slot = slot;
             this.tags = item.tags;
             this.tagValues = item.tagValues;
-
             this.quality = item.quality;
-
-            this.modifiers = item.modifiers;
+            this.modifiers = item.modifiers;        
         }
 
         public InventoryItem(uint uniqueId, ItemData itemData, int quantity, byte qualityNumber, ItemModifier modifiers = null)
@@ -160,6 +155,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
             this.quantity = quantity;
             this.quality = qualityNumber;
             this.modifiers = modifiers;
+
+            tags[1] = itemData.isExclusive ? TAG_EXCLUSIVE : (byte)0;
         }
 
         public byte[] ToPacketBytes()
@@ -209,8 +206,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
                     quantity = 0;
                 Database.SetQuantity(uniqueId, this.quantity);
 
-                if (owner != null && owner is Player)
-                    owner.GetItemPackage(itemPackage).RefreshItem((Player)owner, this);
+                if (owner != null)
+                    owner.GetItemPackage(itemPackage).MarkDirty(this);
             }
         }
 
@@ -230,13 +227,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
                 Database.SetQuantity(uniqueId, this.quantity);
 
-                if (owner != null && owner is Player)
-                {
-
-                    ((Player)owner).QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId, false));
-                    owner.GetItemPackage(itemPackage).RefreshItem((Player)owner, this);
-                    ((Player)owner).QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
-                }
+                if (owner != null)
+                    owner.GetItemPackage(itemPackage).MarkDirty(this);                
             }
         }
 
@@ -245,12 +237,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
             this.owner = owner;
             this.itemPackage = itemPackage;
             this.slot = slot;            
-        }
-
-        public void SetExclusive(bool isExclusive)
-        {
-            tags[1] = isExclusive ? TAG_EXCLUSIVE : (byte)0;
-        }
+        }       
 
         public void SetHasAttached(bool isAttached)
         {
@@ -258,21 +245,18 @@ namespace FFXIVClassic_Map_Server.dataobjects
         }
 
         public void SetNormal()
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                if (tags[i] == TAG_DEALING || tags[i] == TAG_ATTACHED)
-                {
-                    tags[i] = 0;
-                    tagValues[i] = 0;
-                    attachedTo = 0;
-                    dealingVal = 0;
-                    dealingMode = 0;
-                    dealingAttached1 = 0;
-                    dealingAttached2 = 0;
-                    dealingAttached3 = 0;
-                }
-            }
+        {           
+            tags[0] = 0;
+            tagValues[0] = 0;
+            attachedTo = 0;
+            dealingVal = 0;
+            dealingMode = 0;
+            dealingAttached1 = 0;
+            dealingAttached2 = 0;
+            dealingAttached3 = 0;
+            
+            if (owner != null)
+                owner.GetItemPackage(itemPackage).MarkDirty(this);
         }
 
         public void SetDealing(byte mode, int price)
@@ -285,9 +269,12 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 dealingVal = 1;
                 dealingMode = DEALINGMODE_PRICED;
                 dealingAttached1 = 1;
-                dealingAttached2 = (uint) price;
+                dealingAttached2 = price;
                 dealingAttached3 = 0; 
             }
+
+            if (owner != null)
+                owner.GetItemPackage(itemPackage).MarkDirty(this);
         }
 
         public void SetDealingAttached(byte mode, ulong attached)
@@ -295,6 +282,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
             tags[0] = TAG_DEALING;
             tagValues[0] = mode;
             attachedTo = attached;
+
+            if (owner != null)
+                owner.GetItemPackage(itemPackage).MarkDirty(this);
         }
 
         public ulong GetAttached()
@@ -306,9 +296,20 @@ namespace FFXIVClassic_Map_Server.dataobjects
         {
             dealingVal = 1;
             dealingMode = DEALINGMODE_REFERENCED;
-            dealingAttached1 = (uint)((package << 16) | index);
+            dealingAttached1 = ((package << 16) | index);
             dealingAttached2 = 0;
-            dealingAttached3 = 0; 
+            dealingAttached3 = 0;
+
+            if (owner != null)
+                owner.GetItemPackage(itemPackage).MarkDirty(this);
+        }
+
+        public void SetTradeQuantity(int quantity)
+        {
+            dealingAttached3 = quantity;
+
+            if (owner != null)
+                owner.GetItemPackage(itemPackage).MarkDirty(this);
         }
 
         public ItemData GetItemData()
@@ -318,12 +319,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
         public byte GetBazaarMode()
         {
-            for (int i = 0; i < tags.Length; i++)
-            {
-                if (tags[i] == 0xC9)
-                    return tagValues[i];
-            }
-
+            if (tags[0] == 0xC9)
+                return tagValues[0];
             return 0;
         }
 

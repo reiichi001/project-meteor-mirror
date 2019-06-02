@@ -6,7 +6,6 @@ using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace FFXIVClassic_Map_Server.actors.chara.player
 {
@@ -22,7 +21,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         public const ushort EQUIPMENT               = 0x00FE; //Max 0x23
         public const ushort TRADE                   = 0x00FD; //Max 0x04
         public const ushort EQUIPMENT_OTHERPLAYER   = 0x00F9; //Max 0x23
-        
+
+        public const ushort MAXSIZE_NORMAL = 200;
+        public const ushort MAXSIZE_CURRANCY = 320;
+        public const ushort MAXSIZE_KEYITEMS = 500;
+        public const ushort MAXSIZE_LOOT = 10;
+        public const ushort MAXSIZE_TRADE = 4;
+        public const ushort MAXSIZE_MELDREQUEST = 4;
+        public const ushort MAXSIZE_BAZAAR = 10;
+        public const ushort MAXSIZE_EQUIPMENT = 35;
+        public const ushort MAXSIZE_EQUIPMENT_OTHERPLAYER = 0x23;
+
         public enum INV_ERROR {
             SUCCESS = 0,
             INVENTORY_FULL,
@@ -170,7 +179,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             list[endOfListIndex++] = itemRef;
             DoDatabaseAdd(itemRef);
 
-            SendUpdatePackets();
+            SendUpdate();
 
             return INV_ERROR.SUCCESS;           
         }
@@ -233,7 +242,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 DoDatabaseAdd(addedItem);
             }
 
-            SendUpdatePackets();
+            SendUpdate();
 
             return INV_ERROR.SUCCESS;            
         }
@@ -241,7 +250,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         public void SetItem(ushort slot, InventoryItem item)
         {
             list[slot] = item;
-            SendUpdatePackets();
+            SendUpdate();
             item.RefreshPositioning(owner, itemPackageCode, slot);           
         }
 
@@ -300,7 +309,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             }
 
             DoRealign();
-            SendUpdatePackets();            
+            SendUpdate();            
         }
 
         public void RemoveItem(InventoryItem item)
@@ -349,7 +358,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             isDirty[slot] = true;
 
             DoRealign();
-            SendUpdatePackets();
+            SendUpdate();
         }
 
         public void RemoveItemAtSlot(ushort slot)
@@ -364,7 +373,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             isDirty[slot] = true;
 
             DoRealign();
-            SendUpdatePackets();
+            SendUpdate();
         }
 
         public void RemoveItemAtSlot(ushort slot, int quantity)
@@ -388,7 +397,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     DoDatabaseQuantity(list[slot].uniqueId, list[slot].quantity);
 
                 isDirty[slot] = true;
-                SendUpdatePackets();
+                SendUpdate();
             }                   
         }
 
@@ -402,7 +411,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             }
             endOfListIndex = 0;
 
-            SendUpdatePackets();            
+            SendUpdate();            
+        }
+
+        public void MarkDirty(InventoryItem item)
+        {
+            if (item.itemPackage != itemPackageCode || list[item.slot] == null)
+                return;
+
+            isDirty[item.slot] = true;
+        }
+
+        public void MarkDirty(ushort slot)
+        {
+            isDirty[slot] = true;
         }
 
         public InventoryItem[] GetRawList()
@@ -427,19 +449,61 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         #endregion
 
         #region Packet Functions
-        public void SendFullInventory(Player player)
+        public void SendFullPackage(Player player)
         {
             player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, itemPackageCapacity, itemPackageCode));
-            SendInventoryPackets(player, 0);
+            SendItemPackets(player, 0);
             player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));            
         }
 
-        private void SendInventoryPackets(Player player, InventoryItem item)
+        public void SendUpdate()
+        {
+            if (owner is Player && !holdingUpdates)
+            {
+                SendUpdate((Player)owner);
+            }
+        }
+
+        public void SendUpdate(Player player)
+        {
+            List<InventoryItem> items = new List<InventoryItem>();
+            List<ushort> slotsToRemove = new List<ushort>();
+
+            for (int i = 0; i < list.Length; i++)
+            {
+                if (i == endOfListIndex)
+                    break;
+                if (isDirty[i])
+                    items.Add(list[i]);
+            }
+
+            for (int i = endOfListIndex; i < list.Length; i++)
+            {
+                if (isDirty[i])
+                    slotsToRemove.Add((ushort)i);
+            }
+
+            if (!holdingUpdates)
+                Array.Clear(isDirty, 0, isDirty.Length);
+            
+            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, itemPackageCapacity, itemPackageCode));
+            //Send Updated Slots
+            SendItemPackets(player, items);
+            //Send Remove packets for tail end
+            SendItemPackets(player, slotsToRemove);
+            player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
+            //If player is updating their normal inventory, we need to send
+            //an equip update as well to resync the slots.
+            if (player.Equals(owner) && itemPackageCode == NORMAL)
+                player.GetEquipment().SendUpdate();
+        }
+
+        private void SendItemPackets(Player player, InventoryItem item)
         {
              player.QueuePacket(InventoryListX01Packet.BuildPacket(owner.actorId, item));            
         }
 
-        private void SendInventoryPackets(Player player, List<InventoryItem> items)
+        private void SendItemPackets(Player player, List<InventoryItem> items)
         {
             int currentIndex = 0;
 
@@ -463,7 +527,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             }
         }
 
-        private void SendInventoryPackets(Player player, int startOffset)
+        private void SendItemPackets(Player player, int startOffset)
         {
             int currentIndex = startOffset;
 
@@ -491,12 +555,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             }
         }
 
-        private void SendInventoryRemovePackets(Player player, ushort index)
+        private void SendItemPackets(Player player, ushort index)
         {
             player.QueuePacket(InventoryRemoveX01Packet.BuildPacket(owner.actorId, index));
         }
 
-        private void SendInventoryRemovePackets(Player player, List<ushort> indexes)
+        private void SendItemPackets(Player player, List<ushort> indexes)
         {
             int currentIndex = 0;
 
@@ -519,28 +583,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     break;
             }
         }
-
-        public void RefreshItem(Player player, InventoryItem item)
-        {
-            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, itemPackageCapacity, itemPackageCode));
-            SendInventoryPackets(player, item);
-            player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));            
-        }
-
-        public void RefreshItem(Player player, params InventoryItem[] items)
-        {
-            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, itemPackageCapacity, itemPackageCode));
-            SendInventoryPackets(player, items.ToList());
-            player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));            
-        }
-
-        public void RefreshItem(Player player, List<InventoryItem> items)
-        {
-            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, itemPackageCapacity, itemPackageCode));
-            SendInventoryPackets(player, items);
-            player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
-        }
-
         #endregion
 
         #region Automatic Client and DB Updating
@@ -584,51 +626,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             else if (owner is Retainer)
                 Database.RemoveItem((Retainer)owner, itemDBId);
         }
-
-        private void SendUpdatePackets()
-        {
-            if (owner is Player && !holdingUpdates)
-            {
-                SendUpdatePackets((Player)owner);
-            }                
-        }
-
-        public void SendUpdatePackets(Player player)
-        {
-            List<InventoryItem> items = new List<InventoryItem>();
-            List<ushort> slotsToRemove = new List<ushort>();
-
-            for (int i = 0; i < list.Length; i++)
-            {
-                if (i == endOfListIndex)
-                    break;
-                if (isDirty[i])
-                    items.Add(list[i]);
-            }
-
-            for (int i = endOfListIndex; i < list.Length; i++)
-            {
-                if (isDirty[i])
-                    slotsToRemove.Add((ushort)i);
-            }
-
-            if (!holdingUpdates)
-                Array.Clear(isDirty, 0, isDirty.Length);
-
-            player.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
-            player.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, itemPackageCapacity, itemPackageCode));
-            //Send Updated Slots
-            SendInventoryPackets(player, items);
-            //Send Remove packets for tail end
-            SendInventoryRemovePackets(player, slotsToRemove);
-            player.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
-            //If player is updating their normal inventory, we need to send
-            //an equip update as well to resync the slots.
-            if (player.Equals(owner) && itemPackageCode == NORMAL)            
-                player.GetEquipment().SendFullEquipment();            
-            player.QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));                        
-        }
-
+        
         public void StartSendUpdate()
         {
             holdingUpdates = true;
@@ -637,7 +635,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         public void DoneSendUpdate()
         {
             holdingUpdates = false;
-            SendUpdatePackets();
+            SendUpdate();
             Array.Clear(isDirty, 0, isDirty.Length);
         }
 

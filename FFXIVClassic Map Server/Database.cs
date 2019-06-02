@@ -1117,7 +1117,7 @@ namespace FFXIVClassic_Map_Server
                     player.GetItemPackage(ItemPackage.MELDREQUEST).InitList(GetItemPackage(player, 0, ItemPackage.MELDREQUEST));
                     player.GetItemPackage(ItemPackage.LOOT).InitList(GetItemPackage(player, 0, ItemPackage.LOOT));
 
-                    player.GetEquipment().SetEquipment(GetEquipment(player, player.charaWork.parameterSave.state_mainSkill[0]));
+                    player.GetEquipment().SetList(GetEquipment(player, player.charaWork.parameterSave.state_mainSkill[0]));
                 }
                 catch (MySqlException e)
                 {
@@ -1131,9 +1131,12 @@ namespace FFXIVClassic_Map_Server
 
         }
 
-        public static InventoryItem[] GetEquipment(Player player, ushort classId)
+        public static uint[] GetEquipment(Player player, ushort classId)
         {
-            InventoryItem[] equipment = new InventoryItem[player.GetEquipment().GetCapacity()];
+            uint[] equipment = new uint[player.GetEquipment().GetCapacity()];
+
+            for (int i = 0; i < equipment.Length; i++)
+                equipment[i] = 0xFFFFFFFF;
 
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -1159,7 +1162,7 @@ namespace FFXIVClassic_Map_Server
                             ushort equipSlot = reader.GetUInt16(0);
                             ulong uniqueItemId = reader.GetUInt16(1);
                             InventoryItem item = player.GetItemPackage(ItemPackage.NORMAL).GetItemByUniqueId(uniqueItemId);
-                            equipment[equipSlot] = item;
+                            equipment[equipSlot] = (uint)((item.itemPackage << 16) | item.slot);
                         }
                     }
                 }
@@ -1195,7 +1198,7 @@ namespace FFXIVClassic_Map_Server
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@characterId", player.actorId);
-                    cmd.Parameters.AddWithValue("@classId", (equipSlot == Equipment.SLOT_UNDERSHIRT || equipSlot == Equipment.SLOT_UNDERGARMENT) ? 0 : player.charaWork.parameterSave.state_mainSkill[0]);
+                    cmd.Parameters.AddWithValue("@classId", (equipSlot == Player.SLOT_UNDERSHIRT || equipSlot == Player.SLOT_UNDERGARMENT) ? 0 : player.charaWork.parameterSave.state_mainSkill[0]);
                     cmd.Parameters.AddWithValue("@equipSlot", equipSlot);
                     cmd.Parameters.AddWithValue("@uniqueItemId", uniqueItemId);
 

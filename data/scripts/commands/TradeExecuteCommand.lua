@@ -30,16 +30,22 @@ function onEventStarted(player, actor, triggerName)
 	
 	tradeOffering = player:GetTradeOfferings();
 	
+	if (player.actorId == 0xA6) then
+		return;
+	end
+	
 	while (true) do
-		widgetOpen, chosenOperation, tradeSlot, type7, quantity, packageId, quality = callClientFunction(player, "delegateCommand", GetStaticActor("TradeExecuteCommand"), "processUpdateTradeCommandTrayData");
-		
+		widgetOpen, chosenOperation, tradeSlot, itemActor, quantity, itemPackageId, itemSlot = callClientFunction(player, "delegateCommand", GetStaticActor("TradeExecuteCommand"), "processUpdateTradeCommandTrayData");
+
 		--Abort script if client script dead
 		if (widgetOpen == false or widgetOpen == nil) then
+			player:FinishTradeTransaction();
 			break;
 		end
 				
 		--Handle you/target canceling/finishing the trade
 		if (not player:IsTrading() or not player:GetOtherTrader():IsTrading()) then
+			player:FinishTradeTransaction();
 			break;
 		end
 		
@@ -63,15 +69,15 @@ function onEventStarted(player, actor, triggerName)
 			callClientFunction(player, "delegateCommand", GetStaticActor("TradeExecuteCommand"), "processTradeCommandReply", "set");
 		--Clear All
 		elseif (chosenOperation == 2) then
-			player:ClearTradeItems(1);
+			player:ClearTradeItems();
 			callClientFunction(player, "delegateCommand", GetStaticActor("TradeExecuteCommand"), "processTradeCommandReply", "set");
 		--Item Chosen
 		elseif (chosenOperation == 3) then
-			player:AddTradeItem(tradeSlot - 1, type7.slot, quantity);		
+			player:AddTradeItem(tradeSlot - 1, itemActor, quantity);	
 			callClientFunction(player, "delegateCommand", GetStaticActor("TradeExecuteCommand"), "processTradeCommandReply", "set", 2, 2, 2, 2);
 		--Gil Chosen
 		elseif (chosenOperation == 4) then		
-			player:AddTradeGil(quantity);
+			player:AddTradeItem(tradeSlot - 1, itemActor, quantity);
 			callClientFunction(player, "delegateCommand", GetStaticActor("TradeExecuteCommand"), "processTradeCommandReply", "set");
 		--Cancel
 		elseif (chosenOperation == 11) then

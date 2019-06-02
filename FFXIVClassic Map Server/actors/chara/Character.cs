@@ -135,7 +135,7 @@ namespace FFXIVClassic_Map_Server.Actors
         
         //Inventory        
         protected Dictionary<ushort, ItemPackage> itemPackages = new Dictionary<ushort, ItemPackage>();
-        protected Equipment equipment;
+        protected ReferencedItemPackage equipment;
 
         public Character(uint actorID)
             : base(actorID)
@@ -1147,7 +1147,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 return;
 
             player.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
-            itemPackages[(ushort)id].SendFullInventory(player);
+            itemPackages[(ushort)id].SendUpdate(player);
             player.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
         }
 

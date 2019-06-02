@@ -6,7 +6,7 @@ Notes:
 
 Gearset activating could be optimized a bit more by doing the item packets in one go.
 
-The param "invActionInfo" has the vars: actorId, unknown, slot, and inventoryType. 
+The param "equippedItem" has the vars: actorId, unknown, slot, and inventoryType. 
 The param "itemDBIds" has the vars: item1 and item2. 
 
 --]]
@@ -53,12 +53,12 @@ GRAPHICSLOT_L_RINGFINGER	= 24;
 GRAPHICSLOT_R_INDEXFINGER 	= 25;
 GRAPHICSLOT_L_INDEXFINGER 	= 26;
 
-function onEventStarted(player, actor, triggerName, invActionInfo, param1, param2, param3, param4, param5, param6, param7, equipSlot, itemDBIds)
+function onEventStarted(player, actor, triggerName, equippedItem, param1, param2, param3, param4, param5, param6, param7, equipSlot, itemDBIds)
 	equipSlot = equipSlot-1;
 	
 	--Equip Item
-	if (invActionInfo ~= nil) then		
-		item = player:GetItemPackage(0):GetItemAtSlot(invActionInfo.slot);		
+	if (equippedItem ~= nil) then		
+		item = player:GetItemPackage(equippedItem.itemPackage):GetItemAtSlot(equippedItem.slot);		
 		equipItem(player, equipSlot, item);			
 		player:SendAppearance();
 	--Unequip Item
@@ -83,7 +83,7 @@ function loadGearset(player, classId)
 	for slot = 0, 34 do
 	
 		if (slot ~= EQUIPSLOT_MAINHAND and slot ~= EQUIPSLOT_UNDERSHIRT and slot ~= EQUIPSLOT_UNDERGARMENT) then
-			itemAtSlot = player:GetEquipment():GetItemAtSlot(slot);
+			itemAtSlot = slot;
 			itemAtGearsetSlot = gearset[slot];
 			
 			if (itemAtSlot ~= nil or itemAtGearsetSlot ~= nil) then		
@@ -98,10 +98,8 @@ function loadGearset(player, classId)
 			end
 		end
 		
-	end
-	
-	player:GetEquipment():ToggleDBWrite(true);
-	
+	end	
+	player:GetEquipment():ToggleDBWrite(true);	
 end
 
 function equipItem(player, equipSlot, item)
@@ -151,7 +149,7 @@ function equipItem(player, equipSlot, item)
 			player:DoClassChange(classId);
 		end
 
-		player:GetEquipment():Equip(equipSlot, item);		
+		player:GetEquipment():Set(equipSlot, item);		
 		
 		if 	   (equipSlot == EQUIPSLOT_MAINHAND and gItem:IsNailWeapon() == false) then graphicSlot = GRAPHICSLOT_MAINHAND;
 		elseif (equipSlot == EQUIPSLOT_OFFHAND) then graphicSlot = GRAPHICSLOT_OFFHAND;
@@ -167,7 +165,7 @@ function equipItem(player, equipSlot, item)
 		elseif (equipSlot == EQUIPSLOT_RFINGER) then graphicSlot = GRAPHICSLOT_R_RINGFINGER;
 		elseif (equipSlot == EQUIPSLOT_LFINGER) then graphicSlot = GRAPHICSLOT_L_RINGFINGER;
 		end
-		
+				
 		--Graphic Slot was set, otherwise it's a special case
 		if (graphicSlot ~= nil) then
 			player:GraphicChange(graphicSlot, item);
@@ -191,7 +189,7 @@ function unequipItem(player, equipSlot, item)
 		player:SendGameMessage(player, worldMaster, 30730, 0x20, equipSlot+1, item.itemId, item.quality, 0, 0, 1); --Unable to unequip
 	elseif (item ~= nil) then
 		player:SendGameMessage(player, worldMaster, 30602, 0x20, equipSlot+1, item.itemId, item.quality, 0, 0, 1); --Item Removed
-		player:GetEquipment():Unequip(equipSlot);
+		player:GetEquipment():Clear(equipSlot);
 				
 		if (equipSlot == EQUIPSLOT_BODY) then --Show Undershirt
 			item = player:GetEquipment():GetItemAtSlot(EQUIPSLOT_UNDERSHIRT);

@@ -7,12 +7,12 @@ using FFXIVClassic.Common;
 
 namespace  FFXIVClassic_Map_Server.packets.send.actor.inventory
 {
-    class EquipmentListX64Packet
+    class LinkedItemListX32Packet
     {
-        public const ushort OPCODE = 0x151;
-        public const uint PACKET_SIZE = 0x194;
+        public const ushort OPCODE = 0x150;
+        public const uint PACKET_SIZE = 0xE0;
 
-        public static SubPacket BuildPacket(uint playerActorId, InventoryItem[] equipment, List<ushort> slotsToUpdate, ref int listOffset)
+        public static SubPacket BuildPacket(uint playerActorId, uint[] linkedItemList, List<ushort> slotsToUpdate, ref int listOffset)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
@@ -21,15 +21,15 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.inventory
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
                     int max;
-                    if (slotsToUpdate.Count - listOffset <= 64)
+                    if (slotsToUpdate.Count - listOffset <= 32)
                         max = slotsToUpdate.Count - listOffset;
                     else
-                        max = 64;
+                        max = 32;
 
                     for (int i = 0; i < max; i++)
                     {
-                        binWriter.Write((UInt16)slotsToUpdate[i]);
-                        binWriter.Write((UInt32)equipment[slotsToUpdate[i]].slot);
+                        binWriter.Write((UInt16)slotsToUpdate[i]); //LinkedItemPackageSlot
+                        binWriter.Write((UInt32)linkedItemList[slotsToUpdate[i]]); //ItemPackage Slot + ItemPackage Code    
                         listOffset++;
                     }
 
@@ -37,7 +37,7 @@ namespace  FFXIVClassic_Map_Server.packets.send.actor.inventory
             }
 
             return new SubPacket(OPCODE, playerActorId, data);
-        }
+        }    
 
     }
 }

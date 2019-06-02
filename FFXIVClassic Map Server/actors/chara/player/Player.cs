@@ -23,19 +23,12 @@ using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 using FFXIVClassic_Map_Server.packets.send.player;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.packets.receive.events;
+using static FFXIVClassic_Map_Server.LuaUtils;
 
 namespace FFXIVClassic_Map_Server.Actors
 {
     class Player : Character
     {
-        public const int MAXSIZE_INVENTORY_NORMAL = 200;
-        public const int MAXSIZE_INVENTORY_CURRANCY = 320;
-        public const int MAXSIZE_INVENTORY_KEYITEMS = 500;
-        public const int MAXSIZE_INVENTORY_LOOT = 10;
-        public const int MAXSIZE_INVENTORY_MELDREQUEST = 4;
-        public const int MAXSIZE_INVENTORY_BAZAAR = 10;
-        public const int MAXSIZE_INVENTORY_EQUIPMENT = 35;
-
         public const int TIMER_TOTORAK = 0;
         public const int TIMER_DZEMAEL = 1;        
         public const int TIMER_BOWL_OF_EMBERS_HARD = 2;
@@ -62,6 +55,25 @@ namespace FFXIVClassic_Map_Server.Actors
         public const int NPCLS_ACTIVE   = 2;
         public const int NPCLS_ALERT    = 3;
 
+        public const int SLOT_MAINHAND = 0;
+        public const int SLOT_OFFHAND = 1;
+        public const int SLOT_THROWINGWEAPON = 4;
+        public const int SLOT_PACK = 5;
+        public const int SLOT_POUCH = 6;
+        public const int SLOT_HEAD = 8;
+        public const int SLOT_UNDERSHIRT = 9;
+        public const int SLOT_BODY = 10;
+        public const int SLOT_UNDERGARMENT = 11;
+        public const int SLOT_LEGS = 12;
+        public const int SLOT_HANDS = 13;
+        public const int SLOT_BOOTS = 14;
+        public const int SLOT_WAIST = 15;
+        public const int SLOT_NECK = 16;
+        public const int SLOT_EARS = 17;
+        public const int SLOT_WRISTS = 19;
+        public const int SLOT_RIGHTFINGER = 21;
+        public const int SLOT_LEFTFINGER = 22;
+
         public static int[] MAXEXP = {570, 700, 880, 1100, 1500, 1800, 2300, 3200, 4300, 5000,                   //Level <= 10
                                      5900, 6800, 7700, 8700, 9700, 11000, 12000, 13000, 15000, 16000,            //Level <= 20
                                      20000, 22000, 23000, 25000, 27000, 29000, 31000, 33000, 35000, 38000,       //Level <= 30
@@ -85,9 +97,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         //Trading
         private Player otherTrader = null;
-        private ItemPackage myOfferings;
+        private ReferencedItemPackage myOfferings;
         private bool isTradeAccepted = false;
-        private bool isTradeLocked = false;
 
         //GC Related
         public byte gcCurrent;
@@ -143,14 +154,13 @@ namespace FFXIVClassic_Map_Server.Actors
             moveSpeeds[2] = SetActorSpeedPacket.DEFAULT_RUN;
             moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_ACTIVE;
 
-            itemPackages[ItemPackage.NORMAL] = new ItemPackage(this, MAXSIZE_INVENTORY_NORMAL, ItemPackage.NORMAL);
-            itemPackages[ItemPackage.KEYITEMS] = new ItemPackage(this, MAXSIZE_INVENTORY_KEYITEMS, ItemPackage.KEYITEMS);
-            itemPackages[ItemPackage.CURRENCY_CRYSTALS] = new ItemPackage(this, MAXSIZE_INVENTORY_CURRANCY, ItemPackage.CURRENCY_CRYSTALS);
-            itemPackages[ItemPackage.MELDREQUEST] = new ItemPackage(this, MAXSIZE_INVENTORY_MELDREQUEST, ItemPackage.MELDREQUEST);
-            itemPackages[ItemPackage.BAZAAR] = new ItemPackage(this, MAXSIZE_INVENTORY_BAZAAR, ItemPackage.BAZAAR);
-            itemPackages[ItemPackage.LOOT] = new ItemPackage(this, MAXSIZE_INVENTORY_LOOT, ItemPackage.LOOT);
-
-            equipment = new Equipment(this, itemPackages[ItemPackage.NORMAL]);
+            itemPackages[ItemPackage.NORMAL] = new ItemPackage(this, ItemPackage.MAXSIZE_NORMAL, ItemPackage.NORMAL);
+            itemPackages[ItemPackage.KEYITEMS] = new ItemPackage(this, ItemPackage.MAXSIZE_KEYITEMS, ItemPackage.KEYITEMS);
+            itemPackages[ItemPackage.CURRENCY_CRYSTALS] = new ItemPackage(this, ItemPackage.MAXSIZE_CURRANCY, ItemPackage.CURRENCY_CRYSTALS);
+            itemPackages[ItemPackage.MELDREQUEST] = new ItemPackage(this, ItemPackage.MAXSIZE_MELDREQUEST, ItemPackage.MELDREQUEST);
+            itemPackages[ItemPackage.BAZAAR] = new ItemPackage(this, ItemPackage.MAXSIZE_BAZAAR, ItemPackage.BAZAAR);
+            itemPackages[ItemPackage.LOOT] = new ItemPackage(this, ItemPackage.MAXSIZE_LOOT, ItemPackage.LOOT);
+            equipment = new ReferencedItemPackage(this, ItemPackage.MAXSIZE_EQUIPMENT, ItemPackage.EQUIPMENT);
 
             //Set the Skill level caps of all FFXIV (classes)skills to 50
             for (int i = 0; i < charaWork.battleSave.skillLevelCap.Length; i++)
@@ -531,13 +541,13 @@ namespace FFXIVClassic_Map_Server.Actors
 
             #region Inventory & Equipment
             QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
-            itemPackages[ItemPackage.NORMAL].SendFullInventory(this);
-            itemPackages[ItemPackage.CURRENCY_CRYSTALS].SendFullInventory(this);
-            itemPackages[ItemPackage.KEYITEMS].SendFullInventory(this);
-            itemPackages[ItemPackage.BAZAAR].SendFullInventory(this);
-            itemPackages[ItemPackage.MELDREQUEST].SendFullInventory(this);
-            itemPackages[ItemPackage.LOOT].SendFullInventory(this);
-            equipment.SendFullEquipment();   
+            itemPackages[ItemPackage.NORMAL].SendFullPackage(this);
+            itemPackages[ItemPackage.CURRENCY_CRYSTALS].SendFullPackage(this);
+            itemPackages[ItemPackage.KEYITEMS].SendFullPackage(this);
+            itemPackages[ItemPackage.BAZAAR].SendFullPackage(this);
+            itemPackages[ItemPackage.MELDREQUEST].SendFullPackage(this);
+            itemPackages[ItemPackage.LOOT].SendFullPackage(this);
+            equipment.SendUpdate(this);   
             playerSession.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
             #endregion
 
@@ -972,7 +982,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return max;
         }
 
-        public InventoryItem[] GetGearset(ushort classId)
+        public uint[] GetGearset(ushort classId)
         {
             return Database.GetEquipment(this, classId);
         }
@@ -1190,7 +1200,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return isZoneChanging;
         }
 
-        public Equipment GetEquipment()
+        public ReferencedItemPackage GetEquipment()
         {
             return equipment;
         }     
@@ -1674,18 +1684,10 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 return;
 
-            QueuePacket(InventoryBeginChangePacket.BuildPacket(toBeExamined.actorId));
-            toBeExamined.GetEquipment().SendFullEquipment(this);
+            QueuePacket(InventoryBeginChangePacket.BuildPacket(toBeExamined.actorId, true));
+            toBeExamined.GetEquipment().SendUpdateAsItemPackage(this, ItemPackage.MAXSIZE_EQUIPMENT_OTHERPLAYER, ItemPackage.EQUIPMENT_OTHERPLAYER);
             QueuePacket(InventoryEndChangePacket.BuildPacket(toBeExamined.actorId));
-        }
-
-        public void SendMyTradeToPlayer(Player player)
-        {
-            ItemPackage tradeInventory = new ItemPackage(this, 4, ItemPackage.TRADE);
-            player.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
-            tradeInventory.SendFullInventory(player);
-            player.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
-        }
+        }        
 
         public void SendDataPacket(params object[] parameters)
         {
@@ -2618,7 +2620,7 @@ namespace FFXIVClassic_Map_Server.Actors
             base.CalculateBaseStats();
             //Add weapon property mod
             var equip = GetEquipment();
-            var mainHandItem = equip.GetItemAtSlot(Equipment.SLOT_MAINHAND);
+            var mainHandItem = equip.GetItemAtSlot(SLOT_MAINHAND);
             var damageAttribute = 0;
             var attackDelay = 3000;
             var hitCount = 1;
@@ -2631,7 +2633,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 hitCount = mainHandWeapon.frequency;
             }
 
-            var hasShield = equip.GetItemAtSlot(Equipment.SLOT_OFFHAND) != null ? 1 : 0;
+            var hasShield = equip.GetItemAtSlot(SLOT_OFFHAND) != null ? 1 : 0;
             SetMod((uint)Modifier.HasShield, hasShield);
 
             SetMod((uint)Modifier.AttackType, damageAttribute);
@@ -2699,14 +2701,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void StartTradeTransaction(Player otherPlayer)
         {
-            myOfferings = new ItemPackage(this, 4, ItemPackage.TRADE, true);
-            ItemPackage otherPlayerOfferings = new ItemPackage(otherPlayer, 4, ItemPackage.TRADE, true);
-
-            myOfferings.StartSendUpdate();
-            myOfferings.SendUpdatePackets(this);
-            myOfferings.SendUpdatePackets(otherPlayer);
-            myOfferings.DoneSendUpdate();
-
+            myOfferings = new ReferencedItemPackage(this, ItemPackage.MAXSIZE_TRADE, ItemPackage.TRADE);            
             otherTrader = otherPlayer;
             isTradeAccepted = false;
         }
@@ -2716,7 +2711,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return otherTrader;
         }
 
-        public ItemPackage GetTradeOfferings()
+        public ReferencedItemPackage GetTradeOfferings()
         {
             return myOfferings;
         }
@@ -2730,53 +2725,59 @@ namespace FFXIVClassic_Map_Server.Actors
         {
             return isTradeAccepted;
         }
-
-        public void AddTradeItem(ushort slot, ushort linkedSlot, int subquantity)
-        {
-            if (!IsTrading())
-                return;
-
-            InventoryItem mine = itemPackages[ItemPackage.NORMAL].GetItemAtSlot(linkedSlot);
-
-            InventoryItem tradeItem = new InventoryItem(mine, slot);
-
-            myOfferings.StartSendUpdate();
-            myOfferings.AddItem(mine.itemId, mine.quantity, mine.quality);
-            myOfferings.SendUpdatePackets(otherTrader);
-            myOfferings.DoneSendUpdate();
-        }
-
-        public void AddTradeGil(int quantity)
+        
+        public void AddTradeItem(ushort slot, ItemRefParam chosenItem, int tradeQuantity)
         {
             if (!IsTrading())
                 return;
             
-            myOfferings.StartSendUpdate();
-            myOfferings.AddItem(1000001, quantity, 1);
-            myOfferings.SendUpdatePackets(otherTrader);
-            myOfferings.DoneSendUpdate();
+            //Get chosen item
+            InventoryItem offeredItem = itemPackages[chosenItem.itemPackage].GetItemAtSlot(chosenItem.slot);
+            offeredItem.SetTradeQuantity(tradeQuantity);
+            
+            myOfferings.Set(slot, offeredItem);
+            SendTradePackets();
         }
-
+        
         public void RemoveTradeItem(ushort slot)
-        {
-            if (!IsTrading())
-                return;            
-
-            myOfferings.StartSendUpdate();
-            myOfferings.RemoveItemAtSlot(slot);
-            myOfferings.SendUpdatePackets(otherTrader);
-            myOfferings.DoneSendUpdate();
-        }
-
-        public void ClearTradeItems(ushort slot)
         {
             if (!IsTrading())
                 return;
 
-            myOfferings.StartSendUpdate();
-            myOfferings.Clear();
-            myOfferings.SendUpdatePackets(otherTrader);
-            myOfferings.DoneSendUpdate();
+            InventoryItem offeredItem = myOfferings.GetItemAtSlot(slot);
+            offeredItem.SetNormal();
+
+            myOfferings.Clear(slot);
+            SendTradePackets();
+        }
+
+        public void ClearTradeItems()
+        {
+            if (!IsTrading())
+                return;
+
+            for (ushort i = 0; i < myOfferings.GetCapacity(); i++)
+            {
+                InventoryItem offeredItem = myOfferings.GetItemAtSlot(i);
+                if (offeredItem != null)
+                    offeredItem.SetNormal();
+            }
+
+            myOfferings.ClearAll();
+            SendTradePackets();
+        }
+
+        private void SendTradePackets()
+        {
+            //Send to self
+            QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
+            myOfferings.SendUpdate(this);
+            QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
+
+            //Send to other trader
+            otherTrader.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
+            myOfferings.SendUpdateAsItemPackage(otherTrader);
+            otherTrader.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
         }
 
         public void AcceptTrade(bool accepted)
@@ -2788,31 +2789,25 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void FinishTradeTransaction()
         {
+            if (myOfferings != null)
+            {
+                myOfferings.ClearAll();
+                for (ushort i = 0; i < myOfferings.GetCapacity(); i++)
+                {
+                    InventoryItem offeredItem = myOfferings.GetItemAtSlot(i);
+                    if (offeredItem != null)
+                        offeredItem.SetNormal();
+                }
+
+                QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
+                myOfferings.SendUpdate(this);
+                QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
+            }
+
             isTradeAccepted = false;
             myOfferings = null;
             otherTrader = null;
         }
-
-        public void Test()
-        {
-            QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
-            QueuePacket(InventorySetBeginPacket.BuildPacket(actorId, 4, ItemPackage.TRADE));
-
-            QueuePacket(InventoryRemoveX01Packet.BuildPacket(actorId, 1));
-
-            QueuePacket(InventorySetEndPacket.BuildPacket(actorId));
-            QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
-        }
-        public void Test2()
-        {
-            QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId));
-            QueuePacket(InventorySetBeginPacket.BuildPacket(actorId, 4, ItemPackage.TRADE));
-
-            QueuePacket(EquipmentListX01Packet.BuildPacket(actorId, 1, 1));
-
-            QueuePacket(InventorySetEndPacket.BuildPacket(actorId));
-            QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
-        }
-
+        
     }
 }
