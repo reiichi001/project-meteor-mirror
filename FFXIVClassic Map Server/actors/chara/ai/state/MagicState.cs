@@ -26,13 +26,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.spell = Server.GetWorldManager().GetBattleCommand(spellId);
             var returnCode = spell.CallLuaFunction(owner, "onMagicPrepare", owner, target, spell);
 
-            //Modify spell based on status effects. Need to do it here because they can modify cast times
-            List<StatusEffect> effects = owner.statusEffects.GetStatusEffectsByFlag((uint)(StatusEffectFlags.ActivateOnCastStart));
-
             //modify skill based on status effects
             //Do this here to allow buffs like Resonance to increase range before checking CanCast()
-            foreach (var effect in effects)
-                lua.LuaEngine.CallLuaStatusEffectFunction(owner, effect, "onMagicCast", owner, effect, spell);
+            owner.statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnCastStart, "onMagicCast", owner, spell);
 
             this.target = (spell.mainTarget & ValidTarget.SelfOnly) != 0 ? owner : target;
 

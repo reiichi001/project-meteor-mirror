@@ -11,5 +11,6 @@ function onCommandStart(effect, owner, skill, actionContainer)
         end
 
         skill.recastTimeMs = skill.recastTimeMs - (reduction * skill.recastTimeMs);
+        owner.statusEffects.RemoveStatusEffect(effect, actionContainer, 30331, false);
     end
 end;

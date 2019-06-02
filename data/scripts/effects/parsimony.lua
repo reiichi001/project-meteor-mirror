@@ -2,7 +2,7 @@ require("modifiers")
 require("battleutils")
 
 --Forces crit of a single WS action from rear.
-function onMagicCast(caster, effect, skill)
+function onMagicCast(effect, caster, skill)
     skill.mpCost = skill.mpCost / 2;
 end;
 
