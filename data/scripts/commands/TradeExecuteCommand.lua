@@ -29,11 +29,7 @@ function onEventStarted(player, actor, triggerName)
 	callClientFunction(player, "delegateCommand", GetStaticActor("TradeExecuteCommand"), "processTradeCommandOpenTray");
 	
 	tradeOffering = player:GetTradeOfferings();
-	
-	if (player.actorId == 0xA6) then
-		return;
-	end
-	
+		
 	while (true) do
 		widgetOpen, chosenOperation, tradeSlot, itemActor, quantity, itemPackageId, itemSlot = callClientFunction(player, "delegateCommand", GetStaticActor("TradeExecuteCommand"), "processUpdateTradeCommandTrayData");
 

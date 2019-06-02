@@ -42,6 +42,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public readonly ItemData itemData;
         public Character owner = null;
         public ushort slot = 0xFFFF;
+        public ushort linkSlot = 0xFFFF;
         public ushort itemPackage = 0xFFFF;
 
         public class ItemModifier
@@ -170,7 +171,12 @@ namespace FFXIVClassic_Map_Server.dataobjects
                     binWriter.Write((UInt64)uniqueId);
                     binWriter.Write((Int32)quantity);
                     binWriter.Write((UInt32)itemId);
-                    binWriter.Write((UInt16)slot);
+
+                    if (linkSlot == 0xFFFF)
+                        binWriter.Write((UInt16)slot);
+                    else
+                        binWriter.Write((UInt16)linkSlot);
+                    linkSlot = 0xFFFF;
 
                     binWriter.Write((Byte)dealingVal);
                     binWriter.Write((Byte)dealingMode);

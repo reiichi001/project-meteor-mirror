@@ -189,16 +189,28 @@ namespace FFXIVClassic_Map_Server.actors.chara
         {
             List<InventoryItem> items = new List<InventoryItem>();
 
-            for (int i = 0; i < contentList.Length; i++)
+            for (ushort i = 0; i < contentList.Length; i++)
             {
                 if (contentList[i] == EMPTY)
                     continue;
+
+                InventoryItem item = GetItem(contentList[i]);
+                item.linkSlot = i; //We have to set the linkSlot as this is the position in the Referenced IP, not the original IP it's linked from.
                 items.Add(GetItem(contentList[i]));
             }
             
             targetPlayer.QueuePacket(InventorySetBeginPacket.BuildPacket(owner.actorId, destinationCapacity, destinationCode));         
             SendItemPackets(targetPlayer, items);
             targetPlayer.QueuePacket(InventorySetEndPacket.BuildPacket(owner.actorId));
+
+            //Clean Up linkSlots
+            for (ushort i = 0; i < contentList.Length; i++)
+            {
+                if (contentList[i] == EMPTY)
+                    continue;
+                InventoryItem item = GetItem(contentList[i]);
+                item.linkSlot = 0xFFFF;
+            }
         }
         #endregion
 
