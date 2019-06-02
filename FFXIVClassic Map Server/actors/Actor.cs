@@ -31,6 +31,7 @@ namespace FFXIVClassic_Map_Server.Actors
         Stats = 0x100,
         Status = 0x200,
         StatusTime = 0x400,
+        Hotbar = 0x800,
 
         AllNpc = 0xDF,
         AllPlayer = 0x13F

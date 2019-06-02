@@ -68,7 +68,7 @@ INSERT INTO `server_statuseffects` VALUES (223075,'featherfoot',131097,2,0,0,0,0
 INSERT INTO `server_statuseffects` VALUES (223078,'enduring_march',9,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223081,'bloodbath',1048601,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223083,'foresight',262169,2,0,0,0,0);
-INSERT INTO `server_statuseffects` VALUES (223091,'keen_flurry',9,2,0,0,0,0);
+INSERT INTO `server_statuseffects` VALUES (223091,'keen_flurry',1033,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223094,'invigorate',9,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223097,'collusion',1048601,1,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223104,'quelling_strike',1041,2,0,0,0,0);
@@ -77,7 +77,7 @@ INSERT INTO `server_statuseffects` VALUES (223108,'decoy',4113,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223127,'bloodletter',21,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223129,'protect',9,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223133,'stoneskin',16393,1,0,0,0,0);
-INSERT INTO `server_statuseffects` VALUES (223173,'covered',21,2,0,0,0,0);
+INSERT INTO `server_statuseffects` VALUES (223173,'covered',4105,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223180,'regen',9,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223181,'refresh',9,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223182,'regain',9,2,0,0,0,0);
@@ -99,9 +99,10 @@ INSERT INTO `server_statuseffects` VALUES (223218,'dread_spike',16649,2,0,0,0,0)
 INSERT INTO `server_statuseffects` VALUES (223219,'blood_for_blood',8209,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223220,'barrage',3081,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223221,'raging_strike2',537985297,1,0,0,0,0);
+INSERT INTO `server_statuseffects` VALUES (223224,'swiftsong',137,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223227,'cleric_stance',8209,1,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223228,'blissful_mind',536871185,1,1000,0,0,0);
-INSERT INTO `server_statuseffects` VALUES (223229,'dark_seal2',409,2,0,0,0,0);
+INSERT INTO `server_statuseffects` VALUES (223229,'dark_seal2',1033,2,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223230,'resonance2',2569,1,0,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223231,'excruciate',2098185,2,3000,0,0,0);
 INSERT INTO `server_statuseffects` VALUES (223232,'necrogenesis',1048585,1,0,0,0,0);
@@ -147,4 +148,4 @@ commit;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-05-29 23:06:54
+-- Dump completed on 2019-06-01 21:15:54

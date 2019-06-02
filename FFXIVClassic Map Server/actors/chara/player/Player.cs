@@ -123,6 +123,8 @@ namespace FFXIVClassic_Map_Server.Actors
         private List<Director> ownedDirectors = new List<Director>();
         private Director loginInitDirector = null;
 
+        List<ushort> hotbarSlotsToUpdate = new List<ushort>();
+
         public PlayerWork playerWork = new PlayerWork();
 
         public Session playerSession;
@@ -1841,7 +1843,14 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
 
                 QueuePackets(propPacketUtil.Done());
+            }
 
+            if ((updateFlags & ActorUpdateFlags.Hotbar) != 0)
+            {
+                UpdateHotbar(hotbarSlotsToUpdate);
+                hotbarSlotsToUpdate.Clear();
+
+                updateFlags ^= ActorUpdateFlags.Hotbar;
             }
 
 
@@ -1857,12 +1866,11 @@ namespace FFXIVClassic_Map_Server.Actors
         //Update commands and recast timers for the entire hotbar
         public void UpdateHotbar()
         {
-            List<ushort> slotsToUpdate = new List<ushort>();
             for (ushort i = charaWork.commandBorder; i < charaWork.commandBorder + 30; i++)
             {
-                slotsToUpdate.Add(i);
+                hotbarSlotsToUpdate.Add(i);
             }
-            UpdateHotbar(slotsToUpdate);
+            updateFlags |= ActorUpdateFlags.Hotbar;
         }
 
         //Updates the hotbar and recast timers for only certain hotbar slots
@@ -1934,7 +1942,6 @@ namespace FFXIVClassic_Map_Server.Actors
             ushort lowHotbarSlot = (ushort)(hotbarSlot - charaWork.commandBorder);
             ushort maxRecastTime = (ushort)(ability != null ? ability.maxRecastTimeSeconds : 5);
             uint recastEnd = Utils.UnixTimeStampUTC() + maxRecastTime;
-            List<ushort> slotsToUpdate = new List<ushort>();
             
             Database.EquipAbility(this, classId, (ushort) (hotbarSlot - charaWork.commandBorder), commandId, recastEnd);
             //If the class we're equipping for is the current class (need to find out if state_mainSkill is supposed to change when you're a job)
@@ -1946,8 +1953,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.parameterTemp.maxCommandRecastTime[lowHotbarSlot] = maxRecastTime;
                 charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot] = recastEnd;
 
-                slotsToUpdate.Add(hotbarSlot);
-                UpdateHotbar(slotsToUpdate);
+                hotbarSlotsToUpdate.Add(hotbarSlot);
+                updateFlags |= ActorUpdateFlags.Hotbar;
             }
 
 
@@ -1983,25 +1990,23 @@ namespace FFXIVClassic_Map_Server.Actors
             Database.EquipAbility(this, GetCurrentClassOrJob(), (ushort)(lowHotbarSlot2), 0xA0F00000 ^ charaWork.command[hotbarSlot2], charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot2]);
 
             //Update slots on client
-            List<ushort> slotsToUpdate = new List<ushort>();
-            slotsToUpdate.Add(hotbarSlot1);
-            slotsToUpdate.Add(hotbarSlot2);
-            UpdateHotbar(slotsToUpdate);
+            hotbarSlotsToUpdate.Add(hotbarSlot1);
+            hotbarSlotsToUpdate.Add(hotbarSlot2);
+            updateFlags |= ActorUpdateFlags.Hotbar;
         }
 
         public void UnequipAbility(ushort hotbarSlot, bool printMessage = true)
         {
-            List<ushort> slotsToUpdate = new List<ushort>();
-            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder - 1);
+            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder);
             uint commandId = charaWork.command[trueHotbarSlot];
-            Database.UnequipAbility(this, (ushort)(trueHotbarSlot - charaWork.commandBorder));
+            Database.UnequipAbility(this,  hotbarSlot);
             charaWork.command[trueHotbarSlot] = 0;
-            slotsToUpdate.Add(trueHotbarSlot);
+            hotbarSlotsToUpdate.Add(trueHotbarSlot);
 
-            if(printMessage)
+            if (printMessage && commandId != 0)
                 SendGameMessage(Server.GetWorldManager().GetActor(), 30604, 0x20, 0, 0xA0F00000 ^ commandId);
 
-            UpdateHotbar(slotsToUpdate);
+            updateFlags |= ActorUpdateFlags.Hotbar;
         }
 
         //Finds the first hotbar slot with a given commandId.

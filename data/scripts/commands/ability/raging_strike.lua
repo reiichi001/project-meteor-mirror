@@ -20,8 +20,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
 
     if buff ~= nil then
         --30329: Your Raging Strike removes your Raging Strike effect.
-        local remAction = caster.statusEffects.RemoveStatusEffect(buff, actionContainer, 30329);
-        actionContainer.AddAction(remAction);
+        caster.statusEffects.RemoveStatusEffect(buff, actionContainer, 30329);
     else
         --DoAction handles rates, buffs, dealing damage
         action.DoAction(caster, target, skill, actionContainer);

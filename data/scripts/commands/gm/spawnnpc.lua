@@ -95,7 +95,6 @@ function onTrigger(player, argc, name,  width, height, blockCount)
     local sender = "spawnnpc";
 	
 	if player and (modelIds[name] != nil) then
-		print("t")
         local pos = player:GetPos();
         local x = tonumber(pos[0]);
         local y = tonumber(pos[1]);
@@ -113,11 +112,12 @@ function onTrigger(player, argc, name,  width, height, blockCount)
                     actor.ChangeNpcAppearance(modelIds[name]);
                     actor.SetMaxHP(5000);
                     actor.SetHP(5000);
-                    actor.SetMod(modifiersGlobal.HasShield, 1);
+                    actor.SetMod(modifiersGlobal.CanBlock, 1);
                     actor.SetMod(modifiersGlobal.AttackRange, 3);
-                    actor.SetMod(modifiersGlobal.Speed, 5);
+                    actor.SetMod(modifiersGlobal.MovementSpeed, 5);
                     actor.SetMobMod(mobModifiersGlobal.Roams, 1);
-                    actor.SetMobMod(mobModifiersGlobal.RoamDelay, 3);
+					actor.SetMobMod(mobModifiersGlobal.RoamDelay, 10);
+					actor.charaWork.parameterSave.state_mainSkillLevel = 52;
                     actor.moveState = 3;
                 end;
             end;

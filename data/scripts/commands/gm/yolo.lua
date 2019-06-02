@@ -163,11 +163,12 @@ function onTrigger(player, argc, width, height, blockCount)
                     actor.ChangeNpcAppearance(2200905);
                     actor.SetMaxHP(5000);
                     actor.SetHP(5000);
-                    actor.SetMod(modifiersGlobal.HasShield, 1);
+                    actor.SetMod(modifiersGlobal.CanBlock, 1);
                     actor.SetMod(modifiersGlobal.AttackRange, 3);
-                    actor.SetMod(modifiersGlobal.Speed, 5);
+                    actor.SetMod(modifiersGlobal.MovementSpeed, 5);
                     actor.SetMobMod(mobModifiersGlobal.Roams, 1);
-                    actor.SetMobMod(mobModifiersGlobal.RoamDelay, 3);
+					actor.SetMobMod(mobModifiersGlobal.RoamDelay, 10);
+					actor.charaWork.parameterSave.state_mainSkillLevel = 52;
                     actor.moveState = 3;
                 end 
             end

@@ -1,5 +1,5 @@
 require("global");
-require("weaponskill");
+require("ability");
 
 function onSkillPrepare(caster, target, skill)
     return 0;
