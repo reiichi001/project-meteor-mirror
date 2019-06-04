@@ -128,12 +128,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             return AddItem(itemId, quantity, 1);
         }
-
-        public int AddItems(uint[] itemIds, uint[] quantity, byte[] quality)
+        
+        public int AddItems(uint[] itemIds, uint[] quantity = null, byte[] quality = null)
         {
-            if (itemIds.Length != quantity.Length && itemIds.Length != quality.Length)
-                return ERROR_SYSTEM;
-
             //Check if has space
             if (!CanAdd(itemIds, quantity, quality))
                 return ERROR_FULL;
@@ -153,14 +150,17 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 }
 
                 //Check if item id exists 
-                int quantityCount = (int) quantity[i];
+                uint setQuantity = quantity != null ? quantity[i] : 1;
+                int quantityCount = (int)setQuantity;
                 for (int j = 0; j < endOfListIndex; j++)
                 {
                     InventoryItem item = list[j];
 
                     Debug.Assert(item != null, "Item slot was null!!!");
 
-                    if (item.itemId == itemIds[i] && item.quality == quantity[i] && item.quantity < gItem.maxStack)
+                    byte setQuality = quality != null ? quality[i] : (byte)1;
+
+                    if (item.itemId == itemIds[i] && item.quality == setQuality && item.quantity < gItem.maxStack)
                     {
                         int oldQuantity = item.quantity;
                         item.quantity = Math.Min(item.quantity + quantityCount, gItem.maxStack);
@@ -184,7 +184,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                         modifiers.durability = (uint)gItem.durability;
                     }
 
-                    InventoryItem addedItem = Database.CreateItem(itemIds[i], Math.Min(quantityCount, gItem.maxStack), quality[i], modifiers);
+                    byte setQuality = quality != null ? quality[i] : (byte)1;
+
+                    InventoryItem addedItem = Database.CreateItem(itemIds[i], Math.Min(quantityCount, gItem.maxStack), setQuality, modifiers);
                     addedItem.RefreshPositioning(owner, itemPackageCode, (ushort)endOfListIndex);
                     isDirty[endOfListIndex] = true;
                     list[endOfListIndex++] = addedItem;
@@ -206,23 +208,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public bool CanAdd(uint[] itemIds, uint[] quantity, byte[] quality)
         {
-            if (itemIds.Length != quantity.Length && itemIds.Length != quality.Length)
-                return false;
-
             int tempInvSize = GetCount();
 
             for (int i = 0; i < itemIds.Length; i++)
             {
                 ItemData gItem = Server.GetItemGamedata(itemIds[i]);
                 //Check if item id exists and fill up til maxstack 
-                int quantityCount = (int) quantity[i];
+                int quantityCount = (int) (quantity != null ? quantity[i] : 1);
                 for (int j = 0; j < endOfListIndex; j++)
                 {
                     InventoryItem item = list[j];
 
                     Debug.Assert(item != null, "Item slot was null!!!");
 
-                    if (item.itemId == itemIds[i] && item.quality == quality[i] && item.quantity < gItem.maxStack)
+                    if (item.itemId == itemIds[i] && item.quality == (quality != null ? quality[i] : 1) && item.quantity < gItem.maxStack)
                     {
                         quantityCount -= (gItem.maxStack - item.quantity);                        
                         if (quantityCount <= 0)

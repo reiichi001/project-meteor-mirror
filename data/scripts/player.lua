@@ -82,27 +82,27 @@ function initClassItems(player)
 
 	--DoW	
 	if (player.charaWork.parameterSave.state_mainSkill[0] == 2) then 		--PUG
-		player:GetItemPackage(0):AddItem({4020001, 8030701, 8050728, 8080601, 8090307});
-		player:GetEquipment():SetEquipment({0, 10, 12, 14, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({4020001, 8030701, 8050728, 8080601, 8090307});
+		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 3) then	--GLA
-		player:GetItemPackage(0):AddItem({4030010, 8031120, 8050245, 8080601, 8090307});
-		player:GetEquipment():SetEquipment({0, 10, 12, 14, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({4030010, 8031120, 8050245, 8080601, 8090307});
+		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 4) then	--MRD
-		player:GetItemPackage(0):AddItem({4040001, 8011001, 8050621, 8070346, 8090307});
-		player:GetEquipment():SetEquipment({0, 8, 12, 13, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({4040001, 8011001, 8050621, 8070346, 8090307});
+		player:GetEquipment():Set({0, 8, 12, 13, 15},{0, 1, 2, 3, 4},0);
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 7) then	--ARC
-		player:GetItemPackage(0):AddItem({4070001, 8030601, 8050622, 8080601, 8090307});
-		player:GetEquipment():SetEquipment({0, 10, 12, 14, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({4070001, 8030601, 8050622, 8080601, 8090307});
+		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 8) then	--LNC
-		player:GetItemPackage(0):AddItem({4080201, 8030801, 8051015, 8080501, 8090307});
-		player:GetEquipment():SetEquipment({0, 10, 12, 14, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({4080201, 8030801, 8051015, 8080501, 8090307});
+		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 	4},0);
 	--DoM	
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 22) then	--THM
-		player:GetItemPackage(0):AddItem({5020001, 8030245, 8050346, 8080346, 8090208});
-		player:GetEquipment():SetEquipment({0, 10, 12, 14, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({5020001, 8030245, 8050346, 8080346, 8090208});
+		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 23) then	--CNJ
-		player:GetItemPackage(0):AddItem({5030101, 8030445, 8050031, 8080246, 8090208});
-		player:GetEquipment():SetEquipment({0, 10, 12, 14, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({5030101, 8030445, 8050031, 8080246, 8090208});
+		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
 		
 	--DoH
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 29) then	--
@@ -171,6 +171,6 @@ function initRaceItems(player)
 		player:GetItemPackage(0):AddItem(8060015);
 	end
 
-	player:GetEquipment():SetEquipment({9, 11},{5,6});
+	player:GetEquipment():Set({9,11},{5,6}, 0);
 	
 end

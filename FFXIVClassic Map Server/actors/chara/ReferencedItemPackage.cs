@@ -41,19 +41,19 @@ namespace FFXIVClassic_Map_Server.actors.chara
             toSet.CopyTo(referenceList, 0);
         }
 
-        public void SetList(ushort[] positions, InventoryItem[] values)
+        public void Set(ushort[] positions, ushort[] itemSlots, ushort itemPackage)
         {
-            Debug.Assert(positions.Length == values.Length);
+            Debug.Assert(positions.Length == itemSlots.Length);
            
             for (int i = 0; i < positions.Length; i++)
             {
-                InventoryItem item = values[i];
+                InventoryItem item = owner.GetItemPackage(itemPackage)?.GetItemAtSlot(itemSlots[i]);
 
                 if (item == null)
                     continue;
 
-                //Database.EquipItem(owner, positions[i], item.uniqueId);
-                referenceList[positions[i]] = values[i];
+                Database.EquipItem(owner, positions[i], item.uniqueId);
+                referenceList[positions[i]] = item;
             }
 
             owner.QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
