@@ -2134,6 +2134,43 @@ namespace FFXIVClassic_Map_Server
 
             return cheevosPacket.BuildPacket(player.actorId);
         }
+        public static SubPacket GetAchievementProgress(Player player, uint AchievementID)
+        {
+            uint progress = 0, progressFlags = 0;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT progress, progressFlags 
+                                    FROM characters_achievements 
+                                    WHERE characterId = @charId AND achievementId = @cheevoId";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@cheevoId", AchievementID);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            progress = reader.GetUInt32(0);
+                            progressFlags = reader.GetUInt32(1);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return SendAchievementRatePacket.BuildPacket(player.actorId, AchievementID, progress, progressFlags);
+        }
         public static bool CreateLinkshell(Player player, string lsName, ushort lsCrest)
         {
             bool success = false;
