@@ -528,8 +528,8 @@ namespace FFXIVClassic_Map_Server.Actors
             aiContainer.Reset();
             // todo: reset hp/mp/tp etc here
             ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
-            charaWork.parameterSave.hp = charaWork.parameterSave.hpMax;
-            charaWork.parameterSave.mp = charaWork.parameterSave.mpMax;
+            SetHP((uint) GetMaxHP());
+            SetMP((uint) GetMaxMP());
             RecalculateStats();
         }
 

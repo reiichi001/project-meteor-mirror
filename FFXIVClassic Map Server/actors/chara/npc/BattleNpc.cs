@@ -251,8 +251,6 @@ namespace FFXIVClassic_Map_Server.Actors
             this.hateContainer.ClearHate();
             zone.BroadcastPacketsAroundActor(this, GetSpawnPackets(null, 0x01));
             zone.BroadcastPacketsAroundActor(this, GetInitPackets());
-            charaWork.parameterSave.hp = charaWork.parameterSave.hpMax;
-            charaWork.parameterSave.hp = (short[])charaWork.parameterSave.hpMax.Clone();
             RecalculateStats();
 
             OnSpawn();

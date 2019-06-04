@@ -1,11 +1,11 @@
 require("global");
 require("ability");
 
-function onSkillPrepare(caster, target, skill)
+function onAbilityPrepare(caster, target, ability)
     return 0;
 end;
 
-function onSkillStart(caster, target, skill)
+function onAbilityStart(caster, target, ability)
     return 0;
 end;
 

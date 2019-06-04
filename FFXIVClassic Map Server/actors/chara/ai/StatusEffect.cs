@@ -325,11 +325,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         // custom effects here
         // status for having procs fall off
-        EvadeProc = 253003,
-        BlockProc = 253004,
-        ParryProc = 253005,
-        MissProc = 253006,
-        EXPChain = 253007
+        EvadeProc = 300000,
+        BlockProc = 300001,
+        ParryProc = 300002,
+        MissProc = 300003,
+        EXPChain = 300004
     }
 
     [Flags]
