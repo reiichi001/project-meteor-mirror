@@ -262,7 +262,7 @@ namespace FFXIVClassic_Map_Server
                     //Achievement Progress Request
                     case 0x0135:
                         AchievementProgressRequestPacket progressRequest = new AchievementProgressRequestPacket(subpacket.data);
-                        session.QueuePacket(Database.GetAchievementProgress(session.GetActor(), progressRequest.achievementID));
+                        session.QueuePacket(Database.GetAchievementProgress(session.GetActor(), progressRequest.achievementId));
                         break;
                     /* RECRUITMENT */
                     //Start Recruiting

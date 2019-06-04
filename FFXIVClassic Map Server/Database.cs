@@ -2134,7 +2134,8 @@ namespace FFXIVClassic_Map_Server
 
             return cheevosPacket.BuildPacket(player.actorId);
         }
-        public static SubPacket GetAchievementProgress(Player player, uint AchievementID)
+
+        public static SubPacket GetAchievementProgress(Player player, uint achievementId)
         {
             uint progress = 0, progressFlags = 0;
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
@@ -2146,11 +2147,11 @@ namespace FFXIVClassic_Map_Server
                     string query = @"
                                     SELECT progress, progressFlags 
                                     FROM characters_achievements 
-                                    WHERE characterId = @charId AND achievementId = @cheevoId";
+                                    WHERE characterId = @charId AND achievementId = @achievementId";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
-                    cmd.Parameters.AddWithValue("@cheevoId", AchievementID);
+                    cmd.Parameters.AddWithValue("@achievementId", achievementId);
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
@@ -2169,8 +2170,9 @@ namespace FFXIVClassic_Map_Server
                     conn.Dispose();
                 }
             }
-            return SendAchievementRatePacket.BuildPacket(player.actorId, AchievementID, progress, progressFlags);
+            return SendAchievementRatePacket.BuildPacket(player.actorId, achievementId, progress, progressFlags);
         }
+
         public static bool CreateLinkshell(Player player, string lsName, ushort lsCrest)
         {
             bool success = false;

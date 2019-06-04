@@ -7,7 +7,7 @@ namespace FFXIVClassic_Map_Server.packets.receive
     {
         public bool invalidPacket = false;
 
-        public uint achievementID;
+        public uint achievementId;
         public uint responseType;
 
         public AchievementProgressRequestPacket(byte[] data)
@@ -18,9 +18,8 @@ namespace FFXIVClassic_Map_Server.packets.receive
                 {
                     try
                     {
-                        achievementID = binReader.ReadUInt32();
+                        achievementId = binReader.ReadUInt32();
                         responseType = binReader.ReadUInt32();
-
                     }
                     catch (Exception)
                     {
