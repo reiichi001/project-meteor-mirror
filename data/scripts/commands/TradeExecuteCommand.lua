@@ -55,7 +55,7 @@ function onEventStarted(player, actor, triggerName)
 		--Check if both accepted the trade
 		if (player:IsTradeAccepted() and player:GetOtherTrader():IsTradeAccepted()) then
 			callClientFunction(player, "delegateCommand", GetStaticActor("TradeExecuteCommand"), "processTradeCommandCloseTray");
-			GetWorldManager():SwapTradedItems(player, player:GetOtherTrader());
+			GetWorldManager():CompleteTrade(player, player:GetOtherTrader());
 			break;
 		end
 		

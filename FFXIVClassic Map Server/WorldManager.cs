@@ -1362,18 +1362,152 @@ namespace FFXIVClassic_Map_Server
             DeleteTradeGroup(group.groupIndex);
         }
 
-        public void SwapTradedItems(Player p1, Player p2)
+        public void CompleteTrade(Player p1, Player p2)
         {
-            lock (tradeLock)
-            {
-                if (p1.IsTradeAccepted() && p2.IsTradeAccepted())
-                {
-                    //move items around
+            if (!p1.IsTradeAccepted() || !p2.IsTradeAccepted())
+                return;
 
-                    p1.FinishTradeTransaction();
-                    p2.FinishTradeTransaction();
+            TradeGroup group = GetTradeGroup(p1.actorId);
+
+            if (group == null)
+            {
+                p1.SendMessage(0x20, "", "MASSIVE ERROR: No tradegroup found!!!");
+                return;
+            }
+
+            ReferencedItemPackage p1Offer = p1.GetTradeOfferings();
+            ReferencedItemPackage p2Offer = p2.GetTradeOfferings();
+
+            int failCode = 0;
+            Player failurePlayerOffer = null;
+            Player failureCauser = null;
+
+            //TODO Add full inventory check
+
+            //Check items. If there is a failcode abort and set.
+            for (ushort i = 0; i < p1Offer.GetCapacity(); i++)
+            {
+                InventoryItem p1ItemToP2 = p1Offer.GetItemAtSlot(i);
+                InventoryItem p2ItemToP1 = p2Offer.GetItemAtSlot(i);
+            
+                int failCodeP1 = CheckIfCanTrade(p1, p2, p1ItemToP2); //P2's inv caused a failcode for P1
+                int failCodeP2 = CheckIfCanTrade(p2, p1, p2ItemToP1); //P1's inv caused a failcode for P2
+
+                if (failCodeP1 != 0)
+                {
+                    failCode = failCodeP1;
+                    failurePlayerOffer = p1;
+                    failureCauser = p2;
+                    break;
+                }
+
+                if (failCodeP2 != 0)
+                {
+                    failCode = failCodeP2;
+                    failurePlayerOffer = p2;
+                    failureCauser = p1;
+                    break;
                 }
             }
+
+            //Do we have a failcode?              
+            switch (failCode)
+            {
+            case 1:
+                failurePlayerOffer.SendGameMessage(GetActor(), 25100, 0x20, (object)failureCauser); //Transaction failed. X inventory is either full or X can only hold one of the selected items.
+                failureCauser.SendGameMessage(GetActor(), 25100, 0x20, (object)failureCauser); //Transaction failed. X inventory is either full or X can only hold one of the selected items.
+                    break;
+            case 2:
+                failurePlayerOffer.SendGameMessage(GetActor(), 25100, 0x20, (object)failureCauser); //Transaction failed. X inventory is either full or X can only hold one of the selected items.
+                failureCauser.SendGameMessage(GetActor(), 25103, 0x20); //Unable to complete transaction. You can only hold one of the selected items.
+                break;
+            case 3:
+                failurePlayerOffer.SendGameMessage(GetActor(), 25099, 0x20); //Unable to complete transaction.
+                failureCauser.SendGameMessage(GetActor(), 25104, 0x20); //Unable to complete transaction. You cannot receive the incoming payment.
+                break;
+            }
+
+            //If all good, perform the swap.
+            if (failCode == 0)
+            {
+                lock (tradeLock)
+                {
+                    for (ushort i = 0; i < p1Offer.GetCapacity(); i++)
+                    {
+                        InventoryItem p1ItemToP2 = p1Offer.GetItemAtSlot(i);
+                        InventoryItem p2ItemToP1 = p2Offer.GetItemAtSlot(i);
+
+
+                        //Transfer P1 -> P2
+                        if (p1ItemToP2 != null)
+                        {
+                            /*
+                            if (p1ItemToP2.GetItemData().maxStack > 1)
+                            {
+                                p1.GetItemPackage(p1ItemToP2.itemPackage).RemoveItem(p1ItemToP2.itemId, p1ItemToP2.GetTradeQuantity(), p1ItemToP2.quality);
+                                p2.GetItemPackage(p1ItemToP2.itemPackage).AddItem(p1ItemToP2.itemId, p1ItemToP2.GetTradeQuantity(), p1ItemToP2.quality);
+                            }
+                            else
+                            {
+                                p1.GetItemPackage(p1ItemToP2.itemPackage).RemoveItem(p1ItemToP2);
+                                p2.GetItemPackage(p1ItemToP2.itemPackage).AddItem(p1ItemToP2);
+                            }
+                            */
+                        }
+
+                        //Transfer P2 -> P1
+                        if (p2ItemToP1 != null)
+                        {
+
+                            /*
+                            if (p2ItemToP1.GetItemData().maxStack > 1)
+                            {
+                                p2.GetItemPackage(p2ItemToP1.itemPackage).RemoveItem(p2ItemToP1.itemId, p2ItemToP1.GetTradeQuantity(), p2ItemToP1.quality);
+                                p1.GetItemPackage(p2ItemToP1.itemPackage).AddItem(p2ItemToP1.itemId, p2ItemToP1.GetTradeQuantity(), p2ItemToP1.quality);
+                            }
+                            else
+                            {
+                                p2.GetItemPackage(p2ItemToP1.itemPackage).RemoveItem(p2ItemToP1);
+                                p1.GetItemPackage(p2ItemToP1.itemPackage).AddItem(p2ItemToP1);
+                            }
+                            */
+                        }
+
+                    }
+                }
+
+                p1.SendGameMessage(GetActor(), 25039, 0x20); //The trade is complete.
+                p2.SendGameMessage(GetActor(), 25039, 0x20); //The trade is complete.
+            }
+
+            //Cleanup the trade and delete the tradegroup.
+            p1.FinishTradeTransaction();
+            p2.FinishTradeTransaction();
+            DeleteTradeGroup(group.groupIndex);
+        }
+
+        private int CheckIfCanTrade(Player itemOwner, Player itemReceiver, InventoryItem item)
+        {
+            if (item == null)
+                return 0;
+
+            //Check if their inventory can't hold all these things
+            if (false)
+            {
+                return 1;
+            }
+            //Check if they already have a unique
+            else if (item.GetItemData().isRare && itemReceiver.HasItem(item.itemId))
+            {
+                return 2;
+            }
+            //Check if gil is max
+            else if (item.itemId == 100001 && item.dealingAttached3 + itemReceiver.GetCurrentGil() > item.GetItemData().maxStack)
+            {
+                return 3;
+            }
+
+            return 0;
         }
 
         public InventoryItem CreateItem(uint itemId, int amount, byte quality = 1, InventoryItem.ItemModifier modifiers = null)

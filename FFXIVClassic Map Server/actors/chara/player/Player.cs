@@ -982,7 +982,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return max;
         }
 
-        public uint[] GetGearset(ushort classId)
+        public InventoryItem[] GetGearset(ushort classId)
         {
             return Database.GetEquipment(this, classId);
         }

@@ -24,8 +24,8 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public uint itemId;
         public int quantity = 1;
 
-        public byte dealingVal       = 0;
-        public byte dealingMode      = DEALINGMODE_NONE;
+        public byte dealingVal      = 0;
+        public byte dealingMode     = DEALINGMODE_NONE;
         public int dealingAttached1 = 0;
         public int dealingAttached2 = 0;
         public int dealingAttached3 = 0;
@@ -133,21 +133,7 @@ namespace FFXIVClassic_Map_Server.dataobjects
 
             tags[1] = itemData.isExclusive ? TAG_EXCLUSIVE : (byte)0;
         }
-
-        //For check and trade commands
-        public InventoryItem(InventoryItem item, ushort slot)
-        {
-            this.uniqueId = item.uniqueId;
-            this.itemData = item.itemData;
-            this.itemId = item.itemId;
-            this.quantity = item.quantity;
-            this.slot = slot;
-            this.tags = item.tags;
-            this.tagValues = item.tagValues;
-            this.quality = item.quality;
-            this.modifiers = item.modifiers;        
-        }
-
+        
         public InventoryItem(uint uniqueId, ItemData itemData, int quantity, byte qualityNumber, ItemModifier modifiers = null)
         {
             this.uniqueId = uniqueId;
@@ -318,6 +304,11 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 owner.GetItemPackage(itemPackage).MarkDirty(this);
         }
 
+        public int GetTradeQuantity()
+        {
+            return dealingAttached3;
+        }
+
         public ItemData GetItemData()
         {
             return itemData;
@@ -334,5 +325,6 @@ namespace FFXIVClassic_Map_Server.dataobjects
         {
             return GetBazaarMode() == TYPE_SINGLE || GetBazaarMode() == TYPE_MULTI || GetBazaarMode() == TYPE_STACK;
         }
+
     }
 }
