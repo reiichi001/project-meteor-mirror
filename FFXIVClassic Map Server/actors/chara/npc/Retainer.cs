@@ -24,9 +24,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.npc
             itemPackages[ItemPackage.CURRENCY_CRYSTALS] = new ItemPackage(this, MAXSIZE_INVENTORY_CURRANCY, ItemPackage.CURRENCY_CRYSTALS);
             itemPackages[ItemPackage.BAZAAR] = new ItemPackage(this, MAXSIZE_INVENTORY_BAZAAR, ItemPackage.BAZAAR);
 
-            itemPackages[ItemPackage.NORMAL].InitList(Database.GetInventory(this, ItemPackage.NORMAL));
-            itemPackages[ItemPackage.CURRENCY_CRYSTALS].InitList(Database.GetInventory(this, ItemPackage.CURRENCY_CRYSTALS));
-            itemPackages[ItemPackage.BAZAAR].InitList(Database.GetInventory(this, ItemPackage.BAZAAR));
+            itemPackages[ItemPackage.NORMAL].InitList(Database.GetItemPackage(this, 0, ItemPackage.NORMAL));
+            itemPackages[ItemPackage.CURRENCY_CRYSTALS].InitList(Database.GetItemPackage(this, 0, ItemPackage.CURRENCY_CRYSTALS));
+            itemPackages[ItemPackage.BAZAAR].InitList(Database.GetItemPackage(this, 0, ItemPackage.BAZAAR));
         }
 
         public uint GetRetainerId()

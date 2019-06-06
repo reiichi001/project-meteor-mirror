@@ -197,6 +197,7 @@
     <Compile Include="lua\LuaScript.cs" />
     <Compile Include="lua\LuaUtils.cs" />
     <Compile Include="PacketProcessor.cs" />
+    <Compile Include="packets\receive\AchievementProgressRequestPacket.cs" />
     <Compile Include="packets\receive\ChatMessagePacket.cs" />
     <Compile Include="packets\receive\events\EventUpdatePacket.cs" />
     <Compile Include="packets\receive\events\EventStartPacket.cs" />

@@ -1,4 +1,6 @@
-﻿using FFXIVClassic_Map_Server.Actors;
+﻿using FFXIVClassic_Map_Server.actors.chara.player;
+using FFXIVClassic_Map_Server.Actors;
+using MySql.Data.MySqlClient;
 using System;
 using System.IO;
 
@@ -14,29 +16,28 @@ namespace FFXIVClassic_Map_Server.dataobjects
         public const byte TAG_DEALING = 0xC9;
         public const byte TAG_ATTACHED = 0xCA;
 
-        public const byte TYPE_SINGLE = 11;
-        public const byte TYPE_MULTI = 12;
-        public const byte TYPE_STACK = 13;
-        public const byte TYPE_SEEK_ITEM = 20;
-        public const byte TYPE_SEEK_REPAIR = 30;
+        public const byte MODE_SELL_SINGLE = 11; //0xB
+        public const byte MODE_SELL_PSTACK = 12; //0xC
+        public const byte MODE_SELL_FSTACK = 13; //0xD
+        public const byte MODE_SEEK_ITEM = 20; //0x14
+        public const byte MODE_SEEK_REPAIR = 30; //0x1E
+        public const byte MODE_SEEK_MELD = 40; //0x28
 
         public ulong uniqueId;
         public uint itemId;
         public int quantity = 1;
 
-        public byte dealingVal      = 0;
-        public byte dealingMode     = DEALINGMODE_NONE;
-        public int dealingAttached1 = 0;
-        public int dealingAttached2 = 0;
-        public int dealingAttached3 = 0;
+        private byte dealingVal      = 0;
+        private byte dealingMode     = DEALINGMODE_NONE;
+        private int dealingAttached1 = 0;
+        private int dealingAttached2 = 0;
+        private int dealingAttached3 = 0;
 
-        public byte[] tags = new byte[4];
-        public byte[] tagValues = new byte[4];
+        private byte[] tags = new byte[4];
+        private byte[] tagValues = new byte[4];
 
         public byte quality = 1;
-
-        private ulong attachedTo = 0;
-
+        
         public ItemModifier modifiers;
 
         public readonly ItemData itemData;
@@ -122,28 +123,58 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 binWriter.Write((Byte)   materiaGrade[4]);
             }
         }
-
-        //Bare Minimum
-        public InventoryItem(uint id, ItemData data)
+        
+        //For loading already existing items
+        public InventoryItem(MySqlDataReader reader)
         {
-            this.uniqueId = id;
-            this.itemId = data.catalogID;
-            this.itemData = data;
-            this.quantity = 1;
+            uniqueId = reader.GetUInt32("serverItemId");
+            itemId = reader.GetUInt32("itemId");
+            itemData = Server.GetItemGamedata(itemId);
+            quantity = reader.GetInt32("quantity");
+            quality = reader.GetByte("quality");
+
+            bool hasDealing = !reader.IsDBNull(reader.GetOrdinal("bazaarMode"));
+            if (hasDealing)
+            {
+                dealingVal = reader.GetByte("dealingValue");
+                dealingMode = reader.GetByte("dealingMode");
+                dealingAttached1 = reader.GetInt32("dealingAttached1");
+                dealingAttached2 = reader.GetInt32("dealingAttached2");
+                dealingAttached3 = reader.GetInt32("dealingAttached3");
+                tags[0] = reader.GetByte("dealingTag");
+                tagValues[0] = reader.GetByte("bazaarMode");
+            }
+
+            bool hasModifiers = !reader.IsDBNull(reader.GetOrdinal("modifierId"));
+            if (hasModifiers)
+                modifiers = new InventoryItem.ItemModifier(reader);
 
             tags[1] = itemData.isExclusive ? TAG_EXCLUSIVE : (byte)0;
         }
-        
-        public InventoryItem(uint uniqueId, ItemData itemData, int quantity, byte qualityNumber, ItemModifier modifiers = null)
+
+        //For creating new items (only should be called by the DB)
+        public InventoryItem(uint uniqueId, uint itemId, int quantity, byte qualityNumber, ItemModifier modifiers = null)
         {
             this.uniqueId = uniqueId;
-            this.itemId = itemData.catalogID;
-            this.itemData = itemData;
+            this.itemId = itemId;
+            this.itemData = Server.GetItemGamedata(itemId);
             this.quantity = quantity;
             this.quality = qualityNumber;
             this.modifiers = modifiers;
 
             tags[1] = itemData.isExclusive ? TAG_EXCLUSIVE : (byte)0;
+        }
+
+        public void SaveDealingInfo(MySqlCommand cmd)
+        {
+            cmd.Parameters.AddWithValue("@serverItemId", uniqueId);
+            cmd.Parameters.AddWithValue("@dealingValue", dealingVal);
+            cmd.Parameters.AddWithValue("@dealingMode", dealingMode);
+            cmd.Parameters.AddWithValue("@dealingAttached1", dealingAttached1);
+            cmd.Parameters.AddWithValue("@dealingAttached2", dealingAttached2);
+            cmd.Parameters.AddWithValue("@dealingAttached3", dealingAttached3);
+            cmd.Parameters.AddWithValue("@dealingTag", tags[0]);
+            cmd.Parameters.AddWithValue("@bazaarMode", tagValues[0]);
         }
 
         public byte[] ToPacketBytes()
@@ -220,27 +251,28 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 Database.SetQuantity(uniqueId, this.quantity);
 
                 if (owner != null)
-                    owner.GetItemPackage(itemPackage).MarkDirty(this);                
+                    owner.GetItemPackage(itemPackage).MarkDirty(this);       
             }
         }
 
-        public void RefreshPositioning(Character owner, ushort itemPackage, ushort slot)
+        public void SetOwner(Character owner, ushort itemPackage, ushort slot)
         {
             this.owner = owner;
             this.itemPackage = itemPackage;
             this.slot = slot;            
-        }       
+        }    
 
-        public void SetHasAttached(bool isAttached)
+        public void ClearOwner()
         {
-            tags[0] = isAttached ? TAG_ATTACHED : (byte)0;
+            owner = null;
+            itemPackage = 0xFFFF;
+            slot = 0xFFFF;
         }
-
+        
         public void SetNormal()
         {           
             tags[0] = 0;
             tagValues[0] = 0;
-            attachedTo = 0;
             dealingVal = 0;
             dealingMode = 0;
             dealingAttached1 = 0;
@@ -249,55 +281,70 @@ namespace FFXIVClassic_Map_Server.dataobjects
             
             if (owner != null)
                 owner.GetItemPackage(itemPackage).MarkDirty(this);
-        }
+        }        
 
-        public void SetDealing(byte mode, int price)
-        {                             
-            tags[0] = TAG_DEALING;
-            tagValues[0] = mode;
-
-            if (mode == TYPE_SINGLE || mode == TYPE_MULTI || mode == TYPE_STACK)
-            {
-                dealingVal = 1;
-                dealingMode = DEALINGMODE_PRICED;
-                dealingAttached1 = 1;
-                dealingAttached2 = price;
-                dealingAttached3 = 0; 
-            }
-
-            if (owner != null)
-                owner.GetItemPackage(itemPackage).MarkDirty(this);
-        }
-
-        public void SetDealingAttached(byte mode, ulong attached)
+        public void SetSelling(byte mode, int price)
         {
             tags[0] = TAG_DEALING;
             tagValues[0] = mode;
-            attachedTo = attached;
-
+            
+            dealingVal = 0;
+            dealingMode = DEALINGMODE_PRICED;
+            dealingAttached1 = 0;
+            dealingAttached2 = price;
+            dealingAttached3 = 0;
+           
             if (owner != null)
                 owner.GetItemPackage(itemPackage).MarkDirty(this);
+
+            Database.SetDealingInfo(this);
         }
 
-        public ulong GetAttached()
+        public void SetAsOfferTo(byte mode, InventoryItem seeked)
         {
-            return attachedTo;
-        }
+            tags[0] = TAG_DEALING;
+            tagValues[0] = mode;
 
-        public void SetAttachedIndex(ushort package, ushort index)
-        {
-            dealingVal = 1;
+            dealingVal = 0;
             dealingMode = DEALINGMODE_REFERENCED;
-            dealingAttached1 = ((package << 16) | index);
+            dealingAttached1 = ((seeked.itemPackage << 16) | seeked.slot);
+            dealingAttached2 = 0;
+            dealingAttached3 = 0;
+
+            seeked.SetSeeking();
+
+            if (owner != null)
+                owner.GetItemPackage(itemPackage).MarkDirty(this);
+
+            Database.SetDealingInfo(this);
+        }
+
+        protected void SetSeeking()
+        {
+            tags[0] = TAG_ATTACHED;
+            tagValues[0] = 0;
+
+            dealingVal = 0;
+            dealingMode = DEALINGMODE_NONE;
+            dealingAttached1 = 0;
             dealingAttached2 = 0;
             dealingAttached3 = 0;
 
             if (owner != null)
                 owner.GetItemPackage(itemPackage).MarkDirty(this);
+
+            Database.SetDealingInfo(this);
         }
 
         public void SetTradeQuantity(int quantity)
         {
+            tags[0] = 0;
+            tagValues[0] = 0;
+
+            dealingVal = 0;
+            dealingMode = DEALINGMODE_NONE;
+            dealingAttached1 = 0;
+            dealingAttached2 = 0;
             dealingAttached3 = quantity;
 
             if (owner != null)
@@ -309,9 +356,19 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return dealingAttached3;
         }
 
-        public ItemData GetItemData()
+        public InventoryItem GetOfferedTo()
         {
-            return itemData;
+            if (dealingMode != DEALINGMODE_REFERENCED)
+                return null;
+
+            ushort attachedItemPackage = (ushort)((dealingAttached1 >> 16) & 0xFF);
+            ushort attachedSlot = (ushort)(dealingAttached1 & 0xFF);
+            return owner.GetItemPackage(attachedItemPackage).GetItemAtSlot(attachedSlot);
+        }
+
+        public bool IsSelling()
+        {
+            return GetBazaarMode() == MODE_SELL_SINGLE || GetBazaarMode() == MODE_SELL_PSTACK || GetBazaarMode() == MODE_SELL_FSTACK;
         }
 
         public byte GetBazaarMode()
@@ -321,9 +378,22 @@ namespace FFXIVClassic_Map_Server.dataobjects
             return 0;
         }
 
-        public bool IsSelling()
+        public ItemData GetItemData()
         {
-            return GetBazaarMode() == TYPE_SINGLE || GetBazaarMode() == TYPE_MULTI || GetBazaarMode() == TYPE_STACK;
+            return itemData;
+        }
+
+        public override string ToString()
+        {
+            if (itemData != null)
+            {
+                if (quantity <= 1)
+                    return string.Format("{0}+{1} ({2}/{3})", itemData.name, quality-1, quantity, itemData.maxStack);
+                else
+                    return string.Format("{0} ({1}/{2})", itemData.name, quantity, itemData.maxStack);
+            }
+            else
+                return "Invalid Item";
         }
 
     }

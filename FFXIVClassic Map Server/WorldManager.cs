@@ -18,6 +18,7 @@ using FFXIVClassic_Map_Server.actors.director;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.actors.chara;
 using FFXIVClassic_Map_Server.actors.chara.player;
+using FFXIVClassic_Map_Server.packets.send.actor.inventory;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -1502,7 +1503,7 @@ namespace FFXIVClassic_Map_Server
                 return 2;
             }
             //Check if gil is max
-            else if (item.itemId == 100001 && item.dealingAttached3 + itemReceiver.GetCurrentGil() > item.GetItemData().maxStack)
+            else if (item.itemId == 100001 && item.GetTradeQuantity() + itemReceiver.GetCurrentGil() > item.GetItemData().maxStack)
             {
                 return 3;
             }
@@ -1515,147 +1516,153 @@ namespace FFXIVClassic_Map_Server
             return Database.CreateItem(itemId, amount, quality, modifiers);
         }
 
-        public bool BazaarBuyOperation(Player bazaar, Player buyer, InventoryItem itemToBuy, int quantity, int cost)
-        {
-            if (bazaar == null || buyer == null || itemToBuy == null)
-                return false;
-
-            if (quantity <= 0)
-                return false;
-
-            if (cost < 0)
-                return false;
-
-            if (itemToBuy.GetBazaarMode() == InventoryItem.TYPE_SINGLE || itemToBuy.GetBazaarMode() == InventoryItem.TYPE_MULTI || itemToBuy.GetBazaarMode() == InventoryItem.TYPE_STACK)
+        public int AddToBazaar(Player player, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount, byte bazaarMode)
+        {   
+            //Selling Items
+            if (bazaarMode == InventoryItem.MODE_SELL_SINGLE)
             {
-                itemToBuy.ChangeQuantity(-quantity);
-                buyer.AddItem(itemToBuy.itemId, quantity, itemToBuy.quality);
-                buyer.GetItemPackage(ItemPackage.CURRENCY_CRYSTALS).RemoveItem(1000001, cost);
+                reward.SetSelling(bazaarMode, seekAmount);
+                ItemPackage originalPackage = player.GetItemPackage(reward.itemPackage);
+                ItemPackage bazaarPackage = player.GetItemPackage(ItemPackage.BAZAAR);
+                originalPackage.MoveItem(reward, bazaarPackage);
             }
-           
-            if (itemToBuy.quantity == 0)
-                Database.ClearBazaarEntry(bazaar, itemToBuy);
-
-            bazaar.CheckBazaarFlags();
-
-            return true;
-        }
-
-        public bool BazaarSellOperation(Player bazaar, Player buyer, InventoryItem reward, int rewardQuantity, InventoryItem seek, int seekQuantity)
-        {
-            if (bazaar == null || buyer == null || reward == null || seek == null)
-                return false;
-
-            if (rewardQuantity <= 0 || seekQuantity <= 0)
-                return false;
-
-            if (reward.GetBazaarMode() == InventoryItem.TYPE_SEEK_ITEM)
+            else if (bazaarMode == InventoryItem.MODE_SELL_PSTACK)
             {
-                InventoryItem seekBazaar = bazaar.GetItemPackage(ItemPackage.BAZAAR).GetItemAttachedTo(reward);
-                bazaar.RemoveItem(reward, rewardQuantity);
-                bazaar.RemoveItem(seekBazaar, seekQuantity);
-                bazaar.AddItem(seekBazaar);
-                bazaar.AddItem(seek.itemId, seekQuantity, seek.quality);
+                if (rewardAmount <= reward.quantity)
+                {                    
+                    ItemPackage originalPackage = player.GetItemPackage(reward.itemPackage);
+                    ItemPackage bazaarPackage = player.GetItemPackage(ItemPackage.BAZAAR);
 
-                buyer.RemoveItem(seek, seekQuantity);
-                buyer.AddItem(reward);
+                    InventoryItem splitItem = Database.CreateItem(reward, (uint) rewardAmount);
+
+                    if (splitItem != null)
+                    {
+                        reward.ChangeQuantity(-rewardAmount);
+                        splitItem.SetSelling(bazaarMode, seekAmount);
+                        bazaarPackage.AddItem(splitItem);
+                    }
+                    
+                    //TODO: Refactor so that it's not a mess like V
+                    player.QueuePacket(InventoryBeginChangePacket.BuildPacket(player.actorId));
+                    originalPackage.SendUpdate();
+                    player.QueuePacket(InventoryEndChangePacket.BuildPacket(player.actorId));                   
+                }
+            }
+            else if (bazaarMode == InventoryItem.MODE_SELL_FSTACK)
+            {
+                reward.SetSelling(bazaarMode, seekAmount);
+                ItemPackage originalPackage = player.GetItemPackage(reward.itemPackage);
+                ItemPackage bazaarPackage = player.GetItemPackage(ItemPackage.BAZAAR);
+                originalPackage.MoveItem(reward, bazaarPackage);
             }
 
-            Database.ClearBazaarEntry(bazaar, reward);
+            //Seeking Items
+            else if (bazaarMode == InventoryItem.MODE_SEEK_ITEM || bazaarMode == InventoryItem.MODE_SEEK_REPAIR)
+            {
+                ItemPackage originalRewardPackage = player.GetItemPackage(reward.itemPackage);
+                ItemPackage originalSeekPackage = player.GetItemPackage(seek.itemPackage);
+                ItemPackage bazaarPackage = player.GetItemPackage(ItemPackage.BAZAAR);
 
-            bazaar.CheckBazaarFlags();
+                InventoryItem finalReward, finalSeek;
 
-            return true;
-        }
-
-        public void AddToBazaar(Player player, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount, byte bazaarMode)
-        {
-            bool succ = false;
-
-            if (bazaarMode == InventoryItem.TYPE_SINGLE || bazaarMode == InventoryItem.TYPE_MULTI || bazaarMode == InventoryItem.TYPE_STACK)
-                succ = Database.CreateBazaarEntry(player, reward, seek, rewardAmount, 0, bazaarMode, seekAmount);
-            else
-                succ = Database.CreateBazaarEntry(player, reward, seek, rewardAmount, seekAmount, bazaarMode);
-
-            if (succ)
-            {                
-                if (bazaarMode != InventoryItem.TYPE_SINGLE && bazaarMode != InventoryItem.TYPE_MULTI && bazaarMode != InventoryItem.TYPE_STACK)
-                {
-                    reward.SetDealingAttached(bazaarMode, seek.uniqueId);
-                    seek.SetHasAttached(true);
-                    player.GetItemPackage(ItemPackage.BAZAAR).StartSendUpdate();
-                    player.GetItemPackage(ItemPackage.BAZAAR).AddItem(reward);
-                    player.GetItemPackage(ItemPackage.BAZAAR).AddItem(seek);
-                    reward.SetAttachedIndex(ItemPackage.BAZAAR, seek.slot);
-                    player.GetItemPackage(ItemPackage.BAZAAR).DoneSendUpdate();
-                }
-                else
-                {
-                    reward.SetDealing(bazaarMode, seekAmount);
-                    player.GetItemPackage(ItemPackage.BAZAAR).StartSendUpdate();
-                    player.GetItemPackage(ItemPackage.BAZAAR).AddItem(reward);
-                    player.GetItemPackage(ItemPackage.BAZAAR).DoneSendUpdate();
-                }
+                /////REWARD/////
                 
-            }
+                //No Split, just move
+                if (rewardAmount == reward.itemData.maxStack)
+                {
+                    finalReward = reward;
+                    originalRewardPackage.RemoveItem(reward);
+                }
+                else //Splitting (ughh)
+                {
+                    InventoryItem splitItem = Database.CreateItem(reward, (uint)rewardAmount);
+
+                    if (splitItem != null)
+                    {
+                        reward.ChangeQuantity(-rewardAmount);
+                        finalReward = splitItem;
+
+                        player.QueuePacket(InventoryBeginChangePacket.BuildPacket(player.actorId));
+                        originalRewardPackage.SendUpdate();
+                        player.QueuePacket(InventoryEndChangePacket.BuildPacket(player.actorId));
+                    }
+                    else
+                        return ItemPackage.ERROR_SYSTEM;
+                }
+
+                /////SEEK/////
+
+                //No Split, just move
+                if (seekAmount == seek.itemData.maxStack)
+                {
+                    finalSeek = seek;
+                    originalSeekPackage.RemoveItem(seek);
+                }
+                else //Splitting (ughh)
+                {
+                    InventoryItem splitItem = Database.CreateItem(seek, (uint)seekAmount);
+
+                    if (splitItem != null)
+                    {
+                        seek.ChangeQuantity(-seekAmount);
+                        finalSeek = splitItem;
+
+                        player.QueuePacket(InventoryBeginChangePacket.BuildPacket(player.actorId));
+                        originalSeekPackage.SendUpdate();
+                        player.QueuePacket(InventoryEndChangePacket.BuildPacket(player.actorId));
+                    }
+                    else
+                        return ItemPackage.ERROR_SYSTEM;
+                }
+
+                /////FINAL/////
+                
+                bazaarPackage.AddItem(finalReward);
+                bazaarPackage.AddItem(finalSeek);
+                finalReward.SetAsOfferTo(bazaarMode, finalSeek);
+
+                player.QueuePacket(InventoryBeginChangePacket.BuildPacket(player.actorId));
+                bazaarPackage.SendUpdate();
+                player.QueuePacket(InventoryEndChangePacket.BuildPacket(player.actorId));                
+            }            
 
             player.CheckBazaarFlags();
+            return ItemPackage.ERROR_SUCCESS;
         }
-
         
-        public void RemoveFromBazaar(Player player, InventoryItem rewardRef)
+        public int RemoveFromBazaar(Player player, InventoryItem reward)
         {
-            ushort attachedItemPackage = (ushort)((rewardRef.dealingAttached1 >> 16) & 0xFF);
-            ushort attachedSlot = (ushort) (rewardRef.dealingAttached1 & 0xFF);
+            InventoryItem seek = reward.GetOfferedTo();
+            ItemPackage bazaarPackage = player.GetItemPackage(ItemPackage.BAZAAR);
 
-            InventoryItem seekRef = rewardRef.IsSelling() ? null : player.GetItemPackage(attachedItemPackage).GetItemAtSlot(attachedSlot);           
-
-            Database.ClearBazaarEntry(player, rewardRef);
-
-            player.GetItemPackage(ItemPackage.BAZAAR).RemoveItem(rewardRef);
-
-            bool isSelling = rewardRef.IsSelling();
-            rewardRef.SetNormal();
-
-            if (seekRef != null)
-                player.GetItemPackage(ItemPackage.BAZAAR).RemoveItem(seekRef);
-
-            player.AddItem(rewardRef);
-
-            if (!isSelling)
+            bazaarPackage.RemoveItem(reward);
+            reward.SetNormal();
+            player.AddItem(reward);
+            Database.ClearDealingInfo(reward);
+            
+            if (seek != null)
             {
-                seekRef.SetNormal();
-                player.AddItem(seekRef);
+                bazaarPackage.RemoveItem(seek);
+                seek.SetNormal();
+                player.AddItem(seek);
+                Database.ClearDealingInfo(seek);
             }
-
+            
             player.CheckBazaarFlags();
+            return ItemPackage.ERROR_SUCCESS;
         }
-        /*
-        public void TransactionBazaar(Player owner, Player other, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount)
+
+        public int BazaarBuyOperation(Player bazaar, Player buyer, InventoryItem itemToBuy, int quantity, int cost)
         {
-            Database.ClearBazaarEntry(owner, reward, seek);
+            //TODO: Implement
+            return ItemPackage.ERROR_SYSTEM;
+        }
 
-            //Remove Bazaar Items from owner
-            owner.GetInventory(Inventory.BAZAAR).RemoveItem(reward);
-            owner.GetInventory(Inventory.BAZAAR).RemoveItem(seek);
-
-            //Remove Seek item from other
-            if (seek.GetItemData().IsMoney())
-                other.GetInventory(Inventory.CURRENCY_CRYSTALS).RemoveItem(seek.itemId, seekAmount);
-            else
-                other.GetInventory(Inventory.NORMAL).RemoveItem(seek.itemId, seekAmount);
-
-            //Add reward to other, seek to owner
-            if (reward.GetItemData().IsMoney())
-                other.GetInventory(Inventory.CURRENCY_CRYSTALS).AddItem(reward.itemId, rewardAmount);
-            else
-                other.GetInventory(Inventory.NORMAL).AddItem(reward);
-
-            if (seek.GetItemData().IsMoney())
-                owner.GetInventory(Inventory.CURRENCY_CRYSTALS).AddItem(seek.itemId, seekAmount);
-            else
-                other.GetInventory(Inventory.NORMAL).AddItem(seek);
-        }*/
+        public int BazaarSellOperation(Player bazaar, Player buyer, InventoryItem reward, int rewardQuantity, InventoryItem seek, int seekQuantity)
+        {
+            //TODO: Implement
+            return ItemPackage.ERROR_SYSTEM;
+        }
 
         public bool SendGroupInit(Session session, ulong groupId)
         {

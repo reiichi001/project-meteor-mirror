@@ -63,7 +63,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             int i = 0;
             foreach (InventoryItem item in itemsFromDB)
             {
-                item.RefreshPositioning(owner, itemPackageCode, (ushort) i);
+                item.SetOwner(owner, itemPackageCode, (ushort) i);
                 list[i++] = item;
             }
             endOfListIndex = i;
@@ -104,20 +104,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             }
             return null;
         }
-        
-        public InventoryItem GetItemAttachedTo(InventoryItem attachedTo)
-        {
-            for (int i = 0; i < endOfListIndex; i++)
-            {
-                InventoryItem item = list[i];
-
-                Debug.Assert(item != null, "Item slot was null!!!");
-
-                if (attachedTo.GetAttached() == item.uniqueId)
-                    return item;
-            }
-            return null;
-        }
 
         public int AddItem(uint itemId)
         {
@@ -128,7 +114,75 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             return AddItem(itemId, quantity, 1);
         }
-        
+
+        public int AddItem(uint itemId, int quantity, byte quality)
+        {
+            if (!IsSpaceForAdd(itemId, quantity, quality))
+                return ERROR_FULL;
+
+            ItemData gItem = Server.GetItemGamedata(itemId);
+
+            //If it's unique, abort
+            if (HasItem(itemId) && gItem.isExclusive)
+                return ERROR_HAS_UNIQUE;
+
+            if (gItem == null)
+            {
+                Program.Log.Error("Inventory.AddItem: unable to find item %u", itemId);
+                return ERROR_SYSTEM;
+            }
+
+            //Check if item id exists 
+            int quantityCount = quantity;
+            for (int i = 0; i < endOfListIndex; i++)
+            {
+                InventoryItem item = list[i];
+
+                Debug.Assert(item != null, "Item slot was null!!!");
+
+                if (item.itemId == itemId && item.quality == quality && item.quantity < gItem.maxStack)
+                {
+                    int oldQuantity = item.quantity;
+                    item.quantity = Math.Min(item.quantity + quantityCount, gItem.maxStack);
+                    isDirty[i] = true;
+                    quantityCount -= (gItem.maxStack - oldQuantity);
+
+                    DoDatabaseQuantity(item.uniqueId, item.quantity);
+
+                    if (quantityCount <= 0)
+                        break;
+                }
+            }
+
+            //New item that spilled over
+            while (quantityCount > 0)
+            {
+                InventoryItem.ItemModifier modifiers = null;
+                if (gItem.durability != 0)
+                {
+                    modifiers = new InventoryItem.ItemModifier();
+                    modifiers.durability = (uint)gItem.durability;
+                }
+
+                InventoryItem addedItem = Database.CreateItem(itemId, Math.Min(quantityCount, gItem.maxStack), quality, modifiers);
+                addedItem.SetOwner(owner, itemPackageCode, (ushort)endOfListIndex);
+                isDirty[endOfListIndex] = true;
+                list[endOfListIndex++] = addedItem;
+                quantityCount -= gItem.maxStack;
+
+                DoDatabaseAdd(addedItem);
+            }
+
+            if (owner is Player)
+            {
+                (owner as Player).QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
+                SendUpdate();
+                (owner as Player).QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
+            }
+
+            return ERROR_SUCCESS;
+        }
+
         public int AddItems(uint[] itemIds, uint[] quantity = null, byte[] quality = null)
         {
             //Check if has space
@@ -187,7 +241,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                     byte setQuality = quality != null ? quality[i] : (byte)1;
 
                     InventoryItem addedItem = Database.CreateItem(itemIds[i], Math.Min(quantityCount, gItem.maxStack), setQuality, modifiers);
-                    addedItem.RefreshPositioning(owner, itemPackageCode, (ushort)endOfListIndex);
+                    addedItem.SetOwner(owner, itemPackageCode, (ushort)endOfListIndex);
                     isDirty[endOfListIndex] = true;
                     list[endOfListIndex++] = addedItem;
                     quantityCount -= gItem.maxStack;
@@ -205,45 +259,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             return ERROR_SUCCESS;
         }
-
-        public bool CanAdd(uint[] itemIds, uint[] quantity, byte[] quality)
-        {
-            int tempInvSize = GetCount();
-
-            for (int i = 0; i < itemIds.Length; i++)
-            {
-                ItemData gItem = Server.GetItemGamedata(itemIds[i]);
-                //Check if item id exists and fill up til maxstack 
-                int quantityCount = (int) (quantity != null ? quantity[i] : 1);
-                for (int j = 0; j < endOfListIndex; j++)
-                {
-                    InventoryItem item = list[j];
-
-                    Debug.Assert(item != null, "Item slot was null!!!");
-
-                    if (item.itemId == itemIds[i] && item.quality == (quality != null ? quality[i] : 1) && item.quantity < gItem.maxStack)
-                    {
-                        quantityCount -= (gItem.maxStack - item.quantity);                        
-                        if (quantityCount <= 0)
-                            break;
-                    }
-                }
-
-                //New items that spilled over creating new stacks
-                while (quantityCount > 0)
-                {                                  
-                    quantityCount -= gItem.maxStack;
-                    tempInvSize++;
-                }
-
-                //If the new stacks push us over capacity, can't add these items
-                if (tempInvSize > itemPackageCapacity)                
-                    return false;               
-            }
-
-            return true;
-        }
-
+        
         public int AddItem(InventoryItem itemRef)
         {
             //If it isn't a single item (ie: armor) just add like normal (not valid for BAZAAR)
@@ -261,7 +277,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 return ERROR_SYSTEM;
             }
 
-            itemRef.RefreshPositioning(owner, itemPackageCode, (ushort)endOfListIndex);
+            itemRef.SetOwner(owner, itemPackageCode, (ushort)endOfListIndex);
 
             isDirty[endOfListIndex] = true;
             list[endOfListIndex++] = itemRef;
@@ -277,84 +293,31 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             return ERROR_SUCCESS;           
         }
 
-        public int AddItem(uint itemId, int quantity, byte quality)
-        {          
-            if (!IsSpaceForAdd(itemId, quantity, quality))
-                return ERROR_FULL;
+        public int MoveItem(ushort position, ItemPackage destinationPackage)
+        {
+            InventoryItem item = GetItemAtSlot(position);
 
-            ItemData gItem = Server.GetItemGamedata(itemId);
-
-            //If it's unique, abort
-            if (HasItem(itemId) && gItem.isExclusive)
-                return ERROR_HAS_UNIQUE;
-
-            if (gItem == null)
+            if (destinationPackage.CanAdd(item))
             {
-                Program.Log.Error("Inventory.AddItem: unable to find item %u", itemId);
-                return ERROR_SYSTEM;
+                RemoveItemAtSlot(position);
+                destinationPackage.AddItem(item);
+                return ERROR_SUCCESS;
             }
-
-            //Check if item id exists 
-            int quantityCount = quantity;
-            for (int i = 0; i < endOfListIndex; i++)
-            {
-                InventoryItem item = list[i];
-
-                Debug.Assert(item != null, "Item slot was null!!!");
-
-                if (item.itemId == itemId && item.quality == quality && item.quantity < gItem.maxStack)
-                {
-                    int oldQuantity = item.quantity;
-                    item.quantity = Math.Min(item.quantity + quantityCount, gItem.maxStack);
-                    isDirty[i] = true;
-                    quantityCount -= (gItem.maxStack - oldQuantity);
-
-                    DoDatabaseQuantity(item.uniqueId, item.quantity);
-
-                    if (quantityCount <= 0)
-                        break;
-                }
-            }
-
-            //New item that spilled over
-            while (quantityCount > 0)
-            {
-                InventoryItem.ItemModifier modifiers = null;
-                if (gItem.durability != 0)
-                {
-                    modifiers = new InventoryItem.ItemModifier();
-                    modifiers.durability = (uint)gItem.durability;
-                }
-
-                InventoryItem addedItem = Database.CreateItem(itemId, Math.Min(quantityCount, gItem.maxStack), quality, modifiers);
-                addedItem.RefreshPositioning(owner, itemPackageCode, (ushort)endOfListIndex);
-                isDirty[endOfListIndex] = true;
-                list[endOfListIndex++] = addedItem;
-                quantityCount -= gItem.maxStack;
-
-                DoDatabaseAdd(addedItem);
-            }
-
-            if (owner is Player)
-            {
-                (owner as Player).QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
-                SendUpdate();
-                (owner as Player).QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
-            }
-
-            return ERROR_SUCCESS;            
+            return ERROR_FULL;
         }
 
-        public void SetItem(ushort slot, InventoryItem item)
+        public int MoveItem(InventoryItem item, ItemPackage destinationPackage)
         {
-            list[slot] = item;
-            if (owner is Player)
+            if (destinationPackage == null || item == null)
+                return ERROR_SYSTEM;
+
+            if (destinationPackage.CanAdd(item))
             {
-                (owner as Player).QueuePacket(InventoryBeginChangePacket.BuildPacket(owner.actorId));
-                SendUpdate();
-                (owner as Player).QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
+                RemoveItem(item);
+                destinationPackage.AddItem(item);
+                return ERROR_SUCCESS;
             }
-            item.RefreshPositioning(owner, itemPackageCode, slot);           
+            return ERROR_FULL;
         }
 
         public void RemoveItem(uint itemId)
@@ -423,14 +386,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         public void RemoveItem(InventoryItem item)
         {
-            RemoveItemByUniqueId(item.uniqueId, item.quantity);
+            if (itemPackageCode == item.itemPackage)
+                RemoveItemAtSlot(item.slot);
         }
-
-        public void RemoveItem(InventoryItem item, int quantity)
-        {
-            RemoveItemByUniqueId(item.uniqueId, quantity);
-        }
-
+        
         public void RemoveItemByUniqueId(ulong itemDBId, int quantity)
         {
             ushort slot = 0;
@@ -455,7 +414,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (quantity >= toDelete.quantity)
             {
                 DoDatabaseRemove(toDelete.uniqueId);
-                list[slot].RefreshPositioning(null, 0xFFFF, 0xFFFF);
+                list[slot].ClearOwner();
                 list[slot] = null;
             }
             else
@@ -483,7 +442,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             DoDatabaseRemove(list[slot].uniqueId);
 
-            list[slot].RefreshPositioning(null, 0xFFFF, 0xFFFF);
+            list[slot].ClearOwner();
             list[slot] = null;
             isDirty[slot] = true;
 
@@ -510,7 +469,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 {
                     DoDatabaseRemove(list[slot].uniqueId);
 
-                    list[slot].RefreshPositioning(null, 0xFFFF, 0xFFFF);
+                    list[slot].ClearOwner();
                     list[slot] = null;
                     DoRealign();
                 }
@@ -532,7 +491,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             for (int i = 0; i < endOfListIndex; i++)
             {
-                list[i].RefreshPositioning(null, 0xFFFF, 0xFFFF);
+                list[i].ClearOwner();
                 list[i] = null;
                 isDirty[i] = true;
             }
@@ -544,6 +503,49 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 SendUpdate();
                 (owner as Player).QueuePacket(InventoryEndChangePacket.BuildPacket(owner.actorId));
             }
+        }
+
+        public bool CanAdd(InventoryItem item)
+        {
+            return itemPackageCapacity - GetCount() > 0;
+        }
+
+        public bool CanAdd(uint[] itemIds, uint[] quantity, byte[] quality)
+        {
+            int tempInvSize = GetCount();
+
+            for (int i = 0; i < itemIds.Length; i++)
+            {
+                ItemData gItem = Server.GetItemGamedata(itemIds[i]);
+                //Check if item id exists and fill up til maxstack 
+                int quantityCount = (int)(quantity != null ? quantity[i] : 1);
+                for (int j = 0; j < endOfListIndex; j++)
+                {
+                    InventoryItem item = list[j];
+
+                    Debug.Assert(item != null, "Item slot was null!!!");
+
+                    if (item.itemId == itemIds[i] && item.quality == (quality != null ? quality[i] : 1) && item.quantity < gItem.maxStack)
+                    {
+                        quantityCount -= (gItem.maxStack - item.quantity);
+                        if (quantityCount <= 0)
+                            break;
+                    }
+                }
+
+                //New items that spilled over creating new stacks
+                while (quantityCount > 0)
+                {
+                    quantityCount -= gItem.maxStack;
+                    tempInvSize++;
+                }
+
+                //If the new stacks push us over capacity, can't add these items
+                if (tempInvSize > itemPackageCapacity)
+                    return false;
+            }
+
+            return true;
         }
 
         public void MarkDirty(InventoryItem item)
@@ -724,24 +726,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
             if (isTemporary)
                 return;
 
-            if (itemPackageCode == BAZAAR)
-                return;
-
-            if (owner is Player)            
-                Database.AddItem((Player)owner, addedItem, itemPackageCode);            
-            else if (owner is Retainer)
-                Database.AddItem((Retainer)owner, addedItem, itemPackageCode);
+            Database.AddItem(owner, addedItem, itemPackageCode, addedItem.slot);
         }
 
         private void DoDatabaseQuantity(ulong itemDBId, int quantity)
         {
             if (isTemporary)
                 return;
-
-
-            if (itemPackageCode == BAZAAR)
-                return;
-  
+            
             Database.SetQuantity(itemDBId, quantity);
         }
 
@@ -749,14 +741,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         {
             if (isTemporary)
                 return;
-
-            if (itemPackageCode == BAZAAR)
-                return;
-
-            if (owner is Player)            
-                Database.RemoveItem((Player)owner, itemDBId);            
-            else if (owner is Retainer)
-                Database.RemoveItem((Retainer)owner, itemDBId);
+            
+            Database.RemoveItem(owner, itemDBId);
         }
         
         public void StartSendUpdate()
@@ -869,6 +855,46 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
         public int GetCount()
         {
             return endOfListIndex;
+        }
+
+        public override string ToString()
+        {
+            string packageName;
+            switch (itemPackageCode)
+            {
+                case NORMAL:
+                    packageName = "Inventory";
+                    break;
+                case LOOT:
+                    packageName = "Loot";
+                    break;
+                case MELDREQUEST:
+                    packageName = "Meld Request";
+                    break;
+                case BAZAAR:
+                    packageName = "Bazaar";
+                    break;
+                case CURRENCY_CRYSTALS:
+                    packageName = "Currency";
+                    break;
+                case KEYITEMS:
+                    packageName = "KeyItems";
+                    break;
+                case EQUIPMENT:
+                    packageName = "Equipment";
+                    break;
+                case TRADE:
+                    packageName = "Trade";
+                    break;
+                case EQUIPMENT_OTHERPLAYER:
+                    packageName = "CheckEquip";
+                    break;
+                default:
+                    packageName = "Unknown";
+                    break;
+            }
+
+            return string.Format("{0} Package", packageName);
         }
     }
 }

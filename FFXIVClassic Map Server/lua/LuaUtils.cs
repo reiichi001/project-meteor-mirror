@@ -32,16 +32,20 @@ namespace FFXIVClassic_Map_Server
         {
             public uint actorId;
             public ushort offerSlot;
-            public ushort unknown1;
+            public byte offerPackageId;
+            public byte unknown1;
             public ushort seekSlot;
-            public ushort unknown2;
+            public byte seekPackageId;
+            public byte unknown2;
 
-            public ItemOfferParam(uint actorId, ushort unknown1, ushort offerSlot, ushort seekSlot, ushort unknown2)
+            public ItemOfferParam(uint actorId, ushort offerSlot, byte offerPackageId, byte unknown1, ushort seekSlot, byte seekPackageId, byte unknown2)
             {
                 this.actorId = actorId;
-                this.unknown1 = unknown1;
                 this.offerSlot = offerSlot;
+                this.offerPackageId = offerPackageId;
+                this.unknown1 = unknown1;
                 this.seekSlot = seekSlot;
+                this.seekPackageId = seekPackageId;
                 this.unknown2 = unknown2;
             }
         }
@@ -111,11 +115,13 @@ namespace FFXIVClassic_Map_Server
                     case 0x8: //Used for offering
                         {
                             uint actorId = Utils.SwapEndian(reader.ReadUInt32());
-                            ushort unk1 = Utils.SwapEndian(reader.ReadUInt16());
-                            ushort offerSlot = Utils.SwapEndian(reader.ReadUInt16());
+                            ushort rewardSlot = Utils.SwapEndian(reader.ReadUInt16());
+                            byte   rewardPackageId = reader.ReadByte();
+                            byte   unk1 = reader.ReadByte(); //Always 0x2?
                             ushort seekSlot = Utils.SwapEndian(reader.ReadUInt16());
-                            ushort unk2 = Utils.SwapEndian(reader.ReadUInt16());
-                            value = new ItemOfferParam(actorId, unk1, offerSlot, seekSlot, unk2);
+                            byte   seekPackageId = reader.ReadByte();
+                            byte   unk2 = reader.ReadByte(); //Always 0xD?
+                            value = new ItemOfferParam(actorId, rewardSlot, rewardPackageId, unk1, seekSlot, seekPackageId, unk2);
                         }
                         break;
                     case 0x9: //Two Longs (only storing first one)
@@ -130,6 +136,8 @@ namespace FFXIVClassic_Map_Server
                     case 0xF: //End
                         isDone = true;
                         continue;
+                    default:
+                        throw new ArgumentException("Unknown lua param...");
                 }
 
                 if (isDone)
@@ -139,7 +147,7 @@ namespace FFXIVClassic_Map_Server
                 if (value != null && value is ItemOfferParam)
                 {
                     luaParams.Add(new LuaParam(code, value));
-                    luaParams.Add(new LuaParam(5, null));
+                    luaParams.Add(new LuaParam(0x5, null)); //This is to clean up the seek script as it fucks with the args.
                 }
                 else if (value != null)
                     luaParams.Add(new LuaParam(code, value));
@@ -147,6 +155,103 @@ namespace FFXIVClassic_Map_Server
                     luaParams.Add(new LuaParam(code, value));
             }
 
+            return luaParams;
+        }
+
+        public static List<LuaParam> ReadLuaParams(byte[] bytesIn)
+        {
+            List<LuaParam> luaParams = new List<LuaParam>();
+
+            using (MemoryStream memStream = new MemoryStream(bytesIn))
+            {
+                using (BinaryReader reader = new BinaryReader(memStream))
+                {
+                    bool isDone = false;
+                    while (true)
+                    {
+                        byte code = reader.ReadByte();
+                        object value = null;
+                        bool wasNil = false;
+
+                        switch (code)
+                        {
+                            case 0x0: //Int32
+                                value = Utils.SwapEndian(reader.ReadInt32());
+                                break;
+                            case 0x1: //Int32
+                                value = Utils.SwapEndian(reader.ReadUInt32());
+                                break;
+                            case 0x2: //Null Termed String                        
+                                List<byte> list = new List<byte>();
+                                while (true)
+                                {
+                                    byte readByte = reader.ReadByte();
+                                    if (readByte == 0)
+                                        break;
+                                    list.Add(readByte);
+                                }
+                                value = Encoding.ASCII.GetString(list.ToArray());
+                                break;
+                            case 0x3: //Boolean True
+                                value = true;
+                                break;
+                            case 0x4: //Boolean False
+                                value = false;
+                                break;
+                            case 0x5: //Nil
+                                wasNil = true;
+                                break;
+                            case 0x6: //Actor (By Id)
+                                value = Utils.SwapEndian(reader.ReadUInt32());
+                                break;
+                            case 0x7: //Weird one used for inventory
+                                uint type7ActorId = Utils.SwapEndian(reader.ReadUInt32());
+                                byte type7Unknown = reader.ReadByte();
+                                byte type7Slot = reader.ReadByte();
+                                byte type7InventoryType = reader.ReadByte();
+                                value = new ItemRefParam(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
+                                break;
+                            case 0x8:
+                                uint actorId = Utils.SwapEndian(reader.ReadUInt32());
+                                ushort rewardSlot = Utils.SwapEndian(reader.ReadUInt16());
+                                byte rewardPackageId = reader.ReadByte();
+                                byte unk1 = reader.ReadByte(); //Always 0x2?
+                                ushort seekSlot = Utils.SwapEndian(reader.ReadUInt16());
+                                byte seekPackageId = reader.ReadByte();
+                                byte unk2 = reader.ReadByte(); //Always 0xD?
+                                value = new ItemOfferParam(actorId, rewardSlot, rewardPackageId, unk1, seekSlot, seekPackageId, unk2);
+                                break;
+                            case 0x9: //Two Longs (only storing first one)
+                                value = new Type9Param(Utils.SwapEndian(reader.ReadUInt64()), Utils.SwapEndian(reader.ReadUInt64()));
+                                break;
+                            case 0xC: //Byte
+                                value = reader.ReadByte();
+                                break;
+                            case 0x1B: //Short?
+                                value = reader.ReadUInt16();
+                                break;
+                            case 0xF: //End
+                                isDone = true;
+                                continue;
+                            default:
+                                throw new ArgumentException("Unknown lua param...");
+                        }
+
+                        if (isDone)
+                            break;
+
+                        if (value != null && value is ItemOfferParam)
+                        {
+                            luaParams.Add(new LuaParam(code, value));
+                            luaParams.Add(new LuaParam(0x5, null)); //This is to clean up the seek script as it fucks with the args.
+                        }
+                        else if (value != null)
+                            luaParams.Add(new LuaParam(code, value));
+                        else if (wasNil)
+                            luaParams.Add(new LuaParam(code, value));
+                    }
+                }
+            }
             return luaParams;
         }
 
@@ -209,86 +314,6 @@ namespace FFXIVClassic_Map_Server
             }
 
             writer.Write((Byte)0xF);
-        }
-
-        public static List<LuaParam> ReadLuaParams(byte[] bytesIn)
-        {
-            List<LuaParam> luaParams = new List<LuaParam>();            
-
-            using (MemoryStream memStream = new MemoryStream(bytesIn))
-            {
-                using (BinaryReader reader = new BinaryReader(memStream))
-                {
-                    bool isDone = false;
-                    while (true)
-                    {
-                        byte code = reader.ReadByte();
-                        object value = null;
-                        bool wasNil = false;
-
-                        switch (code)
-                        {
-                            case 0x0: //Int32
-                                value = Utils.SwapEndian(reader.ReadInt32());
-                                break;
-                            case 0x1: //Int32
-                                value = Utils.SwapEndian(reader.ReadUInt32());
-                                break;
-                            case 0x2: //Null Termed String                        
-                                List<byte> list = new List<byte>();
-                                while (true)
-                                {
-                                    byte readByte = reader.ReadByte();
-                                    if (readByte == 0)
-                                        break;
-                                    list.Add(readByte);
-                                }
-                                value = Encoding.ASCII.GetString(list.ToArray());
-                                break;
-                            case 0x3: //Boolean True
-                                value = true;
-                                break;
-                            case 0x4: //Boolean False
-                                value = false;
-                                break;
-                            case 0x5: //Nil
-                                wasNil = true;
-                                break;
-                            case 0x6: //Actor (By Id)
-                                value = Utils.SwapEndian(reader.ReadUInt32());
-                                break;
-                            case 0x7: //Weird one used for inventory
-                                uint type7ActorId = Utils.SwapEndian(reader.ReadUInt32());
-                                byte type7Unknown = reader.ReadByte();
-                                byte type7Slot = reader.ReadByte();
-                                byte type7InventoryType = reader.ReadByte();
-                                value = new ItemRefParam(type7ActorId, type7Unknown, type7Slot, type7InventoryType);
-                                break;
-                            case 0x9: //Two Longs (only storing first one)
-                                value = new Type9Param(Utils.SwapEndian(reader.ReadUInt64()), Utils.SwapEndian(reader.ReadUInt64()));
-                                break;
-                            case 0xC: //Byte
-                                value = reader.ReadByte();
-                                break;
-                            case 0x1B: //Short?
-                                value = reader.ReadUInt16();
-                                break;
-                            case 0xF: //End
-                                isDone = true;
-                                continue;
-                        }
-
-                        if (isDone)
-                            break;
-
-                        if (value != null)
-                            luaParams.Add(new LuaParam(code, value));
-                        else if (wasNil)
-                            luaParams.Add(new LuaParam(code, value));
-                    }
-                }
-            }
-            return luaParams;
         }
 
         public static List<LuaParam> CreateLuaParamList(DynValue fromScript)
@@ -461,7 +486,7 @@ namespace FFXIVClassic_Map_Server
                         break;
                     case 0x8: //Weird one used for inventory
                         ItemOfferParam itemOfferParam = ((ItemOfferParam)lParams[i].value);
-                        dumpString += String.Format("Type8 Param: (0x{0:X}, 0x{1:X}, 0x{2:X}, 0x{3:X}, 0x{4:X})", itemOfferParam.actorId, itemOfferParam.unknown1, itemOfferParam.offerSlot, itemOfferParam.seekSlot, itemOfferParam.unknown2);
+                        dumpString += String.Format("Type8 Param: (0x{0:X}, 0x{1:X}, 0x{2:X}, 0x{3:X}, 0x{4:X}, 0x{5:X}, 0x{6:X})", itemOfferParam.actorId, itemOfferParam.offerSlot, itemOfferParam.offerPackageId, itemOfferParam.unknown1, itemOfferParam.seekSlot, itemOfferParam.seekPackageId, itemOfferParam.unknown2);
                         break;
                     case 0x9: //Long (+ 8 bytes ignored)
                         Type9Param type9Param = ((Type9Param)lParams[i].value);

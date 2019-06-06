@@ -743,7 +743,18 @@ namespace FFXIVClassic_Map_Server.Actors
             return FindRandomPoint(positionX, positionY, positionZ, minRadius, maxRadius);
         }
         #endregion
-        
+
+        public override string ToString()
+        {
+            if (className != null)
+            {
+                return string.Format("{0} [0x{1:X}]", className, actorId);
+            }
+            else
+            {
+                return string.Format("Unknown [0x{0:X}]", actorId);
+            }
+        }
     }
 }
 

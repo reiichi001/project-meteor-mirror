@@ -1147,7 +1147,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 return;
 
             player.QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
-            itemPackages[(ushort)id].SendUpdate(player);
+            itemPackages[(ushort)id].SendFullPackage(player);
             player.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
         }
 
@@ -1179,23 +1179,14 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public void SetItem(InventoryItem item, ushort itemPackage, ushort slot)
-        {
-            if (itemPackages.ContainsKey(itemPackage))
-            {
-                itemPackages[itemPackage].SetItem(slot, item);
-            }
-        }
-
         public void MoveItem(InventoryItem item, ushort destinationPackage)
         {
             ushort sourcePackage = item.itemPackage;
 
             if (!itemPackages.ContainsKey(sourcePackage) && !itemPackages.ContainsKey(destinationPackage))
                 return;
-
-            itemPackages[sourcePackage].RemoveItem(item);
-            itemPackages[destinationPackage].AddItem(item);
+            
+            itemPackages[sourcePackage].MoveItem(item, itemPackages[destinationPackage]);
         }
 
         public void RemoveItem(uint catalogID)
@@ -1227,15 +1218,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void RemoveItem(InventoryItem item)
         {
-            RemoveItem(item, 1);
-        }
-
-        public void RemoveItem(InventoryItem item, int quantity)
-        {
-            if (itemPackages.ContainsKey(item.itemPackage))
-            {
-                itemPackages[item.itemPackage].RemoveItem(item, quantity);
-            }
+            itemPackages[item.itemPackage].RemoveItem(item);
         }
 
         public bool HasItem(uint catalogID)
@@ -1269,7 +1252,6 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 return false;
         }
-
 
         public InventoryItem GetItem(LuaUtils.ItemRefParam reference)
         {

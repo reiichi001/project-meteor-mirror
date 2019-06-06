@@ -1131,11 +1131,11 @@ namespace FFXIVClassic_Map_Server.Actors
                     if (item == null)
                         break;
 
-                    if (item.GetBazaarMode() == InventoryItem.TYPE_SINGLE || item.GetBazaarMode() == InventoryItem.TYPE_MULTI || item.GetBazaarMode() == InventoryItem.TYPE_STACK)
+                    if (item.GetBazaarMode() == InventoryItem.MODE_SELL_SINGLE || item.GetBazaarMode() == InventoryItem.MODE_SELL_PSTACK || item.GetBazaarMode() == InventoryItem.MODE_SELL_FSTACK)
                         isDealing = true;
-                    if (item.GetBazaarMode() == InventoryItem.TYPE_SEEK_REPAIR)
+                    if (item.GetBazaarMode() == InventoryItem.MODE_SEEK_REPAIR)
                         isRepairing = true;
-                    if (item.GetBazaarMode() == InventoryItem.TYPE_SEEK_ITEM)
+                    if (item.GetBazaarMode() == InventoryItem.MODE_SEEK_ITEM)
                         isDealing = true;
 
                     if (isDealing && isRepairing && seekingItem)
