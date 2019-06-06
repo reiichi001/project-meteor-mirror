@@ -6,6 +6,7 @@ supportedSpells = [27346, 27347, 27358, 27357, 27350, 27307]
 
 function onMagicCast(effect, caster, skill)
     if supportedSpells[skill.id] then
+        skill.castTimeMs = skill.castTimeMs * 1.5;
         skill.aoeType = TargetFindAOEType.Circle;
         skill.aoeRange = 15;
     end
