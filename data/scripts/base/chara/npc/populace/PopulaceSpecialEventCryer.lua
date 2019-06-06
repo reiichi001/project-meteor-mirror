@@ -64,7 +64,7 @@ function onEventStarted(player, npc, triggerName)
             player:SendMessage(0x20, "", "You pretend to hand over four over-aspected crystals.");
             callClientFunction(player, "eventTalkCrystalExchange2", player, npcGC); 
            
-            local invCheck = player:GetInventory(INVENTORY_CURRENCY):AddItem(npcGCSeal, 1000, 1);
+            local invCheck = player:GetItemPackage(INVENTORY_CURRENCY):AddItem(npcGCSeal, 1000, 1);
             if invCheck == INV_ERROR_SUCCESS then
                 player:SendGameMessage(player, GetWorldMaster(), 25071, MESSAGE_TYPE_SYSTEM, crystal, 1, npcGCSeal, 1, 4, 1000);
             end
@@ -73,7 +73,7 @@ function onEventStarted(player, npc, triggerName)
             --callClientFunction(player, "eventTalkCsOverflow", player, npcGC);
             callClientFunction(player, "eventTalkCrystalExchange2", player, npcGC); 
             
-            local invCheck = player:GetInventory(INVENTORY_CURRENCY):AddItem(npcGCSeal, 3000, 1);
+            local invCheck = player:GetItemPackage(INVENTORY_CURRENCY):AddItem(npcGCSeal, 3000, 1);
             if invCheck == INV_ERROR_SUCCESS then
                 player:SendGameMessage(player, GetWorldMaster(), 25071, MESSAGE_TYPE_SYSTEM, cluster, 1, npcGCSeal, 1, 1, 3000);
             end            

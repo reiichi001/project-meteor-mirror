@@ -6,7 +6,6 @@ using FFXIVClassic_Map_Server.dataobjects;
 
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.Actors;
-using FFXIVClassic_Map_Server.lua;
 
 namespace FFXIVClassic_Map_Server
 {

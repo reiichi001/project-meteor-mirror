@@ -82,27 +82,27 @@ function initClassItems(player)
 
 	--DoW	
 	if (player.charaWork.parameterSave.state_mainSkill[0] == 2) then 		--PUG
-		player:GetInventory(0):AddItem({4020001, 8030701, 8050728, 8080601, 8090307});
-		player:GetEquipment():SetEquipment({0, 10, 12, 14, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({4020001, 8030701, 8050728, 8080601, 8090307});
+		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 3) then	--GLA
-		player:GetInventory(0):AddItem({4030010, 8031120, 8050245, 8080601, 8090307});
-		player:GetEquipment():SetEquipment({0, 10, 12, 14, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({4030010, 8031120, 8050245, 8080601, 8090307});
+		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 4) then	--MRD
-		player:GetInventory(0):AddItem({4040001, 8011001, 8050621, 8070346, 8090307});
-		player:GetEquipment():SetEquipment({0, 8, 12, 13, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({4040001, 8011001, 8050621, 8070346, 8090307});
+		player:GetEquipment():Set({0, 8, 12, 13, 15},{0, 1, 2, 3, 4},0);
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 7) then	--ARC
-		player:GetInventory(0):AddItem({4070001, 8030601, 8050622, 8080601, 8090307});
-		player:GetEquipment():SetEquipment({0, 10, 12, 14, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({4070001, 8030601, 8050622, 8080601, 8090307});
+		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 8) then	--LNC
-		player:GetInventory(0):AddItem({4080201, 8030801, 8051015, 8080501, 8090307});
-		player:GetEquipment():SetEquipment({0, 10, 12, 14, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({4080201, 8030801, 8051015, 8080501, 8090307});
+		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 	4},0);
 	--DoM	
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 22) then	--THM
-		player:GetInventory(0):AddItem({5020001, 8030245, 8050346, 8080346, 8090208});
-		player:GetEquipment():SetEquipment({0, 10, 12, 14, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({5020001, 8030245, 8050346, 8080346, 8090208});
+		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 23) then	--CNJ
-		player:GetInventory(0):AddItem({5030101, 8030445, 8050031, 8080246, 8090208});
-		player:GetEquipment():SetEquipment({0, 10, 12, 14, 15},{0, 1, 2, 3, 4});
+		player:GetItemPackage(0):AddItems({5030101, 8030445, 8050031, 8080246, 8090208});
+		player:GetEquipment():Set({0, 10, 12, 14, 15},{0, 1, 2, 3, 4},0);
 		
 	--DoH
 	elseif (player.charaWork.parameterSave.state_mainSkill[0] == 29) then	--
@@ -125,52 +125,52 @@ end
 function initRaceItems(player)
 
 	if (player.playerWork.tribe == 1) then		--Hyur Midlander Male
-		player:GetInventory(0):AddItem(8040001);
-		player:GetInventory(0):AddItem(8060001);
+		player:GetItemPackage(0):AddItem(8040001);
+		player:GetItemPackage(0):AddItem(8060001);
 	elseif (player.playerWork.tribe == 2) then	--Hyur Midlander Female
-		player:GetInventory(0):AddItem(8040002);
-		player:GetInventory(0):AddItem(8060002);
+		player:GetItemPackage(0):AddItem(8040002);
+		player:GetItemPackage(0):AddItem(8060002);
 	elseif (player.playerWork.tribe == 3) then	--Hyur Highlander Male
-		player:GetInventory(0):AddItem(8040003);
-		player:GetInventory(0):AddItem(8060003);
+		player:GetItemPackage(0):AddItem(8040003);
+		player:GetItemPackage(0):AddItem(8060003);
 	elseif (player.playerWork.tribe == 4) then	--Elezen Wildwood Male
-		player:GetInventory(0):AddItem(8040004);
-		player:GetInventory(0):AddItem(8060004);
+		player:GetItemPackage(0):AddItem(8040004);
+		player:GetItemPackage(0):AddItem(8060004);
 	elseif (player.playerWork.tribe == 5) then	--Elezen Wildwood Female
-		player:GetInventory(0):AddItem(8040006);
-		player:GetInventory(0):AddItem(8060006);
+		player:GetItemPackage(0):AddItem(8040006);
+		player:GetItemPackage(0):AddItem(8060006);
 	elseif (player.playerWork.tribe == 6) then	--Elezen Duskwight Male
-		player:GetInventory(0):AddItem(8040005);
-		player:GetInventory(0):AddItem(8060005);
+		player:GetItemPackage(0):AddItem(8040005);
+		player:GetItemPackage(0):AddItem(8060005);
 	elseif (player.playerWork.tribe == 7) then	--Elezen Duskwight Female
-		player:GetInventory(0):AddItem(8040007);
-		player:GetInventory(0):AddItem(8060007);
+		player:GetItemPackage(0):AddItem(8040007);
+		player:GetItemPackage(0):AddItem(8060007);
 	elseif (player.playerWork.tribe == 8) then	--Lalafell Plainsfolk Male
-		player:GetInventory(0):AddItem(8040008);
-		player:GetInventory(0):AddItem(8060008);
+		player:GetItemPackage(0):AddItem(8040008);
+		player:GetItemPackage(0):AddItem(8060008);
 	elseif (player.playerWork.tribe == 9) then	--Lalafell Plainsfolk Female
-		player:GetInventory(0):AddItem(8040010);
-		player:GetInventory(0):AddItem(8060010);
+		player:GetItemPackage(0):AddItem(8040010);
+		player:GetItemPackage(0):AddItem(8060010);
 	elseif (player.playerWork.tribe == 10) then	--Lalafell Dunesfolk Male
-		player:GetInventory(0):AddItem(8040009);
-		player:GetInventory(0):AddItem(8060009);
+		player:GetItemPackage(0):AddItem(8040009);
+		player:GetItemPackage(0):AddItem(8060009);
 	elseif (player.playerWork.tribe == 11) then	--Lalafell Dunesfolk Female
-		player:GetInventory(0):AddItem(8040011);
-		player:GetInventory(0):AddItem(8060011);
+		player:GetItemPackage(0):AddItem(8040011);
+		player:GetItemPackage(0):AddItem(8060011);
 	elseif (player.playerWork.tribe == 12) then	--Miqo'te Seekers of the Sun
-		player:GetInventory(0):AddItem(8040012);
-		player:GetInventory(0):AddItem(8060012);
+		player:GetItemPackage(0):AddItem(8040012);
+		player:GetItemPackage(0):AddItem(8060012);
 	elseif (player.playerWork.tribe == 13) then	--Miqo'te Seekers of the Moon
-		player:GetInventory(0):AddItem(8040013);
-		player:GetInventory(0):AddItem(8060013);
+		player:GetItemPackage(0):AddItem(8040013);
+		player:GetItemPackage(0):AddItem(8060013);
 	elseif (player.playerWork.tribe == 14) then	--Roegadyn Sea Wolf
-		player:GetInventory(0):AddItem(8040014);
-		player:GetInventory(0):AddItem(8060014);
+		player:GetItemPackage(0):AddItem(8040014);
+		player:GetItemPackage(0):AddItem(8060014);
 	elseif (player.playerWork.tribe == 15) then	--Roegadyn Hellsguard
-		player:GetInventory(0):AddItem(8040015);
-		player:GetInventory(0):AddItem(8060015);
+		player:GetItemPackage(0):AddItem(8040015);
+		player:GetItemPackage(0):AddItem(8060015);
 	end
 
-	player:GetEquipment():SetEquipment({9, 11},{5,6});
+	player:GetEquipment():Set({9,11},{5,6}, 0);
 	
 end

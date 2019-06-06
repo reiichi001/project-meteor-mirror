@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace  FFXIVClassic_Map_Server.packets.send.actor.battle
+namespace FFXIVClassic_Map_Server.packets.send.actor.battle
 {
     class CommandResultX00Packet
     {

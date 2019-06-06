@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.lua;
-using FFXIVClassic_Map_Server.actors.area;
-using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
-using System.Collections.ObjectModel;
 using FFXIVClassic_Map_Server.utils;
 
 namespace FFXIVClassic_Map_Server.actors.chara.ai

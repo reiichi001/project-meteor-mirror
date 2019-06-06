@@ -5,7 +5,6 @@ using System.Net.Sockets;
 using System.Threading;
 
 using FFXIVClassic.Common;
-using NLog;
 
 namespace FFXIVClassic_Lobby_Server
 {

@@ -31,7 +31,7 @@ function onEventStarted(player, npc, triggerName)
 		itemId = callClientFunction(player, "selectStoreItem", nil, categoryChoice);
 			
 		if (itemId ~= nil) then
-			player:GetInventory(INVENTORY_NORMAL):RemoveItem(itemId, 1);
+			player:GetItemPackage(INVENTORY_NORMAL):RemoveItem(itemId, 1);
 		end
 		
 	elseif (storageChoice == 2) then
@@ -44,7 +44,7 @@ function onEventStarted(player, npc, triggerName)
 		itemId = callClientFunction(player, "selectReceiveItem", nil, categoryChoice);
 		
 		if (itemId ~= nil) then
-			player:GetInventory(INVENTORY_NORMAL):AddItem(itemId, 1);
+			player:GetItemPackage(INVENTORY_NORMAL):AddItem(itemId, 1);
 		end
 	
 	end

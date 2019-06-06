@@ -1,10 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors.chara;
 
-namespace  FFXIVClassic_Map_Server.packets.send.actor
+namespace FFXIVClassic_Map_Server.packets.send.actor
 {
     class SetActorSubStatePacket
     {

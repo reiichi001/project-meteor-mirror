@@ -1,5 +1,4 @@
-﻿using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.lua;
+﻿using FFXIVClassic_Map_Server.lua;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

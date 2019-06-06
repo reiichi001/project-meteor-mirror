@@ -1,22 +1,14 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_Map_Server.actors;
-using FFXIVClassic_Map_Server.actors.area;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.Actors.Chara;
-using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.lua;
-using FFXIVClassic_Map_Server.packets.receive.events;
 using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.utils;
-using MoonSharp.Interpreter;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 
 namespace FFXIVClassic_Map_Server.Actors

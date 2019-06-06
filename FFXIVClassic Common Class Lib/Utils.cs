@@ -145,6 +145,12 @@ namespace FFXIVClassic.Common
             return input;
         }
 
+        public static ushort SwapEndian(ushort input)
+        {
+            return (ushort)(((input << 8) & 0xff00) |
+                            ((input >> 8) & 0x00ff));
+        }
+
         public static uint MurmurHash2(string key, uint seed)
         {
             // 'm' and 'r' are mixing constants generated offline.

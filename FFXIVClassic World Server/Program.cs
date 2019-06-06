@@ -1,13 +1,8 @@
 ﻿using FFXIVClassic_World_Server.DataObjects;
 using MySql.Data.MySqlClient;
 using NLog;
-using NLog.Fluent;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FFXIVClassic_World_Server
 {

@@ -529,5 +529,35 @@ namespace FFXIVClassic_World_Server
             }
             return success;
         }
+
+        public static bool LinkshellIsBannedName(string name)
+        {
+            return false;
+        }
+
+        public static bool LinkshellExists(string name)
+        {
+            bool hasLS = false;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+                    MySqlCommand cmd = new MySqlCommand("SELECT * FROM server_linkshells WHERE name = @lsName", conn);
+                    cmd.Parameters.AddWithValue("@lsName", name);
+                    object result = cmd.ExecuteScalar();
+                    hasLS = result != null && ((uint)result > 0);
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return hasLS;
+        }
     }
 }

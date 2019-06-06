@@ -24,10 +24,6 @@ function init(npc)
 	return false, false, 0, 0;	
 end
 
-function onSpawn(player, npc)
-	npc:SendFullRetainerInventory(player);
-end
-
 function onEventStarted(player, retainer, triggerName)
 	
 	while (true) do

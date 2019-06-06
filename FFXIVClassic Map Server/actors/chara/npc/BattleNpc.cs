@@ -1,22 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic_Map_Server.actors.chara.npc;
-using FFXIVClassic_Map_Server.actors;
 using FFXIVClassic_Map_Server.actors.chara;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
-using FFXIVClassic_Map_Server.packets.send.actor;
 using FFXIVClassic_Map_Server.actors.chara.ai.state;
 using FFXIVClassic_Map_Server.utils;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
 using FFXIVClassic_Map_Server.actors.chara.ai.utils;
 using FFXIVClassic_Map_Server.actors.group;
-using FFXIVClassic_Map_Server.packets.send;
 using FFXIVClassic_Map_Server.Actors.Chara;
 
 namespace FFXIVClassic_Map_Server.Actors

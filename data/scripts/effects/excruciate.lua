@@ -25,6 +25,6 @@ end
 
 function onCrit(effect, attacker, defender, skill, action, actionContainer)
     if skill.GetCommandType() == CommandType.Spell then
-        defender.statusEffects.RemoveStatusEffect(effect, actionContainer, 30331, false);
+        attacker.statusEffects.RemoveStatusEffect(effect, actionContainer, 30331, false);
     end
 end

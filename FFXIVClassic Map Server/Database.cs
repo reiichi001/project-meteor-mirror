@@ -12,7 +12,6 @@ using FFXIVClassic_Map_Server.packets.receive.supportdesk;
 using FFXIVClassic_Map_Server.actors.chara.npc;
 using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.packets.send.actor.battle;
-using FFXIVClassic_Map_Server.actors.chara;
 
 namespace FFXIVClassic_Map_Server
 {
@@ -1111,14 +1110,14 @@ namespace FFXIVClassic_Map_Server
                         }
                     }
 
-                    player.GetInventory(Inventory.NORMAL).InitList(GetInventory(player, 0, Inventory.NORMAL));
-                    player.GetInventory(Inventory.KEYITEMS).InitList(GetInventory(player, 0, Inventory.KEYITEMS));
-                    player.GetInventory(Inventory.CURRENCY_CRYSTALS).InitList(GetInventory(player, 0, Inventory.CURRENCY_CRYSTALS));
-                    player.GetInventory(Inventory.BAZAAR).InitList(GetInventory(player, 0, Inventory.BAZAAR));
-                    player.GetInventory(Inventory.MELDREQUEST).InitList(GetInventory(player, 0, Inventory.MELDREQUEST));
-                    player.GetInventory(Inventory.LOOT).InitList(GetInventory(player, 0, Inventory.LOOT));
+                    player.GetItemPackage(ItemPackage.NORMAL).InitList(GetItemPackage(player, 0, ItemPackage.NORMAL));
+                    player.GetItemPackage(ItemPackage.KEYITEMS).InitList(GetItemPackage(player, 0, ItemPackage.KEYITEMS));
+                    player.GetItemPackage(ItemPackage.CURRENCY_CRYSTALS).InitList(GetItemPackage(player, 0, ItemPackage.CURRENCY_CRYSTALS));
+                    player.GetItemPackage(ItemPackage.BAZAAR).InitList(GetBazaar(player));
+                    player.GetItemPackage(ItemPackage.MELDREQUEST).InitList(GetItemPackage(player, 0, ItemPackage.MELDREQUEST));
+                    player.GetItemPackage(ItemPackage.LOOT).InitList(GetItemPackage(player, 0, ItemPackage.LOOT));
 
-                    player.GetEquipment().SetEquipment(GetEquipment(player, player.charaWork.parameterSave.state_mainSkill[0]));
+                    player.GetEquipment().SetList(GetEquipment(player, player.charaWork.parameterSave.state_mainSkill[0]));
                 }
                 catch (MySqlException e)
                 {
@@ -1135,7 +1134,7 @@ namespace FFXIVClassic_Map_Server
         public static InventoryItem[] GetEquipment(Player player, ushort classId)
         {
             InventoryItem[] equipment = new InventoryItem[player.GetEquipment().GetCapacity()];
-
+            
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
@@ -1159,7 +1158,7 @@ namespace FFXIVClassic_Map_Server
                         {
                             ushort equipSlot = reader.GetUInt16(0);
                             ulong uniqueItemId = reader.GetUInt16(1);
-                            InventoryItem item = player.GetInventory(Inventory.NORMAL).GetItemByUniqueId(uniqueItemId);
+                            InventoryItem item = player.GetItemPackage(ItemPackage.NORMAL).GetItemByUniqueId(uniqueItemId);
                             equipment[equipSlot] = item;
                         }
                     }
@@ -1196,7 +1195,7 @@ namespace FFXIVClassic_Map_Server
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@characterId", player.actorId);
-                    cmd.Parameters.AddWithValue("@classId", (equipSlot == Equipment.SLOT_UNDERSHIRT || equipSlot == Equipment.SLOT_UNDERGARMENT) ? 0 : player.charaWork.parameterSave.state_mainSkill[0]);
+                    cmd.Parameters.AddWithValue("@classId", (equipSlot == Player.SLOT_UNDERSHIRT || equipSlot == Player.SLOT_UNDERGARMENT) ? 0 : player.charaWork.parameterSave.state_mainSkill[0]);
                     cmd.Parameters.AddWithValue("@equipSlot", equipSlot);
                     cmd.Parameters.AddWithValue("@uniqueItemId", uniqueItemId);
 
@@ -1309,7 +1308,7 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
                     MySqlCommand cmd;
                     string query = "";
-
+                    
                     query = @"
                                 DELETE FROM characters_hotbar
                                 WHERE characterId = @charId AND classId = @classId AND hotbarSlot = @hotbarSlot
@@ -1435,7 +1434,8 @@ namespace FFXIVClassic_Map_Server
             }
             return slot;
         }
-        public static List<InventoryItem> GetInventory(Player player, uint slotOffset, uint type)
+
+        public static List<InventoryItem> GetItemPackage(Player player, uint slotOffset, uint type)
         {
             List<InventoryItem> items = new List<InventoryItem>();
 
@@ -1449,19 +1449,29 @@ namespace FFXIVClassic_Map_Server
                                     SELECT
                                     serverItemId,
                                     itemId,
+                                    server_items_modifiers.id AS modifierId,
                                     quantity,
-                                    itemType,
                                     quality,
+
                                     durability,
-                                    spiritBind,
+                                    mainQuality,
+                                    subQuality1,
+                                    subQuality2,
+                                    subQuality3,
+                                    param1,
+                                    param2,
+                                    param3,
+                                    spiritbind,
                                     materia1,
                                     materia2,
                                     materia3,
                                     materia4,
                                     materia5
+
                                     FROM characters_inventory
                                     INNER JOIN server_items ON serverItemId = server_items.id
-                                    WHERE characterId = @charId AND inventoryType = @type";
+                                    LEFT JOIN server_items_modifiers ON server_items.id = server_items_modifiers.id
+                                    WHERE characterId = @charId AND itemPackage = @type";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
@@ -1476,21 +1486,15 @@ namespace FFXIVClassic_Map_Server
                             uint itemId = reader.GetUInt32("itemId");
                             int quantity = reader.GetInt32("quantity");
 
-                            byte itemType = reader.GetByte("itemType");
                             byte qualityNumber = reader.GetByte("quality");
 
-                            int durability = reader.GetInt32("durability");
-                            ushort spiritBind = reader.GetUInt16("spiritBind");
+                            bool hasModifier = !reader.IsDBNull(reader.GetOrdinal("modifierId"));
+                            InventoryItem.ItemModifier modifier = null;
 
-                            byte materia1 = reader.GetByte("materia1");
-                            byte materia2 = reader.GetByte("materia2");
-                            byte materia3 = reader.GetByte("materia3");
-                            byte materia4 = reader.GetByte("materia4");
-                            byte materia5 = reader.GetByte("materia5");
+                            if (hasModifier)
+                                modifier = new InventoryItem.ItemModifier(reader);
 
-                            InventoryItem item = new InventoryItem(uniqueId, itemId, quantity, itemType, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5);
-                            item.slot = slot;
-                            slot++;
+                            InventoryItem item = new InventoryItem(uniqueId, Server.GetItemGamedata(itemId), quantity, qualityNumber, modifier);
                             items.Add(item);
                         }
                     }
@@ -1502,6 +1506,247 @@ namespace FFXIVClassic_Map_Server
                 finally
                 {
                     conn.Dispose();
+                }
+            }
+
+            return items;
+        }
+
+        public static bool CreateBazaarEntry(Player owner, InventoryItem reward, InventoryItem seek, int rewardAmount, int seekAmount, byte bazaarMode, int sellPrice = 0)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    INSERT INTO characters_inventory_bazaar                                    
+                                    (characterId, rewardId, seekId, rewardAmount, seekAmount, bazaarMode, sellPrice)
+                                    VALUES
+                                    (@characterId, @rewardId, @seekId, @rewardAmount, @seekAmount, @bazaarMode, @sellPrice);                                    
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@characterId", owner.actorId);
+                    cmd.Parameters.AddWithValue("@rewardId", reward.uniqueId);
+                    cmd.Parameters.AddWithValue("@seekId", seek.uniqueId);
+                    cmd.Parameters.AddWithValue("@rewardAmount", rewardAmount);
+                    cmd.Parameters.AddWithValue("@seekAmount", seekAmount);
+                    cmd.Parameters.AddWithValue("@bazaarMode", bazaarMode);
+                    cmd.Parameters.AddWithValue("@sellPrice", sellPrice);
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                    return false;
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            return true;
+        }
+
+        public static void ClearBazaarEntry(Player owner, InventoryItem reward)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}; Allow User Variables=True", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    DELETE FROM characters_inventory_bazaar
+                                    WHERE characterId = @charId and rewardId = @rewardId;
+                                    ";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", owner.actorId);
+                    cmd.Parameters.AddWithValue("@rewardId", reward.uniqueId);
+                    cmd.ExecuteNonQuery();
+
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+        }
+
+        public static List<InventoryItem> GetBazaar(Player player)
+        {
+            List<InventoryItem> rewardItems = new List<InventoryItem>();
+            Dictionary<ulong, InventoryItem> seekItems = new Dictionary<ulong, InventoryItem>();
+
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT
+                                    rewardId,                      
+                                    seekId,
+                                    rewardAmount,
+                                    bazaarMode,
+                                    sellPrice,
+                                    itemId,
+                                    server_items_modifiers.id AS modifierId,
+                                    quantity,
+                                    quality,
+
+                                    durability,
+                                    mainQuality,
+                                    subQuality1,
+                                    subQuality2,
+                                    subQuality3,
+                                    param1,
+                                    param2,
+                                    param3,
+                                    spiritbind,
+                                    materia1,
+                                    materia2,
+                                    materia3,
+                                    materia4,
+                                    materia5
+                 
+                                    FROM characters_inventory_bazaar
+                                    INNER JOIN server_items ON rewardId = server_items.id
+                                    LEFT JOIN server_items_modifiers ON server_items.id = server_items_modifiers.id
+                                    WHERE characterId = @charaId";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charaId", player.actorId);
+
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint uniqueId = reader.GetUInt32("rewardId");
+                            uint itemId = reader.GetUInt32("itemId");
+                            int quantity = reader.GetInt32("quantity");
+
+                            byte qualityNumber = reader.GetByte("quality");
+
+                            bool hasModifier = !reader.IsDBNull(reader.GetOrdinal("modifierId"));
+                            InventoryItem.ItemModifier modifier = null;
+
+                            if (hasModifier)
+                                modifier = new InventoryItem.ItemModifier(reader);
+
+                            InventoryItem item = new InventoryItem(uniqueId, Server.GetItemGamedata(itemId), quantity, qualityNumber, modifier);
+
+                            byte bazaarMode = reader.GetByte("bazaarMode");
+
+                            if (bazaarMode == InventoryItem.TYPE_SINGLE || bazaarMode == InventoryItem.TYPE_MULTI || bazaarMode == InventoryItem.TYPE_STACK)
+                            {
+                                uint price = (uint)reader.GetInt32("sellPrice");
+                                item.SetDealing(bazaarMode, (int)price);
+                            }
+                            else
+                            {
+                                uint seekId = reader.GetUInt32("seekId");
+                                item.SetDealingAttached(bazaarMode, seekId);
+                            }
+
+                            rewardItems.Add(item);
+                        }
+                    }
+
+                    string query2 = @"
+                                    SELECT
+                                    seekId,                                    
+                                    seekAmount,                                    
+                                    sellPrice,
+                                    itemId,
+                                    server_items_modifiers.id AS modifierId,
+                                    quantity,
+                                    quality,
+
+                                    durability,
+                                    mainQuality,
+                                    subQuality1,
+                                    subQuality2,
+                                    subQuality3,
+                                    param1,
+                                    param2,
+                                    param3,
+                                    spiritbind,
+                                    materia1,
+                                    materia2,
+                                    materia3,
+                                    materia4,
+                                    materia5
+                 
+                                    FROM characters_inventory_bazaar
+                                    INNER JOIN server_items ON seekId = server_items.id
+                                    LEFT JOIN server_items_modifiers ON server_items.id = server_items_modifiers.id
+                                    WHERE characterId = @charaId and bazaarMode != 11 and bazaarMode != 12 and bazaarMode != 13";
+
+                    MySqlCommand cmd2 = new MySqlCommand(query2, conn);
+                    cmd2.Parameters.AddWithValue("@charaId", player.actorId);
+
+                    using (MySqlDataReader reader = cmd2.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            uint uniqueId = reader.GetUInt32("seekId");
+                            uint itemId = reader.GetUInt32("itemId");
+                            int quantity = reader.GetInt32("quantity");
+
+                            byte qualityNumber = reader.GetByte("quality");
+
+                            bool hasModifier = !reader.IsDBNull(reader.GetOrdinal("modifierId"));
+                            InventoryItem.ItemModifier modifier = null;
+
+                            if (hasModifier)
+                                modifier = new InventoryItem.ItemModifier(reader);
+
+                            InventoryItem item = new InventoryItem(uniqueId, Server.GetItemGamedata(itemId), quantity, qualityNumber, modifier);
+                            item.SetHasAttached(true);
+                            seekItems.Add(uniqueId, item);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+            List<InventoryItem> items = new List<InventoryItem>();
+            ushort slot = 0;
+            foreach (InventoryItem reward in rewardItems)
+            {
+                if (reward.dealingMode == InventoryItem.DEALINGMODE_PRICED)
+                {
+                    reward.slot = slot++;
+                    items.Add(reward);
+                }
+                else
+                {
+                    if (seekItems.ContainsKey(reward.GetAttached()))
+                    {
+                        reward.slot = slot++;
+                        items.Add(reward);
+                        InventoryItem seek = seekItems[reward.GetAttached()];
+                        seek.slot = slot++;
+                        items.Add(seek);
+                        reward.SetAttachedIndex(7, seek.slot);
+                    }
                 }
             }
 
@@ -1522,22 +1767,32 @@ namespace FFXIVClassic_Map_Server
                                     SELECT
                                     serverItemId,
                                     itemId,
+                                    server_items_modifiers.id AS modifierId,
                                     quantity,
-                                    itemType,
                                     quality,
+
                                     durability,
-                                    spiritBind,
+                                    mainQuality,
+                                    subQuality1,
+                                    subQuality2,
+                                    subQuality3,
+                                    param1,
+                                    param2,
+                                    param3,
+                                    spiritbind,
                                     materia1,
                                     materia2,
                                     materia3,
                                     materia4,
                                     materia5
+
                                     FROM retainers_inventory
                                     INNER JOIN server_items ON serverItemId = server_items.id
-                                    WHERE retainerId = @retainerId AND inventoryType = @type";
+                                    LEFT JOIN server_items_modifiers ON server_items.id = server_items_modifiers.id
+                                    WHERE retainerId = @retainerId AND itemPackage = @type";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
+                    cmd.Parameters.AddWithValue("@retainerId", retainer.GetRetainerId());
                     cmd.Parameters.AddWithValue("@type", type);
 
                     ushort slot = 0;
@@ -1549,21 +1804,15 @@ namespace FFXIVClassic_Map_Server
                             uint itemId = reader.GetUInt32("itemId");
                             int quantity = reader.GetInt32("quantity");
 
-                            byte itemType = reader.GetByte("itemType");
                             byte qualityNumber = reader.GetByte("quality");
 
-                            int durability = reader.GetInt32("durability");
-                            ushort spiritBind = reader.GetUInt16("spiritBind");
+                            bool hasModifier = !reader.IsDBNull(reader.GetOrdinal("modifierId"));
+                            InventoryItem.ItemModifier modifier = null;
 
-                            byte materia1 = reader.GetByte("materia1");
-                            byte materia2 = reader.GetByte("materia2");
-                            byte materia3 = reader.GetByte("materia3");
-                            byte materia4 = reader.GetByte("materia4");
-                            byte materia5 = reader.GetByte("materia5");
+                            if (hasModifier)
+                                modifier = new InventoryItem.ItemModifier(reader);
 
-                            InventoryItem item = new InventoryItem(uniqueId, itemId, quantity, itemType, qualityNumber, durability, spiritBind, materia1, materia2, materia3, materia4, materia5);
-                            item.slot = slot;
-                            slot++;
+                            InventoryItem item = new InventoryItem(uniqueId, Server.GetItemGamedata(itemId), quantity, qualityNumber, modifier);
                             items.Add(item);
                         }
                     }
@@ -1581,7 +1830,7 @@ namespace FFXIVClassic_Map_Server
             return items;
         }
 
-        public static InventoryItem CreateItem(uint itemId, int quantity, byte quality, byte itemType, int durability)
+        public static InventoryItem CreateItem(uint itemId, int quantity, byte quality, InventoryItem.ItemModifier modifiers = null)
         {
             InventoryItem insertedItem = null;
 
@@ -1594,22 +1843,34 @@ namespace FFXIVClassic_Map_Server
 
 
                     string query = @"
-                                    INSERT INTO server_items
-                                    (itemId, quality, itemType, durability)
+                                    INSERT INTO server_items                                    
+                                    (itemId, quantity, quality)
                                     VALUES
-                                    (@itemId, @quality, @itemType, @durability); 
+                                    (@itemId, @quantity, @quality);                                    
+                                    ";
+
+                    string query2 = @"
+                                    INSERT INTO server_items_modifiers                                    
+                                    (id, durability)
+                                    VALUES
+                                    (@id, @durability); 
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-
                     cmd.Parameters.AddWithValue("@itemId", itemId);
+                    cmd.Parameters.AddWithValue("@quantity", quantity);
                     cmd.Parameters.AddWithValue("@quality", quality);
-                    cmd.Parameters.AddWithValue("@itemType", itemType);
-                    cmd.Parameters.AddWithValue("@durability", durability);
-
                     cmd.ExecuteNonQuery();
 
-                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, itemId, quantity, itemType, quality, durability, 0, 0, 0, 0, 0, 0);
+                    insertedItem = new InventoryItem((uint)cmd.LastInsertedId, Server.GetItemGamedata(itemId), quantity, quality, modifiers);
+
+                    if (modifiers != null)
+                    {
+                        MySqlCommand cmd2 = new MySqlCommand(query2, conn);
+                        cmd2.Parameters.AddWithValue("@id", insertedItem.uniqueId);
+                        cmd2.Parameters.AddWithValue("@durability", modifiers.durability);
+                        cmd2.ExecuteNonQuery();
+                    }
                 }
                 catch (MySqlException e)
                 {
@@ -1625,7 +1886,7 @@ namespace FFXIVClassic_Map_Server
         }
 
         public static void AddItem(Player player, InventoryItem addedItem, uint type)
-        {          
+        {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
                 try
@@ -1634,19 +1895,18 @@ namespace FFXIVClassic_Map_Server
 
                     string query = @"
                                     INSERT INTO characters_inventory
-                                    (characterId, inventoryType, serverItemId, quantity)
+                                    (characterId, itemPackage, serverItemId)
                                     VALUES
-                                    (@charId, @inventoryType, @serverItemId, @quantity)                                    
+                                    (@charId, @itemPackage, @serverItemId)                                    
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
                     cmd.Parameters.AddWithValue("@serverItemId", addedItem.uniqueId);
                     cmd.Parameters.AddWithValue("@charId", player.actorId);
-                    cmd.Parameters.AddWithValue("@inventoryType", type);
-                    cmd.Parameters.AddWithValue("@quantity", addedItem.quantity);
+                    cmd.Parameters.AddWithValue("@itemPackage", type);
 
-                    cmd.ExecuteNonQuery();                                      
+                    cmd.ExecuteNonQuery();
                 }
                 catch (MySqlException e)
                 {
@@ -1659,7 +1919,9 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public static void SetQuantity(Player player, ulong serverItemId, int quantity)
+
+
+        public static void SetQuantity(ulong serverItemId, int quantity)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -1668,13 +1930,12 @@ namespace FFXIVClassic_Map_Server
                     conn.Open();
 
                     string query = @"
-                                    UPDATE characters_inventory
+                                    UPDATE server_items
                                     SET quantity = @quantity
-                                    WHERE characterId = @charId and serverItemId = @serverItemId;
+                                    WHERE id = @serverItemId;
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@charId", player.actorId);
                     cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
                     cmd.Parameters.AddWithValue("@quantity", quantity);
                     cmd.ExecuteNonQuery();
@@ -1720,7 +1981,6 @@ namespace FFXIVClassic_Map_Server
                     conn.Dispose();
                 }
             }
-
         }
 
         public static void AddItem(Retainer retainer, InventoryItem addedItem, uint type)
@@ -1733,17 +1993,16 @@ namespace FFXIVClassic_Map_Server
 
                     string query = @"
                                     INSERT INTO retainers_inventory
-                                    (retainerId, inventoryType, serverItemId, quantity)
+                                    (retainerId, itemPackage, serverItemId)
                                     VALUES
-                                    (@retainerId, @inventoryType, @serverItemId, @quantity)                                    
+                                    (@retainerId, @itemPackage, @serverItemId)                                    
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
                     cmd.Parameters.AddWithValue("@serverItemId", addedItem.uniqueId);
-                    cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
-                    cmd.Parameters.AddWithValue("@inventoryType", type);
-                    cmd.Parameters.AddWithValue("@quantity", addedItem.quantity);
+                    cmd.Parameters.AddWithValue("@retainerId", retainer.GetRetainerId());
+                    cmd.Parameters.AddWithValue("@itemPackage", type);
 
                     cmd.ExecuteNonQuery();
                 }
@@ -1756,39 +2015,6 @@ namespace FFXIVClassic_Map_Server
                     conn.Dispose();
                 }
             }
-        }
-
-        public static void SetQuantity(Retainer retainer, ulong serverItemId, int quantity)
-        {
-            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
-            {
-                try
-                {
-                    conn.Open();
-
-                    string query = @"
-                                    UPDATE retainers_inventory
-                                    SET quantity = @quantity
-                                    WHERE retainerId = @retainerId and serverItemId = @serverItemId;
-                                    ";
-
-                    MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
-                    cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
-                    cmd.Parameters.AddWithValue("@quantity", quantity);
-                    cmd.ExecuteNonQuery();
-
-                }
-                catch (MySqlException e)
-                {
-                    Program.Log.Error(e.ToString());
-                }
-                finally
-                {
-                    conn.Dispose();
-                }
-            }
-
         }
 
         public static void RemoveItem(Retainer retainer, ulong serverItemId)
@@ -1805,7 +2031,7 @@ namespace FFXIVClassic_Map_Server
                                     ";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
-                    cmd.Parameters.AddWithValue("@retainerId", retainer.getRetainerId());
+                    cmd.Parameters.AddWithValue("@retainerId", retainer.GetRetainerId());
                     cmd.Parameters.AddWithValue("@serverItemId", serverItemId);
                     cmd.ExecuteNonQuery();
 
@@ -1908,6 +2134,45 @@ namespace FFXIVClassic_Map_Server
 
             return cheevosPacket.BuildPacket(player.actorId);
         }
+
+        public static SubPacket GetAchievementProgress(Player player, uint achievementId)
+        {
+            uint progress = 0, progressFlags = 0;
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    SELECT progress, progressFlags 
+                                    FROM characters_achievements 
+                                    WHERE characterId = @charId AND achievementId = @achievementId";
+
+                    MySqlCommand cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@charId", player.actorId);
+                    cmd.Parameters.AddWithValue("@achievementId", achievementId);
+                    using (MySqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            progress = reader.GetUInt32(0);
+                            progressFlags = reader.GetUInt32(1);
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+            return SendAchievementRatePacket.BuildPacket(player.actorId, achievementId, progress, progressFlags);
+        }
+
         public static bool CreateLinkshell(Player player, string lsName, ushort lsCrest)
         {
             bool success = false;
@@ -2645,7 +2910,7 @@ namespace FFXIVClassic_Map_Server
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charaId", player.actorId);
-                    cmd.Parameters.AddWithValue("@retainerIndex", retainerIndex-1);
+                    cmd.Parameters.AddWithValue("@retainerIndex", retainerIndex - 1);
 
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
@@ -2674,6 +2939,86 @@ namespace FFXIVClassic_Map_Server
                 }
 
                 return retainer;
+            }
+        }
+
+        public static void PlayerCharacterUpdateClassLevel(Player player, byte classId, short level)
+        {
+            string query;
+            MySqlCommand cmd;
+
+            string[] classNames = {
+                "",
+                "",
+                "pug",
+                "gla",
+                "mrd",
+                "",
+                "",
+                "arc",
+                "lnc",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "thm",
+                "cnj",
+                "",
+                "",
+                "",
+                "",
+                "",
+                "crp",
+                "bsm",
+                "arm",
+                "gsm",
+                "ltw",
+                "wvr",
+                "alc",
+                "cul",
+                "",
+                "",
+                "min",
+                "btn",
+                "fsh"
+            };
+            
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    query = String.Format(@"
+                    UPDATE characters_class_levels
+                    SET
+                    {0}=@level
+                    WHERE
+                    characterId = @characterId", classNames[classId]);
+
+                    cmd = new MySqlCommand(query, conn);
+                    cmd.Parameters.AddWithValue("@level", level);
+                    cmd.Parameters.AddWithValue("@characterId", player.actorId);
+
+                    cmd.ExecuteNonQuery();
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
             }
         }
 

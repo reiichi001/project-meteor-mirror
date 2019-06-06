@@ -1,8 +1,4 @@
-﻿using System.IO;
-using System.Text;
-using System;
-using FFXIVClassic.Common;
-using System.Collections.Generic;
+﻿using FFXIVClassic.Common;
 
 namespace FFXIVClassic_Map_Server.packets.send.search
 {

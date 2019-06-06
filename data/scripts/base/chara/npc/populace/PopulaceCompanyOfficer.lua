@@ -50,7 +50,7 @@ function onEventStarted(player, npc, triggerName)
     if playerGC == gcOfficer[npcId] then
         callClientFunction(player, "eventTalkWelcome");
         if playerCurrentRank < currentRankCap then
-            if player:GetInventory(INVENTORY_CURRENCY):HasItem(playerGCSeal, playerRankUpCost) then
+            if player:GetItemPackage(INVENTORY_CURRENCY):HasItem(playerGCSeal, playerRankUpCost) then
                 -- Show Promotion window, allow paying
                 local choice = callClientFunction(player, "eventTalkJoined", playerCurrentRank, playerNextRank, true, true);
                 

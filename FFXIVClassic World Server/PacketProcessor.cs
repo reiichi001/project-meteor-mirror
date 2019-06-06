@@ -7,10 +7,7 @@ using FFXIVClassic_World_Server.Packets.Send;
 using FFXIVClassic_World_Server.Packets.Send.Login;
 using FFXIVClassic_World_Server.Packets.Send.Subpackets;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Receive;
-using FFXIVClassic_World_Server.Packets.WorldPackets.Send;
-using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace FFXIVClassic_World_Server
 {

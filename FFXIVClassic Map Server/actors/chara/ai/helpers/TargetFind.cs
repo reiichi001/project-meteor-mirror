@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using FFXIVClassic_Map_Server.Actors;
 using FFXIVClassic.Common;
-using FFXIVClassic_Map_Server.actors.chara.ai;
 using FFXIVClassic_Map_Server.actors.chara.ai.controllers;
 using FFXIVClassic_Map_Server.actors.group;
-using FFXIVClassic_Map_Server.packets.send.actor;
 
 // port of dsp's ai code https://github.com/DarkstarProject/darkstar/blob/master/src/map/ai/
 
