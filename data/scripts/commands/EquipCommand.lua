@@ -85,7 +85,7 @@ function loadGearset(player, classId)
 	for slot = 0, 34 do
 	
 		if (slot ~= EQUIPSLOT_MAINHAND and slot ~= EQUIPSLOT_UNDERSHIRT and slot ~= EQUIPSLOT_UNDERGARMENT) then
-			itemAtSlot = slot;
+			itemAtSlot = player:GetEquipment():GetItemAtSlot(slot);
 			itemAtGearsetSlot = gearset[slot];
 			
 			if (itemAtSlot ~= nil or itemAtGearsetSlot ~= nil) then		
