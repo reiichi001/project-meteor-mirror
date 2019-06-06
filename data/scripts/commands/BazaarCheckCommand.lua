@@ -19,7 +19,8 @@ function onEventStarted(player, actor, triggerName, name, arg1, arg2, arg3, baza
 	end
 	
 	if (bazaarActor ~= nil) then
-		callClientFunction(player, "delegateCommand", GetStaticActor("BazaarCheckCommand"), "processChackBazaar");		
+		player:SendMessage(MESSAGE_TYPE_SYSTEM_ERROR, "", "Currently disabled due to freezing characters.");
+		--callClientFunction(player, "delegateCommand", GetStaticActor("BazaarCheckCommand"), "processChackBazaar");		
 	else
 		--Show error
 	end
