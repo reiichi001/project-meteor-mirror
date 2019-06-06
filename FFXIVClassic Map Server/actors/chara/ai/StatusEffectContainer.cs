@@ -57,7 +57,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             // remove effects from this list
             foreach (var effect in removeEffects)
             {
-                RemoveStatusEffect(effect, resultContainer);
+                RemoveStatusEffect(effect, resultContainer, effect.GetStatusLossTextId());
             }
 
             resultContainer.CombineLists();
@@ -113,6 +113,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             var se = Server.GetWorldManager().GetStatusEffect(id);
 
+            if (se != null)
+            {
+                worldmasterTextId = se.GetStatusGainTextId();
+            }
+
             return AddStatusEffect(se, owner, actionContainer, worldmasterTextId);
         }
 
@@ -120,7 +125,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             var se = Server.GetWorldManager().GetStatusEffect(id);
 
-            se.SetTier(tier);
+            if (se != null)
+            {
+                se.SetTier(tier);
+                worldmasterTextId = se.GetStatusGainTextId();
+            }
 
             return AddStatusEffect(se, owner, actionContainer, worldmasterTextId);
         }
@@ -129,8 +138,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         {
             var se = Server.GetWorldManager().GetStatusEffect(id);
 
-            se.SetMagnitude(magnitude);
-            se.SetTier(tier);
+            if (se != null)
+            {
+                se.SetMagnitude(magnitude);
+                se.SetTier(tier);
+                worldmasterTextId = se.GetStatusGainTextId();
+            }
 
             return AddStatusEffect(se, owner, actionContainer, worldmasterTextId);
         }
@@ -138,10 +151,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         public bool AddStatusEffect(uint id, byte tier, double magnitude, uint duration, int tickMs, CommandResultContainer actionContainer = null, ushort worldmasterTextId = 30328)
         {
             var se = Server.GetWorldManager().GetStatusEffect(id);
+
             if (se != null)
             {
                 se.SetDuration(duration);
                 se.SetOwner(owner);
+                worldmasterTextId = se.GetStatusGainTextId();
             }
             return AddStatusEffect(se ?? new StatusEffect(this.owner, id, magnitude, 3000, duration, tier), owner, actionContainer, worldmasterTextId);
         }

@@ -325,11 +325,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         // custom effects here
         // status for having procs fall off
-        EvadeProc = 253003,
-        BlockProc = 253004,
-        ParryProc = 253005,
-        MissProc = 253006,
-        EXPChain = 253007
+        EvadeProc = 300000,
+        BlockProc = 300001,
+        ParryProc = 300002,
+        MissProc = 300003,
+        EXPChain = 300004
     }
 
     [Flags]
@@ -404,8 +404,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private bool silentOnGain = false;          //Whether a message is sent when the status is gained
         private bool silentOnLoss = false;          //Whether a message is sent when the status is lost
         private bool hidden = false;                //Whether this status is shown. Used for things that aren't really status effects like exp chains and procs
-        private ushort statusGainTextId;            //The text id used when the status is gained
-        private ushort statusLossTextId;            //The text id used when the status effect falls off when its time runs out
+        private ushort statusGainTextId = 30328;    //The text id used when the status is gained. 30328: [Command] grants you the effect of [status] (Used for buffs)
+        private ushort statusLossTextId = 30331;    //The text id used when the status effect falls off when its time runs out. 30331: You are no longer under the effect of [status] (Used for buffs)
         public LuaScript script;
 
         HitEffect animationEffect;
@@ -448,7 +448,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.hidden = effect.hidden;
         }
 
-        public StatusEffect(uint id, string name, uint flags, uint overwrite, uint tickMs, bool hidden, bool silentOnGain, bool silentOnLoss)
+        public StatusEffect(uint id, string name, uint flags, uint overwrite, uint tickMs, bool hidden, bool silentOnGain, bool silentOnLoss, ushort statusGainTextId, ushort statusLossTextId)
         {
             this.id = (StatusEffectId)id;
             this.name = name;
@@ -458,6 +458,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.hidden = hidden;
             this.silentOnGain = silentOnGain;
             this.silentOnLoss = silentOnLoss;
+            this.statusGainTextId = statusGainTextId;
+            this.statusLossTextId = statusLossTextId;
         }
 
         // return true when duration has elapsed
@@ -579,7 +581,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public ushort GetStatusGainTextId()
         {
-            return 30328;
             return statusGainTextId;
         }
 

@@ -701,7 +701,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                     {
                         //If we need an extra action to show the status text
                         if (isAdditional)
-                            results.AddAction(target.actorId, 30328, skill.statusId | (uint) HitEffect.StatusEffectType);
+                            results.AddAction(target.actorId, effect.GetStatusGainTextId(), skill.statusId | (uint) HitEffect.StatusEffectType);
                     }
                     else
                         action.worldMasterTextId = 32002;//Is this right?

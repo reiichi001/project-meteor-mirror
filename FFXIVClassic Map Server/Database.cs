@@ -2303,7 +2303,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Open();
 
-                    var query = @"SELECT id, name, flags, overwrite, tickMs, hidden, silentOnGain, silentOnLoss FROM server_statuseffects;";
+                    var query = @"SELECT id, name, flags, overwrite, tickMs, hidden, silentOnGain, silentOnLoss, statusGainTextId, statusLossTextId FROM server_statuseffects;";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -2319,8 +2319,10 @@ namespace FFXIVClassic_Map_Server
                             var hidden = reader.GetBoolean("hidden");
                             var silentOnGain = reader.GetBoolean("silentOnGain");
                             var silentOnLoss = reader.GetBoolean("silentOnLoss");
+                            var statusGainTextId = reader.GetUInt16("statusGainTextId");
+                            var statusLossTextId = reader.GetUInt16("statusLossTextId");
 
-                            var effect = new StatusEffect(id, name, flags, overwrite, tickMs, hidden, silentOnGain, silentOnLoss);
+                            var effect = new StatusEffect(id, name, flags, overwrite, tickMs, hidden, silentOnGain, silentOnLoss, statusGainTextId, statusLossTextId);
 
                             lua.LuaEngine.LoadStatusEffectScript(effect);
                             effects.Add(id, effect);
