@@ -69,8 +69,6 @@ aethernet =
     }     
 }
 
-
-
 function init(npc)
 	return false, false, 0, 0;	
 end
@@ -86,19 +84,19 @@ function onEventStarted(player, npc, triggerName)
     
     
     if city == 1 then
-        if player:GetInventory(INVENTORY_KEYITEMS):HasItem(passLimsa) then
+        if player:GetItemPackage(INVENTORY_KEYITEMS):HasItem(passLimsa) then
             passCheck = 1;
         else
             if passCheck == 0 then callClientFunction(player, "eventTalkWelcome", player); end
         end;
     elseif city == 2 then
-        if player:GetInventory(INVENTORY_KEYITEMS):HasItem(passGrid) then
+        if player:GetItemPackage(INVENTORY_KEYITEMS):HasItem(passGrid) then
             passCheck = 1;
         else
            if passCheck == 0 then callClientFunction(player, "eventTalkWelcome", player); end
         end;
     elseif city == 3 then
-        if player:GetInventory(INVENTORY_KEYITEMS):HasItem(passUldah) then
+        if player:GetItemPackage(INVENTORY_KEYITEMS):HasItem(passUldah) then
             passCheck = 1;
         else
             if passCheck == 0 then callClientFunction(player, "eventTalkWelcome", player); end

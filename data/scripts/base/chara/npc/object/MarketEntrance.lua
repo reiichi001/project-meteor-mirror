@@ -11,6 +11,8 @@ eventPushStepPrvMarket(?, ?, ?) -
 
 require ("global")
 
+local MARKETWARD_ENTRANCE = {-201.0, 0.0, -160.0, 1.5};
+
 function init(npc)
 	return false, false, 0, 0;
 end

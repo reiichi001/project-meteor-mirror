@@ -26,7 +26,7 @@ function onTrigger(player, argc, currency, qty, name, lastName)
         currency = tonumber(currency) or nil;
         qty = tonumber(qty) or 1;
         
-        local removed = player:GetInventory(INVENTORY_CURRENCY):RemoveItem(currency, qty);
+        local removed = player:GetItemPackage(INVENTORY_CURRENCY):RemoveItem(currency, qty);
         local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
         local message = "Attempting to remove currency" -- "unable to remove currency";
         

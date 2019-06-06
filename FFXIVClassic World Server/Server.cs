@@ -1,10 +1,9 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_World_Server.DataObjects;
 using FFXIVClassic_World_Server.DataObjects.Group;
-using FFXIVClassic_World_Server.Packets.Receive.Subpackets;
-using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Receive;
 using FFXIVClassic_World_Server.Packets.WorldPackets.Receive.Group;
+using FFXIVClassic_World_Server.Packets.WorldPackets.Send;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -283,7 +282,22 @@ namespace FFXIVClassic_World_Server
                     //Linkshell create request
                     case 0x1025:
                         CreateLinkshellPacket createLinkshellPacket = new CreateLinkshellPacket(subpacket.data);
-                        mWorldManager.GetLinkshellManager().CreateLinkshell(createLinkshellPacket.name, createLinkshellPacket.crestid, createLinkshellPacket.master);
+
+                        Linkshell newLs = null;
+                        int lsError = mWorldManager.GetLinkshellManager().CanCreateLinkshell(createLinkshellPacket.name);
+
+                        if (lsError == 0)                       
+                        {
+                            newLs = mWorldManager.GetLinkshellManager().CreateLinkshell(createLinkshellPacket.name, createLinkshellPacket.crestid, createLinkshellPacket.master);
+                    
+                            if (newLs != null)
+                                newLs.SendGroupPackets(session);
+                            else
+                                lsError = 3;
+                        }
+
+                        SubPacket resultPacket = LinkshellResultPacket.BuildPacket(session, lsError);
+                        zoneServer.SendPacket(resultPacket);
                         break;
                     //Linkshell modify request
                     case 0x1026:

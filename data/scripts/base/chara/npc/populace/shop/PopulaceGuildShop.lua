@@ -17,7 +17,6 @@ guildExplain(npcId, player)                         -- Guild Mark tutorial dialo
 
 --]]
 
-
 require ("global")
 require ("shop")
 
@@ -79,7 +78,7 @@ function onEventStarted(player, npc)
             end;
             processGuildShop(player, shopPack, shopCurrency);
         elseif (choice == 121) then -- Exchange marks for Gil.  1 mark = 4 gil
-            local markAmount = player:GetInventory(INVENTORY_CURRENCY):GetItemQuantity(shopCurrency);
+            local markAmount = player:GetItemPackage(INVENTORY_CURRENCY):GetItemQuantity(shopCurrency);
             purchaseItem(player, INVENTORY_CURRENCY, gilCurrency, markAmount*4, 1, markAmount, shopCurrency);
             
         end

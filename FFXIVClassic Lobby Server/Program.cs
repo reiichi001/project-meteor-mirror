@@ -2,8 +2,6 @@
 using System.Diagnostics;
 using System.Threading;
 using MySql.Data.MySqlClient;
-using System.Reflection;
-using FFXIVClassic.Common;
 using NLog;
 namespace FFXIVClassic_Lobby_Server
 {

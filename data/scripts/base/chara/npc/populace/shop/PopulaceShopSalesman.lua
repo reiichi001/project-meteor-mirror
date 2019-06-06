@@ -264,7 +264,7 @@ function openSellMenu(player)
             break;
         else
             if sellState == 1 then
-                itemToSell = player:GetInventory(INVENTORY_NORMAL):GetItemAtSlot(sellItemSlot-1);
+                itemToSell = player:GetItemPackage(INVENTORY_NORMAL):GetItemAtSlot(sellItemSlot-1);
                 gItemSellId = itemToSell.itemId; 
                 gItemQuality = itemToSell.quality;
                 gItemPrice = GetItemGamedata(gItemSellId);

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace  FFXIVClassic_Map_Server.packets.send.actor
+namespace FFXIVClassic_Map_Server.packets.send.actor
 {
     class PlayBGAnimation
     {

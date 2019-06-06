@@ -68,7 +68,7 @@ function onEventStarted(player, npc, triggerName)
 
 	callClientFunction(player, "eventTalkWelcome", player);
 	
-    if player:GetInventory(INVENTORY_NORMAL):HasItem(commemorativeCoin) and playerGC > 0 then
+    if player:GetItemPackage(INVENTORY_NORMAL):HasItem(commemorativeCoin) and playerGC > 0 then
         -- Checks for player having a commemorative coin, show window trade option if so.
         coinChoice = callClientFunction(player, "eventSellItemAsk", player, commemorativeCoin, commemorativeCoinValue);
         if coinChoice == 1 then
@@ -76,8 +76,8 @@ function onEventStarted(player, npc, triggerName)
         elseif coinChoice == 2 then
             -- You trade <itemQuantity1> <itemName1> <itemQuality1> for <itemQuantity2> <itemName2> <itemQuality2>.
             player:SendGameMessage(player, GetWorldMaster(), 25071, MESSAGE_TYPE_SYSTEM, commemorativeCoin, 1, playerGCSeal, 1, 1, commemorativeCoinValue);
-            player:GetInventory(INVENTORY_NORMAL):RemoveItem(commemorativeCoin, 1);
-            player:getInventory(INVENTORY_CURRENCY):addItem(playerGCSeal, 25000, 1)
+            player:GetItemPackage(INVENTORY_NORMAL):RemoveItem(commemorativeCoin, 1);
+            player:GetItemPackage(INVENTORY_CURRENCY):addItem(playerGCSeal, 25000, 1)
             -- TODO: Add handling for checking GC seals limit and not going over it
         end
     else

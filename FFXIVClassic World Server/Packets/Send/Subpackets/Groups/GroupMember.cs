@@ -1,6 +1,4 @@
-﻿using FFXIVClassic.Common;
-
-namespace FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups
+﻿namespace FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups
 {
     class GroupMember
     {

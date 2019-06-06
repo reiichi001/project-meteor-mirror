@@ -39,7 +39,7 @@ function onTrigger(player, argc, item, qty, location, name, lastName)
             location = INVENTORY_NORMAL;
         end;
         
-        local removed = player:GetInventory(location):RemoveItem(item, qty);
+        local removed = player:GetItemPackage(location):RemoveItem(item, qty);
         
         if removed then  -- RemoveItem() currently returns nothing for verification, this statement can't work
             message = string.format("Removed item %u of kind %u to %s", item, location, player:GetName());

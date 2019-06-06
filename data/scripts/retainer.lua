@@ -22,18 +22,24 @@ function doItemTrade(player, retainer)
 	callClientFunction(player, "eventTalkRetainerItemTrade", 1);
 	
 	while (true) do
-		resultCode, type7Param, un1, quantity, itemId, quality = callClientFunction(player, "eventTalkRetainerItemTrade", 2);
+		resultCode, item, un1, quantity, itemId, quality = callClientFunction(player, "eventTalkRetainerItemTrade", 2);		
 		
+		player:SendMessage(0x20, "", "" .. tostring(resultCode));
+		player:SendMessage(0x20, "", "" .. tostring(un1));
+		player:SendMessage(0x20, "", "" .. tostring(quantity));
+		player:SendMessage(0x20, "", "" .. tostring(itemId));
+		player:SendMessage(0x20, "", "" .. tostring(quality));
+	
 		--Retreieve
 		if (resultCode == 31) then		
-			retainer:GetInventory(type7Param.inventoryType):RemoveItemAtSlot(type7Param.slot, quantity);
-			retainer:GetInventory(type7Param.inventoryType):SendUpdatePackets(player, true);
-			player:GetInventory(type7Param.inventoryType):AddItem(itemId, quantity, quality);
+			retainer:GetItemPackage(item.itemPackage):RemoveItemAtSlot(item.slot, quantity);
+			retainer:GetItemPackage(item.itemPackage):SendUpdatePackets(player, true);
+			player:GetItemPackage(item.itemPackage):AddItem(itemId, quantity, quality);
 		--Entrust
 		elseif (resultCode == 32) then					
-			player:GetInventory(type7Param.inventoryType):RemoveItemAtSlot(type7Param.slot, quantity);
-			retainer:GetInventory(type7Param.inventoryType):AddItem(itemId, quantity, quality);
-			retainer:GetInventory(type7Param.inventoryType):SendUpdatePackets(player, true);
+			player:GetItemPackage(item.itemPackage):RemoveItemAtSlot(item.slot, quantity);
+			retainer:GetItemPackage(item.itemPackage):AddItem(itemId, quantity, quality);
+			retainer:GetItemPackage(item.itemPackage):SendUpdatePackets(player, true);
 		end
 		
 		callClientFunction(player, "eventReturnResult", resultCode, false);

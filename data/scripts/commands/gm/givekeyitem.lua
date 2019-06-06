@@ -27,7 +27,7 @@ function onTrigger(player, argc, keyitem, name, lastName)
         qty = 1;
         location = INVENTORY_KEYITEMS;
         
-        local added = player:GetInventory(location):AddItem(keyitem, qty, 1);
+        local added = player:GetItemPackage(location):AddItem(keyitem, qty, 1);
         local messageID = MESSAGE_TYPE_SYSTEM_ERROR;
         local message = "unable to add keyitem";
         

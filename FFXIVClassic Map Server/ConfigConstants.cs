@@ -1,9 +1,6 @@
 ﻿using FFXIVClassic.Common;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Net.Sockets;
-using MoonSharp.Interpreter.Interop;
 using System.Linq;
 using System.Net;
 

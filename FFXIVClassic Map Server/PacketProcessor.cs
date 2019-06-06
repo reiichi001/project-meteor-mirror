@@ -1,9 +1,6 @@
 ﻿using FFXIVClassic.Common;
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using FFXIVClassic_Map_Server.dataobjects;
 using FFXIVClassic_Map_Server.packets.receive;
 using FFXIVClassic_Map_Server.packets.send;
@@ -87,6 +84,11 @@ namespace FFXIVClassic_Map_Server
                     case 0x1020:
                         PartySyncPacket partySyncPacket = new PartySyncPacket(subpacket.data);
                         Server.GetWorldManager().PartyMemberListRecieved(partySyncPacket);
+                        break;
+                    //World Server - Linkshell Creation Result
+                    case 0x1025:
+                        LinkshellResultPacket lsResult = new LinkshellResultPacket(subpacket.data);
+                        LuaEngine.GetInstance().OnSignal("ls_result", lsResult.resultCode);
                         break;
                     //Ping
                     case 0x0001:
@@ -176,11 +178,6 @@ namespace FFXIVClassic_Map_Server
 
                         Actor ownerActor = Server.GetStaticActors(eventStart.scriptOwnerActorID);
                             
-                     
-                        session.GetActor().currentEventOwner = eventStart.scriptOwnerActorID;
-                        session.GetActor().currentEventName = eventStart.triggerName;
-                    
-
                         if (ownerActor == null)
                         {
                             //Is it your retainer?
@@ -188,7 +185,7 @@ namespace FFXIVClassic_Map_Server
                                 ownerActor = session.GetActor().currentSpawnedRetainer;
                             //Is it a instance actor?
                             if (ownerActor == null)
-                                ownerActor = session.GetActor().zone.FindActorInArea(session.GetActor().currentEventOwner);
+                                ownerActor = session.GetActor().zone.FindActorInArea(eventStart.scriptOwnerActorID);
                             if (ownerActor == null)
                             {
                                 //Is it a Director?
@@ -246,10 +243,26 @@ namespace FFXIVClassic_Map_Server
                         if (paramRequest.paramName.Equals("charaWork/exp"))
                             session.GetActor().SendCharaExpInfo();
                         break;
+                    //Item Package Request
+                    case 0x0131:
+                        UpdateItemPackagePacket packageRequest = new UpdateItemPackagePacket(subpacket.data);
+                        if (Server.GetWorldManager().GetActorInWorld(packageRequest.actorID) != null)
+                        {
+                            ((Character)Server.GetWorldManager().GetActorInWorld(packageRequest.actorID)).SendItemPackage(session.GetActor(), packageRequest.packageId);
+                            break;
+                        }
+                        if (session.GetActor().GetSpawnedRetainer() != null && session.GetActor().GetSpawnedRetainer().actorId == packageRequest.actorID)
+                            session.GetActor().GetSpawnedRetainer().SendItemPackage(session.GetActor(), packageRequest.packageId);
+                        break;
                     //Group Created Confirm
                     case 0x0133:
                         GroupCreatedPacket groupCreated = new GroupCreatedPacket(subpacket.data);
                         Server.GetWorldManager().SendGroupInit(session, groupCreated.groupId);
+                        break;
+                    //Achievement Progress Request
+                    case 0x0135:
+                        AchievementProgressRequestPacket progressRequest = new AchievementProgressRequestPacket(subpacket.data);
+                        session.QueuePacket(Database.GetAchievementProgress(session.GetActor(), progressRequest.achievementId));
                         break;
                     /* RECRUITMENT */
                     //Start Recruiting

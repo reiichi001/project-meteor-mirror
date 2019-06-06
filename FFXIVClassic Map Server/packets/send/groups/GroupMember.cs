@@ -1,6 +1,4 @@
-﻿using FFXIVClassic.Common;
-
-namespace FFXIVClassic_Map_Server.packets.send.group
+﻿namespace FFXIVClassic_Map_Server.packets.send.group
 {
     class GroupMember
     {
