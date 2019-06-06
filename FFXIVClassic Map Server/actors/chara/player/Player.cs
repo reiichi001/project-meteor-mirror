@@ -2488,7 +2488,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 hitCount = mainHandWeapon.frequency;
             }
 
-            var hasShield = equip.GetItemAtSlot(Equipment.SLOT_OFFHAND) != null ? 1 : 0;
+            var hasShield = equip.GetItemAtSlot(SLOT_OFFHAND) != null ? 1 : 0;
             SetMod((uint)Modifier.CanBlock, hasShield);
 
             SetMod((uint)Modifier.AttackType, damageAttribute);
