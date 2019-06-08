@@ -6,6 +6,8 @@ namespace FFXIVClassic_World_Server
 {
     class LinkshellManager
     {
+        public const int LS_MAX_ALLOWED = 8;
+        public const int LS_MAX_MEMBERS = 128;
         public const byte RANK_GUEST  = 0x1;
         public const byte RANK_MEMBER = 0x4;
         public const byte RANK_LEADER = 0x7;

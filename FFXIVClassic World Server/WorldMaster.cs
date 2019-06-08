@@ -351,24 +351,31 @@ namespace FFXIVClassic_World_Server
 
         public void ProcessLinkshellInvite(Session inviterSession, string lsName, uint invitee)
         {
-            
+            Session inviteeSession = mServer.GetSession(invitee);
+            Linkshell ls = mLinkshellManager.GetLinkshell(lsName);
+
+            //Something really fucked up
             if (mServer.GetSession(invitee) == null)
             {
                 inviterSession.SendGameMessage(30544, 0x20);
             }
+            //Check if they are already in your LS
+            else if (ls.HasMember(invitee))
+            {
+                inviterSession.SendGameMessage(25282, 0x20, (object)inviteeSession.characterName, 1); //X already belongs to 
+            }
+            //Check if you can invite more members
+            else if (ls.GetMemberCount() >= LinkshellManager.LS_MAX_MEMBERS)
+            {
+                inviterSession.SendGameMessage(25158, 0x20, (object)inviteeSession); //This linkshell cannot take on any more members.
+            }
+            //Check if they currently have an invite
             else if (mRelationGroupManager.GetLinkshellRelationGroup(invitee) != null)
             {
-                Session inviteeSession = mServer.GetSession(invitee);
                 inviterSession.SendGameMessage(25196, 0x20, (object)inviteeSession); //Unable to invite X another pending
             }
-            else if (mLinkshellManager.GetLinkshell(lsName).HasMember(invitee))
-            {
-                Session inviteeSession = mServer.GetSession(invitee);
-                inviterSession.SendGameMessage(25155, 0x20, (object)inviteeSession, 1); //X already belongs to 
-            }
             else
-            {                
-                Session inviteeSession = mServer.GetSession(invitee);
+            {
                 Relation inviteRelation = mRelationGroupManager.CreateLinkshellRelationGroup(mLinkshellManager.GetLinkshell(lsName).groupIndex, inviterSession.sessionId, invitee);
                 inviteRelation.SendGroupPacketsAll(inviterSession.sessionId, invitee);
                 inviteeSession.SendGameMessage(25150, 0x20, (object)1, (object)lsName, (object)inviterSession); //X Offers you
@@ -382,30 +389,46 @@ namespace FFXIVClassic_World_Server
             Relation relation = mRelationGroupManager.GetLinkshellRelationGroup(inviteeSession.sessionId);
             Session inviterSession = mServer.GetSession(relation.GetHost());
 
-            //Accept
-            if (resultCode == 1)
+            Linkshell newLS = null;
+            if (mCurrentWorldGroups.ContainsKey(relation.groupIndex))
+                newLS = (Linkshell)mCurrentWorldGroups[relation.GetTopicGroupIndex()];
+            else
             {
-                Linkshell newLS;
-                if (mCurrentWorldGroups.ContainsKey(relation.groupIndex))
-                    newLS = (Linkshell) mCurrentWorldGroups[relation.GetTopicGroupIndex()];
-                else
-                {
-                    //Error???
-                    return;
-                }
+                //??? errored
+            }
 
-                mLinkshellManager.AddMemberToLinkshell(inviteeSession.sessionId, newLS.name);
-                newLS.SendGroupPacketsAll(newLS.GetMemberIds());
-                newLS.OnPlayerJoin(inviteeSession);                
-            }
-            else //Refuse 
+            if (newLS != null)
             {
-                inviteeSession.SendGameMessage(25189, 0x20); //You decline the linkpearl offer.
-                inviterSession.SendGameMessage(25190, 0x20); //Your linkpearl offer is declined.
-            }
+                //Accept
+                if (resultCode == 1)
+                {
+                    //Check if the invitee has room for more linkshells
+                    if (mLinkshellManager.GetPlayerLinkshellMembership(inviteeSession.sessionId).Count >= LinkshellManager.LS_MAX_ALLOWED)
+                    {
+                        inviteeSession.SendGameMessage(25153, 0x20, (object)inviteeSession); //You are unable to join any more linkshells.
+                    }
+                    //Did someone invite in the meantime?
+                    else if (newLS.GetMemberCount() >= LinkshellManager.LS_MAX_MEMBERS)
+                    {
+                        inviterSession.SendGameMessage(25158, 0x20, (object)inviteeSession); //This linkshell cannot take on any more members.
+                    }
+                    //All good, add new member
+                    else
+                    {
+                        mLinkshellManager.AddMemberToLinkshell(inviteeSession.sessionId, newLS.name);
+                        newLS.SendGroupPacketsAll(newLS.GetMemberIds());
+                        newLS.OnPlayerJoin(inviteeSession);
+                    }
+                }
+                else //Refuse 
+                {
+                    inviteeSession.SendGameMessage(25189, 0x20); //You decline the linkpearl offer.
+                    inviterSession.SendGameMessage(25190, 0x20); //Your linkpearl offer is declined.
+                }
+            }           
 
             //Delete the relation
-            mRelationGroupManager.DeleteRelationGroup(relation.groupIndex);
+            //mRelationGroupManager.DeleteRelationGroup(relation.groupIndex);
             relation.SendDeletePackets(inviterSession.sessionId, inviteeSession.sessionId);
         }
 
