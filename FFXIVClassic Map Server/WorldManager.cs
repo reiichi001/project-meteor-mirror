@@ -1638,14 +1638,12 @@ namespace FFXIVClassic_Map_Server
             bazaarPackage.RemoveItem(reward);
             reward.SetNormal();
             player.AddItem(reward);
-            Database.ClearDealingInfo(reward);
             
             if (seek != null)
             {
                 bazaarPackage.RemoveItem(seek);
                 seek.SetNormal();
                 player.AddItem(seek);
-                Database.ClearDealingInfo(seek);
             }
             
             player.CheckBazaarFlags();

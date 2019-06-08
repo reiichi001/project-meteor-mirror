@@ -1635,6 +1635,48 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
+        public static void UpdateItemPositions(List<InventoryItem> updated)
+        {
+            using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
+            {
+                try
+                {
+                    conn.Open();
+
+                    string query = @"
+                                    UPDATE characters_inventory
+                                    SET slot = @slot
+                                    WHERE serverItemId = @serverItemId;
+                                    ";
+
+                    using (MySqlTransaction trans = conn.BeginTransaction())
+                    {
+                        using (MySqlCommand cmd = new MySqlCommand(query, conn, trans))
+                        {
+                            foreach (InventoryItem item in updated)
+                            {
+                                cmd.Parameters.Clear();
+                                cmd.Parameters.AddWithValue("@serverItemId", item.uniqueId);
+                                cmd.Parameters.AddWithValue("@slot", item.slot);
+                                cmd.ExecuteNonQuery();
+                            }
+
+                            trans.Commit();
+                        }
+                    }
+                }
+                catch (MySqlException e)
+                {
+                    Program.Log.Error(e.ToString());
+                }
+                finally
+                {
+                    conn.Dispose();
+                }
+            }
+
+        }
+
         public static void SetQuantity(ulong serverItemId, int quantity)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))

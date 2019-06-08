@@ -271,6 +271,9 @@ namespace FFXIVClassic_Map_Server.dataobjects
         
         public void SetNormal()
         {           
+            if (dealingMode != 0 || tags[0] == TAG_ATTACHED)
+                Database.ClearDealingInfo(this);
+
             tags[0] = 0;
             tagValues[0] = 0;
             dealingVal = 0;
@@ -317,6 +320,18 @@ namespace FFXIVClassic_Map_Server.dataobjects
                 owner.GetItemPackage(itemPackage).MarkDirty(this);
 
             Database.SetDealingInfo(this);
+        }
+
+        public void UpdateOfferedSlot(ushort delta)
+        {
+            if (dealingMode == DEALINGMODE_REFERENCED)
+            {
+                ushort attachedItemPackage = (ushort)((dealingAttached1 >> 16) & 0xFF);
+                ushort attachedSlot = (ushort)(dealingAttached1 & 0xFF);
+                attachedSlot -= delta;
+                dealingAttached1 = ((attachedItemPackage << 16) | attachedSlot);
+                Database.SetDealingInfo(this);
+            }
         }
 
         protected void SetSeeking()

@@ -826,7 +826,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
         private void DoRealign()
         {
-            int lastNullSlot = -1;            
+            List<InventoryItem> positionUpdate = new List<InventoryItem>();
+
+            int lastNullSlot = -1;
 
             for (int i = 0; i < endOfListIndex; i++)
             {
@@ -838,7 +840,12 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
                 else if (list[i] != null && lastNullSlot != -1)
                 {
                     list[lastNullSlot] = list[i];
+                    if (list[lastNullSlot].GetOfferedTo() != null)
+                    {
+                        list[lastNullSlot].UpdateOfferedSlot((ushort)(list[lastNullSlot].slot - lastNullSlot));                        
+                    }
                     list[lastNullSlot].slot = (ushort)lastNullSlot;
+                    positionUpdate.Add(list[lastNullSlot]);
                     list[i] = null;
                     isDirty[lastNullSlot] = true;
                     isDirty[i] = true;
@@ -848,6 +855,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.player
 
             if (lastNullSlot != -1)
                 endOfListIndex = lastNullSlot;
+
+            Database.UpdateItemPositions(positionUpdate);
         }
 
         #endregion
