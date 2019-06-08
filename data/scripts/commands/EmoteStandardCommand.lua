@@ -2,6 +2,9 @@
 
 EmoteStandardCommand Script
 
+Returns the correct animation and log description when an emote is activated.
+If 'motion' parameter is used, it returns the blank description id 10105
+
 --]]
 
 emoteTable = {
@@ -63,21 +66,25 @@ emoteTable = {
 };
 
 
-function onEventStarted(player, actor, triggerName, emoteId, unknownArg1, arg2, arg3, targetId)
+function onEventStarted(player, actor, triggerName, emoteId, showText, arg2, arg3, targetId)
 
 	if (targetId == nil) then
 		targetId = 0;
 	end
-
+    
 	if (player:GetState() == 0 or player:GetState() == 11 or player:GetState() == 13) then	
 		emote = emoteTable[emoteId];		
 		if (emote ~= nil) then
-			player:doEmote(targetId, emote.animId, emote.descId);
+            if showText == 1 then
+                player:doEmote(targetId, emote.animId, emote.descId);
+            else
+                player:doEmote(targetId, emote.animId, 10105);
+            end
 		else
 			player:SendMessage(0x20, "", string.format("Not implemented; EmoteId: %d", emoteId));
 		end
 	end
-	
+    
 	player:EndEvent();
 	
 end
