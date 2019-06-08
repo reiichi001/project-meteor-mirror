@@ -139,6 +139,8 @@ namespace FFXIVClassic_Map_Server.Actors
         private List<Director> ownedDirectors = new List<Director>();
         private Director loginInitDirector = null;
 
+        List<ushort> hotbarSlotsToUpdate = new List<ushort>();
+
         public PlayerWork playerWork = new PlayerWork();
 
         public Session playerSession;
@@ -759,10 +761,11 @@ namespace FFXIVClassic_Map_Server.Actors
             this.positionZ = destinationZ;
             this.rotation = destinationRot;
 
+            this.statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnZoning);
+
             //Save Player
             Database.SavePlayerPlayTime(this);
             Database.SavePlayerPosition(this);
-            this.statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnZoning, true);
             Database.SavePlayerStatusEffects(this);
         }
 
@@ -1017,6 +1020,12 @@ namespace FFXIVClassic_Map_Server.Actors
             //Set Hotbar Commands 3
 
             //Check if bonus point available... set
+
+            //Remove buffs that fall off when changing class
+            CommandResultContainer resultContainer = new CommandResultContainer();
+            statusEffects.RemoveStatusEffectsByFlags((uint)StatusEffectFlags.LoseOnClassChange, resultContainer);
+            resultContainer.CombineLists();
+            DoBattleAction(0, 0x7c000062, resultContainer.GetList());
 
             //Set rested EXP
             charaWork.parameterSave.state_mainSkill[0] = classId;
@@ -1956,7 +1965,14 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
 
                 QueuePackets(propPacketUtil.Done());
+            }
 
+            if ((updateFlags & ActorUpdateFlags.Hotbar) != 0)
+            {
+                UpdateHotbar(hotbarSlotsToUpdate);
+                hotbarSlotsToUpdate.Clear();
+
+                updateFlags ^= ActorUpdateFlags.Hotbar;
             }
 
 
@@ -1972,12 +1988,11 @@ namespace FFXIVClassic_Map_Server.Actors
         //Update commands and recast timers for the entire hotbar
         public void UpdateHotbar()
         {
-            List<ushort> slotsToUpdate = new List<ushort>();
             for (ushort i = charaWork.commandBorder; i < charaWork.commandBorder + 30; i++)
             {
-                slotsToUpdate.Add(i);
+                hotbarSlotsToUpdate.Add(i);
             }
-            UpdateHotbar(slotsToUpdate);
+            updateFlags |= ActorUpdateFlags.Hotbar;
         }
 
         //Updates the hotbar and recast timers for only certain hotbar slots
@@ -2049,7 +2064,6 @@ namespace FFXIVClassic_Map_Server.Actors
             ushort lowHotbarSlot = (ushort)(hotbarSlot - charaWork.commandBorder);
             ushort maxRecastTime = (ushort)(ability != null ? ability.maxRecastTimeSeconds : 5);
             uint recastEnd = Utils.UnixTimeStampUTC() + maxRecastTime;
-            List<ushort> slotsToUpdate = new List<ushort>();
             
             Database.EquipAbility(this, classId, (ushort) (hotbarSlot - charaWork.commandBorder), commandId, recastEnd);
             //If the class we're equipping for is the current class (need to find out if state_mainSkill is supposed to change when you're a job)
@@ -2061,8 +2075,8 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.parameterTemp.maxCommandRecastTime[lowHotbarSlot] = maxRecastTime;
                 charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot] = recastEnd;
 
-                slotsToUpdate.Add(hotbarSlot);
-                UpdateHotbar(slotsToUpdate);
+                hotbarSlotsToUpdate.Add(hotbarSlot);
+                updateFlags |= ActorUpdateFlags.Hotbar;
             }
 
 
@@ -2098,25 +2112,23 @@ namespace FFXIVClassic_Map_Server.Actors
             Database.EquipAbility(this, GetCurrentClassOrJob(), (ushort)(lowHotbarSlot2), 0xA0F00000 ^ charaWork.command[hotbarSlot2], charaWork.parameterSave.commandSlot_recastTime[lowHotbarSlot2]);
 
             //Update slots on client
-            List<ushort> slotsToUpdate = new List<ushort>();
-            slotsToUpdate.Add(hotbarSlot1);
-            slotsToUpdate.Add(hotbarSlot2);
-            UpdateHotbar(slotsToUpdate);
+            hotbarSlotsToUpdate.Add(hotbarSlot1);
+            hotbarSlotsToUpdate.Add(hotbarSlot2);
+            updateFlags |= ActorUpdateFlags.Hotbar;
         }
 
         public void UnequipAbility(ushort hotbarSlot, bool printMessage = true)
         {
-            List<ushort> slotsToUpdate = new List<ushort>();
-            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder - 1);
+            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder);
             uint commandId = charaWork.command[trueHotbarSlot];
-            Database.UnequipAbility(this, (ushort)(trueHotbarSlot - charaWork.commandBorder));
+            Database.UnequipAbility(this,  hotbarSlot);
             charaWork.command[trueHotbarSlot] = 0;
-            slotsToUpdate.Add(trueHotbarSlot);
+            hotbarSlotsToUpdate.Add(trueHotbarSlot);
 
-            if(printMessage)
+            if (printMessage && commandId != 0)
                 SendGameMessage(Server.GetWorldManager().GetActor(), 30604, 0x20, 0, 0xA0F00000 ^ commandId);
 
-            UpdateHotbar(slotsToUpdate);
+            updateFlags |= ActorUpdateFlags.Hotbar;
         }
 
         //Finds the first hotbar slot with a given commandId.
@@ -2290,109 +2302,74 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public override bool CanCast(Character target, BattleCommand spell)
+        //Do we need separate functions? they check the same things
+        public override bool CanUse(Character target, BattleCommand skill, CommandResult error = null)
         {
-            //Might want to do these with a CommandResult instead to be consistent with the rest of command stuff
-            if (GetHotbarTimer(spell.id) > Utils.UnixTimeStampUTC())
-            {
-                // todo: this needs confirming
-                // Please wait a moment and try again.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20, (uint)spell.id);
-                return false;
-            }
-            if (target == null)
-            {
-                // Target does not exist.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)spell.id);
-                return false;
-            }
-            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) > spell.range)
-            {
-                // The target is too far away.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32539, 0x20, (uint)spell.id);
-                return false;
-            }
-            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) < spell.minRange)
-            {
-                // The target is too close.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32538, 0x20, (uint)spell.id);
-                return false;
-            }
-            if (target.positionY - positionY > (spell.rangeHeight / 2))
-            {
-                // The target is too far above you.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32540, 0x20, (uint)spell.id);
-                return false;
-            }
-            if (positionY - target.positionY > (spell.rangeHeight / 2))
-            {
-                // The target is too far below you.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32541, 0x20, (uint)spell.id);
-                return false;
-            }
-            if (!IsValidTarget(target, spell.mainTarget) || !spell.IsValidMainTarget(this, target))
+            if (!skill.IsValidMainTarget(this, target, error) || !IsValidTarget(target, skill.mainTarget))
             {
                 // error packet is set in IsValidTarget
                 return false;
             }
-            return true;
-        }
 
-        public override bool CanWeaponSkill(Character target, BattleCommand skill)
-        {
-            // todo: see worldmaster ids 32558~32557 for proper ko message and stuff
+            //Might want to do these with a BattleAction instead to be consistent with the rest of command stuff
             if (GetHotbarTimer(skill.id) > Utils.UnixTimeStampUTC())
             {
                 // todo: this needs confirming
                 // Please wait a moment and try again.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32535, 0x20, (uint)skill.id);
+                error?.SetTextId(32535);
                 return false;
             }
 
-            if (target == null)
+            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) > skill.range)
             {
-                // Target does not exist.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32511, 0x20, (uint)skill.id);
+                // The target is too far away.
+                error?.SetTextId(32539);
                 return false;
             }
 
-            //Original game checked height difference before horizontal distance
+            if (Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ) < skill.minRange)
+            {
+                // The target is too close.
+                error?.SetTextId(32538);
+                return false;
+            }
+
             if (target.positionY - positionY > (skill.rangeHeight / 2))
             {
                 // The target is too far above you.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32540, 0x20, (uint)skill.id);
+                error?.SetTextId(32540);
                 return false;
             }
 
             if (positionY - target.positionY > (skill.rangeHeight / 2))
             {
                 // The target is too far below you.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32541, 0x20, (uint)skill.id);
+                error?.SetTextId(32541);
                 return false;
             }
 
-            var targetDist = Utils.XZDistance(positionX, positionZ, target.positionX, target.positionZ);
-
-            if (targetDist > skill.range)
+            if (skill.CalculateMpCost(this) > GetMP())
             {
-                // The target is out of range.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32537, 0x20, (uint)skill.id);
+                // You do not have enough MP.
+                error?.SetTextId(32545);
                 return false;
             }
 
-            if (targetDist < skill.minRange)
+            if (skill.CalculateTpCost(this) > GetTP())
             {
-                // The target is too close.
-                SendGameMessage(Server.GetWorldManager().GetActor(), 32538, 0x20, (uint)skill.id);
+                // You do not have enough TP.
+                error?.SetTextId(32546);
                 return false;
             }
 
-
-            if (!IsValidTarget(target, skill.validTarget) || !skill.IsValidMainTarget(this, target))
+            //Proc requirement
+            if (skill.procRequirement != BattleCommandProcRequirement.None && !charaWork.battleTemp.timingCommandFlag[(int)skill.procRequirement - 1])
             {
-                // error packet is set in IsValidTarget
+                //Conditions for use are not met
+                error?.SetTextId(32556);
                 return false;
             }
+
 
             return true;
         }
@@ -2598,7 +2575,7 @@ namespace FFXIVClassic_Map_Server.Actors
                 StatusEffect comboEffect = new StatusEffect(this, Server.GetWorldManager().GetStatusEffect((uint) StatusEffectId.Combo));
                 comboEffect.SetDuration(13);
                 comboEffect.SetOverwritable(1);
-                statusEffects.AddStatusEffect(comboEffect, this, true);
+                statusEffects.AddStatusEffect(comboEffect, this);
                 playerWork.comboCostBonusRate = 1;
             }
             //Otherwise we're ending a combo, remove the status
@@ -2634,10 +2611,10 @@ namespace FFXIVClassic_Map_Server.Actors
             }
 
             var hasShield = equip.GetItemAtSlot(SLOT_OFFHAND) != null ? 1 : 0;
-            SetMod((uint)Modifier.HasShield, hasShield);
+            SetMod((uint)Modifier.CanBlock, hasShield);
 
             SetMod((uint)Modifier.AttackType, damageAttribute);
-            SetMod((uint)Modifier.AttackDelay, attackDelay);
+            SetMod((uint)Modifier.Delay, attackDelay);
             SetMod((uint)Modifier.HitCount, hitCount);
 
             //These stats all correlate in a 3:2 fashion
@@ -2647,13 +2624,13 @@ namespace FFXIVClassic_Map_Server.Actors
             AddMod((uint)Modifier.Defense, (long)(GetMod(Modifier.Vitality) * 0.667));
 
             //These stats correlate in a 4:1 fashion. (Unsure if MND is accurate but it would make sense for it to be)
-            AddMod((uint)Modifier.MagicAttack, (long)((float)GetMod(Modifier.Intelligence) * 0.25));
+            AddMod((uint)Modifier.AttackMagicPotency, (long)((float)GetMod(Modifier.Intelligence) * 0.25));
 
             AddMod((uint)Modifier.MagicAccuracy, (long)((float)GetMod(Modifier.Mind) * 0.25));
-            AddMod((uint)Modifier.MagicHeal, (long)((float)GetMod(Modifier.Mind) * 0.25));
+            AddMod((uint)Modifier.HealingMagicPotency, (long)((float)GetMod(Modifier.Mind) * 0.25));
 
             AddMod((uint)Modifier.MagicEvasion, (long)((float)GetMod(Modifier.Piety) * 0.25));
-            AddMod((uint)Modifier.MagicEnfeeblingPotency, (long)((float)GetMod(Modifier.Piety) * 0.25));
+            AddMod((uint)Modifier.EnfeeblingMagicPotency, (long)((float)GetMod(Modifier.Piety) * 0.25));
 
             //VIT correlates to HP in a 1:1 fashion
             AddMod((uint)Modifier.Hp, (long)((float)Modifier.Vitality));

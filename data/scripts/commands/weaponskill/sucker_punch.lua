@@ -28,7 +28,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
     --1.21: Equation used to calculate amount of MP adjusted.
     --fug
     --This might mean max MP isn't involved and the difference was between patches. need to recheck videos
-    if action.GetHitType() > HitType.Evade and (action.param == HitDirection.Right or action.param == HitDirection.Left) then
+    if action.ActionLanded() and (action.param == HitDirection.Right or action.param == HitDirection.Left) then
         local mpToReturn = 0;
 
         if skill.isCombo then
@@ -39,6 +39,6 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
 
         caster.AddMP(mpToReturn);
         --30452: You recover x MP.
-        actionContainer.AddMPAction(caster.actorId, 30452, mpToReturn);
+        actionContainer.AddMPAbsorbAction(caster.actorId, 30452, mpToReturn);
     end
 end;

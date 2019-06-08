@@ -1,5 +1,6 @@
 require("global");
 require("weaponskill");
+require("modifiers")
 
 function onSkillPrepare(caster, target, skill)
     return 0;
@@ -23,8 +24,8 @@ function onCombo(caster, target, skill)
             apPerHit = 24;
         end
 
-        attacker.SubtractMod(modifiersGlobal.Attack, apPerHit * berserk.GetExtra());
-        attacker.Add(modifiersGlobal.Defense, defPerHit * berserk.GetExtra());
+        caster.SubtractMod(modifiersGlobal.Attack, apPerHit * berserk.GetExtra());
+        caster.Add(modifiersGlobal.Defense, defPerHit * berserk.GetExtra());
 
         berserk.SetExtra(0);
         skill.basePotency = skill.basePotency * 1.5;

@@ -29,6 +29,7 @@ namespace FFXIVClassic_Map_Server.Actors
         Stats = 0x100,
         Status = 0x200,
         StatusTime = 0x400,
+        Hotbar = 0x800,
 
         AllNpc = 0xDF,
         AllPlayer = 0x13F
@@ -92,6 +93,7 @@ namespace FFXIVClassic_Map_Server.Actors
             this.moveSpeeds[1] = SetActorSpeedPacket.DEFAULT_WALK;
             this.moveSpeeds[2] = SetActorSpeedPacket.DEFAULT_RUN;
             this.moveSpeeds[3] = SetActorSpeedPacket.DEFAULT_ACTIVE;
+            positionUpdates = new List<Vector3>();
         }
 
         public void SetPushCircleRange(string triggerName, float size)
@@ -650,7 +652,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void LookAt(Actor actor)
         {
-            if (actor != null && actor != this)
+            if (actor != null)
             {
                 LookAt(actor.positionX, actor.positionZ);
             }
@@ -670,16 +672,20 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void LookAt(float x, float z)
         {
-            var rot1 = this.rotation;
+            //Don't rotate if the lookat position is same as our current position
+            if (positionX != x || positionZ != z)
+            {
+                var rot1 = this.rotation;
 
-            var dX = this.positionX - x;
-            var dY = this.positionZ - z;
-            var rot2 = Math.Atan2(dY, dX);
-            var dRot = Math.PI - rot2 + Math.PI / 2;
+                var dX = this.positionX - x;
+                var dY = this.positionZ - z;
+                var rot2 = Math.Atan2(dY, dX);
+                var dRot = Math.PI - rot2 + Math.PI / 2;
 
-            // pending move, dont need to unset it
-            this.updateFlags |= ActorUpdateFlags.Position;
-            rotation = (float)dRot;
+                // pending move, dont need to unset it
+                this.updateFlags |= ActorUpdateFlags.Position;
+                rotation = (float)dRot;
+            }
         }
 
         // todo: is this legit?

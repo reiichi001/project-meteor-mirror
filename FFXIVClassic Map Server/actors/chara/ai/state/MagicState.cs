@@ -18,32 +18,28 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             this.startPos = owner.GetPosAsVector3();
             this.startTime = DateTime.Now;
             this.spell = Server.GetWorldManager().GetBattleCommand(spellId);
-            var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onMagicPrepare", owner, target, spell);
-
-            //Modify spell based on status effects. Need to do it here because they can modify cast times
-            List<StatusEffect> effects = owner.statusEffects.GetStatusEffectsByFlag((uint)(StatusEffectFlags.ActivateOnCastStart));
+            var returnCode = spell.CallLuaFunction(owner, "onMagicPrepare", owner, target, spell);
 
             //modify skill based on status effects
             //Do this here to allow buffs like Resonance to increase range before checking CanCast()
-            foreach (var effect in effects)
-                lua.LuaEngine.CallLuaStatusEffectFunction(owner, effect, "onMagicCast", owner, effect, spell);
+            owner.statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnCastStart, "onMagicCast", owner, spell);
 
-            this.target = target != null ? target : owner;
+            this.target = (spell.mainTarget & ValidTarget.SelfOnly) != 0 ? owner : target;
 
-            if (returnCode == 0 && owner.CanCast(this.target, spell))
+            errorResult = new CommandResult(owner.actorId, 32553, 0);
+            if (returnCode == 0 && owner.CanUse(this.target, spell, errorResult))
             {
                 OnStart();
             }
             else
             {
-                errorResult = new CommandResult(owner.actorId, 32553, 0);
                 interrupt = true;
             }
         }
 
         public override void OnStart()
         {
-            var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onMagicStart", owner, target, spell);
+            var returnCode = spell.CallLuaFunction(owner, "onMagicStart", owner, target, spell);
 
             if (returnCode != 0)
             {
@@ -62,7 +58,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                     Player p = (Player)owner;
                     if (spell.comboStep == 1 || ((p.playerWork.comboNextCommandId[0] == spell.id || p.playerWork.comboNextCommandId[1] == spell.id)))
                     {
-                        lua.LuaEngine.CallLuaBattleCommandFunction(owner, spell, "magic", "onCombo", owner, target, spell);
+                        spell.CallLuaFunction(owner, "onCombo", owner, target, spell);
                         spell.isCombo = true;
                     }
                 }
@@ -168,7 +164,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         private bool CanCast()
         {
-            return owner.CanCast(target, spell) && spell.IsValidMainTarget(owner, target) && !HasMoved();
+            return owner.CanUse(target, spell);
         }
 
         private bool HasMoved()

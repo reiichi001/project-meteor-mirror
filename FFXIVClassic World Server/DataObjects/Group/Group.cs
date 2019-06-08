@@ -1,5 +1,6 @@
 ﻿using FFXIVClassic.Common;
 using FFXIVClassic_World_Server.Packets.Send.Subpackets.Groups;
+using System;
 using System.Collections.Generic;
 
 namespace FFXIVClassic_World_Server.DataObjects.Group
@@ -104,13 +105,14 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
 
             while (true)
             {
-                if (GetMemberCount() - currentIndex >= 64)
+                int memberCount = Math.Min(GetMemberCount(), members.Count);
+                if (memberCount - currentIndex >= 64)
                     session.clientConnection.QueuePacket(GroupMembersX64Packet.buildPacket(session.sessionId, session.currentZoneId, time, members, ref currentIndex));
-                else if (GetMemberCount() - currentIndex >= 32)
+                else if (memberCount - currentIndex >= 32)
                     session.clientConnection.QueuePacket(GroupMembersX32Packet.buildPacket(session.sessionId, session.currentZoneId, time, members, ref currentIndex));
-                else if (GetMemberCount() - currentIndex >= 16)
+                else if (memberCount - currentIndex >= 16)
                     session.clientConnection.QueuePacket(GroupMembersX16Packet.buildPacket(session.sessionId, session.currentZoneId, time, members, ref currentIndex));
-                else if (GetMemberCount() - currentIndex > 0)
+                else if (memberCount - currentIndex > 0)
                     session.clientConnection.QueuePacket(GroupMembersX08Packet.buildPacket(session.sessionId, session.currentZoneId, time, members, ref currentIndex));
                 else
                     break;

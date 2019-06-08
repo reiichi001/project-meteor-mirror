@@ -15,10 +15,11 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
         {
             this.startTime = DateTime.Now;
             this.skill = Server.GetWorldManager().GetBattleCommand(skillId);
-            var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "ability", "onAbilityPrepare", owner, target, skill);
+            var returnCode = skill.CallLuaFunction(owner, "onAbilityPrepare", owner, target, skill);
 
-            this.target = target != null ? target : owner;
+            this.target = (skill.mainTarget & ValidTarget.SelfOnly) != 0 ? owner : target;
 
+            errorResult = new CommandResult(owner.actorId, 32553, 0);
             if (returnCode == 0)
             {
                 OnStart();
@@ -32,7 +33,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnStart()
         {
-            var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "ability", "onAbilityStart", owner, target, skill);
+            var returnCode = skill.CallLuaFunction(owner, "onAbilityStart", owner, target, skill);
 
             if (returnCode != 0)
             {

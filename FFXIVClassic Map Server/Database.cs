@@ -925,13 +925,13 @@ namespace FFXIVClassic_Map_Server
                     {
                         while (reader.Read())
                         {
-                            var id = reader.GetUInt32(0);
-                            var duration = reader.GetUInt32(1);
-                            var magnitude = reader.GetUInt64(2);
-                            var tick = reader.GetUInt32(3);
-                            var tier = reader.GetByte(4);
-                            var extra = reader.GetUInt64(5);
-                            
+                            var id = reader.GetUInt32("statusId");
+                            var duration = reader.GetUInt32("duration");
+                            var magnitude = reader.GetUInt64("magnitude");
+                            var tick = reader.GetUInt32("tick");
+                            var tier = reader.GetByte("tier");
+                            var extra = reader.GetUInt64("extra");
+
                             var effect = Server.GetWorldManager().GetStatusEffect(id);
                             if (effect != null)
                             {
@@ -942,7 +942,7 @@ namespace FFXIVClassic_Map_Server
                                 effect.SetExtra(extra);
 
                                 // dont wanna send ton of messages on login (i assume retail doesnt)
-                                player.statusEffects.AddStatusEffect(effect, null, true);
+                                player.statusEffects.AddStatusEffect(effect, null);
                             }
                         }
                     }
@@ -2287,7 +2287,7 @@ namespace FFXIVClassic_Map_Server
                 {
                     conn.Open();
 
-                    var query = @"SELECT id, name, flags, overwrite, tickMs FROM server_statuseffects;";
+                    var query = @"SELECT id, name, flags, overwrite, tickMs, hidden, silentOnGain, silentOnLoss, statusGainTextId, statusLossTextId FROM server_statuseffects;";
 
                     MySqlCommand cmd = new MySqlCommand(query, conn);
 
@@ -2300,7 +2300,14 @@ namespace FFXIVClassic_Map_Server
                             var flags = reader.GetUInt32("flags");
                             var overwrite = reader.GetByte("overwrite");
                             var tickMs = reader.GetUInt32("tickMs");
-                            var effect = new StatusEffect(id, name, flags, overwrite, tickMs);
+                            var hidden = reader.GetBoolean("hidden");
+                            var silentOnGain = reader.GetBoolean("silentOnGain");
+                            var silentOnLoss = reader.GetBoolean("silentOnLoss");
+                            var statusGainTextId = reader.GetUInt16("statusGainTextId");
+                            var statusLossTextId = reader.GetUInt16("statusLossTextId");
+
+                            var effect = new StatusEffect(id, name, flags, overwrite, tickMs, hidden, silentOnGain, silentOnLoss, statusGainTextId, statusLossTextId);
+
                             lua.LuaEngine.LoadStatusEffectScript(effect);
                             effects.Add(id, effect);
                         }
@@ -2392,8 +2399,8 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.job = reader.GetByte("classJob");
                             battleCommand.level = reader.GetByte("lvl");
                             battleCommand.requirements = (BattleCommandRequirements)reader.GetUInt16("requirements");
-                            battleCommand.mainTarget = (ValidTarget)reader.GetByte("mainTarget");
-                            battleCommand.validTarget = (ValidTarget)reader.GetByte("validTarget");
+                            battleCommand.mainTarget = (ValidTarget)reader.GetUInt16("mainTarget");
+                            battleCommand.validTarget = (ValidTarget)reader.GetUInt16("validTarget");
                             battleCommand.aoeType = (TargetFindAOEType)reader.GetByte("aoeType");
                             battleCommand.basePotency = reader.GetUInt16("basePotency");
                             battleCommand.numHits = reader.GetByte("numHits");
@@ -2410,8 +2417,8 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.castTimeMs = reader.GetUInt32("castTime");
                             battleCommand.maxRecastTimeSeconds = reader.GetUInt32("recastTime");
                             battleCommand.recastTimeMs = battleCommand.maxRecastTimeSeconds * 1000;
-                            battleCommand.mpCost = reader.GetUInt16("mpCost");
-                            battleCommand.tpCost = reader.GetUInt16("tpCost");
+                            battleCommand.mpCost = reader.GetInt16("mpCost");
+                            battleCommand.tpCost = reader.GetInt16("tpCost");
                             battleCommand.animationType = reader.GetByte("animationType");
                             battleCommand.effectAnimation = reader.GetUInt16("effectAnimation");
                             battleCommand.modelAnimation = reader.GetUInt16("modelAnimation");
@@ -2433,7 +2440,26 @@ namespace FFXIVClassic_Map_Server
                             battleCommand.actionType = (ActionType)reader.GetInt16("actionType");
                             battleCommand.accuracyModifier = reader.GetFloat("accuracyMod");
                             battleCommand.worldMasterTextId = reader.GetUInt16("worldMasterTextId");
-                            lua.LuaEngine.LoadBattleCommandScript(battleCommand, "weaponskill");
+
+                            string folderName = "";
+
+                            switch (battleCommand.commandType)
+                            {
+                                case CommandType.AutoAttack:
+                                    folderName = "autoattack";
+                                    break;
+                                case CommandType.WeaponSkill:
+                                    folderName = "weaponskill";
+                                    break;
+                                case CommandType.Ability:
+                                    folderName = "ability";
+                                    break;
+                                case CommandType.Spell:
+                                    folderName = "magic";
+                                    break;
+                            }
+
+                            lua.LuaEngine.LoadBattleCommandScript(battleCommand, folderName);
                             battleCommandDict.Add(id, battleCommand);
 
                             Tuple<byte, short> tuple = Tuple.Create<byte, short>(battleCommand.job, battleCommand.level);

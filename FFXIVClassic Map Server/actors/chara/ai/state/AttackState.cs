@@ -100,26 +100,35 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
             //List<BattleAction> actions = new List<BattleAction>();
             CommandResultContainer actions = new CommandResultContainer();
-            
-            var i = 0;
-            for (int hitNum = 0; hitNum < 1 /* owner.GetMod((uint) Modifier.HitCount)*/; hitNum++)
-            {
-                CommandResult action = new CommandResult(target.actorId, 0x765D, (uint)HitEffect.Hit, 100, (byte)HitDirection.None, (byte) hitNum);
-                action.commandType = CommandType.AutoAttack;
-                action.actionType = ActionType.Physical;
-                action.actionProperty = (ActionProperty) owner.GetMod(Modifier.AttackType);
-                // evasion, miss, dodge, etc to be handled in script, calling helpers from scripts/weaponskills.lua
-                // temporary evade/miss/etc function to test hit effects
-                action.DoAction(owner, target, null, actions);
-            }
 
-            // todo: this is fuckin stupid, probably only need *one* error packet, not an error for each action
-            CommandResult[] errors = (CommandResult[])actions.GetList().ToArray().Clone();
-            CommandResult error = null;// new BattleAction(0, null, 0, 0);
-            //owner.DoActions(null, actions.GetList(), ref error);
-            //owner.OnAttack(this, actions[0], ref errorResult);
-            var anim = (uint)(17 << 24 | 1 << 12);
-            owner.DoBattleAction(22104, anim, actions.GetList());
+            //This is all temporary until the skill sheet is finishd and the different auto attacks are added to the database
+            //Some mobs have multiple unique auto attacks that they switch between as well as ranged auto attacks, so we'll need a way to handle that
+            //For now, just use a temporary hardcoded BattleCommand that's the same for everyone.
+            BattleCommand attackCommand = new BattleCommand(22104, "Attack");
+            attackCommand.range = 5;
+            attackCommand.rangeHeight = 10;
+            attackCommand.worldMasterTextId = 0x765D;
+            attackCommand.mainTarget = (ValidTarget)768;
+            attackCommand.validTarget = (ValidTarget)17152;
+            attackCommand.commandType = CommandType.AutoAttack;
+            attackCommand.numHits = (byte)owner.GetMod(Modifier.HitCount);
+            attackCommand.basePotency = 100;
+            ActionProperty property = (owner.GetMod(Modifier.AttackType) != 0) ? (ActionProperty)owner.GetMod(Modifier.AttackType) : ActionProperty.Slashing;
+            attackCommand.actionProperty = property;
+            attackCommand.actionType = ActionType.Physical;
+
+            uint anim = (17 << 24 | 1 << 12);
+
+            if (owner is Player)
+                anim = (25 << 24 | 1 << 12);
+
+            attackCommand.battleAnimation = anim;
+
+            if (owner.CanUse(target, attackCommand))
+            {
+                attackCommand.targetFind.FindWithinArea(target, attackCommand.validTarget, attackCommand.aoeTarget);
+                owner.DoBattleCommand(attackCommand, "autoattack");
+            }
         }
 
         public override void TryInterrupt()

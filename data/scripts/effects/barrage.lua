@@ -8,6 +8,6 @@ end;
 function onCommandFinish(effect, owner, skill, actionContainer)
     --27259: Light Shot
     if skill.id == 27259 then
-        actionContainer.AddAction(owner.statusEffects.RemoveStatusEffectForBattleAction(effect));
+        owner.statusEffects.RemoveStatusEffect(effect, actionContainer, 30331, false);
     end
 end;

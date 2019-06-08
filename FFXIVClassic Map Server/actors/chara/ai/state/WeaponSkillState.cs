@@ -14,11 +14,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
             base(owner, target)
         {
             this.startTime = DateTime.Now;
-            //this.target = skill.targetFind.
             this.skill = Server.GetWorldManager().GetBattleCommand(skillId);
-            var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillPrepare", owner, target, skill);
 
-            if (returnCode == 0 && owner.CanWeaponSkill(target, skill))
+            var returnCode = skill.CallLuaFunction(owner, "onSkillPrepare", owner, target, skill);
+
+            this.target = (skill.mainTarget & ValidTarget.SelfOnly) != 0 ? owner : target;
+
+            errorResult = new CommandResult(owner.actorId, 32553, 0);
+            if (returnCode == 0 && owner.CanUse(this.target, skill, errorResult))
             {
                 OnStart();
             }
@@ -31,7 +34,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         public override void OnStart()
         {
-            var returnCode = lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onSkillStart", owner, target, skill);
+            var returnCode = skill.CallLuaFunction(owner, "onSkillStart", owner, target, skill);
 
             if (returnCode != 0)
             {
@@ -48,8 +51,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                 {
                     //If there is a position bonus
                     if (skill.positionBonus != BattleCommandPositionBonus.None)
-                        //lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onPositional", owner, target, skill);
-                        skill.CallLuaFunction(owner, "onPositional", owner, target, skill);
+                        skill.CallLuaFunction(owner, "weaponskill", "onPositional", owner, target, skill);
 
                     //Combo stuff
                     if (owner is Player)
@@ -61,7 +63,6 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
                             //If owner is a player and the skill being used is part of the current combo
                             if (p.playerWork.comboNextCommandId[0] == skill.id || p.playerWork.comboNextCommandId[1] == skill.id)
                             {
-                                lua.LuaEngine.CallLuaBattleCommandFunction(owner, skill, "weaponskill", "onCombo", owner, target, skill);
                                 skill.CallLuaFunction(owner, "onCombo", owner, target, skill);
                                 skill.isCombo = true;
                             }
@@ -161,7 +162,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.state
 
         private bool CanUse()
         {
-            return owner.CanWeaponSkill(target, skill) && skill.IsValidMainTarget(owner, target);
+            return owner.CanUse(target, skill);
         }
 
         public BattleCommand GetWeaponSkill()

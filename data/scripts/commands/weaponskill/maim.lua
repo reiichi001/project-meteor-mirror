@@ -15,7 +15,7 @@ end;
 
 function onSkillFinish(caster, target, skill, action, actionContainer)
     --calculate ws damage
-    skill.Potency = 100;
+    skill.basePotency = 100;
 
     --DoAction handles rates, buffs, dealing damage
     action.DoAction(caster, target, skill, actionContainer);

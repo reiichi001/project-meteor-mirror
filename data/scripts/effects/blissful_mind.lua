@@ -2,14 +2,12 @@
 --Based on a few videos it seems like it heals for 0.5% of max MP every second, traited. This is an early guess but it seems correct
 --Untraited is less clear. It could be 0.25%, 0.30%, or 0.40%. Guessing it's 0.30
 
-function onTick(owner, effect)
+function onTick(owner, effect, actionContainer)
     local percentPerSecond = 0.0030;
 
     if effect.GetTier() == 2 then
         percentPerSecond = 0.005;
     end
-
-    print(effect.GetExtra());
 
     local amount = percentPerSecond * owner.GetMaxMP() + 0.25;
     effect.SetExtra(effect.GetExtra() + amount);

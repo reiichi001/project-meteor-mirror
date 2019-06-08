@@ -24,6 +24,6 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
     if caster != target then
         caster.AddHP(action.amount / 2)
         --33012: You recover [amount] HP.
-        actionContainer.AddHPAction(caster.actorId, 33012, (action.amount / 2));
+        actionContainer.AddHPAbsorbAction(caster.actorId, 33012, (action.amount / 2));
     end
 end;

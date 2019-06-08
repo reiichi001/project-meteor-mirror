@@ -1,13 +1,13 @@
 require("modifiers")
 
-function onGain(target, effect)
-    local speedModifier = 0.5;
+function onGain(owner, effect, actionContainer)
+    local speedModifier = 0.8;
 
-    target.SetMod(modifiersGlobal.Speed, target.GetMod(modifiersGlobal.Speed) * speedModifier);
+    owner.MultiplyMod(modifiersGlobal.MovementSpeed, speedModifier);
 end;
 
-function onLose(target, effect)    
-    local speedModifier = 0.5;
+function onLose(owner, effect, actionContainer)    
+    local speedModifier = 0.8;
 
-    target.SetMod(modifiersGlobal.Speed, target.GetMod(modifiersGlobal.Speed) / speedModifier);
+    owner.DivideMod(modifiersGlobal.MovementSpeed, speedModifier);
 end;

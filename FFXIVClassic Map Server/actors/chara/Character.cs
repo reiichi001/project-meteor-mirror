@@ -149,8 +149,8 @@ namespace FFXIVClassic_Map_Server.Actors
             // todo: move this somewhere more appropriate
             // todo: base this on equip and shit
             SetMod((uint)Modifier.AttackRange, 3);
-            SetMod((uint)Modifier.AttackDelay, (Program.Random.Next(30, 60) * 100));
-            SetMod((uint)Modifier.Speed, (uint)moveSpeeds[2]);
+            SetMod((uint)Modifier.Delay, (Program.Random.Next(30, 60) * 100));
+            SetMod((uint)Modifier.MovementSpeed, (uint)moveSpeeds[2]);
 
             spawnX = positionX;
             spawnY = positionY;
@@ -238,8 +238,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void DoBattleAction(ushort commandId, uint animationId, CommandResult[] results)
         {
             int currentIndex = 0;
-            //AoE abilities only ever hit 16 people, so we probably won't need this loop anymore
-            //Apparently aoe are limited to 8?
+
             while (true)
             {
                 if (results.Length - currentIndex >= 10)
@@ -253,9 +252,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 }
                 else
                     break;
-                
-                //I think aoe effects play on all hit enemies. Firaga does at least
-                //animationId = 0; //If more than one packet is sent out, only send the animation once to avoid double playing.
             }
         }
 
@@ -317,7 +313,7 @@ namespace FFXIVClassic_Map_Server.Actors
             else
                 modifiers.Add((Modifier)modifier, val);
 
-            if (modifier <= 35)
+            if (modifier >= 3 && modifier <= 35)
                 updateFlags |= ActorUpdateFlags.Stats;
         }
 
@@ -343,6 +339,29 @@ namespace FFXIVClassic_Map_Server.Actors
             double newVal = GetMod(modifier) - val;
             SetMod(modifier, newVal);
         }
+
+        public void MultiplyMod(Modifier modifier, double val)
+        {
+            MultiplyMod((uint)modifier, val);
+        }
+
+        public void MultiplyMod(uint modifier, double val)
+        {
+            double newVal = GetMod(modifier) * val;
+            SetMod(modifier, newVal);
+        }
+
+        public void DivideMod(Modifier modifier, double val)
+        {
+            DivideMod((uint)modifier, val);
+        }
+
+        public void DivideMod(uint modifier, double val)
+        {
+            double newVal = GetMod(modifier) / val;
+            SetMod(modifier, newVal);
+        }
+
 
         public virtual void OnPath(Vector3 point)
         {
@@ -380,7 +399,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if ((updateFlags & ActorUpdateFlags.SubState) != 0)
                 {
-                   //packets.Add(SetActorSubStatePacket.BuildPacket(actorId, currentSubState));
+                    packets.Add(SetActorSubStatePacket.BuildPacket(actorId, currentSubState));
                     //packets.Add(CommandResultX00Packet.BuildPacket(actorId, 0x72000062, 0));
                     //packets.Add(CommandResultX01Packet.BuildPacket(actorId, 0x7C000062, 21001, new CommandResult(actorId, 0, 1)));
 
@@ -390,6 +409,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if ((updateFlags & ActorUpdateFlags.Status) != 0)
                 {
+
                     List<SubPacket> statusPackets = statusEffects.GetStatusPackets();
                     packets.AddRange(statusPackets);
                     statusPackets.Clear();
@@ -428,24 +448,15 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public virtual bool CanCast(Character target, BattleCommand spell)
+        public virtual bool CanUse(Character target, BattleCommand skill, CommandResult error = null)
         {
             return false;
         }
 
-        public virtual bool CanWeaponSkill(Character target, BattleCommand skill)
-        {
-            return false;
-        }
-
-        public virtual bool CanUseAbility(Character target, BattleCommand ability)
-        {
-            return false;
-        }
 
         public virtual uint GetAttackDelayMs()
         {
-            return (uint)GetMod((uint)Modifier.AttackDelay);
+            return (uint)GetMod((uint)Modifier.Delay);
         }
 
         public virtual uint GetAttackRange()
@@ -523,8 +534,8 @@ namespace FFXIVClassic_Map_Server.Actors
             aiContainer.Reset();
             // todo: reset hp/mp/tp etc here
             ChangeState(SetActorStatePacket.MAIN_STATE_PASSIVE);
-            charaWork.parameterSave.hp = charaWork.parameterSave.hpMax;
-            charaWork.parameterSave.mp = charaWork.parameterSave.mpMax;
+            SetHP((uint) GetMaxHP());
+            SetMP((uint) GetMaxMP());
             RecalculateStats();
         }
 
@@ -609,8 +620,8 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void SetMP(uint mp)
         {
-            charaWork.parameterSave.mpMax = (short)mp;
-            if (mp > charaWork.parameterSave.hpMax[0])
+            charaWork.parameterSave.mp = (short)mp;
+            if (mp > charaWork.parameterSave.mpMax)
                 SetMaxMP(mp);
 
             updateFlags |= ActorUpdateFlags.HpTpMp;
@@ -621,8 +632,9 @@ namespace FFXIVClassic_Map_Server.Actors
             charaWork.parameterSave.mp = (short)mp;
             updateFlags |= ActorUpdateFlags.HpTpMp;
         }
+
         // todo: the following functions are virtuals since we want to check hidden item bonuses etc on player for certain conditions
-        public virtual void AddHP(int hp)
+        public virtual void AddHP(int hp, CommandResultContainer resultContainer = null)
         {
             // dont wanna die ded, don't want to send update if hp isn't actually changed
             if (IsAlive() && hp != 0)
@@ -634,6 +646,9 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.parameterSave.hp[0] = (short)addHp;
 
                 updateFlags |= ActorUpdateFlags.HpTpMp;
+
+                if (charaWork.parameterSave.hp[0] < 1)
+                    Die(Program.Tick, resultContainer);
             }
         }
 
@@ -675,9 +690,9 @@ namespace FFXIVClassic_Map_Server.Actors
             }
         }
 
-        public void DelHP(int hp)
+        public void DelHP(int hp, CommandResultContainer resultContainer = null)
         {
-            AddHP((short)-hp);
+            AddHP((short)-hp, resultContainer);
         }
 
         public void DelMP(int mp)
@@ -743,7 +758,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public virtual float GetSpeed()
         {
             // todo: for battlenpc/player calculate speed
-            return (float) GetMod((uint)Modifier.Speed);
+            return (float) GetMod((uint)Modifier.MovementSpeed);
         }
 
         public virtual void OnAttack(State state, CommandResult action, ref CommandResult error)
@@ -821,55 +836,55 @@ namespace FFXIVClassic_Map_Server.Actors
 
         }
 
-        public virtual void OnDamageDealt(Character defender, CommandResult action, CommandResultContainer actionContainer = null)
+        public virtual void OnDamageDealt(Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             switch (action.hitType)
             {
                 case (HitType.Miss):
-                    OnMiss(this, action, actionContainer);
+                    OnMiss(defender, skill, action, actionContainer);
+                    break;
+                case (HitType.Crit):
+                    OnCrit(defender, skill, action, actionContainer);
+                    OnHit(defender, skill, action, actionContainer);
                     break;
                 default:
-                    OnHit(defender, action, actionContainer);
+                    OnHit(defender, skill, action, actionContainer);
                     break;
             }
 
             //TP is only gained from autoattacks and abilities
-            if (action.commandType == CommandType.AutoAttack || action.commandType == CommandType.Ability)
+            if ((action.commandType == CommandType.AutoAttack || action.commandType == CommandType.Ability) && action.hitType != HitType.Miss)
             {
                 //TP gained on an attack is usually 100 * delay.
                 //Store TP seems to add .1% per point.
-                double weaponDelay = GetMod(Modifier.AttackDelay) / 1000.0;
-                var storeTPPercent = 1 + (GetMod(Modifier.StoreTP) * 0.001);
+                double weaponDelay = GetMod(Modifier.Delay) / 1000.0;
+                var storeTPPercent = 1 + (GetMod(Modifier.StoreTp) * 0.001);
                 AddTP((int)(weaponDelay * 100 * storeTPPercent));
             }
         }
 
-        public virtual void OnDamageTaken(Character attacker, CommandResult action, CommandResultContainer actionContainer = null)
+        public virtual void OnDamageTaken(Character attacker, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             switch (action.hitType)
             {
                 case (HitType.Miss):
-                    OnEvade(attacker, action, actionContainer);
+                    OnEvade(attacker, skill, action, actionContainer);
                     break;
                 case (HitType.Parry):
-                    OnParry(attacker, action, actionContainer);
+                    OnParry(attacker, skill, action, actionContainer);
                     break;
                 case (HitType.Block):
-                    OnBlock(attacker, action, actionContainer);
+                    OnBlock(attacker, skill, action, actionContainer);
                     break;
             }
 
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnDamageTaken, "onDamageTaken", attacker, this, action);
-            
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnDamageTaken, "onDamageTaken", attacker, this, skill, action, actionContainer);
+
             //TP gain formula seems to be something like 5 * e ^ ( -0.667 * [defender's level] ) * damage taken, rounded up
             //This should be completely accurate at level 50, but isn't totally accurate at lower levels.
             //Don't know if store tp impacts this
             double tpModifier = 5 * Math.Pow(Math.E, (-0.0667 * GetLevel()));
             AddTP((int)Math.Ceiling(tpModifier * action.amount));
-            
-
-            if (charaWork.parameterSave.hp[0] < 1)
-                Die(Program.Tick, actionContainer);
         }
 
         public UInt64 GetTempVar(string name)
@@ -978,8 +993,7 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 StatusEffect procEffect = Server.GetWorldManager().GetStatusEffect(effectId);
                 procEffect.SetDuration(5);
-                procEffect.SetSilent(true);
-                statusEffects.AddStatusEffect(procEffect, this, true, true);
+                statusEffects.AddStatusEffect(procEffect, this);
             }
             //Otherwise we're reseting a proc, remove the status
             else
@@ -1013,36 +1027,41 @@ namespace FFXIVClassic_Map_Server.Actors
         }
 
         //Called when this character evades attacker's action
-        public void OnEvade(Character attacker, CommandResult action, CommandResultContainer actionContainer = null)
+        public void OnEvade(Character attacker, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Evade);
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnEvade, "onEvade", attacker, this, action, actionContainer);
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnEvade, "onEvade", attacker, this, skill, action, actionContainer);
         }
 
         //Called when this character blocks attacker's action
-        public void OnBlock(Character attacker, CommandResult action, CommandResultContainer actionContainer = null)
+        public void OnBlock(Character attacker, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Block);
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnBlock, "onBlock", attacker, this, action, actionContainer);
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnBlock, "onBlock", attacker, this, skill, action, actionContainer);
         }
 
         //Called when this character parries attacker's action
-        public void OnParry(Character attacker, CommandResult action, CommandResultContainer actionContainer = null)
+        public void OnParry(Character attacker, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Parry);
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnParry, "onParry", attacker, this, action, actionContainer);
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnParry, "onParry", attacker, this, skill, action, actionContainer);
         }
 
         //Called when this character misses
-        public void OnMiss(Character defender, CommandResult action, CommandResultContainer actionContainer = null)
+        public void OnMiss(Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             SetProc((ushort)HitType.Miss);
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnMiss, "onMiss", this, defender, action, actionContainer);
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnMiss, "onMiss", this, defender, skill, action, actionContainer);
         }
 
-        public void OnHit(Character defender, CommandResult action, CommandResultContainer actionContainer = null)
+        public void OnHit(Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
-            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnHit, "onHit", this, defender, action, actionContainer);
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnHit, "onHit", this, defender, skill, action, actionContainer);
+        }
+
+        public void OnCrit(Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
+        {
+            statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnCrit, "onCrit", this, defender, skill, action, actionContainer);
         }
 
         //The order of messages that appears after using a command is:
@@ -1056,7 +1075,7 @@ namespace FFXIVClassic_Map_Server.Actors
         //5. The hit itself. For single hit commands this message is "Your [command] hits [target] for x damage" for multi hits it's "[Target] takes x points of damage"
         //6. Stoneskin falling off
         //6. Buffs that activate after a command hits, like Aegis Boon and Divine Veil
-        
+
         //After all hits
         //7. If it's a multi-hit command there's a "{numhits]fold attack..." message or if all hits miss an "All attacks missed" message
         //8. Buffs that fall off after the skill ends, like Excruciate
@@ -1092,7 +1111,7 @@ namespace FFXIVClassic_Map_Server.Actors
                         lua.LuaEngine.CallLuaBattleCommandFunction(this, command, folder, "onSkillFinish", this, chara, command, action, actions);
                         //cached script
                         //skill.CallLuaFunction(owner, "onSkillFinish", this, chara, command, action, actions);
-                        if (action.hitType > HitType.Evade && action.hitType != HitType.Resist)
+                        if (action.ActionLanded())
                         {
                             hitTarget = true;
                             hitCount++;
@@ -1116,18 +1135,20 @@ namespace FFXIVClassic_Map_Server.Actors
                 actions.AddAction(new CommandResult(actorId, 30202, 0));
             }
 
+            DelMP(command.CalculateMpCost(this));
+            DelTP(command.CalculateTpCost(this));
+
             //Now that we know if we hit the target we can check if the combo continues
             if (this is Player)
             {
                 if (command.isCombo && hitTarget)
                     ((Player)this).SetCombos(command.comboNextCommandId);
-                else
+                //Only reset combo if the command is a spell or weaponskill, since abilities can be used between combo skills
+                else if (command.commandType == CommandType.Spell || command.commandType == CommandType.WeaponSkill)
                     ((Player)this).SetCombos();
             }
 
-            CommandResult error = new CommandResult(actorId, 0, 0);
-            DelMP(command.CalculateMpCost(this));
-            DelTP(command.CalculateTpCost(this));
+
             actions.CombineLists();
             DoBattleAction(command.id, command.battleAnimation, actions.GetList());
         }
@@ -1135,8 +1156,8 @@ namespace FFXIVClassic_Map_Server.Actors
         public List<Character> GetPartyMembersInRange(uint range)
         {
             TargetFind targetFind = new TargetFind(this);
-            targetFind.SetAOEType(ValidTarget.PartyMember, TargetFindAOEType.Circle, TargetFindAOETarget.Self, range, 0, 10, 0, 0);
-            targetFind.FindWithinArea(this, ValidTarget.PartyMember, TargetFindAOETarget.Self);
+            targetFind.SetAOEType(ValidTarget.Party, TargetFindAOEType.Circle, TargetFindAOETarget.Self, range, 0, 10, 0, 0);
+            targetFind.FindWithinArea(this, ValidTarget.Party, TargetFindAOETarget.Self);
             return targetFind.GetTargets();
         }
 

@@ -320,28 +320,28 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         // custom effects here
         // status for having procs fall off
-        EvadeProc = 253003,
-        BlockProc = 253004,
-        ParryProc = 253005,
-        MissProc = 253006,
-        EXPChain = 253007
+        EvadeProc = 300000,
+        BlockProc = 300001,
+        ParryProc = 300002,
+        MissProc = 300003,
+        EXPChain = 300004
     }
 
     [Flags]
     enum StatusEffectFlags : uint
     {
         None = 0,
-        Silent = 1 << 0,                            // dont display effect loss message
 
-        //Loss flags
-        LoseOnDeath =                   1 << 1,     // effects removed on death
-        LoseOnZoning =                  1 << 2,     // effects removed on zoning
-        LoseOnEsuna =                   1 << 3,     // effects which can be removed with esuna (debuffs)
-        LoseOnDispel =                  1 << 4,     // some buffs which player might be able to dispel from mob
-        LoseOnLogout =                  1 << 5,     // effects removed on logging out
-        LoseOnAttacking =               1 << 6,     // effects removed when owner attacks another entity
-        LoseOnCastStart =               1 << 7,     // effects removed when owner starts casting
-        LoseOnAggro =                   1 << 8,     // effects removed when owner gains enmity (swiftsong)
+        //Loss flags - Do we need loseonattacking/caststart? Could just be done with activate flags
+        LoseOnDeath =                   1 << 0,     // effects removed on death
+        LoseOnZoning =                  1 << 1,     // effects removed on zoning
+        LoseOnEsuna =                   1 << 2,     // effects which can be removed with esuna (debuffs)
+        LoseOnDispel =                  1 << 3,     // some buffs which player might be able to dispel from mob
+        LoseOnLogout =                  1 << 4,     // effects removed on logging out
+        LoseOnAttacking =               1 << 5,     // effects removed when owner attacks another entity
+        LoseOnCastStart =               1 << 6,     // effects removed when owner starts casting
+        LoseOnAggro =                   1 << 7,     // effects removed when owner gains enmity (swiftsong)
+        LoseOnClassChange =             1 << 8,     //Effect falls off whhen changing class
 
         //Activate flags
         ActivateOnCastStart =           1 << 9,     //Activates when a cast starts.
@@ -368,9 +368,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         PreventMovement =               1 << 26,    // effects which prevent movement such as bind, still allows turning in place
         PreventTurn =                   1 << 27,    // effects which prevent turning, such as stun
         PreventUntarget =               1 << 28,    // effects which prevent changing targets, such as fixation
-
-        Stealth =                       1 << 29,    // sneak/invis
-        Stance =                        1 << 30,    // effects that do not have a timer
+        Stance =                        1 << 29     // effects that do not have a timer
     }
 
     enum StatusEffectOverwrite : byte
@@ -387,19 +385,22 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
         private Character owner;
         private Character source;
         private StatusEffectId id;
-        private string name;        // name of this effect
-        private DateTime startTime; // when was this effect added
-        private DateTime endTime;   // when this status falls off
-        private DateTime lastTick;  // when did this effect last tick
-        private uint duration;    // how long should this effect last in seconds
-        private uint tickMs;        // how often should this effect proc
-        private double magnitude;   // a value specified by scripter which is guaranteed to be used by all effects
-        private byte tier;          // same effect with higher tier overwrites this
-        private double extra;       // optional value
-        private StatusEffectFlags flags;         // death/erase/dispel etc
-        private StatusEffectOverwrite overwrite; // how to handle adding an effect with same id (see StatusEfectOverwrite)
-        private bool silent = false;             // do i send a message on losing effect 
-        private bool hidden = false;
+        private string name;                        // name of this effect
+        private DateTime startTime;                 // when was this effect added
+        private DateTime endTime;                   // when this status falls off
+        private DateTime lastTick;                  // when did this effect last tick
+        private uint duration;                      // how long should this effect last in seconds
+        private uint tickMs;                        // how often should this effect proc
+        private double magnitude;                   // a value specified by scripter which is guaranteed to be used by all effects
+        private byte tier;                          // same effect with higher tier overwrites this
+        private double extra;                       // optional value
+        private StatusEffectFlags flags;            // death/erase/dispel etc
+        private StatusEffectOverwrite overwrite;    // how to handle adding an effect with same id (see StatusEfectOverwrite)
+        private bool silentOnGain = false;          //Whether a message is sent when the status is gained
+        private bool silentOnLoss = false;          //Whether a message is sent when the status is lost
+        private bool hidden = false;                //Whether this status is shown. Used for things that aren't really status effects like exp chains and procs
+        private ushort statusGainTextId = 30328;    //The text id used when the status is gained. 30328: [Command] grants you the effect of [status] (Used for buffs)
+        private ushort statusLossTextId = 30331;    //The text id used when the status effect falls off when its time runs out. 30331: You are no longer under the effect of [status] (Used for buffs)
         public LuaScript script;
 
         HitEffect animationEffect;
@@ -433,26 +434,36 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.name = effect.name;
             this.flags = effect.flags;
             this.overwrite = effect.overwrite;
+            this.statusGainTextId = effect.statusGainTextId;
+            this.statusLossTextId = effect.statusLossTextId;
             this.extra = effect.extra;
             this.script = effect.script;
+            this.silentOnGain = effect.silentOnGain;
+            this.silentOnLoss = effect.silentOnLoss;
+            this.hidden = effect.hidden;
         }
 
-        public StatusEffect(uint id, string name, uint flags, uint overwrite, uint tickMs)
+        public StatusEffect(uint id, string name, uint flags, uint overwrite, uint tickMs, bool hidden, bool silentOnGain, bool silentOnLoss, ushort statusGainTextId, ushort statusLossTextId)
         {
             this.id = (StatusEffectId)id;
             this.name = name;
             this.flags = (StatusEffectFlags)flags;
             this.overwrite = (StatusEffectOverwrite)overwrite;
             this.tickMs = tickMs;
+            this.hidden = hidden;
+            this.silentOnGain = silentOnGain;
+            this.silentOnLoss = silentOnLoss;
+            this.statusGainTextId = statusGainTextId;
+            this.statusLossTextId = statusLossTextId;
         }
 
         // return true when duration has elapsed
-        public bool Update(DateTime tick)
+        public bool Update(DateTime tick, CommandResultContainer resultContainer = null)
         {
             if (tickMs != 0 && (tick - lastTick).TotalMilliseconds >= tickMs)
             {
                 lastTick = tick;
-                if (LuaEngine.CallLuaStatusEffectFunction(this.owner, this, "onTick", this.owner, this) > 0)
+                if (LuaEngine.CallLuaStatusEffectFunction(this.owner, this, "onTick", this.owner, this, resultContainer) > 0)
                     return true;
             }
 
@@ -548,14 +559,29 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return (byte)overwrite;
         }
 
-        public bool GetSilent()
+        public bool GetSilentOnGain()
         {
-            return silent;
+            return silentOnGain;
+        }
+
+        public bool GetSilentOnLoss()
+        {
+            return silentOnLoss;
         }
 
         public bool GetHidden()
         {
             return hidden;
+        }
+
+        public ushort GetStatusGainTextId()
+        {
+            return statusGainTextId;
+        }
+
+        public ushort GetStatusLossTextId()
+        {
+            return statusLossTextId;
         }
 
         public void SetStartTime(DateTime time)
@@ -566,7 +592,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void SetEndTime(DateTime time)
         {
-            endTime = time;
+            //If it's a stance, just set endtime to highest number possible for XIV
+            if ((flags & StatusEffectFlags.Stance) != 0)
+            {
+                endTime = Utils.UnixTimeStampToDateTime(4294967295);
+            }
+            else
+            {
+                endTime = time;
+            }
         }
 
         //Refresh the status, updating the end time based on the duration of the status and broadcasts the new time
@@ -629,15 +663,31 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             this.overwrite = (StatusEffectOverwrite)overwrite;
         }
 
-        public void SetSilent(bool silent)
+        public void SetSilentOnGain(bool silent)
         {
-            this.silent = silent;
+            this.silentOnGain = silent;
+        }
+
+        public void SetSilentOnLoss(bool silent)
+        {
+            this.silentOnLoss = silent;
         }
 
         public void SetHidden(bool hidden)
         {
             this.hidden = hidden;
         }
+
+        public void SetStatusGainTextId(ushort textId)
+        {
+            this.statusGainTextId = textId;
+        }
+
+        public void SetStatusLossTextId(ushort textId)
+        {
+            this.statusLossTextId = textId;
+        }
+
 
         public void SetAnimation(uint hitEffect)
         {

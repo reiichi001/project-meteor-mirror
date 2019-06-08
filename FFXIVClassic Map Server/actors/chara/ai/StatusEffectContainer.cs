@@ -30,39 +30,41 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
         public void Update(DateTime tick)
         {
+            CommandResultContainer resultContainer = new CommandResultContainer();
+
             //Regen/Refresh/Regain effects tick every 3 seconds
             if ((DateTime.Now - lastTick).Seconds >= 3)
             {
-                RegenTick(tick);
+                RegenTick(tick, resultContainer);
                 lastTick = DateTime.Now;
             }
-            // list of effects to remove
 
-           // if (owner is Player) UpdateTimeAtIndex(4, 4294967295);
+            // list of effects to remove
             var removeEffects = new List<StatusEffect>();
-            for (int i = 0; i < effects.Values.Count; i++)
+            var effectsList = effects.Values;
+            for (int i = effectsList.Count - 1; i >= 0; i--)
             {
                 // effect's update function returns true if effect has completed
-                if (effects.Values.ElementAt(i).Update(tick))
-                     removeEffects.Add(effects.Values.ElementAt(i));
-
+                if (effectsList.ElementAt(i).Update(tick, resultContainer))
+                    removeEffects.Add(effectsList.ElementAt(i));
             }
 
             // remove effects from this list
             foreach (var effect in removeEffects)
             {
-                RemoveStatusEffect(effect);
+                RemoveStatusEffect(effect, resultContainer, effect.GetStatusLossTextId());
             }
 
-            if (sendUpdate)
+            resultContainer.CombineLists();
+
+            if (resultContainer.GetList().Count > 0)
             {
-                owner.zone.BroadcastPacketsAroundActor(owner, owner.GetActorStatusPackets());
-                sendUpdate = false;
+                owner.DoBattleAction(0, 0x7c000062, resultContainer.GetList());
             }
         }
 
         //regen/refresh/regain
-        public void RegenTick(DateTime tick)
+        public void RegenTick(DateTime tick, CommandResultContainer resultContainer)
         {
             ushort dotTick = (ushort) owner.GetMod(Modifier.RegenDown);
             ushort regenTick = (ushort) owner.GetMod(Modifier.Regen);
@@ -72,18 +74,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             //DoTs tick before regen and the full dot damage is displayed, even if some or all of it is nullified by regen. Only effects like stoneskin actually alter the number shown
             if (dotTick > 0)
             {
-                CommandResult action = new CommandResult(owner.actorId, 30331, (uint)(HitEffect.HitEffectType | HitEffect.Hit), dotTick);
+                //Unsure why 10105 is the textId used
+                //Also unsure why magicshield is used
+                CommandResult action = new CommandResult(owner.actorId, 10105, (uint)(HitEffect.MagicEffectType | HitEffect.MagicShield | HitEffect.NoResist), dotTick);
                 utils.BattleUtils.HandleStoneskin(owner, action);
                 // todo: figure out how to make red numbers appear for enemies getting hurt by dots
-                //owner.DelHP(action.amount);
-                utils.BattleUtils.DamageTarget(owner, owner, action, null);
-                owner.DoBattleAction(0, 0, action);
+                resultContainer.AddAction(action);
+                owner.DelHP(action.amount, resultContainer);
             }
 
             //DoTs are the only effect to show numbers, so that doesnt need to be handled for these
-            owner.AddHP(regenTick);
-            owner.AddMP(refreshtick);
-            owner.AddTP(regainTick);
+            if (regenTick != 0)
+                owner.AddHP(regenTick);
+
+            if (refreshtick != 0)
+                owner.AddMP(refreshtick);
+
+            if (regainTick != 0)
+                owner.AddTP(regainTick);
         }
 
         public bool HasStatusEffect(uint id)
@@ -96,55 +104,59 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return effects.ContainsKey((uint)id);
         }
 
-        public CommandResult AddStatusForCommandResult(uint id, byte tier = 1, ulong magnitude = 0, uint duration = 0)
-        {
-            CommandResult action = null;
-
-            if (AddStatusEffect(id, tier, magnitude, duration))
-                action = new CommandResult(owner.actorId, 30328, id | (uint)HitEffect.StatusEffectType);
-
-            return action;
-        }
-
-        public bool AddStatusEffect(uint id)
+        public bool AddStatusEffect(uint id, CommandResultContainer actionContainer = null, ushort worldmasterTextId = 30328)
         {
             var se = Server.GetWorldManager().GetStatusEffect(id);
 
-            return AddStatusEffect(se, owner);
+            if (se != null)
+            {
+                worldmasterTextId = se.GetStatusGainTextId();
+            }
+
+            return AddStatusEffect(se, owner, actionContainer, worldmasterTextId);
         }
 
-        public bool AddStatusEffect(uint id, byte tier)
+        public bool AddStatusEffect(uint id, byte tier, CommandResultContainer actionContainer = null, ushort worldmasterTextId = 30328)
         {
             var se = Server.GetWorldManager().GetStatusEffect(id);
 
-            se.SetTier(tier);
+            if (se != null)
+            {
+                se.SetTier(tier);
+                worldmasterTextId = se.GetStatusGainTextId();
+            }
 
-            return AddStatusEffect(se, owner);
+            return AddStatusEffect(se, owner, actionContainer, worldmasterTextId);
         }
 
-        public bool AddStatusEffect(uint id,  byte tier, double magnitude)
+        public bool AddStatusEffect(uint id, byte tier, double magnitude, CommandResultContainer actionContainer = null, ushort worldmasterTextId = 30328)
         {
             var se = Server.GetWorldManager().GetStatusEffect(id);
 
-            se.SetMagnitude(magnitude);
-            se.SetTier(tier);
+            if (se != null)
+            {
+                se.SetMagnitude(magnitude);
+                se.SetTier(tier);
+                worldmasterTextId = se.GetStatusGainTextId();
+            }
 
-            return AddStatusEffect(se, owner);
+            return AddStatusEffect(se, owner, actionContainer, worldmasterTextId);
         }
 
-        public bool AddStatusEffect(uint id, byte tier, double magnitude, uint duration, int tickMs = 3000)
+        public bool AddStatusEffect(uint id, byte tier, double magnitude, uint duration, int tickMs, CommandResultContainer actionContainer = null, ushort worldmasterTextId = 30328)
         {
             var se = Server.GetWorldManager().GetStatusEffect(id);
+
             if (se != null)
             {
                 se.SetDuration(duration);
-                se.SetStartTime(DateTime.Now);
                 se.SetOwner(owner);
+                worldmasterTextId = se.GetStatusGainTextId();
             }
-            return AddStatusEffect(se ?? new StatusEffect(this.owner, id, magnitude, 3000, duration, tier), owner);
+            return AddStatusEffect(se ?? new StatusEffect(this.owner, id, magnitude, 3000, duration, tier), owner, actionContainer, worldmasterTextId);
         }
 
-        public bool AddStatusEffect(StatusEffect newEffect, Character source, bool silent = false, bool hidden = false)
+        public bool AddStatusEffect(StatusEffect newEffect, Character source, CommandResultContainer actionContainer = null, ushort worldmasterTextId = 30328)
         {
             /*
                 worldMasterTextId
@@ -166,9 +178,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             if (canOverwrite || effect == null)
             {
                 // send packet to client with effect added message
-                if (effect != null && (!silent  || !effect.GetSilent() || (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0))
+                if (newEffect != null && !newEffect.GetSilentOnGain())
                 {
-                    // todo: send packet to client with effect added message
+                    if (actionContainer != null)
+                        actionContainer.AddAction(new CommandResult(owner.actorId, worldmasterTextId, newEffect.GetStatusEffectId() | (uint)HitEffect.StatusEffectType));
                 }
 
                 // wont send a message about losing effect here
@@ -181,13 +194,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
 
                 if (effects.Count < MAX_EFFECTS)
                 {
-                    if(newEffect.script != null)
-                        newEffect.CallLuaFunction(this.owner, "onGain", this.owner, newEffect);
-                    else
-                        LuaEngine.CallLuaStatusEffectFunction(this.owner, newEffect, "onGain", this.owner, newEffect);
+                    newEffect.CallLuaFunction(this.owner, "onGain", this.owner, newEffect, actionContainer);
+
                     effects.Add(newEffect.GetStatusEffectId(), newEffect);
-                    //newEffect.SetSilent(silent);
-                    newEffect.SetHidden(hidden);
 
                     if (!newEffect.GetHidden())
                     {
@@ -212,15 +221,19 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return false;
         }
 
-        public bool RemoveStatusEffect(StatusEffect effect, bool silent = false)
+        //playEffect determines whether the effect of the animation that's going to play with actionContainer is going to play on owner
+        //Generally, for abilities removing an effect, this is true and for effects removing themselves it's false.
+        public bool RemoveStatusEffect(StatusEffect effect, CommandResultContainer actionContainer = null, ushort worldmasterTextId = 30331, bool playEffect = true)
         {
             bool removedEffect = false;
             if (effect != null && effects.ContainsKey(effect.GetStatusEffectId()))
             {
                 // send packet to client with effect remove message
-                if (!silent && !effect.GetSilent() && (effect.GetFlags() & (uint)StatusEffectFlags.Silent) == 0)
+                if (!effect.GetSilentOnLoss())
                 {
-                    owner.DoBattleAction(0, 0, new CommandResult(owner.actorId, 30331, effect.GetStatusEffectId()));
+                    //Only send a message if we're using an actioncontainer and the effect normally sends a message when it's lost
+                    if (actionContainer != null)
+                        actionContainer.AddAction(new CommandResult(owner.actorId, worldmasterTextId, effect.GetStatusEffectId() | (playEffect ? 0 : (uint)HitEffect.StatusLossType)));
                 }
 
                 //hidden effects not in charawork
@@ -230,54 +243,20 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                     SetStatusAtIndex(index, 0);
                     SetTimeAtIndex(index, 0);
                 }
+
                 // function onLose(actor, effect)
                 effects.Remove(effect.GetStatusEffectId());
-                if(effect.script != null)
-                    effect.CallLuaFunction(owner, "onLose", owner, effect);
-                else
-                    LuaEngine.CallLuaStatusEffectFunction(this.owner, effect, "onLose", this.owner, effect);
+                effect.CallLuaFunction(owner, "onLose", owner, effect, actionContainer);
                 owner.RecalculateStats();
-                sendUpdate = true;
                 removedEffect = true;
             }
 
             return removedEffect;
         }
 
-        public bool RemoveStatusEffect(uint effectId, bool silent = false)
+        public bool RemoveStatusEffect(uint effectId, CommandResultContainer resultContainer = null, ushort worldmasterTextId = 30331, bool playEffect = true)
         {
-            bool removedEffect = false;
-            foreach (var effect in effects.Values)
-            {
-                if (effect.GetStatusEffectId() == effectId)
-                {
-                    RemoveStatusEffect(effect, effect.GetSilent() || silent);
-                    removedEffect = true;
-                    break;
-                }
-            }
-
-            return removedEffect;
-        }
-
-
-        //Remove status effect and return the CommandResult message instead of sending it immediately
-        public CommandResult RemoveStatusEffectForCommandResult(uint effectId, ushort worldMasterTextId = 30331)
-        {
-            CommandResult action = null;
-            if (RemoveStatusEffect(effectId, true))
-                action = new CommandResult(owner.actorId, worldMasterTextId, effectId);
-
-            return action;
-        }
-
-        //Remove status effect and return the CommandResult message instead of sending it immediately
-        public CommandResult RemoveStatusEffectForCommandResult(StatusEffect effect, ushort worldMasterTextId = 30331)
-        {
-            CommandResult action = null;
-            if (RemoveStatusEffect(effect, true))
-                action = new CommandResult(owner.actorId, worldMasterTextId, effect.GetStatusEffectId());
-            return action;
+            return RemoveStatusEffect(GetStatusEffectById(effectId), resultContainer, worldmasterTextId, playEffect);
         }
 
         public StatusEffect CopyEffect(StatusEffect effect)
@@ -288,14 +267,14 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             return AddStatusEffect(newEffect, effect.GetSource()) ? newEffect : null;
         }
 
-        public bool RemoveStatusEffectsByFlags(uint flags, bool silent = false)
+        public bool RemoveStatusEffectsByFlags(uint flags, CommandResultContainer resultContainer = null)
         {
             // build list of effects to remove
             var removeEffects = GetStatusEffectsByFlag(flags);
 
             // remove effects from main list
             foreach (var effect in removeEffects)
-                RemoveStatusEffect(effect, silent);
+                RemoveStatusEffect(effect, resultContainer, effect.GetStatusLossTextId(), true);
 
             // removed an effect with one of these flags
             return removeEffects.Count > 0;
@@ -319,6 +298,16 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
                     list.Add(effect);
 
             return list;
+        }
+
+        public StatusEffect GetRandomEffectByFlag(uint flag)
+        {
+            var list = GetStatusEffectsByFlag(flag);
+
+            if (list.Count > 0)
+                return list[Program.Random.Next(list.Count)];
+
+            return null;
         }
 
         // todo: why the fuck cant c# convert enums/
@@ -429,7 +418,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai
             SetStatusAtIndex(index, (ushort) (newEffectId - 200000));
             SetTimeAtIndex(index, time);
 
-            return new CommandResult(owner.actorId, 30328, (uint) HitEffect.StatusEffectType | newEffectId);
+            return new CommandResult(owner.actorId, 30330, (uint) HitEffect.StatusEffectType | newEffectId);
         }
     }
 }

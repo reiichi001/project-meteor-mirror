@@ -1,5 +1,6 @@
 require("global");
 require("magic");
+require("modifiers");
 
 function onMagicPrepare(caster, target, spell)
     return 0;
@@ -14,7 +15,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
     --2.5 HP per Healing Magic Potency
     --0.5 HP per MND
     --this is WITH WHM AF chest, don't know formula without AF. AF seems to increase healing by 7-10%?
-    action.amount = 2.5 * caster.GetMod(modifiersGlobal.MagicHeal) + 0.5 * (caster.GetMod(modifiersGlobal.Mind));
+    action.amount = 2.5 * caster.GetMod(modifiersGlobal.HealingMagicPotency) + 0.5 * (caster.GetMod(modifiersGlobal.Mind));
 
     --DoAction handles rates, buffs, dealing damage
     action.DoAction(caster, target, skill, actionContainer);

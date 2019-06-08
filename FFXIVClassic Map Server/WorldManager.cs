@@ -478,7 +478,7 @@ namespace FFXIVClassic_Map_Server
                                 battleNpcGenusMods.TryGetValue(battleNpc.genusId, out battleNpc.genusMods);
                                 battleNpcSpawnMods.TryGetValue(battleNpc.GetBattleNpcId(), out battleNpc.spawnMods);
 
-                                battleNpc.SetMod((uint)Modifier.Speed, reader.GetByte("speed"));
+                                battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"));
                                 battleNpc.neutral = reader.GetByte("aggroType") == 0;
 
                                 battleNpc.SetDetectionType(reader.GetUInt32("detection"));
@@ -603,7 +603,7 @@ namespace FFXIVClassic_Map_Server
                                 reader.GetUInt16("actorState"), reader.GetUInt32("animationId"), "");
                             
                             battleNpc.SetBattleNpcId(reader.GetUInt32("bnpcId"));
-                            battleNpc.SetMod((uint)Modifier.Speed, reader.GetByte("speed"));
+                            battleNpc.SetMod((uint)Modifier.MovementSpeed, reader.GetByte("speed"));
                             battleNpc.neutral = reader.GetByte("aggroType") == 0;
 
                             // set mob mods

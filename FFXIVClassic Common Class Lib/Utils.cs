@@ -7,6 +7,7 @@ namespace FFXIVClassic.Common
     public static class Utils
     {
         private static readonly uint[] _lookup32 = CreateLookup32();
+        private static readonly DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         private static uint[] CreateLookup32()
         {
@@ -104,6 +105,11 @@ namespace FFXIVClassic.Common
             unixTimeStamp = (ulong)zuluTime.Subtract(unixEpoch).TotalMilliseconds;
 
             return unixTimeStamp;
+        }
+
+        public static DateTime UnixTimeStampToDateTime(uint timestamp)
+        {
+            return epoch.AddSeconds(timestamp);
         }
 
         public static ulong SwapEndian(ulong input)

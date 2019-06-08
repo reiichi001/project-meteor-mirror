@@ -20,16 +20,22 @@ function onTrigger(player, argc, slot, wId, eId, vId, cId)
     vId = tonumber(vId) or 0;
     cId = tonumber(cId) or 0;
     
-    if player and argc > 0 then
-        if argc > 2 then
-            player:GraphicChange(slot, wId, eId, vId, cId);
-            player:SendMessage(messageID, sender,  string.format("Changing appearance on slot %u", slot));
+    local actor = GetWorldManager():GetActorInWorld(player.currentTarget) or nil;
+    if player and actor then
+        if player and argc > 0 then
+
+        -- player.appearanceIds[5] = player.achievementPoints;
+            if argc > 2 then
+                actor:GraphicChange(slot, wId, eId, vId, cId);
+            --player.achievementPoints = player.achievementPoints + 1;
+                actor:SendMessage(messageID, sender,  string.format("Changing appearance on slot %u", slot));
+                actor:SendMessage(messageID, sender,  string.format("points %u", player.appearanceIds[5]));
+            else
+                actor.appearanceIds[slot] = wId;
+            end
+            actor:SendAppearance();
         else
-            player:GraphicChange(slot, wId);
-        end
-        player:SendAppearance();
-    else
-        player:SendMessage(messageID, sender, "No parameters sent! Usage: "..properties.description);
+            player:SendMessage(messageID, sender, "No parameters sent! Usage: "..properties.description);
+        end;
     end;
-           
 end;

@@ -20,6 +20,8 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.battle
         }
 
         //Just to make scripting simpler
+        //These have to be split into the normal actions and absorb actions because they use different flags
+        //AddMP/HP/TPAction are for actions where the targetID is the person being targeted by command. Like Sanguine Rite would use AddMPAction
         public void AddMPAction(uint targetId, ushort worldMasterTextId, ushort amount)
         {
             uint effectId = (uint) (HitEffect.MagicEffectType | HitEffect.MP | HitEffect.Heal);
@@ -28,13 +30,38 @@ namespace FFXIVClassic_Map_Server.packets.send.actor.battle
 
         public void AddHPAction(uint targetId, ushort worldMasterTextId, ushort amount)
         {
-            uint effectId = (uint)(HitEffect.MagicEffectType | HitEffect.Heal);
+            uint effectId = (uint) (HitEffect.MagicEffectType | HitEffect.Heal);
             AddAction(targetId, worldMasterTextId, effectId, amount);
         }
 
         public void AddTPAction(uint targetId, ushort worldMasterTextId, ushort amount)
         {
-            uint effectId = (uint)(HitEffect.MagicEffectType | HitEffect.TP);
+            uint effectId = (uint) (HitEffect.MagicEffectType | HitEffect.TP | HitEffect.Heal);
+            AddAction(targetId, worldMasterTextId, effectId, amount);
+        }
+
+        //These are used for skills where the targetId is the person using a command. For example casting with parsimony would use AddMPAbsorbAction
+        public void AddMPAbsorbAction(uint targetId, ushort worldMasterTextId, ushort amount)
+        {
+            uint effectId = (uint) (HitEffect.SelfHealType | HitEffect.SelfHealMP | HitEffect.SelfHeal);
+            AddAction(targetId, worldMasterTextId, effectId, amount);
+        }
+
+        public void AddHPAbsorbAction(uint targetId, ushort worldMasterTextId, ushort amount)
+        {
+            uint effectId = (uint) (HitEffect.SelfHealType | HitEffect.SelfHeal | HitEffect.SelfHeal);
+            AddAction(targetId, worldMasterTextId, effectId, amount);
+        }
+
+        public void AddTPAbsorbAction(uint targetId, ushort worldMasterTextId, ushort amount)
+        {
+            uint effectId = (uint) (HitEffect.SelfHealType | HitEffect.SelfHealTP | HitEffect.SelfHeal);
+            AddAction(targetId, worldMasterTextId, effectId, amount);
+        }
+
+        public void AddHitAction(uint targetId, ushort worldMasterTextId, ushort amount)
+        {
+            uint effectId = (uint) (HitEffect.HitEffectType | HitEffect.Hit);
             AddAction(targetId, worldMasterTextId, effectId, amount);
         }
 

@@ -1,10 +1,10 @@
 require("modifiers")
 
 --Set magnitude to milliseconds that HF will reduce delay by
-function onGain(target, effect)
-    target.SubtractMod(modifiersGlobal.AttackDelay), effect.GetMagnitude());
+function onGain(owner, effect, actionContainer)
+    owner.SubtractMod(modifiersGlobal.Delay, effect.GetMagnitude());
 end;
 
-function onLose(target, effect)
-    target.AddMod(modifiersGlobal.AttackDelay), effect.GetMagnitude());
+function onLose(owner, effect, actionContainer)
+    owner.AddMod(modifiersGlobal.Delay, effect.GetMagnitude());
 end;

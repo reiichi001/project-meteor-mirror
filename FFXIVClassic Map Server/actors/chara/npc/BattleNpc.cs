@@ -181,7 +181,7 @@ namespace FFXIVClassic_Map_Server.Actors
             return true;
         }
 
-        public override bool CanCast(Character target, BattleCommand spell)
+        public override bool CanUse(Character target, BattleCommand spell, CommandResult error = null)
         {
             // todo:
             if (target == null)
@@ -200,18 +200,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 return false;
             }
             return true;
-        }
-
-        public override bool CanWeaponSkill(Character target, BattleCommand skill)
-        {
-            // todo:
-            return true;
-        }
-
-        public override bool CanUseAbility(Character target, BattleCommand ability)
-        {
-            // todo:
-            return false;
         }
 
         public uint GetDespawnTime()
@@ -256,8 +244,6 @@ namespace FFXIVClassic_Map_Server.Actors
             this.hateContainer.ClearHate();
             zone.BroadcastPacketsAroundActor(this, GetSpawnPackets(null, 0x01));
             zone.BroadcastPacketsAroundActor(this, GetInitPackets());
-            charaWork.parameterSave.hp = charaWork.parameterSave.hpMax;
-            charaWork.parameterSave.mp = charaWork.parameterSave.mpMax;
             RecalculateStats();
 
             OnSpawn();
@@ -280,6 +266,7 @@ namespace FFXIVClassic_Map_Server.Actors
                     // <actor> defeat/defeats <target>
                     if (actionContainer != null)
                         actionContainer.AddEXPAction(new CommandResult(actorId, 30108, 0));
+
                     if (lastAttacker.currentParty != null && lastAttacker.currentParty is Party)
                     {
                         foreach (var memberId in ((Party)lastAttacker.currentParty).members)
@@ -303,6 +290,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
                 if (positionUpdates != null)
                     positionUpdates.Clear();
+
                 aiContainer.InternalDie(tick, despawnTime);
                 //this.ResetMoveSpeeds();
                 // todo: reset cooldowns
@@ -446,11 +434,11 @@ namespace FFXIVClassic_Map_Server.Actors
                 mobModifiers.Add((MobModifier)mobModId, val);
         }
 
-        public override void OnDamageTaken(Character attacker, CommandResult action,  CommandResultContainer actionContainer = null)
+        public override void OnDamageTaken(Character attacker, BattleCommand skill, CommandResult action,  CommandResultContainer actionContainer = null)
         {
             if (GetMobMod((uint)MobModifier.DefendScript) != 0)
                 lua.LuaEngine.CallLuaBattleFunction(this, "onDamageTaken", this, attacker, action.amount);
-            base.OnDamageTaken(attacker, action, actionContainer);
+            base.OnDamageTaken(attacker, skill, action, actionContainer);
         }
     }
 }

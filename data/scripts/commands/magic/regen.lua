@@ -25,7 +25,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
         intercept = intercept * 1.25;
     end
 
-    local regenTick = (slope * caster.GetMod(modifiersGlobal.MagicEnhancePotency)) + intercept) + 1;
+    local regenTick = (slope * caster.GetMod(modifiersGlobal.EnhancementMagicPotency)) + intercept + 1;
 
     spell.statusMagnitude = regenTick;
 

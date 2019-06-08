@@ -1,16 +1,16 @@
 require("modifiers")
 
 --Add 30 raw block rate. No idea how much block it actually gives.
-function onGain(owner, effect)
+function onGain(owner, effect, actionContainer)
     owner.AddMod(modifiersGlobal.RawBlockRate, 30);
 end
 
-function onLose(owner, effect)
+function onLose(owner, effect, actionContainer)
     owner.SubtractMod(modifiersGlobal.RawBlockRate, 30);
 end
 
 --Gives 200 TP on block. Traited: Gives 10% of the amount blocked back as MP
-function onBlock(effect, attacker, defender, action, actionContainer)
+function onBlock(effect, attacker, defender, skill, action, actionContainer)
     --200 TP on block
     defender.AddTP(200);
 

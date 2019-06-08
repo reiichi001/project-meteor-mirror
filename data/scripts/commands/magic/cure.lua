@@ -30,7 +30,7 @@ function onSkillFinish(caster, target, skill, action, actionContainer)
         hpPerMND = 0.25;
     end
 
-    action.amount = hpPerHMP * caster.GetMod(modifiersGlobal.MagicHeal) + hpPerMND * (caster.GetMod(modifiersGlobal.Mind));
+    action.amount = hpPerHMP * caster.GetMod(modifiersGlobal.HealingMagicPotency) + hpPerMND * (caster.GetMod(modifiersGlobal.Mind));
 
     --DoAction handles rates, buffs, dealing damage
     action.DoAction(caster, target, skill, actionContainer);

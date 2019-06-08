@@ -12,15 +12,24 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
     static class BattleUtils
     {
 
-        public static Dictionary<HitType, ushort> SingleHitTypeTextIds = new Dictionary<HitType, ushort>()
+        public static Dictionary<HitType, ushort> PhysicalHitTypeTextIds = new Dictionary<HitType, ushort>()
         {
             { HitType.Miss,     30311 },
             { HitType.Evade,    30310 },
             { HitType.Parry,    30308 },
             { HitType.Block,    30306 },
-            { HitType.Resist,   30310 },    //Resists seem to use the evade text id
             { HitType.Hit,      30301 },
             { HitType.Crit,     30302 }
+        };
+
+        public static Dictionary<HitType, ushort> MagicalHitTypeTextIds = new Dictionary<HitType, ushort>()
+        {
+            { HitType.SingleResist,30318 },
+            { HitType.DoubleResist,30317 },
+            { HitType.TripleResist, 30316 },//Triple Resists seem to use the same text ID as full resists
+            { HitType.FullResist,30316 },
+            { HitType.Hit,      30319 },
+            { HitType.Crit,     30392 }     //Unsure why crit is separated from the rest of the ids
         };
 
         public static Dictionary<HitType, ushort> MultiHitTypeTextIds = new Dictionary<HitType, ushort>()
@@ -29,20 +38,29 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             { HitType.Evade,    0 },        //Evades were removed before multi hit skills got their own messages, so this doesnt exist
             { HitType.Parry,    30448 },    //[Target] parries, taking x points of damage.
             { HitType.Block,    30447 },    //[Target] blocks, taking x points of damage.
-            { HitType.Resist,   0 },        //No spells are multi-hit, so this doesn't exist
             { HitType.Hit,      30443 },    //[Target] tales x points of damage
             { HitType.Crit,     30444 }     //Critical! [Target] takes x points of damage.
         };
 
-        public static Dictionary<HitType, HitEffect> HitTypeEffects = new Dictionary<HitType, HitEffect>()
+        public static Dictionary<HitType, HitEffect> HitTypeEffectsPhysical = new Dictionary<HitType, HitEffect>()
         {
             { HitType.Miss,     0 },
             { HitType.Evade,    HitEffect.Evade },
             { HitType.Parry,    HitEffect.Parry },
             { HitType.Block,    HitEffect.Block },
-            { HitType.Resist,   HitEffect.RecoilLv1 },//Probably don't need this, resists are handled differently to the rest
             { HitType.Hit,      HitEffect.Hit },
-            { HitType.Crit,     HitEffect.Crit }
+            { HitType.Crit,     HitEffect.Crit | HitEffect.CriticalHit }
+        };
+
+        //Magic attacks can't miss, be blocked, or parried. Resists are technically evades
+        public static Dictionary<HitType, HitEffect> HitTypeEffectsMagical = new Dictionary<HitType, HitEffect>()
+        {
+            { HitType.SingleResist,     HitEffect.WeakResist },
+            { HitType.DoubleResist,     HitEffect.WeakResist },
+            { HitType.TripleResist,     HitEffect.WeakResist },
+            { HitType.FullResist,       HitEffect.FullResist },
+            { HitType.Hit,              HitEffect.NoResist },
+            { HitType.Crit,             HitEffect.Crit }
         };
 
         public static Dictionary<KnockbackType, HitEffect> KnockbackEffects = new Dictionary<KnockbackType, HitEffect>()
@@ -201,7 +219,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         //Or we could have HitTypes for DoubleResist, TripleResist, and FullResist that get used here.
         public static void CalculateResistDamage(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
-            double percentResist = 0.5;
+            //Every tier of resist is a 25% reduction in damage. ie SingleResist is 25% damage taken down, Double is 50% damage taken down, etc
+            double percentResist = 0.25 * (action.hitType - HitType.SingleResist + 1);
 
             action.amountMitigated = (ushort)(action.amount * (1 - percentResist));
             action.amount = (ushort)(action.amount * percentResist);
@@ -217,7 +236,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             defender.SubtractMod((uint)Modifier.Stoneskin, mitigation);
         }
 
-        public static void DamageTarget(Character attacker, Character defender, CommandResult action, CommandResultContainer actionContainer= null)
+        public static void DamageTarget(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer= null)
         {
             if (defender != null)
             {
@@ -230,9 +249,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                         bnpc.lastAttacker = attacker;
                 }
 
-                defender.DelHP((short)action.amount);
-                attacker.OnDamageDealt(defender, action, actionContainer);
-                defender.OnDamageTaken(attacker, action, actionContainer);
+                defender.DelHP((short)action.amount, actionContainer);
+                attacker.OnDamageDealt(defender, skill, action, actionContainer);
+                defender.OnDamageTaken(attacker, skill, action, actionContainer);
 
                 // todo: other stuff too
                 if (defender is BattleNpc)
@@ -248,13 +267,13 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             }
         }
 
-        public static void HealTarget(Character caster, Character target, CommandResult action, CommandResultContainer actionContainer = null)
+        public static void HealTarget(Character caster, Character target, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
             if (target != null)
             {
-                target.AddHP(action.amount);
+                target.AddHP(action.amount, actionContainer);
 
-                target.statusEffects.CallLuaFunctionByFlag((uint) StatusEffectFlags.ActivateOnHealed, "onHealed", caster, target, action, actionContainer);
+                target.statusEffects.CallLuaFunctionByFlag((uint)StatusEffectFlags.ActivateOnHealed, "onHealed", caster, target, skill, action, actionContainer);
             }
         }
 
@@ -279,7 +298,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         public static double GetParryRate(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             //Can't parry with shield, can't parry rear attacks
-            if (defender.GetMod((uint)Modifier.HasShield) != 0 || action.param == (byte) HitDirection.Rear)
+            if (defender.GetMod((uint)Modifier.CanBlock) != 0 || action.param == (byte) HitDirection.Rear)
                 return 0;
 
             double parryRate = 10.0;
@@ -324,7 +343,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
         public static double GetBlockRate(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
             //Shields are required to block and can't block from rear.
-            if (defender.GetMod((uint)Modifier.HasShield) == 0 || action.param == (byte)HitDirection.Rear)
+            if (defender.GetMod((uint)Modifier.CanBlock) == 0 || action.param == (byte)HitDirection.Rear)
                 return 0;
 
             short dlvl = (short)(defender.GetLevel() - attacker.GetLevel());
@@ -355,11 +374,26 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             return false;
         }
 
+        //This probably isn't totally correct but it's close enough for now. 
+        //Full Resists seem to be calculated in a different way because the resist rates don't seem to line up with kanikan's testing (their tests didn't show any full resists)
+        //Non-spells with elemental damage can be resisted, it just doesnt say in the chat that they were. As far as I can tell, all mob-specific attacks are considered not to be spells
         public static bool TryResist(Character attacker, Character defender, BattleCommand skill, CommandResult action)
         {
-            if ((Program.Random.NextDouble() * 100) <= action.resistRate)
+            //The rate degrades for each check. Meaning with 100% resist, the attack will always be resisted, but it won't necessarily be a triple or full resist
+            //Rates beyond 100 still increase the chance for higher resist tiers though
+            double rate = action.resistRate;
+
+            int i = -1;
+
+            while ((Program.Random.NextDouble() * 100) <= rate && i < 4)
             {
-                action.hitType = HitType.Resist;
+                rate /= 2;
+                i++;
+            }
+
+            if (i != -1)
+            {
+                action.hitType = (HitType) ((int) HitType.SingleResist + i);
                 CalculateResistDamage(attacker, defender, skill, action);
                 return true;
             }
@@ -425,6 +459,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                     FinishActionStatus(caster, target, skill, action, actionContainer);
                     break;
                 default:
+                    action.effectId = (uint) HitEffect.AnimationEffectType;
                     actionContainer.AddAction(action);
                     break;
             }
@@ -450,7 +485,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             }
 
             //Actions have different text ids depending on whether they're a part of a multi-hit ws or not.
-            Dictionary<HitType, ushort> textIds = SingleHitTypeTextIds;
+            Dictionary<HitType, ushort> textIds = PhysicalHitTypeTextIds;
 
             //If this is the first hit of a multi hit command, add the "You use [command] on [target]" action
             //Needs to be done here because certain buff messages appear before it.
@@ -473,23 +508,27 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 
             actionContainer.AddAction(action);
             action.enmity = (ushort) (action.enmity * (skill != null ? skill.enmityModifier : 1));
+
             //Damage the target
-            DamageTarget(attacker, defender, action, actionContainer);
+            DamageTarget(attacker, defender, skill, action, actionContainer);
         }
 
         public static void FinishActionSpell(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
         {
+            //I'm assuming that like physical attacks stoneskin is taken into account before mitigation
+            HandleStoneskin(defender, action);
+
             //Determine the hit type of the action
-            if (!TryMiss(attacker, defender, skill, action))
+            //Spells don't seem to be able to miss, instead magic acc/eva is used for resists (which are generally called evades in game)
+            //Unlike blocks and parries, crits do not go through resists.
+            if (!TryResist(attacker, defender, skill, action))
             {
-                HandleStoneskin(defender, action);
                 if (!TryCrit(attacker, defender, skill, action))
-                    if (!TryResist(attacker, defender, skill, action))
-                        action.hitType = HitType.Hit;
+                    action.hitType = HitType.Hit;
             }
 
-            //There are no multi-hit spells
-            action.worldMasterTextId = SingleHitTypeTextIds[action.hitType];
+            //There are no multi-hit spells, so we don't need to take that into account
+            action.worldMasterTextId = MagicalHitTypeTextIds[action.hitType];
 
             //Set the hit effect
             SetHitEffectSpell(attacker, defender, skill, action);
@@ -500,7 +539,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 
             actionContainer.AddAction(action);
 
-            DamageTarget(attacker, defender, action, actionContainer);
+            DamageTarget(attacker, defender, skill, action, actionContainer);
         }
 
         public static void FinishActionHeal(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
@@ -510,7 +549,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
 
             actionContainer.AddAction(action);
 
-            HealTarget(attacker, defender, action, actionContainer);
+            HealTarget(attacker, defender, skill, action, actionContainer);
         }
 
         public static void FinishActionStatus(Character attacker, Character defender, BattleCommand skill, CommandResult action, CommandResultContainer actionContainer = null)
@@ -542,10 +581,10 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                     hitEffect |= HitEffect.RecoilLv3;
             }
 
-            hitEffect |= HitTypeEffects[hitType];
+            hitEffect |= HitTypeEffectsPhysical[hitType];
 
             //For combos that land, add the combo effect
-            if (skill != null && skill.isCombo && hitType > HitType.Evade && hitType != HitType.Evade && !skill.comboEffectAdded)
+            if (skill != null && skill.isCombo && action.ActionLanded() && !skill.comboEffectAdded)
             {
                 hitEffect |= (HitEffect)(skill.comboStep << 15);
                 skill.comboEffectAdded = true;
@@ -555,7 +594,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             if (hitType >= HitType.Parry)
             {
                 //Protect / Shell only show on physical/ magical attacks respectively.
-                if (defender.statusEffects.HasStatusEffect(StatusEffectId.Protect))
+                if (defender.statusEffects.HasStatusEffect(StatusEffectId.Protect) || defender.statusEffects.HasStatusEffect(StatusEffectId.Protect2))
                     if (action != null)
                         hitEffect |= HitEffect.Protect;
 
@@ -572,20 +611,8 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             var hitEffect = HitEffect.MagicEffectType;
             HitType hitType = action.hitType;
 
-            //Recoil levels for spells are a bit different than physical. Recoil levels are used for resists. 
-            //Lv1 is for larger resists, Lv2 is for smaller resists and Lv3 is for no resists. Crit is still used for crits
-            if (hitType == HitType.Resist)
-            {
-                //todo: calculate resist levels and figure out what the difference between Lv1 and 2 in retail was. For now assuming a full resist with 0 damage dealt is Lv1, all other resists Lv2
-                if (action.amount == 0)
-                    hitEffect |= HitEffect.RecoilLv1;
-                else
-                    hitEffect |= HitEffect.RecoilLv2;
-            }
-            else
-                hitEffect |= HitEffect.RecoilLv3;
 
-            hitEffect |= HitTypeEffects[hitType];
+            hitEffect |= HitTypeEffectsMagical[hitType];
 
             if (skill != null && skill.isCombo && !skill.comboEffectAdded)
             {
@@ -594,16 +621,15 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             }
 
             //if attack hit the target, take into account protective status effects
-            if (hitType >= HitType.Block)
+            if (action.ActionLanded())
             {
                 //Protect / Shell only show on physical/ magical attacks respectively.
+                //The magic hit effect category only has a flag for shell (and another shield effect that seems unused)
+                //Even though traited protect gives magic defense, the shell effect doesn't play on attacks
+                //This also means stoneskin doesnt show, but it does reduce damage
                 if (defender.statusEffects.HasStatusEffect(StatusEffectId.Shell))
                     if (action != null)
-                        hitEffect |= HitEffect.Shell;
-
-                if (defender.statusEffects.HasStatusEffect(StatusEffectId.Stoneskin))
-                    if (action != null)
-                        hitEffect |= HitEffect.Stoneskin;
+                        hitEffect |= HitEffect.MagicShell;
             }
             action.effectId = (uint)hitEffect;
         }
@@ -654,7 +680,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
             double rand = Program.Random.NextDouble();
 
             //Statuses only land for non-resisted attacks and attacks that hit
-            if (skill != null && skill.statusId != 0 && (action.hitType > HitType.Evade && action.hitType != HitType.Resist) && rand < skill.statusChance)
+            if (skill != null && skill.statusId != 0 && (action.ActionLanded()) && rand < skill.statusChance)
             {
                 StatusEffect effect = Server.GetWorldManager().GetStatusEffect(skill.statusId);
                 //Because combos might change duration or tier
@@ -670,7 +696,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                     {
                         //If we need an extra action to show the status text
                         if (isAdditional)
-                            results.AddAction(target.actorId, 30328, skill.statusId | (uint) HitEffect.StatusEffectType);
+                            results.AddAction(target.actorId, effect.GetStatusGainTextId(), skill.statusId | (uint) HitEffect.StatusEffectType);
                     }
                     else
                         action.worldMasterTextId = 32002;//Is this right?
@@ -733,7 +759,7 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                 return 0;
 
             int baseLevel = Math.Min(player.GetLevel(), mob.GetLevel());
-            ushort baseEXP = BASEEXP[baseLevel];
+            ushort baseEXP = BASEEXP[baseLevel - 1];
 
             double dlvlModifier = 1.0;
 
@@ -864,10 +890,9 @@ namespace FFXIVClassic_Map_Server.actors.chara.ai.utils
                 totalBonus += GetChainBonus(expChainNumber);
 
                 StatusEffect newChain = Server.GetWorldManager().GetStatusEffect((uint)StatusEffectId.EXPChain);
-                newChain.SetSilent(true);
                 newChain.SetDuration(timeLimit);
                 newChain.SetTier((byte)(Math.Min(expChainNumber + 1, 255)));
-                attacker.statusEffects.AddStatusEffect(newChain, attacker, true, true);
+                attacker.statusEffects.AddStatusEffect(newChain, attacker);
 
                 actionContainer?.AddEXPActions(attacker.AddExp(baseExp, (byte)attacker.GetClass(), (byte)(totalBonus.Min(255))));
             }
