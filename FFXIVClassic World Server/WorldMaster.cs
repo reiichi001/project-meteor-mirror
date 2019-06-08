@@ -356,7 +356,7 @@ namespace FFXIVClassic_World_Server
             {
                 inviterSession.SendGameMessage(30544, 0x20);
             }
-            else if (mRelationGroupManager.GetLinkshellRelationGroup(inviterSession.sessionId) != null)
+            else if (mRelationGroupManager.GetLinkshellRelationGroup(invitee) != null)
             {
                 Session inviteeSession = mServer.GetSession(invitee);
                 inviterSession.SendGameMessage(25196, 0x20, (object)inviteeSession); //Unable to invite X another pending

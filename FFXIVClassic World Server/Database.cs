@@ -381,7 +381,7 @@ namespace FFXIVClassic_World_Server
             throw new NotImplementedException();
         }
 
-        public static bool LinkshellAddPlayer(ulong lsId, uint charaId)
+        public static bool LinkshellAddPlayer(ulong lsId, uint charaId, byte rank = LinkshellManager.RANK_MEMBER)
         {
             string query;
             MySqlCommand cmd;
@@ -394,14 +394,15 @@ namespace FFXIVClassic_World_Server
 
                     query = @"
                     INSERT INTO characters_linkshells 
-                    (characterId, linkshellId)
+                    (characterId, linkshellId, rank)
                     VALUES
-                    (@charaId, @lsId)             
+                    (@charaId, @lsId, @rank)             
                     ";
 
                     cmd = new MySqlCommand(query, conn);
                     cmd.Parameters.AddWithValue("@charaId", charaId);
                     cmd.Parameters.AddWithValue("@lsId", lsId);
+                    cmd.Parameters.AddWithValue("@rank", rank);
                     cmd.ExecuteNonQuery();
 
                 }

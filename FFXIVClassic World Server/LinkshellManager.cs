@@ -6,6 +6,11 @@ namespace FFXIVClassic_World_Server
 {
     class LinkshellManager
     {
+        public const byte RANK_GUEST  = 0x1;
+        public const byte RANK_MEMBER = 0x4;
+        public const byte RANK_LEADER = 0x7;
+        public const byte RANK_MASTER = 0xA;
+
         private WorldManager mWorldManager;
         private Object mGroupLockReference;
         private Dictionary<ulong, Group> mCurrentWorldGroupsReference; //GroupId, LS
@@ -42,7 +47,7 @@ namespace FFXIVClassic_World_Server
                 ulong resultId = Database.CreateLinkshell(name, crest, master);
                 if (resultId >= 0)
                 {
-                    Linkshell newLs = new Linkshell(resultId, mWorldManager.GetGroupIndex(), name, crest, master, 0xa);
+                    Linkshell newLs = new Linkshell(resultId, mWorldManager.GetGroupIndex(), name, crest, master, RANK_MASTER);
                     
                     mLinkshellList.Add(mWorldManager.GetGroupIndex(), newLs);
                     mNameToIdLookup.Add(newLs.name, newLs.groupIndex);
@@ -51,7 +56,7 @@ namespace FFXIVClassic_World_Server
                     mWorldManager.IncrementGroupIndex();
 
                     //Add founder to the LS
-                    AddMemberToLinkshell(master, newLs.name);
+                    AddMemberToLinkshell(master, newLs.name, RANK_MASTER);
                   
                     return newLs;
                 }
@@ -125,7 +130,7 @@ namespace FFXIVClassic_World_Server
         }
 
         //Adds a player to the linkshell
-        public bool AddMemberToLinkshell(uint charaId, string LSName)
+        public bool AddMemberToLinkshell(uint charaId, string LSName, byte rank = RANK_MEMBER)
         {
             //Get the LS
             Linkshell ls = GetLinkshell(LSName);
@@ -135,11 +140,11 @@ namespace FFXIVClassic_World_Server
             //Add player to ls in db
             lock (mGroupLockReference)
             {
-                bool result = Database.LinkshellAddPlayer(ls.dbId, charaId);
+                bool result = Database.LinkshellAddPlayer(ls.dbId, charaId, rank);
 
                 if (result)
                 {
-                    ls.AddMember(charaId);
+                    ls.AddMember(charaId, rank);
                     return true;
                 }
                 else
@@ -180,6 +185,10 @@ namespace FFXIVClassic_World_Server
                 lock (mGroupLockReference)
                 {
                     Linkshell ls = Database.GetLinkshell(mWorldManager.GetGroupIndex(), name);
+
+                    if (ls == null)
+                        return null;
+
                     ls.LoadMembers();
 
                     if (ls != null)

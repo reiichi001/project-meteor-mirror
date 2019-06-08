@@ -46,9 +46,9 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             work._memberSave[index].rank = rank;
         }
 
-        public void AddMember(uint charaId)
+        public void AddMember(uint charaId, byte rank = LinkshellManager.RANK_MEMBER)
         {
-            members.Add(new LinkshellMember(charaId, dbId, 0x4));
+            members.Add(new LinkshellMember(charaId, dbId, rank));
             members.Sort();
         }
 
