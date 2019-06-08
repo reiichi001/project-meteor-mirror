@@ -10,10 +10,12 @@ function onEventStarted(player, actor, triggerName, name, arg1, arg2, arg3, acto
 
 	local otherActor = nil;
 
-	if (name ~= nil) then
-		otherActor = player:GetZone():FindPCInZone(name);
-	elseif (actorId ~= nil) then
+	--ActorID Search
+	if (actorId ~= nil) then
 		otherActor = player:GetZone():FindActorInArea(actorId);
+	--Name Search
+	elseif (name ~= nil) then
+		otherActor = player:GetZone():FindPCInZone(name);
 	end
 	
 	if (otherActor ~= nil) then
@@ -21,6 +23,5 @@ function onEventStarted(player, actor, triggerName, name, arg1, arg2, arg3, acto
 	else
 	end
 	
-	player:EndEvent();
-	
+	player:EndEvent();	
 end

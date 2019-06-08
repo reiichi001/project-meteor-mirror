@@ -222,6 +222,14 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             SendGroupPacketsAll(GetMemberIds());
             ResendWorkValues();
 
+            //If active, remove it
+            if (requestSession.activeLinkshellName.Equals(name))
+            {
+                SubPacket activeLsPacket = SetActiveLinkshellPacket.BuildPacket(requestSession.sessionId, 0);
+                requestSession.clientConnection.QueuePacket(activeLsPacket);
+                requestSession.SetActiveLS("");
+            }
+
             //Delete group for kicked guy
             SendDeletePacket(requestSession);
         }
@@ -259,6 +267,14 @@ namespace FFXIVClassic_World_Server.DataObjects.Group
             Server.GetServer().GetWorldManager().GetLinkshellManager().RemoveMemberFromLinkshell(kicked.charaId, name);
             SendGroupPacketsAll(GetMemberIds());
             ResendWorkValues();
+
+            //If active, remove it
+            if (requestSession.activeLinkshellName.Equals(name))
+            {
+                SubPacket activeLsPacket = SetActiveLinkshellPacket.BuildPacket(requestSession.sessionId, 0);
+                requestSession.clientConnection.QueuePacket(activeLsPacket);
+                requestSession.SetActiveLS("");
+            }
 
             //Delete group for kicked guy
             SendDeletePacket(kickedSession);
