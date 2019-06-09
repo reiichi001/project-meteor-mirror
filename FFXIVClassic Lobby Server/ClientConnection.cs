@@ -40,6 +40,9 @@ namespace FFXIVClassic_Lobby_Server
 
         public void QueuePacket(BasePacket packet)
         {
+            if (SendPacketQueue.Count == SendPacketQueue.BoundedCapacity - 1)
+                FlushQueuedSendPackets();
+
             SendPacketQueue.Add(packet);
         }
 

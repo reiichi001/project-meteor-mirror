@@ -20,6 +20,9 @@ namespace FFXIVClassic_World_Server
 
         public void QueuePacket(BasePacket packet)
         {
+            if (SendPacketQueue.Count == SendPacketQueue.BoundedCapacity - 1)
+                FlushQueuedSendPackets();
+
             SendPacketQueue.Add(packet);
         }
 
