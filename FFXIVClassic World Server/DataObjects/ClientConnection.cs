@@ -28,6 +28,9 @@ namespace FFXIVClassic_World_Server
 
         public void QueuePacket(SubPacket subpacket)
         {
+            if (SendPacketQueue.Count == SendPacketQueue.BoundedCapacity - 1)
+                FlushQueuedSendPackets();
+
             bool isAuthed = true;
             bool isEncrypted = false;
             subpacket.SetTargetId(owner.sessionId);
