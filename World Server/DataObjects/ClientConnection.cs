@@ -42,11 +42,17 @@ namespace Meteor.World
 
         public void QueuePacket(BasePacket packet)
         {
+            if (SendPacketQueue.Count == SendPacketQueue.BoundedCapacity - 1)
+                FlushQueuedSendPackets();
+
             SendPacketQueue.Add(packet);
         }
 
         public void QueuePacket(SubPacket subpacket)
         {
+            if (SendPacketQueue.Count == SendPacketQueue.BoundedCapacity - 1)
+                FlushQueuedSendPackets();
+
             bool isAuthed = true;
             bool isEncrypted = false;
             subpacket.SetTargetId(owner.sessionId);
