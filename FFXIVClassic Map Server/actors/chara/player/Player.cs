@@ -2122,7 +2122,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void UnequipAbility(ushort hotbarSlot, bool printMessage = true)
         {
-            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder);
+            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder - 1);
             uint commandId = charaWork.command[trueHotbarSlot];
             Database.UnequipAbility(this,  hotbarSlot);
             charaWork.command[trueHotbarSlot] = 0;
