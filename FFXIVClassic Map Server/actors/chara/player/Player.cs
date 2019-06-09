@@ -2060,7 +2060,7 @@ namespace FFXIVClassic_Map_Server.Actors
         public void EquipAbility(byte classId, uint commandId, ushort hotbarSlot, bool printMessage = true)
         {
             var ability = Server.GetWorldManager().GetBattleCommand(commandId);
-            uint trueCommandId = 0xA0F00000 + commandId;
+            uint trueCommandId = 0xA0F00000 | commandId;
             ushort lowHotbarSlot = (ushort)(hotbarSlot - charaWork.commandBorder);
             ushort maxRecastTime = (ushort)(ability != null ? ability.maxRecastTimeSeconds : 5);
             uint recastEnd = Utils.UnixTimeStampUTC() + maxRecastTime;
@@ -2441,7 +2441,7 @@ namespace FFXIVClassic_Map_Server.Actors
             while (exp >= diff && GetLevel() < charaWork.battleSave.skillLevelCap[classId])
             {
                 //Level up
-                LevelUp(classId);
+                LevelUp(classId, actionList);
                 leveled = true;
                 //Reduce exp based on how much exp is needed to level
                 exp -= diff;
@@ -2459,8 +2459,6 @@ namespace FFXIVClassic_Map_Server.Actors
                 expPropertyPacket2.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
                 QueuePackets(expPropertyPacket2.Done());
                 QueuePackets(expPropertyPacket3.Done());
-                //play levelup animation (do this outside LevelUp so that it only plays once if multiple levels are earned
-                //also i dunno how to do this
 
                 Database.SetLevel(this, classId, GetLevel());
                 Database.SavePlayerCurrentClass(this);
@@ -2486,13 +2484,13 @@ namespace FFXIVClassic_Map_Server.Actors
                 charaWork.battleSave.skillLevel[classId - 1]++;
                 charaWork.parameterSave.state_mainSkillLevel++;
 
-                //33909: You gain level [level]
+                //33909: You attain level [level].
                 if (actionList != null)
-                    actionList.Add(new CommandResult(actorId, 33909, 0, (ushort) charaWork.battleSave.skillLevel[classId - 1]));
+                    actionList.Add(new CommandResult(actorId, 33909, 0, (ushort)charaWork.battleSave.skillLevel[classId - 1]));
 
                 //If there's any abilites that unlocks at this level, equip them.
-                List<uint> commandIds = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, GetLevel());
-                foreach(uint commandId in commandIds)
+                List<ushort> commandIds = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, GetLevel());
+                foreach (ushort commandId in commandIds)
                 {
                     EquipAbilityInFirstOpenSlot(classId, commandId, false);
                     byte jobId = ConvertClassIdToJobId(classId);
@@ -2502,8 +2500,8 @@ namespace FFXIVClassic_Map_Server.Actors
                     //33926: You learn [command].
                     if (actionList != null)
                     {
-                        if(classId == GetCurrentClassOrJob() || jobId == GetCurrentClassOrJob())
-                            actionList.Add(new CommandResult(actorId, 33926, commandId));
+                        if (classId == GetCurrentClassOrJob() || jobId == GetCurrentClassOrJob())
+                            actionList.Add(new CommandResult(actorId, 33926, 0, commandId));
                     }
                 }
             }
