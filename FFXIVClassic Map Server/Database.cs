@@ -1247,7 +1247,7 @@ namespace FFXIVClassic_Map_Server
         }
         public static void EquipAbility(Player player, byte classId, ushort hotbarSlot, uint commandId, uint recastTime)
         {
-            commandId ^= 0xA0F00000;
+            commandId &= 0xFFFF;
             if (commandId > 0)
             {
                 using (MySqlConnection conn = new MySqlConnection(
@@ -2374,7 +2374,7 @@ namespace FFXIVClassic_Map_Server
             }
         }
 
-        public static void LoadGlobalBattleCommandList(Dictionary<ushort, BattleCommand> battleCommandDict, Dictionary<Tuple<byte, short>, List<uint>> battleCommandIdByLevel)
+        public static void LoadGlobalBattleCommandList(Dictionary<ushort, BattleCommand> battleCommandDict, Dictionary<Tuple<byte, short>, List<ushort>> battleCommandIdByLevel)
         {
             using (MySqlConnection conn = new MySqlConnection(String.Format("Server={0}; Port={1}; Database={2}; UID={3}; Password={4}", ConfigConstants.DATABASE_HOST, ConfigConstants.DATABASE_PORT, ConfigConstants.DATABASE_NAME, ConfigConstants.DATABASE_USERNAME, ConfigConstants.DATABASE_PASSWORD)))
             {
@@ -2469,7 +2469,7 @@ namespace FFXIVClassic_Map_Server
                             }
                             else
                             {
-                                List<uint> list = new List<uint>() { id };
+                                List<ushort> list = new List<ushort>() { id };
                                 battleCommandIdByLevel.Add(tuple, list);
                             }
                             count++;

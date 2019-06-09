@@ -33,7 +33,7 @@ namespace FFXIVClassic_Map_Server
         private Dictionary<ulong, Party> currentPlayerParties = new Dictionary<ulong, Party>(); //GroupId, Party object
         private Dictionary<uint, StatusEffect> statusEffectList = new Dictionary<uint, StatusEffect>();
         private Dictionary<ushort, BattleCommand> battleCommandList = new Dictionary<ushort, BattleCommand>();
-        private Dictionary<Tuple<byte, short>, List<uint>> battleCommandIdByLevel = new Dictionary<Tuple<byte, short>, List<uint>>();//Holds battle command ids keyed by class id and level (in that order)
+        private Dictionary<Tuple<byte, short>, List<ushort>> battleCommandIdByLevel = new Dictionary<Tuple<byte, short>, List<ushort>>();//Holds battle command ids keyed by class id and level (in that order)
         private Dictionary<ushort, BattleTrait> battleTraitList = new Dictionary<ushort, BattleTrait>();
         private Dictionary<byte, List<ushort>> battleTraitIdsForClass = new Dictionary<byte, List<ushort>>();
         private Dictionary<uint, ModifierList> battleNpcGenusMods = new Dictionary<uint, ModifierList>();
@@ -1967,10 +1967,10 @@ namespace FFXIVClassic_Map_Server
             return battleCommandList.TryGetValue((ushort)id, out battleCommand) ? battleCommand.Clone() : null;
         }
 
-        public List<uint> GetBattleCommandIdByLevel(byte classId, short level)
+        public List<ushort> GetBattleCommandIdByLevel(byte classId, short level)
         {
-            List<uint> ids;
-            return battleCommandIdByLevel.TryGetValue(Tuple.Create(classId, level), out ids) ? ids : new List<uint>();
+            List<ushort> ids;
+            return battleCommandIdByLevel.TryGetValue(Tuple.Create(classId, level), out ids) ? ids : new List<ushort>();
         }
 
         public BattleTrait GetBattleTrait(ushort id)
