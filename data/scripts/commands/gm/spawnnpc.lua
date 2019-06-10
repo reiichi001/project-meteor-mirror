@@ -12,7 +12,7 @@ yolo
 local modelIds = 
 {
     ["titan"] = 2107401, 
-	["ifrit"] = 2107302, 
+	["ifrit"] = 2207302,
 	["ifrithotair"] = 2207310,
     ["nail"] = 2207307, 
 	["garuda"] = 2209501, 
