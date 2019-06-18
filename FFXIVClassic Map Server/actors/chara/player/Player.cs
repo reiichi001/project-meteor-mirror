@@ -1044,6 +1044,13 @@ namespace FFXIVClassic_Map_Server.Actors
             resultContainer.CombineLists();
             DoBattleAction(0, 0x7c000062, resultContainer.GetList());
 
+            //If new class, init abilties and level
+            if (charaWork.battleSave.skillLevel[classId - 1] <= 0)
+            {
+                UpdateClassLevel(classId, 1);
+                EquipAbilitiesAtLevel(classId, 1);
+            }
+
             //Set rested EXP
             charaWork.parameterSave.state_mainSkill[0] = classId;
             charaWork.parameterSave.state_mainSkillLevel = charaWork.battleSave.skillLevel[classId-1];
@@ -1052,13 +1059,6 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 charaWork.command[i] = 0;
                 charaWork.commandCategory[i] = 0;
-            }
-
-            //If new class, init abilties and level
-            if (charaWork.battleSave.skillLevel[classId - 1] <= 0)
-            {
-                UpdateClassLevel(classId, 1);
-                EquipAbilitiesAtLevel(classId, 1);
             }
 
             ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("charaWork/stateForAll", this);
@@ -2143,7 +2143,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void UnequipAbility(ushort hotbarSlot, bool printMessage = true)
         {
-            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder);
+            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder - 1);
             uint commandId = charaWork.command[trueHotbarSlot];
             Database.UnequipAbility(this,  hotbarSlot);
             charaWork.command[trueHotbarSlot] = 0;
@@ -2501,7 +2501,7 @@ namespace FFXIVClassic_Map_Server.Actors
         private void EquipAbilitiesAtLevel(byte classId, short level, List<CommandResult> actionList = null)
         {
             //If there's any abilites that unlocks at this level, equip them.
-            List<ushort> commandIds = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, GetLevel());
+            List<ushort> commandIds = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, level);
             foreach (ushort commandId in commandIds)
             {
                 EquipAbilityInFirstOpenSlot(classId, commandId, false);
