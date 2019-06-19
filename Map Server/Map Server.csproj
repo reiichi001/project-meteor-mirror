@@ -67,10 +67,6 @@
       <HintPath>..\packages\Cyotek.CircularBuffer.1.0.0.0\lib\net20\Cyotek.Collections.Generic.CircularBuffer.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FFXIVClassic.Common, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\FFXIVClassic Common Class Lib\bin\Debug\FFXIVClassic.Common.dll</HintPath>
-    </Reference>
     <Reference Include="MoonSharp.Interpreter">
       <HintPath>..\packages\MoonSharp.1.2.1.0\lib\net40-client\MoonSharp.Interpreter.dll</HintPath>
     </Reference>
@@ -417,6 +413,12 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="navmesh\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Common Class Lib\Common Class Lib.csproj">
+      <Project>{3a3d6626-c820-4c18-8c81-64811424f20e}</Project>
+      <Name>Common Class Lib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

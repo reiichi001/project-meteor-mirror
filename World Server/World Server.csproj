@@ -180,7 +180,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FFXIVClassic Common Class Lib\Common Class Lib.csproj">
+    <ProjectReference Include="..\Common Class Lib\Common Class Lib.csproj">
       <Project>{3a3d6626-c820-4c18-8c81-64811424f20e}</Project>
       <Name>Common Class Lib</Name>
     </ProjectReference>
