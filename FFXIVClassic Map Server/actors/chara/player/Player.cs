@@ -1,21 +1,21 @@
 ﻿/*
 ===========================================================================
-Copyright (C) 2015-2019 FFXIV Classic Server Dev Team
+Copyright (C) 2015-2019 Project Meteor Dev Team
 
-This file is part of FFXIV Classic Server.
+This file is part of Project Meteor Server.
 
-FFXIV Classic Server is free software: you can redistribute it and/or modify
+Project Meteor Server is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-FFXIV Classic Server is distributed in the hope that it will be useful,
+Project Meteor Server is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 GNU Affero General Public License for more details.
 
 You should have received a copy of the GNU Affero General Public License
-along with FFXIV Classic Server. If not, see <https:www.gnu.org/licenses/>.
+along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
@@ -1044,13 +1044,6 @@ namespace FFXIVClassic_Map_Server.Actors
             resultContainer.CombineLists();
             DoBattleAction(0, 0x7c000062, resultContainer.GetList());
 
-            //If new class, init abilties and level
-            if (charaWork.battleSave.skillLevel[classId - 1] <= 0)
-            {
-                UpdateClassLevel(classId, 1);
-                EquipAbilitiesAtLevel(classId, 1);
-            }
-
             //Set rested EXP
             charaWork.parameterSave.state_mainSkill[0] = classId;
             charaWork.parameterSave.state_mainSkillLevel = charaWork.battleSave.skillLevel[classId-1];
@@ -1059,6 +1052,13 @@ namespace FFXIVClassic_Map_Server.Actors
             {
                 charaWork.command[i] = 0;
                 charaWork.commandCategory[i] = 0;
+            }
+
+            //If new class, init abilties and level
+            if (charaWork.battleSave.skillLevel[classId - 1] <= 0)
+            {
+                UpdateClassLevel(classId, 1);
+                EquipAbilitiesAtLevel(classId, 1);
             }
 
             ActorPropertyPacketUtil propertyBuilder = new ActorPropertyPacketUtil("charaWork/stateForAll", this);
@@ -2143,7 +2143,7 @@ namespace FFXIVClassic_Map_Server.Actors
 
         public void UnequipAbility(ushort hotbarSlot, bool printMessage = true)
         {
-            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder - 1);
+            ushort trueHotbarSlot = (ushort)(hotbarSlot + charaWork.commandBorder);
             uint commandId = charaWork.command[trueHotbarSlot];
             Database.UnequipAbility(this,  hotbarSlot);
             charaWork.command[trueHotbarSlot] = 0;
@@ -2501,7 +2501,7 @@ namespace FFXIVClassic_Map_Server.Actors
         private void EquipAbilitiesAtLevel(byte classId, short level, List<CommandResult> actionList = null)
         {
             //If there's any abilites that unlocks at this level, equip them.
-            List<ushort> commandIds = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, level);
+            List<ushort> commandIds = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, GetLevel());
             foreach (ushort commandId in commandIds)
             {
                 EquipAbilityInFirstOpenSlot(classId, commandId, false);
