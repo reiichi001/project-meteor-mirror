@@ -20,28 +20,28 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 */
 
 using Meteor.Common;
-using FFXIVClassic_Map_Server.actors.area;
-using FFXIVClassic_Map_Server.actors.chara.npc;
-using FFXIVClassic_Map_Server.Actors;
-using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Map_Server.lua;
-using FFXIVClassic_Map_Server.packets.send;
-using FFXIVClassic_Map_Server.packets.send.actor;
+using Meteor.Map.actors.area;
+using Meteor.Map.actors.chara.npc;
+using Meteor.Map.Actors;
+using Meteor.Map.dataobjects;
+using Meteor.Map.lua;
+using Meteor.Map.packets.send;
+using Meteor.Map.packets.send.actor;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FFXIVClassic_Map_Server.actors.group;
-using FFXIVClassic_Map_Server.packets.WorldPackets.Receive;
-using FFXIVClassic_Map_Server.packets.WorldPackets.Send.Group;
+using Meteor.Map.actors.group;
+using Meteor.Map.packets.WorldPackets.Receive;
+using Meteor.Map.packets.WorldPackets.Send.Group;
 using System.Threading;
-using FFXIVClassic_Map_Server.actors.director;
-using FFXIVClassic_Map_Server.actors.chara.ai;
-using FFXIVClassic_Map_Server.actors.chara;
-using FFXIVClassic_Map_Server.actors.chara.player;
-using FFXIVClassic_Map_Server.packets.send.actor.inventory;
+using Meteor.Map.actors.director;
+using Meteor.Map.actors.chara.ai;
+using Meteor.Map.actors.chara;
+using Meteor.Map.actors.chara.player;
+using Meteor.Map.packets.send.actor.inventory;
 
-namespace FFXIVClassic_Map_Server
+namespace Meteor.Map
 {
     class WorldManager
     {

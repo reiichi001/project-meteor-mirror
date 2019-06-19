@@ -41,7 +41,7 @@ namespace Meteor.World
             bool startServer = true;
 
             Log.Info("==================================");
-            Log.Info("FFXIV Classic World Server");
+            Log.Info("Project Meteor: World Server");
             Log.Info("Version: 0.1");            
             Log.Info("==================================");
 

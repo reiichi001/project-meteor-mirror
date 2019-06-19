@@ -25,7 +25,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 
-namespace FFXIVClassic_Map_Server
+namespace Meteor.Map
 {
     class ConfigConstants
     {

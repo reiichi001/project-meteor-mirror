@@ -24,7 +24,7 @@ using System.Diagnostics;
 using MySql.Data.MySqlClient;
 using NLog;
 
-namespace FFXIVClassic_Map_Server
+namespace Meteor.Map
 {
     class Program
     {
@@ -45,7 +45,7 @@ namespace FFXIVClassic_Map_Server
             bool startServer = true;
 
             Log.Info("==================================");
-            Log.Info("FFXIV Classic Map Server");
+            Log.Info("Project Meteor: Map Server");
             Log.Info("Version: 0.1");
             Log.Info("==================================");
 

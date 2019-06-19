@@ -23,12 +23,12 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using FFXIVClassic_Map_Server.dataobjects;
+using Meteor.Map.dataobjects;
 
 using Meteor.Common;
-using FFXIVClassic_Map_Server.Actors;
+using Meteor.Map.Actors;
 
-namespace FFXIVClassic_Map_Server
+namespace Meteor.Map
 {
     class Server
     {

@@ -42,7 +42,7 @@ namespace Meteor.Lobby
             Debug.Listeners.Add(myWriter);
 #endif
             Log.Info("==================================");
-            Log.Info("FFXIV Classic Lobby Server");
+            Log.Info("Project Meteor: Lobby Server");
             Log.Info("Version: 0.1");            
             Log.Info("==================================");
 

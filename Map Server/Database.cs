@@ -23,18 +23,18 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using Meteor.Common;
-using FFXIVClassic_Map_Server.utils;
+using Meteor.Map.utils;
 
-using FFXIVClassic_Map_Server.packets.send.player;
-using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Map_Server.Actors;
-using FFXIVClassic_Map_Server.actors.chara.player;
-using FFXIVClassic_Map_Server.packets.receive.supportdesk;
-using FFXIVClassic_Map_Server.actors.chara.npc;
-using FFXIVClassic_Map_Server.actors.chara.ai;
-using FFXIVClassic_Map_Server.packets.send.actor.battle;
+using Meteor.Map.packets.send.player;
+using Meteor.Map.dataobjects;
+using Meteor.Map.Actors;
+using Meteor.Map.actors.chara.player;
+using Meteor.Map.packets.receive.supportdesk;
+using Meteor.Map.actors.chara.npc;
+using Meteor.Map.actors.chara.ai;
+using Meteor.Map.packets.send.actor.battle;
 
-namespace FFXIVClassic_Map_Server
+namespace Meteor.Map
 {
 
     class Database

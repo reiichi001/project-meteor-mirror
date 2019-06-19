@@ -22,14 +22,14 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using FFXIVClassic_Map_Server.dataobjects;
+using Meteor.Map.dataobjects;
 
 using System.IO;
-using FFXIVClassic_Map_Server.packets.send;
-using FFXIVClassic_Map_Server.lua;
-using FFXIVClassic_Map_Server.Actors;
+using Meteor.Map.packets.send;
+using Meteor.Map.lua;
+using Meteor.Map.Actors;
 
-namespace FFXIVClassic_Map_Server
+namespace Meteor.Map
 {
     class CommandProcessor
     {

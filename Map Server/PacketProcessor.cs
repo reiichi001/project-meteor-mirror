@@ -22,25 +22,25 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 using Meteor.Common;
 
 using System;
-using FFXIVClassic_Map_Server.dataobjects;
-using FFXIVClassic_Map_Server.packets.receive;
-using FFXIVClassic_Map_Server.packets.send;
-using FFXIVClassic_Map_Server.packets.send.login;
-using FFXIVClassic_Map_Server.packets.send.actor;
-using FFXIVClassic_Map_Server.packets.send.supportdesk;
-using FFXIVClassic_Map_Server.packets.receive.social;
-using FFXIVClassic_Map_Server.packets.send.social;
-using FFXIVClassic_Map_Server.packets.receive.supportdesk;
-using FFXIVClassic_Map_Server.packets.receive.recruitment;
-using FFXIVClassic_Map_Server.packets.send.recruitment;
-using FFXIVClassic_Map_Server.packets.receive.events;
-using FFXIVClassic_Map_Server.lua;
-using FFXIVClassic_Map_Server.Actors;
-using FFXIVClassic_Map_Server.packets.WorldPackets.Send;
-using FFXIVClassic_Map_Server.packets.WorldPackets.Receive;
-using FFXIVClassic_Map_Server.actors.director;
+using Meteor.Map.dataobjects;
+using Meteor.Map.packets.receive;
+using Meteor.Map.packets.send;
+using Meteor.Map.packets.send.login;
+using Meteor.Map.packets.send.actor;
+using Meteor.Map.packets.send.supportdesk;
+using Meteor.Map.packets.receive.social;
+using Meteor.Map.packets.send.social;
+using Meteor.Map.packets.receive.supportdesk;
+using Meteor.Map.packets.receive.recruitment;
+using Meteor.Map.packets.send.recruitment;
+using Meteor.Map.packets.receive.events;
+using Meteor.Map.lua;
+using Meteor.Map.Actors;
+using Meteor.Map.packets.WorldPackets.Send;
+using Meteor.Map.packets.WorldPackets.Receive;
+using Meteor.Map.actors.director;
 
-namespace FFXIVClassic_Map_Server
+namespace Meteor.Map
 {
     class PacketProcessor
     {
