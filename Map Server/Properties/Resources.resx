@@ -1,0 +1,226 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are Done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that Don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CPgivecurrency" xml:space="preserve">
+    <value>Adds the specified currency to the current player's inventory
+
+*Syntax:	givecurrency &lt;quantity&gt;
+		givecurrency  &lt;type&gt; &lt;quantity&gt;
+&lt;type&gt; is the specific type of currency desired, defaults to gil if no type specified</value>
+  </data>
+  <data name="CPgiveitem" xml:space="preserve">
+    <value>Adds the specified items to the current player's inventory
+
+*Syntax:	giveitem &lt;item id&gt;
+		giveitem &lt;item id&gt; &lt;quantity&gt;
+		giveitem &lt;item id&gt; &lt;quantity&gt; &lt;type&gt;
+&lt;item id&gt; is the item's specific id as defined in the server database
+&lt;type&gt; is the type as defined in the server database (defaults to standard item if not specified)</value>
+  </data>
+  <data name="CPgivekeyitem" xml:space="preserve">
+    <value>Adds the specified key item to the current player's inventory
+
+*Syntax:	givekeyitem &lt;item id&gt;
+&lt;item id&gt; is the key item's specific id as defined in the server database</value>
+  </data>
+  <data name="CPhelp" xml:space="preserve">
+    <value>Use !help(command) for details
+
+Available commands: 
+Standard: mypos, music, warp
+Server Administration: givecurrency, giveitem, givekeyitem, removecurrency, removekeyitem, reloaditems, reloadzones
+Test: test weather</value>
+  </data>
+  <data name="CPmusic" xml:space="preserve">
+    <value>Changes the currently playing background music
+
+*Syntax:	music &lt;music id&gt;
+&lt;music id&gt; is the music's specific id as defined in the client</value>
+  </data>
+  <data name="CPmypos" xml:space="preserve">
+    <value>Prints out your current location
+
+*Note: The X/Y/Z coordinates Do not correspond to the coordinates listed in the in-game map, they are based on the underlying game data</value>
+  </data>
+  <data name="CPproperty" xml:space="preserve">
+    <value>*Syntax:	property &lt;value 1&gt; &lt;value 2&gt; &lt;value 3&gt;</value>
+  </data>
+  <data name="CPproperty2" xml:space="preserve">
+    <value>*Syntax:	property2 &lt;value 1&gt; &lt;value 2&gt; &lt;value 3&gt;</value>
+  </data>
+  <data name="CPreloaditems" xml:space="preserve">
+    <value>Reloads the current item data from the database</value>
+  </data>
+  <data name="CPreloadzones" xml:space="preserve">
+    <value>Reloads the current zone data from the database</value>
+  </data>
+  <data name="CPremovecurrency" xml:space="preserve">
+    <value>Removes the specified currency from the current player's inventory
+
+*Syntax:	removecurrency &lt;quantity&gt;
+		removecurrency &lt;type&gt; &lt;quantity&gt;
+&lt;type&gt; is the specific type of currency desired, defaults to gil if no type specified</value>
+  </data>
+  <data name="CPremoveitem" xml:space="preserve">
+    <value>Removes the specified items to the current player's inventory
+
+*Syntax:	removeitem &lt;itemid&gt;
+		removeitem &lt;itemid&gt; &lt;quantity&gt;
+&lt;item id&gt; is the item's specific id as defined in the server database</value>
+  </data>
+  <data name="CPremovekeyitem" xml:space="preserve">
+    <value>Removes the specified key item to the current player's inventory
+
+*Syntax:	removekeyitem &lt;itemid&gt;
+&lt;item id&gt; is the key item's specific id as defined in the server database</value>
+  </data>
+  <data name="CPsendpacket" xml:space="preserve">
+    <value>Server sends a special packet to the client
+
+*Syntax:	sendpacket &lt;path to packet&gt;
+&lt;Path to packet&gt; is the path to the packet, starting in &lt;map server install location&gt;\packet</value>
+  </data>
+  <data name="CPsetgraphic" xml:space="preserve">
+    <value>Overrides the currently displayed character equipment in a specific slot
+
+*Note: Similar to Glamours in FFXIV:ARR, the overridden graphics are purely cosmetic, they Do not affect the underlying stats of whatever is equipped on that slot
+
+*Syntax:	sendpacket &lt;slot&gt; &lt;wid&gt; &lt;eid&gt; &lt;vid&gt; &lt;cid&gt;
+&lt;w/e/v/c id&gt; are as defined in the client game data</value>
+  </data>
+  <data name="CPtestweather" xml:space="preserve">
+    <value>Changes the current weather
+
+*Syntax:	test weather &lt;weather id&gt;
+&lt;weather id&gt; is the weather's specific id as defined in the client</value>
+  </data>
+  <data name="CPwarp" xml:space="preserve">
+    <value>Teleports the player to the specified location
+
+*Note: You can teleport relative to your current position by putting a @ in front of a value, cannot be combined with a zone id or instance name
+
+*Syntax:	warp &lt;location list&gt;
+		warp &lt;X coordinate&gt; &lt;Y coordinate&gt; &lt;Z coordinate&gt;
+		warp &lt;zone id&gt; &lt;X coordinate&gt; &lt;Y coordinate&gt; &lt;Z coordinate&gt;
+		warp &lt;zone id&gt; &lt;instance&gt; &lt;X coordinate&gt; &lt;Y coordinate&gt; &lt;Z coordinate&gt;
+&lt;location list&gt; is a pre-defined list of locations from the server database
+&lt;zone id&gt; is the zone's id as defined in the server database
+&lt;instance&gt; is an instanced copy of the desired zone that's only visible to the current player</value>
+  </data>
+</root>
