@@ -403,6 +403,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="..\Data\map_config.ini">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <None Include="packages.config" />
     <Compile Include="Packets\WorldPackets\Send\WorldRequestZoneChangePacket.cs" />
   </ItemGroup>
