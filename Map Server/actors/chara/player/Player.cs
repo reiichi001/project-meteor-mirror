@@ -130,9 +130,11 @@ namespace Meteor.Map.Actors
         //Mount Related
         public bool hasChocobo;
         public bool hasGoobbue;
-        public byte chocoboAppearance;
         public string chocoboName;
-        public byte mountState = 0;        
+        public byte mountState = 0;
+        public byte chocoboAppearance;
+        public uint rentalExpireTime = 0;
+        public byte rentalMinLeft = 0;
 
         public uint achievementPoints;
 
@@ -370,7 +372,7 @@ namespace Meteor.Map.Actors
             }
 
             if (mountState == 1)
-                subpackets.Add(SetCurrentMountChocoboPacket.BuildPacket(actorId, chocoboAppearance));
+                subpackets.Add(SetCurrentMountChocoboPacket.BuildPacket(actorId, chocoboAppearance, rentalExpireTime, rentalMinLeft));
             else if (mountState == 2)
                 subpackets.Add(SetCurrentMountGoobbuePacket.BuildPacket(actorId, 1));
           
@@ -554,7 +556,8 @@ namespace Meteor.Map.Actors
         {
             QueuePacket(SetActorIsZoningPacket.BuildPacket(actorId, false));
             QueuePacket(SetDalamudPacket.BuildPacket(actorId, 0));
-            QueuePacket(SetMusicPacket.BuildPacket(actorId, zone.bgmDay, 0x01));
+            if (spawnType != 0x13 && spawnType != 0x14)
+                QueuePacket(SetMusicPacket.BuildPacket(actorId, zone.bgmDay, 0x01));
             QueuePacket(SetWeatherPacket.BuildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR, 1));
 
             QueuePacket(SetMapPacket.BuildPacket(actorId, zone.regionId, zone.actorId));
@@ -840,7 +843,7 @@ namespace Meteor.Map.Actors
         public void SendMountAppearance()
         {
             if (mountState == 1)
-                BroadcastPacket(SetCurrentMountChocoboPacket.BuildPacket(actorId, chocoboAppearance), true);
+                BroadcastPacket(SetCurrentMountChocoboPacket.BuildPacket(actorId, chocoboAppearance, rentalExpireTime, rentalMinLeft), true);
             else if (mountState == 2)
                 BroadcastPacket(SetCurrentMountGoobbuePacket.BuildPacket(actorId, 1), true);
         }
@@ -1914,6 +1917,17 @@ namespace Meteor.Map.Actors
             chocoboAppearance = appearanceId;
         }
         
+        public void StartChocoboRental(byte numMins)
+        {
+            rentalExpireTime = Utils.UnixTimeStampUTC() + ((uint)numMins * 60);
+            rentalMinLeft = numMins;
+        }
+
+        public bool IsChocoboRentalActive()
+        {
+            return rentalExpireTime != 0;
+        }
+
         public Retainer SpawnMyRetainer(Npc bell, int retainerIndex)
         {
             Retainer retainer = Database.LoadRetainer(this, retainerIndex);
@@ -1948,15 +1962,37 @@ namespace Meteor.Map.Actors
         
         public override void Update(DateTime tick)
         {
+            
+            // Chocobo Rental Expirey
+            if (rentalExpireTime != 0)
+            {
+                uint tickUTC = Utils.UnixTimeStampUTC(tick);
+
+                //Rental has expired, dismount
+                if (rentalExpireTime <= tickUTC)
+                {
+                    rentalExpireTime = 0;
+                    rentalMinLeft = 0;
+                    ChangeMusic(GetZone().bgmDay);
+                    SetMountState(0);
+                    ChangeSpeed(0.0f, 2.0f, 5.0f, 5.0f);
+                    ChangeState(0);
+                }
+                else
+                {
+                    rentalMinLeft = (byte) ((rentalExpireTime - tickUTC) /60);
+                }
+            }
+
             aiContainer.Update(tick);
-            statusEffects.Update(tick);
+            statusEffects.Update(tick);            
         }
 
         public override void PostUpdate(DateTime tick, List<SubPacket> packets = null)
         {
             // todo: is this correct?
             if (this.playerSession.isUpdatesLocked)
-                return;
+                return;           
 
             // todo: should probably add another flag for battleTemp since all this uses reflection
             packets = new List<SubPacket>();
@@ -2005,8 +2041,7 @@ namespace Meteor.Map.Actors
 
                 updateFlags ^= ActorUpdateFlags.Hotbar;
             }
-
-
+            
             base.PostUpdate(tick, packets);
         }
 

@@ -19,6 +19,9 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using System;
+using System.IO;
+
 using Meteor.Common;
 
 namespace Meteor.Map.packets.send.player
@@ -45,10 +48,18 @@ namespace Meteor.Map.packets.send.player
         public const ushort OPCODE = 0x0197;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket BuildPacket(uint sourceActorId, int appearanceId)
+        public static SubPacket BuildPacket(uint sourceActorId, byte chocoboAppearance, uint rentalExpireTime, byte rentalMinLeft)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
-            data[5] = (byte)(appearanceId & 0xFF);
+            using (MemoryStream mem = new MemoryStream(data))
+            {
+                using (BinaryWriter binWriter = new BinaryWriter(mem))
+                {
+                    binWriter.Write((UInt32)rentalExpireTime);
+                    binWriter.Write((Byte)rentalMinLeft);
+                    binWriter.Write((Byte)chocoboAppearance);
+                }
+            }
             return new SubPacket(OPCODE, sourceActorId, data);
         }
     }

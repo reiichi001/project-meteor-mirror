@@ -124,7 +124,10 @@ namespace Meteor.Map
         public Session AddSession(uint id)
         {
             if (mSessionList.ContainsKey(id))
+            {
+                mSessionList[id].ClearInstance();
                 return mSessionList[id];
+            }
 
             Session session = new Session(id);
             mSessionList.Add(id, session);
