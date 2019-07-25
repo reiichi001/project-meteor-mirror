@@ -73,7 +73,9 @@ function onEventStarted(player, npc, triggerName)
 			player:EndEvent();
 			return;
 		else		
-			player:IssueChocobo(appearance, startAppearances[npc:GetActorClassId()]);			
+			local appearance = startAppearances[npc:GetActorClassId()];			
+			player:IssueChocobo(appearance, nameResponse);
+			
 			callClientFunction(player, "eventAfterChocoboName", player);			
 
 			--Add Chocobo License and remove issuance
