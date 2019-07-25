@@ -1909,6 +1909,9 @@ namespace Meteor.Map.Actors
             hasChocobo = true;
             chocoboAppearance = appearanceId;
             chocoboName = nameResponse;
+
+            QueuePacket(SetChocoboNamePacket.BuildPacket(actorId, chocoboName));
+            QueuePacket(SetHasChocoboPacket.BuildPacket(actorId, hasChocobo));
         }
 
         public void ChangeChocoboAppearance(byte appearanceId)
