@@ -556,8 +556,18 @@ namespace Meteor.Map.Actors
         {
             QueuePacket(SetActorIsZoningPacket.BuildPacket(actorId, false));
             QueuePacket(SetDalamudPacket.BuildPacket(actorId, 0));
-            if (spawnType != 0x13 && spawnType != 0x14)
-                QueuePacket(SetMusicPacket.BuildPacket(actorId, zone.bgmDay, 0x01));
+
+            //Music Packets
+            if (currentMainState == SetActorStatePacket.MAIN_STATE_MOUNTED)
+            {
+                if (rentalExpireTime != 0)
+                    QueuePacket(SetMusicPacket.BuildPacket(actorId, 64, 0x01)); //Rental
+                else
+                    QueuePacket(SetMusicPacket.BuildPacket(actorId, 83, 0x01)); //Mount
+            }
+            else
+                QueuePacket(SetMusicPacket.BuildPacket(actorId, zone.bgmDay, 0x01)); //Zone
+
             QueuePacket(SetWeatherPacket.BuildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR, 1));
 
             QueuePacket(SetMapPacket.BuildPacket(actorId, zone.regionId, zone.actorId));
