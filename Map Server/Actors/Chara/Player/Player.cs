@@ -563,7 +563,12 @@ namespace Meteor.Map.Actors
                 if (rentalExpireTime != 0)
                     QueuePacket(SetMusicPacket.BuildPacket(actorId, 64, 0x01)); //Rental
                 else
-                    QueuePacket(SetMusicPacket.BuildPacket(actorId, 83, 0x01)); //Mount
+                {
+                    if (mountState == 1)
+                        QueuePacket(SetMusicPacket.BuildPacket(actorId, 83, 0x01)); //Mount
+                    else
+                        QueuePacket(SetMusicPacket.BuildPacket(actorId, 98, 0x01)); //Goobbue
+                }
             }
             else
                 QueuePacket(SetMusicPacket.BuildPacket(actorId, zone.bgmDay, 0x01)); //Zone
