@@ -197,25 +197,25 @@ namespace Meteor.Map
                         }
                         */
 
-                        Actor ownerActor = Server.GetStaticActors(eventStart.scriptOwnerActorID);
+                        Actor ownerActor = Server.GetStaticActors(eventStart.ownerActorID);
                             
                         if (ownerActor == null)
                         {
                             //Is it your retainer?
-                            if (session.GetActor().currentSpawnedRetainer != null && session.GetActor().currentSpawnedRetainer.actorId == eventStart.scriptOwnerActorID)
+                            if (session.GetActor().currentSpawnedRetainer != null && session.GetActor().currentSpawnedRetainer.actorId == eventStart.ownerActorID)
                                 ownerActor = session.GetActor().currentSpawnedRetainer;
                             //Is it a instance actor?
                             if (ownerActor == null)
-                                ownerActor = session.GetActor().zone.FindActorInArea(eventStart.scriptOwnerActorID);
+                                ownerActor = session.GetActor().zone.FindActorInArea(eventStart.ownerActorID);
                             if (ownerActor == null)
                             {
                                 //Is it a Director?
-                                Director director = session.GetActor().GetDirector(eventStart.scriptOwnerActorID);
+                                Director director = session.GetActor().GetDirector(eventStart.ownerActorID);
                                 if (director != null)
                                     ownerActor = director;
                                 else
                                 {
-                                    Program.Log.Debug("\n===Event START===\nCould not find actor 0x{0:X} for event started by caller: 0x{1:X}\nEvent Starter: {2}\nParams: {3}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.triggerName, LuaUtils.DumpParams(eventStart.luaParams));
+                                    Program.Log.Debug("\n===Event START===\nCould not find actor 0x{0:X} for event started by caller: 0x{1:X}\nEvent Starter: {2}\nParams: {3}", eventStart.triggerActorID, eventStart.ownerActorID, eventStart.eventName, LuaUtils.DumpParams(eventStart.luaParams));
                                     break;
                                 }
                             }                                    
@@ -223,7 +223,7 @@ namespace Meteor.Map
 
                         session.GetActor().StartEvent(ownerActor, eventStart);
 
-                        Program.Log.Debug("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.actorID, eventStart.scriptOwnerActorID, eventStart.val1, eventStart.val2, eventStart.triggerName, LuaUtils.DumpParams(eventStart.luaParams));
+                        Program.Log.Debug("\n===Event START===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nEvent Starter: {4}\nParams: {5}", eventStart.triggerActorID, eventStart.ownerActorID, eventStart.serverCodes, eventStart.unknown, eventStart.eventName, LuaUtils.DumpParams(eventStart.luaParams));
                         break;
                     //Unknown, happens at npc spawn and cutscene play????
                     case 0x00CE:
@@ -238,7 +238,7 @@ namespace Meteor.Map
                     case 0x012E:
                         subpacket.DebugPrintSubPacket();
                         EventUpdatePacket eventUpdate = new EventUpdatePacket(subpacket.data);
-                        Program.Log.Debug("\n===Event UPDATE===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nStep: 0x{4:X}\nParams: {5}", eventUpdate.actorID, eventUpdate.scriptOwnerActorID, eventUpdate.val1, eventUpdate.val2, eventUpdate.step, LuaUtils.DumpParams(eventUpdate.luaParams));
+                        Program.Log.Debug("\n===Event UPDATE===\nSource Actor: 0x{0:X}\nCaller Actor: 0x{1:X}\nVal1: 0x{2:X}\nVal2: 0x{3:X}\nStep: 0x{4:X}\nParams: {5}", eventUpdate.triggerActorID, eventUpdate.serverCodes, eventUpdate.unknown1, eventUpdate.unknown2, eventUpdate.eventType, LuaUtils.DumpParams(eventUpdate.luaParams));
                         /*
                         //Is it a static actor? If not look in the player's instance
                         Actor updateOwnerActor = Server.GetStaticActors(session.GetActor().currentEventOwner);

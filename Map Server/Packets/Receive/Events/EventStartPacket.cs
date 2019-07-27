@@ -19,11 +19,11 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using Meteor.Common;
 using Meteor.Map.lua;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 
 namespace Meteor.Map.packets.receive.events
 {
@@ -34,20 +34,18 @@ namespace Meteor.Map.packets.receive.events
 
         public bool invalidPacket = false;
 
-        public uint actorID;
-        public uint scriptOwnerActorID;
-        public uint val1;
-        public uint val2;
-        public byte val3;
+        public uint triggerActorID;
+        public uint ownerActorID;
+        public uint serverCodes;
+        public uint unknown;
+        public byte eventType;
+        public string eventName;
+        public List<LuaParam> luaParams;
 
         public uint errorIndex;
         public uint errorNum;
         public string error = null;
-
-        public string triggerName;
-
-        public List<LuaParam> luaParams;
-
+        
         public EventStartPacket(byte[] data)
         {
             using (MemoryStream mem = new MemoryStream(data))
@@ -55,11 +53,11 @@ namespace Meteor.Map.packets.receive.events
                 using (BinaryReader binReader = new BinaryReader(mem))
                 {
                     try{
-                        actorID = binReader.ReadUInt32();
-                        scriptOwnerActorID = binReader.ReadUInt32();
-                        val1 = binReader.ReadUInt32();
-                        val2 = binReader.ReadUInt32();
-                        val3 = binReader.ReadByte();
+                        triggerActorID = binReader.ReadUInt32();
+                        ownerActorID = binReader.ReadUInt32();
+                        serverCodes = binReader.ReadUInt32();
+                        unknown = binReader.ReadUInt32();
+                        eventType = binReader.ReadByte();
                         /*
                         //Lua Error Dump
                         if (val1 == 0x39800010)
@@ -74,15 +72,7 @@ namespace Meteor.Map.packets.receive.events
                             return;
                         }
                         */
-                        List<byte> strList = new List<byte>();
-                        byte curByte;
-                        while ((curByte = binReader.ReadByte())!=0)
-                        {
-                            strList.Add(curByte);
-                        }
-                        triggerName = Encoding.ASCII.GetString(strList.ToArray());
-
-                        binReader.BaseStream.Seek(0x31, SeekOrigin.Begin);
+                        eventName = Utils.ReadNullTermString(binReader);
 
                         if (binReader.PeekChar() == 0x1)
                             luaParams = new List<LuaParam>();

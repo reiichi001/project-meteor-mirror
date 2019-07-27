@@ -104,6 +104,7 @@ namespace Meteor.Map.Actors
         //Event Related
         public uint currentEventOwner = 0;
         public string currentEventName = "";
+        public byte currentEventType = 0;
         public Coroutine currentEventRunning;
 
         //Player Info
@@ -576,6 +577,7 @@ namespace Meteor.Map.Actors
             QueuePacket(SetWeatherPacket.BuildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR, 1));
 
             QueuePacket(SetMapPacket.BuildPacket(actorId, zone.regionId, zone.actorId));
+            QueuePacket(SetPlayerDreamPacket.BuildPacket(actorId, 0));
 
             QueuePackets(GetSpawnPackets(this, spawnType));            
             //GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
@@ -602,19 +604,7 @@ namespace Meteor.Map.Actors
             playerSession.QueuePacket(debugSpawn);
             playerSession.QueuePacket(worldMasterSpawn);
 
-            //Inn Packets (Dream, Cutscenes, Armoire)
-
-            if (zone.isInn)
-            {
-                SetCutsceneBookPacket cutsceneBookPacket = new SetCutsceneBookPacket();
-                for (int i = 0; i < 2048; i++)
-                    cutsceneBookPacket.cutsceneFlags[i] = true;
-                SubPacket packet = cutsceneBookPacket.BuildPacket(actorId, "<Path Companion>", 11, 1, 1);
-
-                packet.DebugPrintSubPacket();
-                QueuePacket(packet);
-                QueuePacket(SetPlayerItemStoragePacket.BuildPacket(actorId));
-            }
+            //Inn Packets (Dream, Cutscenes, Armoire)            
 
             if (zone.GetWeatherDirector() != null)
             {
@@ -1757,8 +1747,9 @@ namespace Meteor.Map.Actors
 
         public void StartEvent(Actor owner, EventStartPacket start)
         {
-            currentEventOwner = start.scriptOwnerActorID;
-            currentEventName = start.triggerName;
+            currentEventOwner = start.ownerActorID;
+            currentEventName = start.eventName;
+            currentEventType = start.eventType;
             LuaEngine.GetInstance().EventStarted(this, owner, start);
         }
 
@@ -1767,24 +1758,24 @@ namespace Meteor.Map.Actors
             LuaEngine.GetInstance().OnEventUpdate(this, update.luaParams);
         }
 
-        public void KickEvent(Actor actor, string conditionName, params object[] parameters)
+        public void KickEvent(Actor actor, string eventName, params object[] parameters)
         {
             if (actor == null)
                 return;
 
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
-            SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, 0x75dc1705, conditionName, lParams);
+            SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, eventName, 0, lParams);
             spacket.DebugPrintSubPacket();
             QueuePacket(spacket);
         }
 
-        public void KickEventSpecial(Actor actor, uint unknown, string conditionName, params object[] parameters)
+        public void KickEventSpecial(Actor actor, uint unknown, string eventName, params object[] parameters)
         {
             if (actor == null)
                 return;
 
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
-            SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, unknown, conditionName, lParams);
+            SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, eventName, 0, lParams);
             spacket.DebugPrintSubPacket();
             QueuePacket(spacket);
         }
@@ -1797,19 +1788,20 @@ namespace Meteor.Map.Actors
         public void RunEventFunction(string functionName, params object[] parameters)
         {
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
-            SubPacket spacket = RunEventFunctionPacket.BuildPacket(actorId, currentEventOwner, currentEventName, functionName, lParams);
+            SubPacket spacket = RunEventFunctionPacket.BuildPacket(actorId, currentEventOwner, currentEventName, currentEventType, functionName, lParams);
             spacket.DebugPrintSubPacket();
             QueuePacket(spacket);
         }
 
         public void EndEvent()
         {
-            SubPacket p = EndEventPacket.BuildPacket(actorId, currentEventOwner, currentEventName);
+            SubPacket p = EndEventPacket.BuildPacket(actorId, currentEventOwner, currentEventName, currentEventType);
             p.DebugPrintSubPacket();
             QueuePacket(p);
 
             currentEventOwner = 0;
             currentEventName = "";
+            currentEventType = 0;
             currentEventRunning = null;
         }
 

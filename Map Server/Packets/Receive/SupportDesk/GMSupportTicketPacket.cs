@@ -19,9 +19,9 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using Meteor.Common;
 using System;
 using System.IO;
-using System.Text;
 
 namespace Meteor.Map.packets.receive.supportdesk
 {
@@ -42,8 +42,8 @@ namespace Meteor.Map.packets.receive.supportdesk
                     {
                         langCode = binReader.ReadUInt32();
                         ticketIssueIndex = binReader.ReadUInt32();
-                        ticketTitle = Encoding.ASCII.GetString(binReader.ReadBytes(0x80)).Trim(new[] { '\0' });
-                        ticketBody = Encoding.ASCII.GetString(binReader.ReadBytes(0x800)).Trim(new[] { '\0' });
+                        ticketTitle = Utils.ReadNullTermString(binReader, 0x80);
+                        ticketBody = Utils.ReadNullTermString(binReader, 0x800);
                     }
                     catch (Exception){
                         invalidPacket = true;

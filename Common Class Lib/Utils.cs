@@ -265,6 +265,15 @@ namespace Meteor.Common
             return secondDigit + firstDigit;
         }
 
+        public static string ReadNullTermString(BinaryReader reader, int maxSize = 0x20)
+        {
+            return Encoding.ASCII.GetString(reader.ReadBytes(maxSize)).Trim(new[] { '\0' });
+        }
+
+        public static void WriteNullTermString(BinaryWriter writer, string value, int maxSize = 0x20)
+        {
+            writer.Write(Encoding.ASCII.GetBytes(value), 0, Encoding.ASCII.GetByteCount(value) >= maxSize ? maxSize : Encoding.ASCII.GetByteCount(value));
+        }
 
         public static string FFXIVLoginStringDecodeBinary(string path)
         {

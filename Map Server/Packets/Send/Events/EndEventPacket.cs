@@ -21,7 +21,6 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 
 using System;
 using System.IO;
-using System.Text;
 
 using Meteor.Common;
 
@@ -32,7 +31,7 @@ namespace Meteor.Map.packets.send.events
         public const ushort OPCODE = 0x0131;
         public const uint PACKET_SIZE = 0x50;
 
-        public static SubPacket BuildPacket(uint sourcePlayerActorId, uint eventOwnerActorID, string eventStarter)
+        public static SubPacket BuildPacket(uint sourcePlayerActorId, uint eventOwnerActorID, string eventName, byte eventType)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
             int maxBodySize = data.Length - 0x80;
@@ -43,8 +42,8 @@ namespace Meteor.Map.packets.send.events
                 {
                     binWriter.Write((UInt32)sourcePlayerActorId);
                     binWriter.Write((UInt32)0);
-                    binWriter.Write((Byte)1);
-                    binWriter.Write(Encoding.ASCII.GetBytes(eventStarter), 0, Encoding.ASCII.GetByteCount(eventStarter) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(eventStarter));
+                    binWriter.Write((Byte)eventType);
+                    Utils.WriteNullTermString(binWriter, eventName);
                 }
             }
 

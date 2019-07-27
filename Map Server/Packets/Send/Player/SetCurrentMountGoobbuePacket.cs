@@ -25,7 +25,6 @@ namespace Meteor.Map.packets.send.player
 {
     class SetCurrentMountGoobbuePacket
     {
-
         public const ushort OPCODE = 0x01a0;
         public const uint PACKET_SIZE = 0x28;
 

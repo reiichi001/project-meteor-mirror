@@ -19,6 +19,7 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using Meteor.Common;
 using System;
 using System.IO;
 using System.Text;
@@ -39,7 +40,7 @@ namespace Meteor.Map.packets.receive
                 {
                     try{
                         binReader.BaseStream.Seek(4, SeekOrigin.Begin);
-                        actorID = UInt32.Parse(Encoding.ASCII.GetString(binReader.ReadBytes(10)));
+                        actorID = UInt32.Parse(Utils.ReadNullTermString(binReader, 10));
                     }
                     catch (Exception){
                         invalidPacket = true;

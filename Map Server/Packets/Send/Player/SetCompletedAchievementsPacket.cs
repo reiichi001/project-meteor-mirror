@@ -61,7 +61,7 @@ namespace Meteor.Map.packets.send.player
                 }
             }
 
-            return new SubPacket(OPCODE, sourceActorId, data);            
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
         
     }

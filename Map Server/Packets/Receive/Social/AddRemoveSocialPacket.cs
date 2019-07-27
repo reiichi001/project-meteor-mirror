@@ -19,15 +19,16 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using Meteor.Common;
 using System;
 using System.IO;
-using System.Text;
 
 namespace Meteor.Map.packets.receive.social
 {
     class AddRemoveSocialPacket
     {
         public bool invalidPacket = false;
+
         public string name;
 
         public AddRemoveSocialPacket(byte[] data)
@@ -37,7 +38,7 @@ namespace Meteor.Map.packets.receive.social
                 using (BinaryReader binReader = new BinaryReader(mem))
                 {
                     try{
-                        name = Encoding.ASCII.GetString(binReader.ReadBytes(0x20));
+                        name = Utils.ReadNullTermString(binReader);
                     }
                     catch (Exception){
                         invalidPacket = true;

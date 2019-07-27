@@ -19,9 +19,9 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using Meteor.Common;
 using System;
 using System.IO;
-using System.Text;
 
 namespace Meteor.Map.packets.receive.recruitment
 {
@@ -62,7 +62,7 @@ namespace Meteor.Map.packets.receive.recruitment
                             binReader.ReadByte();
                         }
 
-                        comment = Encoding.ASCII.GetString(binReader.ReadBytes(0x168));
+                        comment = Utils.ReadNullTermString(binReader, 0x168);
                     }
                     catch (Exception){
                         invalidPacket = true;

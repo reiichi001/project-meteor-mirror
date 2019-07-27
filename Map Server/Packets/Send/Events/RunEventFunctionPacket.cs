@@ -34,7 +34,7 @@ namespace Meteor.Map.packets.send.events
         public const ushort OPCODE = 0x0130;
         public const uint PACKET_SIZE = 0x2B8;
 
-        public static SubPacket BuildPacket(uint sourcePlayerActorId, uint eventOwnerActorID, string eventStarter, string callFunction, List<LuaParam> luaParams)
+        public static SubPacket BuildPacket(uint triggerActorID, uint ownerActorID, string eventName, byte eventType, string functionName, List<LuaParam> luaParams)
         {
             byte[] data = new byte[PACKET_SIZE - 0x20];
             int maxBodySize = data.Length - 0x80;
@@ -43,19 +43,19 @@ namespace Meteor.Map.packets.send.events
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    binWriter.Write((UInt32)sourcePlayerActorId);
-                    binWriter.Write((UInt32)eventOwnerActorID);
-                    binWriter.Write((Byte)5);
-                    binWriter.Write(Encoding.ASCII.GetBytes(eventStarter), 0, Encoding.ASCII.GetByteCount(eventStarter) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(eventStarter));
-                    binWriter.Seek(0x29, SeekOrigin.Begin);
-                    binWriter.Write(Encoding.ASCII.GetBytes(callFunction), 0, Encoding.ASCII.GetByteCount(callFunction) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(callFunction));
+                    binWriter.Write((UInt32)triggerActorID);
+                    binWriter.Write((UInt32)ownerActorID);
+                    binWriter.Write((Byte)eventType);
+                    Utils.WriteNullTermString(binWriter, eventName);
+                    binWriter.Seek(0x29, SeekOrigin.Begin);                
+                    Utils.WriteNullTermString(binWriter, functionName);
                     binWriter.Seek(0x49, SeekOrigin.Begin);
 
                     LuaUtils.WriteLuaParams(binWriter, luaParams);
                 }
             }
 
-            return new SubPacket(OPCODE, sourcePlayerActorId, data);
+            return new SubPacket(OPCODE, triggerActorID, data);
         }
     }
 }

@@ -19,10 +19,11 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-using Meteor.Map.lua;
 using System;
 using System.Collections.Generic;
 using System.IO;
+
+using Meteor.Map.lua;
 
 namespace Meteor.Map.packets.receive.events
 {
@@ -33,11 +34,11 @@ namespace Meteor.Map.packets.receive.events
 
         public bool invalidPacket = false;
 
-        public uint actorID;
-        public uint scriptOwnerActorID;
-        public uint val1;
-        public uint val2;
-        public byte step;
+        public uint triggerActorID;
+        public uint serverCodes;
+        public uint unknown1;
+        public uint unknown2;
+        public byte eventType;
         public List<LuaParam> luaParams;
 
         public EventUpdatePacket(byte[] data)
@@ -47,11 +48,11 @@ namespace Meteor.Map.packets.receive.events
                 using (BinaryReader binReader = new BinaryReader(mem))
                 {
                     try{
-                        actorID = binReader.ReadUInt32();
-                        scriptOwnerActorID = binReader.ReadUInt32();
-                        val1 = binReader.ReadUInt32();
-                        val2 = binReader.ReadUInt32();
-                        step = binReader.ReadByte();
+                        triggerActorID = binReader.ReadUInt32();
+                        serverCodes = binReader.ReadUInt32();
+                        unknown1 = binReader.ReadUInt32();
+                        unknown2 = binReader.ReadUInt32();
+                        eventType = binReader.ReadByte();
                         luaParams = LuaUtils.ReadLuaParams(binReader);
                     }
                     catch (Exception){

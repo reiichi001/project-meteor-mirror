@@ -21,6 +21,7 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 
 using Meteor.Common;
 using System;
+using System.IO;
 
 namespace Meteor.Map.packets.send.player
 {
@@ -31,8 +32,18 @@ namespace Meteor.Map.packets.send.player
 
         public static SubPacket BuildPacket(uint sourceActorId, uint dreamID)
         {
-            dreamID += 0x20E;
-            return new SubPacket(OPCODE, sourceActorId, BitConverter.GetBytes((uint)dreamID));
+            dreamID = 0x0216;
+            byte[] data = new byte[PACKET_SIZE - 0x20];
+
+            using (MemoryStream mem = new MemoryStream(data))
+            {
+                using (BinaryWriter binWriter = new BinaryWriter(mem))
+                {
+                    binWriter.Write((Int32)0x216);
+                }
+            }
+
+            return new SubPacket(OPCODE, sourceActorId, data);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace Meteor.Map.packets.receive
     {
         bool invalidPacket = false;
 
-        public ulong time;
+        public ulong timestamp;
         public float x, y, z, rot;
         public ushort moveState; //0: Standing, 1: Walking, 2: Running
 
@@ -39,7 +39,7 @@ namespace Meteor.Map.packets.receive
                 using (BinaryReader binReader = new BinaryReader(mem))
                 {
                     try{
-                        time = binReader.ReadUInt64();
+                        timestamp = binReader.ReadUInt64();
                         x = binReader.ReadSingle();
                         y = binReader.ReadSingle();
                         z = binReader.ReadSingle();

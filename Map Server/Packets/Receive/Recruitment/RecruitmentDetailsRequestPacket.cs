@@ -37,8 +37,7 @@ namespace Meteor.Map.packets.receive.recruitment
                 using (BinaryReader binReader = new BinaryReader(mem))
                 {
                     try{
-                        recruitmentId = binReader.ReadUInt64();
-                        
+                        recruitmentId = binReader.ReadUInt64();                        
                     }
                     catch (Exception){
                         invalidPacket = true;

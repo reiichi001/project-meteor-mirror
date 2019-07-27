@@ -21,7 +21,8 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 
 using System;
 using System.IO;
-using System.Text;
+
+using Meteor.Common;
 
 namespace Meteor.Map.packets.receive.recruitment
 {
@@ -54,8 +55,8 @@ namespace Meteor.Map.packets.receive.recruitment
 
                         unknown1 = binReader.ReadByte();
                         unknown2 = binReader.ReadByte();
-                        
-                        text = Encoding.ASCII.GetString(binReader.ReadBytes(0x20));
+
+                        text = Utils.ReadNullTermString(binReader);
                     }
                     catch (Exception){
                         invalidPacket = true;

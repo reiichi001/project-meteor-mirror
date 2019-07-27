@@ -19,6 +19,7 @@ along with Project Meteor Server. If not, see <https:www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+using Meteor.Common;
 using System;
 using System.IO;
 using System.Text;
@@ -40,7 +41,7 @@ namespace Meteor.Map.packets.receive
                 {
                     try{
                         groupId = binReader.ReadUInt64();
-                        workString = Encoding.ASCII.GetString(binReader.ReadBytes(0x20)).Trim(new[] { '\0' });
+                        workString = Utils.ReadNullTermString(binReader);
                     }
                     catch (Exception){
                         invalidPacket = true;

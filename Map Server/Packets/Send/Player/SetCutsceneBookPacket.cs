@@ -105,8 +105,7 @@ namespace Meteor.Map.packets.send.player
                         Program.Log.Error("Failed making SetCutsceneBook packet. Bin Stream was too big!");
 
                     binWriter.Seek(0x109, SeekOrigin.Begin);
-                    binWriter.Write(Encoding.ASCII.GetBytes(sNpcName), 0, Encoding.ASCII.GetByteCount(sNpcName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(sNpcName));
-
+                    Utils.WriteNullTermString(binWriter, sNpcName);
                 }
             }
 
