@@ -601,7 +601,7 @@ namespace Meteor.Map.lua
         public void EventStarted(Player player, Actor target, EventStartPacket eventStart)
         {
             List<LuaParam> lparams = eventStart.luaParams;
-            lparams.Insert(0, new LuaParam(2, eventStart.triggerName));
+            lparams.Insert(0, new LuaParam(2, eventStart.eventName));
             if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
             {
                 Coroutine coroutine = mSleepingOnPlayerEvent[player.actorId];
@@ -862,7 +862,7 @@ namespace Meteor.Map.lua
                 return;
             List<SubPacket> SendError = new List<SubPacket>();
             player.SendMessage(SendMessagePacket.MESSAGE_TYPE_SYSTEM_ERROR, "", message);
-            player.QueuePacket(EndEventPacket.BuildPacket(player.actorId, player.currentEventOwner, player.currentEventName));
+            player.QueuePacket(EndEventPacket.BuildPacket(player.actorId, player.currentEventOwner, player.currentEventName, 0));
         }
 
     }
