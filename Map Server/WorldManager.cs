@@ -1047,7 +1047,7 @@ namespace Meteor.Map
             player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x10));
             player.SendZoneInPackets(this, spawnType);
             player.playerSession.ClearInstance();
-            player.SendInstanceUpdate();
+            player.SendInstanceUpdate(true);
 
             player.playerSession.LockUpdates(false);
         
@@ -1078,7 +1078,6 @@ namespace Meteor.Map
             {
                 player.playerSession.QueuePacket(DeleteAllActorsPacket.BuildPacket(player.actorId));
                 player.playerSession.QueuePacket(_0xE2Packet.BuildPacket(player.actorId, 0x2));
-                //player.SendZoneInPackets(this, spawnType);
             }
 
             player.SendZoneInPackets(this, spawnType);
@@ -1086,6 +1085,9 @@ namespace Meteor.Map
             player.destinationZone = 0;
             player.destinationSpawnType = 0;
             Database.SavePlayerPosition(player);
+
+            player.playerSession.ClearInstance();
+            player.SendInstanceUpdate(true);
 
             player.playerSession.LockUpdates(false);
 

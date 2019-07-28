@@ -30,16 +30,16 @@ namespace Meteor.Map.packets.send.player
         public const ushort OPCODE = 0x01A7;
         public const uint PACKET_SIZE = 0x28;
 
-        public static SubPacket BuildPacket(uint sourceActorId, uint dreamID)
+        public static SubPacket BuildPacket(uint sourceActorId, byte dreamID, byte innID)
         {
-            dreamID = 0x0216;
             byte[] data = new byte[PACKET_SIZE - 0x20];
 
             using (MemoryStream mem = new MemoryStream(data))
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    binWriter.Write((Int32)0x216);
+                    binWriter.Write((Byte)dreamID);
+                    binWriter.Write((Byte)innID);
                 }
             }
 
