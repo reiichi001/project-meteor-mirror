@@ -1,3 +1,0 @@
-<header class="top">
-	
-</header>
