@@ -105,9 +105,9 @@ namespace Meteor.Map.dataobjects
             playerActor.QueuePositionUpdate(new Vector3(x,y,z));
         }
 
-        public void UpdateInstance(List<Actor> list)
+        public void UpdateInstance(List<Actor> list, bool force = false)
         {
-            if (isUpdatesLocked)
+            if (isUpdatesLocked && !force)
                 return;
 
             List<BasePacket> basePackets = new List<BasePacket>();

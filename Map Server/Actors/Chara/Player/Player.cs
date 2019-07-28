@@ -1,4 +1,4 @@
-﻿/*
+/*
 ===========================================================================
 Copyright (C) 2015-2019 Project Meteor Dev Team
 
@@ -51,7 +51,7 @@ namespace Meteor.Map.Actors
     class Player : Character
     {
         public const int TIMER_TOTORAK = 0;
-        public const int TIMER_DZEMAEL = 1;        
+        public const int TIMER_DZEMAEL = 1;
         public const int TIMER_BOWL_OF_EMBERS_HARD = 2;
         public const int TIMER_BOWL_OF_EMBERS = 3;
         public const int TIMER_THORNMARCH = 4;
@@ -71,10 +71,10 @@ namespace Meteor.Map.Actors
         public const int TIMER_RETURN = 18;
         public const int TIMER_SKIRMISH = 19;
 
-        public const int NPCLS_GONE     = 0;
+        public const int NPCLS_GONE = 0;
         public const int NPCLS_INACTIVE = 1;
-        public const int NPCLS_ACTIVE   = 2;
-        public const int NPCLS_ALERT    = 3;
+        public const int NPCLS_ACTIVE = 2;
+        public const int NPCLS_ALERT = 3;
 
         public const int SLOT_MAINHAND = 0;
         public const int SLOT_OFFHAND = 1;
@@ -269,12 +269,12 @@ namespace Meteor.Map.Actors
 
             Database.LoadPlayerCharacter(this);
             lastPlayTimeUpdate = Utils.UnixTimeStampUTC();
-            
+
             this.aiContainer = new AIContainer(this, new PlayerController(this), null, new TargetFind(this));
             allegiance = CharacterTargetingAllegiance.Player;
             CalculateBaseStats();
         }
-        
+
         public List<SubPacket> Create0x132Packets()
         {
             List<SubPacket> packets = new List<SubPacket>();
@@ -336,7 +336,7 @@ namespace Meteor.Map.Actors
             subpackets.Add(CreateSetActorIconPacket());
             subpackets.Add(CreateIsZoneingPacket());
             subpackets.AddRange(CreatePlayerRelatedPackets(requestPlayer.actorId));
-            subpackets.Add(CreateScriptBindPacket(requestPlayer));            
+            subpackets.Add(CreateScriptBindPacket(requestPlayer));
             return subpackets;
         }
 
@@ -369,31 +369,41 @@ namespace Meteor.Map.Actors
                 subpackets.Add(SetAchievementPointsPacket.BuildPacket(actorId, achievementPoints));
 
                 subpackets.Add(Database.GetLatestAchievements(this));
-                subpackets.Add(Database.GetAchievementsPacket(this));                
+                subpackets.Add(Database.GetAchievementsPacket(this));
             }
 
             if (mountState == 1)
                 subpackets.Add(SetCurrentMountChocoboPacket.BuildPacket(actorId, chocoboAppearance, rentalExpireTime, rentalMinLeft));
             else if (mountState == 2)
                 subpackets.Add(SetCurrentMountGoobbuePacket.BuildPacket(actorId, 1));
-          
+
+            //Inn Packets (Dream, Cutscenes, Armoire)   
+            if (zone.isInn)
+            {
+                SetCutsceneBookPacket cutsceneBookPacket = new SetCutsceneBookPacket();
+                for (int i = 0; i < 2048; i++)
+                    cutsceneBookPacket.cutsceneFlags[i] = true;
+                QueuePacket(cutsceneBookPacket.BuildPacket(actorId, "<Path Companion>", 11, 1, 1));
+                QueuePacket(SetPlayerDreamPacket.BuildPacket(actorId, 0x16, GetInnCode()));
+            }
+
             return subpackets;
         }
 
         public override List<SubPacket> GetInitPackets()
         {
             ActorPropertyPacketUtil propPacketUtil = new ActorPropertyPacketUtil("/_init", this);
-                        
+
             propPacketUtil.AddProperty("charaWork.eventSave.bazaarTax");
             propPacketUtil.AddProperty("charaWork.battleSave.potencial");
 
             //Properties
             for (int i = 0; i < charaWork.property.Length; i++)
             {
-                if (charaWork.property[i] != 0)                
+                if (charaWork.property[i] != 0)
                     propPacketUtil.AddProperty(String.Format("charaWork.property[{0}]", i));
             }
-            
+
             //Parameters
             propPacketUtil.AddProperty("charaWork.parameterSave.hp[0]");
             propPacketUtil.AddProperty("charaWork.parameterSave.hpMax[0]");
@@ -402,21 +412,21 @@ namespace Meteor.Map.Actors
             propPacketUtil.AddProperty("charaWork.parameterTemp.tp");
             propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkill[0]");
             propPacketUtil.AddProperty("charaWork.parameterSave.state_mainSkillLevel");
-            
+
             //Status Times
             for (int i = 0; i < charaWork.statusShownTime.Length; i++)
             {
                 if (charaWork.statusShownTime[i] != 0)
                     propPacketUtil.AddProperty(String.Format("charaWork.statusShownTime[{0}]", i));
             }
-        
+
             //General Parameters
             for (int i = 3; i < charaWork.battleTemp.generalParameter.Length; i++)
             {
                 if (charaWork.battleTemp.generalParameter[i] != 0)
                     propPacketUtil.AddProperty(String.Format("charaWork.battleTemp.generalParameter[{0}]", i));
             }
-            
+
             propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[0]");
             propPacketUtil.AddProperty("charaWork.battleTemp.castGauge_speed[1]");
 
@@ -425,23 +435,23 @@ namespace Meteor.Map.Actors
 
             //Commands
             propPacketUtil.AddProperty("charaWork.commandBorder");
-            
+
             propPacketUtil.AddProperty("charaWork.battleSave.negotiationFlag[0]");
-            
+
             for (int i = 0; i < charaWork.command.Length; i++)
             {
                 if (charaWork.command[i] != 0)
                 {
                     propPacketUtil.AddProperty(String.Format("charaWork.command[{0}]", i));
                     //Recast Timers
-                    if(i >= charaWork.commandBorder)
+                    if (i >= charaWork.commandBorder)
                     {
                         propPacketUtil.AddProperty(String.Format("charaWork.parameterTemp.maxCommandRecastTime[{0}]", i - charaWork.commandBorder));
                         propPacketUtil.AddProperty(String.Format("charaWork.parameterSave.commandSlot_recastTime[{0}]", i - charaWork.commandBorder));
                     }
                 }
             }
-            
+
             for (int i = 0; i < charaWork.commandCategory.Length; i++)
             {
                 charaWork.commandCategory[i] = 1;
@@ -460,7 +470,7 @@ namespace Meteor.Map.Actors
                 if (charaWork.additionalCommandAcquired[i] != false)
                     propPacketUtil.AddProperty(String.Format("charaWork.additionalCommandAcquired[{0}]", i));
             }
-            
+
             for (int i = 0; i < charaWork.parameterSave.commandSlot_compatibility.Length; i++)
             {
                 charaWork.parameterSave.commandSlot_compatibility[i] = true;
@@ -489,7 +499,7 @@ namespace Meteor.Map.Actors
             propPacketUtil.AddProperty("charaWork.parameterTemp.giftCount[1]");
 
             propPacketUtil.AddProperty("charaWork.depictionJudge");
-            
+
             //Scenario
             for (int i = 0; i < playerWork.questScenario.Length; i++)
             {
@@ -543,7 +553,7 @@ namespace Meteor.Map.Actors
             propPacketUtil.AddProperty("playerWork.birthdayMonth");
             propPacketUtil.AddProperty("playerWork.birthdayDay");
             propPacketUtil.AddProperty("playerWork.initialTown");
-            
+
             return propPacketUtil.Done();
         }
 
@@ -577,10 +587,8 @@ namespace Meteor.Map.Actors
             QueuePacket(SetWeatherPacket.BuildPacket(actorId, SetWeatherPacket.WEATHER_CLEAR, 1));
 
             QueuePacket(SetMapPacket.BuildPacket(actorId, zone.regionId, zone.actorId));
-            QueuePacket(SetPlayerDreamPacket.BuildPacket(actorId, 0));
 
-            QueuePackets(GetSpawnPackets(this, spawnType));            
-            //GetSpawnPackets(actorId, spawnType).DebugPrintPacket();
+            QueuePackets(GetSpawnPackets(this, spawnType));
 
             #region Inventory & Equipment
             QueuePacket(InventoryBeginChangePacket.BuildPacket(actorId, true));
@@ -590,7 +598,7 @@ namespace Meteor.Map.Actors
             itemPackages[ItemPackage.BAZAAR].SendFullPackage(this);
             itemPackages[ItemPackage.MELDREQUEST].SendFullPackage(this);
             itemPackages[ItemPackage.LOOT].SendFullPackage(this);
-            equipment.SendUpdate(this);   
+            equipment.SendUpdate(this);
             playerSession.QueuePacket(InventoryEndChangePacket.BuildPacket(actorId));
             #endregion
 
@@ -599,19 +607,16 @@ namespace Meteor.Map.Actors
             List<SubPacket> areaMasterSpawn = zone.GetSpawnPackets();
             List<SubPacket> debugSpawn = world.GetDebugActor().GetSpawnPackets();
             List<SubPacket> worldMasterSpawn = world.GetActor().GetSpawnPackets();
-            
+
             playerSession.QueuePacket(areaMasterSpawn);
             playerSession.QueuePacket(debugSpawn);
             playerSession.QueuePacket(worldMasterSpawn);
-
-            //Inn Packets (Dream, Cutscenes, Armoire)            
 
             if (zone.GetWeatherDirector() != null)
             {
                 playerSession.QueuePacket(zone.GetWeatherDirector().GetSpawnPackets());
             }
 
-            
             foreach (Director director in ownedDirectors)
             {
                 QueuePackets(director.GetSpawnPackets());
@@ -623,6 +628,8 @@ namespace Meteor.Map.Actors
 
             if (currentParty != null)
                 currentParty.SendGroupPackets(playerSession);
+
+            SendInstanceUpdate();
         }
 
         private void SendRemoveInventoryPackets(List<ushort> slots)
@@ -650,7 +657,7 @@ namespace Meteor.Map.Actors
         public bool IsMyPlayer(uint otherActorId)
         {
             return actorId == otherActorId;
-        }        
+        }
 
         public void QueuePacket(SubPacket packet)
 
@@ -806,6 +813,48 @@ namespace Meteor.Map.Actors
         public void SendMessage(uint logType, string sender, string message)
         {
             QueuePacket(SendMessagePacket.BuildPacket(actorId, logType, sender, message));
+        }
+
+        //Only use at logout since it's intensive
+        private byte GetInnCode()
+        {
+            if (zone.isInn)
+            {
+                Vector3 position = new Vector3(positionX, 0, positionZ);
+                if (Utils.Distance(position, new Vector3(0, 0, 0)) <= 20f)
+                    return 3;
+                else if (Utils.Distance(position, new Vector3(160, 0, 160)) <= 20f)
+                    return 2;
+                else if (Utils.Distance(position, new Vector3(-160, 0, -160)) <= 20f)
+                    return 1;
+            }
+            return 0;
+        }
+
+        public void SetSleeping()
+        {
+            playerSession.LockUpdates(true);
+            switch(GetInnCode())
+            {
+                case 1:
+                    positionX = -162.42f;
+                    positionY = 0f;
+                    positionZ = -154.21f;
+                    rotation = 1.56f;
+                    break;
+                case 2:
+                    positionX = 157.55f;
+                    positionY = 0f;
+                    positionZ = 165.05f;
+                    rotation = 1.53f;
+                    break;
+                case 3:
+                    positionX = -2.65f;
+                    positionY = 0f;
+                    positionZ = 3.94f;
+                    rotation = 1.52f;
+                    break;
+            }
         }
 
         public void Logout()
@@ -1809,8 +1858,8 @@ namespace Meteor.Map.Actors
         {
             BroadcastPacket(StartCountdownPacket.BuildPacket(actorId, countdownLength, syncTime, "Go!"), true);
         }
-
-        public void SendInstanceUpdate()
+        
+        public void SendInstanceUpdate(bool force = false)
         {
             //Server.GetWorldManager().SeamlessCheck(this);
 
@@ -1821,7 +1870,7 @@ namespace Meteor.Map.Actors
                 aroundMe.AddRange(zone.GetActorsAroundActor(this, 50));
             if (zone2 != null)
                 aroundMe.AddRange(zone2.GetActorsAroundActor(this, 50));
-            playerSession.UpdateInstance(aroundMe);
+            playerSession.UpdateInstance(aroundMe, force);
         }
 
         public bool IsInParty()
