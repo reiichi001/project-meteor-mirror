@@ -267,37 +267,37 @@ namespace Meteor.Map.Actors
             if (eventConditions.talkEventConditions != null)
             {
                 foreach (EventList.TalkEventCondition condition in eventConditions.talkEventConditions)
-                    subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 1, condition.conditionName));
+                    subpackets.Add(SetEventStatusPacket.BuildPacket(actorId, true, 1, condition.conditionName));
             }
 
             if (eventConditions.noticeEventConditions != null)
             {
                 foreach (EventList.NoticeEventCondition condition in eventConditions.noticeEventConditions)
-                    subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 1, condition.conditionName));
+                    subpackets.Add(SetEventStatusPacket.BuildPacket(actorId, true, 5, condition.conditionName));
             }
 
             if (eventConditions.emoteEventConditions != null)
             {
                 foreach (EventList.EmoteEventCondition condition in eventConditions.emoteEventConditions)
-                    subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 3, condition.conditionName));
+                    subpackets.Add(SetEventStatusPacket.BuildPacket(actorId, true, 3, condition.conditionName));
             }
 
             if (eventConditions.pushWithCircleEventConditions != null)
             {
                 foreach (EventList.PushCircleEventCondition condition in eventConditions.pushWithCircleEventConditions)
-                    subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 2, condition.conditionName));
+                    subpackets.Add(SetEventStatusPacket.BuildPacket(actorId, true, 2, condition.conditionName));
             }
 
             if (eventConditions.pushWithFanEventConditions != null)
             {
                 foreach (EventList.PushFanEventCondition condition in eventConditions.pushWithFanEventConditions)
-                    subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 2, condition.conditionName));
+                    subpackets.Add(SetEventStatusPacket.BuildPacket(actorId, true, 2, condition.conditionName));
             }
 
             if (eventConditions.pushWithBoxEventConditions != null)
             {
                 foreach (EventList.PushBoxEventCondition condition in eventConditions.pushWithBoxEventConditions)
-                    subpackets.Add(SetEventStatus.BuildPacket(actorId, true, 2, condition.conditionName));
+                    subpackets.Add(SetEventStatusPacket.BuildPacket(actorId, true, 2, condition.conditionName));
             }
 
             return subpackets;

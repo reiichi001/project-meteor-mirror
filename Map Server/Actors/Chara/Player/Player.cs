@@ -45,6 +45,7 @@ using Meteor.Map.packets.send.player;
 using Meteor.Map.packets.send.actor.battle;
 using Meteor.Map.packets.receive.events;
 using static Meteor.Map.LuaUtils;
+using Meteor.Map.packets.send.actor.events;
 
 namespace Meteor.Map.Actors
 {
@@ -1813,7 +1814,7 @@ namespace Meteor.Map.Actors
                 return;
 
             List<LuaParam> lParams = LuaUtils.CreateLuaParamList(parameters);
-            SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, eventName, 0, lParams);
+            SubPacket spacket = KickEventPacket.BuildPacket(actorId, actor.actorId, eventName, 5, lParams);
             spacket.DebugPrintSubPacket();
             QueuePacket(spacket);
         }
@@ -1829,9 +1830,9 @@ namespace Meteor.Map.Actors
             QueuePacket(spacket);
         }
 
-        public void SetEventStatus(Actor actor, string conditionName, bool enabled, byte unknown)
+        public void SetEventStatus(Actor actor, string conditionName, bool enabled, byte type)
         {
-            QueuePacket(packets.send.actor.events.SetEventStatus.BuildPacket(actor.actorId, enabled, unknown, conditionName));
+            SetEventStatusPacket.BuildPacket(actor.actorId, enabled, type, conditionName);
         }       
 
         public void RunEventFunction(string functionName, params object[] parameters)
