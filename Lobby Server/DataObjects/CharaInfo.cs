@@ -175,7 +175,7 @@ namespace Meteor.Lobby.DataObjects
                     var bitfield = PrimitiveConversion.ToUInt32(faceInfo);
 
                     writer.Write((UInt32)bitfield); //FACE, Figure this out!
-                    uint hairVal = appearance.hairHighlightColor | (uint)(appearance.hairStyle << 10) | (uint)(appearance.characteristicsColor << 20);
+                    uint hairVal = appearance.hairHighlightColor | (uint)(appearance.hairVariation << 5) | (uint)(appearance.hairStyle << 10);
                     writer.Write((UInt32)hairVal);
                     writer.Write((UInt32)appearance.voice);
                     writer.Write((UInt32)appearance.mainHand);
@@ -194,14 +194,11 @@ namespace Meteor.Lobby.DataObjects
                     writer.Write((UInt32)appearance.feet);
                     writer.Write((UInt32)appearance.waist);
 
-                    writer.Write((UInt32)0);
-
+                    writer.Write((UInt32)appearance.neck);
                     writer.Write((UInt32)appearance.rightEar);
                     writer.Write((UInt32)appearance.leftEar);
-
-                    writer.Write((UInt32)0);
-                    writer.Write((UInt32)0);
-
+                    writer.Write((UInt32)appearance.rightIndex);
+                    writer.Write((UInt32)appearance.leftIndex);
                     writer.Write((UInt32)appearance.rightFinger);
                     writer.Write((UInt32)appearance.leftFinger);
 

@@ -55,8 +55,11 @@ namespace Meteor.Lobby.DataObjects
         public uint hands = 0;
         public uint feet = 0;
         public uint waist = 0;
+        public uint neck = 0;
         public uint rightEar = 0;
         public uint leftEar = 0;
+        public uint rightIndex = 0;
+        public uint leftIndex = 0;
         public uint rightFinger = 0;
         public uint leftFinger = 0;
         //Chara Info

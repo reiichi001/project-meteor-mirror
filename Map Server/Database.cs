@@ -189,6 +189,7 @@ namespace Meteor.Map
                     hands = @hands,
                     feet = @feet,
                     waist = @waist,
+                    neck = @neck,
                     leftFinger = @leftFinger,
                     rightFinger = @rightFinger,
                     leftEar = @leftEar,
@@ -206,6 +207,7 @@ namespace Meteor.Map
                     cmd.Parameters.AddWithValue("@hands", player.appearanceIds[Character.HANDSGEAR]);
                     cmd.Parameters.AddWithValue("@feet", player.appearanceIds[Character.FEETGEAR]);
                     cmd.Parameters.AddWithValue("@waist", player.appearanceIds[Character.WAISTGEAR]);
+                    cmd.Parameters.AddWithValue("@neck", player.appearanceIds[Character.NECKGEAR]);
                     cmd.Parameters.AddWithValue("@leftFinger", player.appearanceIds[Character.L_RINGFINGER]);
                     cmd.Parameters.AddWithValue("@rightFinger", player.appearanceIds[Character.R_RINGFINGER]);
                     cmd.Parameters.AddWithValue("@leftEar", player.appearanceIds[Character.L_EAR]);
@@ -873,6 +875,7 @@ namespace Meteor.Map
                         hairStyle,
                         hairColor,
                         hairHighlightColor,
+                        hairVariation,
                         eyeColor,
                         characteristics,
                         characteristicsColor,
@@ -892,6 +895,7 @@ namespace Meteor.Map
                         hands,
                         feet,
                         waist,
+                        neck,
                         leftFinger,
                         rightFinger,
                         leftEar,
@@ -904,27 +908,39 @@ namespace Meteor.Map
                     {
                         if (reader.Read())
                         {
-                            if (reader.GetUInt32(0) == 0xFFFFFFFF)
+                            if (reader.GetUInt32("baseId") == 0xFFFFFFFF)
                                 player.modelId = CharacterUtils.GetTribeModel(player.playerWork.tribe);
                             else
-                                player.modelId = reader.GetUInt32(0);
-                            player.appearanceIds[Character.SIZE] = reader.GetByte(1);
-                            player.appearanceIds[Character.COLORINFO] = (uint)(reader.GetUInt16(3) | (reader.GetUInt16(5) << 10) | (reader.GetUInt16(7) << 20));
-                            player.appearanceIds[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.GetFaceInfo(reader.GetByte(8), reader.GetByte(9), reader.GetByte(10), reader.GetByte(11), reader.GetByte(12), reader.GetByte(13), reader.GetByte(14), reader.GetByte(15), reader.GetByte(16), reader.GetByte(17)));
-                            player.appearanceIds[Character.HIGHLIGHT_HAIR] = (uint)(reader.GetUInt16(6) | reader.GetUInt16(4) << 10);
-                            player.appearanceIds[Character.VOICE] = reader.GetByte(2);
-                            player.appearanceIds[Character.MAINHAND] = reader.GetUInt32(18);
-                            player.appearanceIds[Character.OFFHAND] = reader.GetUInt32(19);
-                            player.appearanceIds[Character.HEADGEAR] = reader.GetUInt32(20);
-                            player.appearanceIds[Character.BODYGEAR] = reader.GetUInt32(21);
-                            player.appearanceIds[Character.LEGSGEAR] = reader.GetUInt32(22);
-                            player.appearanceIds[Character.HANDSGEAR] = reader.GetUInt32(23);
-                            player.appearanceIds[Character.FEETGEAR] = reader.GetUInt32(24);
-                            player.appearanceIds[Character.WAISTGEAR] = reader.GetUInt32(25);
-                            player.appearanceIds[Character.R_EAR] = reader.GetUInt32(26);
-                            player.appearanceIds[Character.L_EAR] = reader.GetUInt32(27);
-                            player.appearanceIds[Character.R_RINGFINGER] = reader.GetUInt32(28);
-                            player.appearanceIds[Character.L_RINGFINGER] = reader.GetUInt32(29);
+                                player.modelId = reader.GetUInt32("baseId");
+                            player.appearanceIds[Character.SIZE] = reader.GetByte("size");
+                            player.appearanceIds[Character.COLORINFO] = (uint)(reader.GetUInt16("skinColor") | (reader.GetUInt16("hairColor") << 10) | (reader.GetUInt16("eyeColor") << 20));
+                            player.appearanceIds[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.GetFaceInfo(
+                                reader.GetByte("characteristics"),
+                                reader.GetByte("characteristicsColor"),
+                                reader.GetByte("faceType"),
+                                reader.GetByte("ears"),
+                                reader.GetByte("faceMouth"),
+                                reader.GetByte("faceFeatures"),
+                                reader.GetByte("faceNose"),
+                                reader.GetByte("faceEyeShape"),
+                                reader.GetByte("faceIrisSize"),
+                                reader.GetByte("faceEyebrows")));
+                            player.appearanceIds[Character.HIGHLIGHT_HAIR] = (uint)(reader.GetUInt16("hairHighlightColor") | reader.GetUInt32("hairVariation") << 5 | reader.GetUInt32("hairStyle") << 10);
+                            player.appearanceIds[Character.VOICE] = reader.GetByte("voice");
+                            player.appearanceIds[Character.MAINHAND] = reader.GetUInt32("mainHand");
+                            player.appearanceIds[Character.OFFHAND] = reader.GetUInt32("offHand");
+                            player.appearanceIds[Character.HEADGEAR] = reader.GetUInt32("head");
+                            player.appearanceIds[Character.BODYGEAR] = reader.GetUInt32("body");
+                            player.appearanceIds[Character.LEGSGEAR] = reader.GetUInt32("legs");
+                            player.appearanceIds[Character.HANDSGEAR] = reader.GetUInt32("hands");
+                            player.appearanceIds[Character.FEETGEAR] = reader.GetUInt32("feet");
+                            player.appearanceIds[Character.WAISTGEAR] = reader.GetUInt32("waist");
+                            player.appearanceIds[Character.HEADGEAR] = reader.GetUInt32("head");
+                            player.appearanceIds[Character.NECKGEAR] = reader.GetUInt32("neck");
+                            player.appearanceIds[Character.R_EAR] = reader.GetUInt32("rightEar");
+                            player.appearanceIds[Character.L_EAR] = reader.GetUInt32("leftEar");
+                            player.appearanceIds[Character.R_RINGFINGER] = reader.GetUInt32("rightFinger");
+                            player.appearanceIds[Character.L_RINGFINGER] = reader.GetUInt32("leftFinger");
                         }
 
                     }

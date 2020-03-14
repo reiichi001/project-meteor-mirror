@@ -623,6 +623,7 @@ namespace Meteor.Lobby
                             hairStyle,
                             hairColor,
                             hairHighlightColor,
+                            hairVariation,
                             eyeColor,
                             characteristics,
                             characteristicsColor,
@@ -642,6 +643,9 @@ namespace Meteor.Lobby
                             hands,
                             feet,
                             waist,
+                            neck,
+                            leftIndex,
+                            rightIndex,
                             leftFinger,
                             rightFinger,
                             leftEar,
@@ -660,6 +664,7 @@ namespace Meteor.Lobby
                             appearance.hairStyle = reader.GetUInt16("hairStyle");
                             appearance.hairColor = reader.GetUInt16("hairColor");
                             appearance.hairHighlightColor = reader.GetUInt16("hairHighlightColor");
+                            appearance.hairVariation = reader.GetUInt16("hairVariation");
                             appearance.eyeColor = reader.GetUInt16("eyeColor");
                             appearance.characteristics = reader.GetByte("characteristics");
                             appearance.characteristicsColor = reader.GetByte("characteristicsColor");
@@ -681,8 +686,11 @@ namespace Meteor.Lobby
                             appearance.hands = reader.GetUInt32("hands");
                             appearance.feet = reader.GetUInt32("feet");
                             appearance.waist = reader.GetUInt32("waist");
+                            appearance.neck = reader.GetUInt32("neck");
                             appearance.leftFinger = reader.GetUInt32("leftFinger");
                             appearance.rightFinger = reader.GetUInt32("rightFinger");
+                            appearance.leftIndex = reader.GetUInt32("leftIndex");
+                            appearance.rightIndex = reader.GetUInt32("rightIndex");
                             appearance.leftEar = reader.GetUInt32("leftEar");
                             appearance.rightEar = reader.GetUInt32("rightEar");
                         }

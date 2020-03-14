@@ -229,7 +229,7 @@
     <Compile Include="Packets\Send\Actor\Battle\CommandResultX18Packet.cs" />
     <Compile Include="Packets\Send\Actor\Battle\CommandResultX10Packet.cs" />
     <Compile Include="Packets\Send\Actor\DeleteAllActorsPacket.cs" />
-    <Compile Include="Packets\Send\Actor\Events\SetEventStatus.cs" />
+    <Compile Include="Packets\Send\Actor\Events\SetEventStatusPacket.cs" />
     <Compile Include="Packets\Send\Actor\Events\SetNoticeEventCondition.cs" />
     <Compile Include="Packets\Send\Actor\Events\SetPushEventConditionWithTriggerBox.cs" />
     <Compile Include="Packets\Send\Actor\Events\SetPushEventConditionWithFan.cs" />

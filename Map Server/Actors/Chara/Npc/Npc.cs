@@ -359,36 +359,46 @@ namespace Meteor.Map.Actors
                     using (MySqlDataReader reader = cmd.ExecuteReader())
                     {
                         while (reader.Read())
-                        {
-
+                        {                            
                             //Handle Appearance
-                            modelId = reader.GetUInt32(0);
-                            appearanceIds[Character.SIZE] = reader.GetUInt32(1);
-                            appearanceIds[Character.COLORINFO] = (uint)(reader.GetUInt32(16) | (reader.GetUInt32(15) << 10) | (reader.GetUInt32(17) << 20)); //17 - Skin Color, 16 - Hair Color, 18 - Eye Color
-                            appearanceIds[Character.FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.GetFaceInfo(reader.GetByte(6), reader.GetByte(7), reader.GetByte(5), reader.GetByte(14), reader.GetByte(13), reader.GetByte(12), reader.GetByte(11), reader.GetByte(10), reader.GetByte(9), reader.GetByte(8)));
-                            appearanceIds[Character.HIGHLIGHT_HAIR] = (uint)(reader.GetUInt32(3) | reader.GetUInt32(2) << 10); //5- Hair Highlight, 4 - Hair Style
-                            appearanceIds[Character.VOICE] = reader.GetUInt32(17);
-                            appearanceIds[Character.MAINHAND] = reader.GetUInt32(19);
-                            appearanceIds[Character.OFFHAND] = reader.GetUInt32(20);
-                            appearanceIds[Character.SPMAINHAND] = reader.GetUInt32(21);
-                            appearanceIds[Character.SPOFFHAND] = reader.GetUInt32(22);
-                            appearanceIds[Character.THROWING] = reader.GetUInt32(23);
-                            appearanceIds[Character.PACK] = reader.GetUInt32(24);
-                            appearanceIds[Character.POUCH] = reader.GetUInt32(25);
-                            appearanceIds[Character.HEADGEAR] = reader.GetUInt32(26);
-                            appearanceIds[Character.BODYGEAR] = reader.GetUInt32(27);
-                            appearanceIds[Character.LEGSGEAR] = reader.GetUInt32(28);
-                            appearanceIds[Character.HANDSGEAR] = reader.GetUInt32(29);
-                            appearanceIds[Character.FEETGEAR] = reader.GetUInt32(30);
-                            appearanceIds[Character.WAISTGEAR] = reader.GetUInt32(31);
-                            appearanceIds[Character.NECKGEAR] = reader.GetUInt32(32);
-                            appearanceIds[Character.R_EAR] = reader.GetUInt32(33);
-                            appearanceIds[Character.L_EAR] = reader.GetUInt32(34);
-                            appearanceIds[Character.R_INDEXFINGER] = reader.GetUInt32(35);
-                            appearanceIds[Character.L_INDEXFINGER] = reader.GetUInt32(36);
-                            appearanceIds[Character.R_RINGFINGER] = reader.GetUInt32(37);
-                            appearanceIds[Character.L_RINGFINGER] = reader.GetUInt32(38);
-
+                            modelId = reader.GetUInt32("base");
+                            appearanceIds[SIZE] = reader.GetUInt32("size");
+                            appearanceIds[COLORINFO] = (uint)(reader.GetUInt32("skinColor") | (reader.GetUInt32("hairColor") << 10) | (reader.GetUInt32("eyeColor") << 20));
+                            appearanceIds[FACEINFO] = PrimitiveConversion.ToUInt32(CharacterUtils.GetFaceInfo(
+                                reader.GetByte("characteristics"),
+                                reader.GetByte("characteristicsColor"),
+                                reader.GetByte("faceType"),
+                                reader.GetByte("ears"),
+                                reader.GetByte("faceMouth"),
+                                reader.GetByte("faceFeatures"),
+                                reader.GetByte("faceNose"),
+                                reader.GetByte("faceEyeShape"),
+                                reader.GetByte("faceIrisSize"),
+                                reader.GetByte("faceEyebrows")));
+                            appearanceIds[HIGHLIGHT_HAIR] = (uint)(reader.GetUInt32("hairHighlightColor") | reader.GetUInt32("hairVariation") << 5 | reader.GetUInt32("hairStyle") << 10);
+                            appearanceIds[VOICE] = reader.GetUInt32("voice");
+                            appearanceIds[MAINHAND] = reader.GetUInt32("mainHand");
+                            appearanceIds[OFFHAND] = reader.GetUInt32("offHand");
+                            appearanceIds[SPMAINHAND] = reader.GetUInt32("spMainHand");
+                            appearanceIds[SPOFFHAND] = reader.GetUInt32("spOffHand");
+                            appearanceIds[THROWING] = reader.GetUInt32("throwing");
+                            appearanceIds[PACK] = reader.GetUInt32("pack");
+                            appearanceIds[POUCH] = reader.GetUInt32("pouch");
+                            appearanceIds[MAINHAND] = reader.GetUInt32("mainHand");
+                            appearanceIds[OFFHAND] = reader.GetUInt32("offHand");
+                            appearanceIds[HEADGEAR] = reader.GetUInt32("head");
+                            appearanceIds[BODYGEAR] = reader.GetUInt32("body");
+                            appearanceIds[LEGSGEAR] = reader.GetUInt32("legs");
+                            appearanceIds[HANDSGEAR] = reader.GetUInt32("hands");
+                            appearanceIds[FEETGEAR] = reader.GetUInt32("feet");
+                            appearanceIds[WAISTGEAR] = reader.GetUInt32("waist");
+                            appearanceIds[NECKGEAR] = reader.GetUInt32("neck");
+                            appearanceIds[R_EAR] = reader.GetUInt32("rightEar");
+                            appearanceIds[L_EAR] = reader.GetUInt32("leftEar");
+                            appearanceIds[R_INDEXFINGER] = reader.GetUInt32("leftIndex");
+                            appearanceIds[L_INDEXFINGER] = reader.GetUInt32("rightIndex");
+                            appearanceIds[R_RINGFINGER] = reader.GetUInt32("rightFinger");
+                            appearanceIds[L_RINGFINGER] = reader.GetUInt32("leftFinger");
                         }
                     }
 

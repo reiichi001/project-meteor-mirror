@@ -600,7 +600,8 @@ namespace Meteor.Map.lua
 
         public void EventStarted(Player player, Actor target, EventStartPacket eventStart)
         {
-            List<LuaParam> lparams = eventStart.luaParams;
+            List<LuaParam> lparams = new List<LuaParam>();
+            lparams.AddRange(eventStart.luaParams);
             lparams.Insert(0, new LuaParam(2, eventStart.eventName));
             if (mSleepingOnPlayerEvent.ContainsKey(player.actorId))
             {
