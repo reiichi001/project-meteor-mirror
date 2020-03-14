@@ -4,9 +4,8 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 9/9/2017 2:33:14 PM
+Date: 3/14/2020 12:57:15 PM
 */
-DROP TABLE IF EXISTS `server_spawn_locations`;
 
 SET FOREIGN_KEY_CHECKS=0;
 -- ----------------------------
@@ -27,7 +26,7 @@ CREATE TABLE `server_spawn_locations` (
   `animationId` int(10) unsigned NOT NULL DEFAULT '0',
   `customDisplayName` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=960 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=968 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records 
@@ -692,7 +691,7 @@ INSERT INTO `server_spawn_locations` VALUES ('662', '1000459', 'gallia', '206', 
 INSERT INTO `server_spawn_locations` VALUES ('663', '1000464', 'cassandra', '206', '', '0', '233.02', '12', '-1267', '-1.63', '0', '1017', null);
 INSERT INTO `server_spawn_locations` VALUES ('664', '1500115', 'meara', '206', '', '0', '204.21', '27.7', '-1438.26', '-1.5', '0', '1040', null);
 INSERT INTO `server_spawn_locations` VALUES ('665', '1200027', 'retainerbell_gridania2', '206', '', '0', '190.95', '27.5', '-1401.98', '-2.71', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('666', '1080101', '', '206', '', '0', '68.44', '10.87', '-1244.42', '2.45', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('666', '1080101', 'sys_chocoview_grid', '206', '', '0', '68.44', '10.87', '-1244.42', '2.45', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('667', '1500061', 'fruhdhem', '206', '', '0', '65.02', '11.79', '-1241.79', '-2.76', '0', '2051', null);
 INSERT INTO `server_spawn_locations` VALUES ('668', '1002106', 'serpent_lieutenant_marette', '206', '', '0', '33.7', '10.22', '-1294.37', '-1.59', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('669', '1200022', 'chocobo_standard', '206', '', '0', '66.73', '11.73', '-1242.08', '-2.89', '0', '0', null);
@@ -972,3 +971,11 @@ INSERT INTO `server_spawn_locations` VALUES ('956', '1200027', 'retainerbell', '
 INSERT INTO `server_spawn_locations` VALUES ('957', '1500417', 'vendor2', '180', 'PrivateAreaMasterMarket', '102', '166.7', '1.4', '194', '-1.57', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('958', '1500428', 'repairman', '180', 'PrivateAreaMasterMarket', '102', '153.3', '1', '194', '1.57', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('959', '1090265', 'market_entrance222', '180', 'PrivateAreaMasterMarket', '102', '160', '2', '210', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('960', '1000621', 'habreham', '206', '', '0', '1.745', '9.15', '-1266.03', '0.544', '0', '2035', null);
+INSERT INTO `server_spawn_locations` VALUES ('961', '1000622', 'decima', '206', '', '0', '-8.6', '8.75', '-1261.71', '1.563', '0', '2036', null);
+INSERT INTO `server_spawn_locations` VALUES ('962', '1000623', 'chalyo_tamlyo', '206', '', '0', '-8.961', '12.0703', '-1257.55', '0', '0', '2037', null);
+INSERT INTO `server_spawn_locations` VALUES ('963', '1000823', 'ulmhylt', '206', '', '0', '-3.903', '8.75', '-1263.3', '0.44', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('964', '1000822', 'caplan', '206', '', '0', '-8.783', '8.75', '-1268.19', '3.138', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('965', '1000821', 'nellaure', '206', '', '0', '-13.954', '10.75', '-1261.49', '1.576', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('966', '1080101', 'sys_chocoview_lim', '133', '', '0', '-436.185', '19', '206.26', '3.13', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('967', '1080101', 'sys_chocoview_uld', '175', '', '0', '-36.611', '192.037', '18.759', '-0.81', '0', '0', null);
