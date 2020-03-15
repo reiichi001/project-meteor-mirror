@@ -4,7 +4,7 @@ Source Host: localhost
 Source Database: ffxiv_server
 Target Host: localhost
 Target Database: ffxiv_server
-Date: 3/14/2020 12:57:15 PM
+Date: 3/15/2020 1:01:54 AM
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -26,7 +26,7 @@ CREATE TABLE `server_spawn_locations` (
   `animationId` int(10) unsigned NOT NULL DEFAULT '0',
   `customDisplayName` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=968 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1019 DEFAULT CHARSET=latin1;
 
 -- ----------------------------
 -- Records 
@@ -705,7 +705,7 @@ INSERT INTO `server_spawn_locations` VALUES ('676', '1000701', 'zuzupoja', '206'
 INSERT INTO `server_spawn_locations` VALUES ('677', '1001583', 'marcette', '206', '', '0', '22.84', '10.9', '-1306.83', '1.06', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('678', '1500294', 'gagaroon', '206', '', '0', '198.6', '25.21', '-1341.66', '2.79', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('679', '1001396', 'lefwyne', '206', '', '0', '180.42', '25.82', '-1400.37', '2.87', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('680', '1700038', 'aubrenard (check cnstctr)', '206', '', '0', '179.74', '25.82', '-1415.51', '-1.07', '0', '1040', null);
+INSERT INTO `server_spawn_locations` VALUES ('680', '1700038', 'aubrenard', '206', '', '0', '179.74', '25.82', '-1415.51', '-1.07', '0', '1040', null);
 INSERT INTO `server_spawn_locations` VALUES ('681', '1080040', '', '206', '', '0', '108.78', '20', '-1467.61', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('682', '1001080', 'tatagoi', '206', '', '0', '106.26', '20', '-1472.57', '0.04', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('683', '1001081', 'khuma_moshroca', '206', '', '0', '105.99', '20', '-1478.71', '-0.8', '0', '1041', null);
@@ -800,7 +800,7 @@ INSERT INTO `server_spawn_locations` VALUES ('774', '1280059', '', '0', '', '0',
 INSERT INTO `server_spawn_locations` VALUES ('775', '1280061', 'gridania_aetheryte', '206', '', '0', '-130.63', '16.08', '-1323.99', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('776', '1280062', 'camp_bentbranch_aetheryte', '150', '', '0', '288', '4', '-543.928', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('777', '1280063', 'camp_nineivies_aetheryte', '151', '', '0', '1702', '20', '-862', '0', '0', '0', null);
-INSERT INTO `server_spawn_locations` VALUES ('778', '1280064', 'camp_emeraldmoss_aetheryte', '152', '', '0', '-1052', '20', '-1760', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('778', '1280064', 'camp_emeraldmoss_aetheryte', '152', '', '0', '-1052', '20.6', '-1760', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('779', '1280065', 'camp_crimsonbark_aetheryte', '153', '', '0', '-1566.04', '-11.89', '-550.51', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('780', '1280066', 'camp_tranquil_aetheryte', '154', '', '0', '734', '-12', '1126', '0', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('781', '1280067', 'humblehearth_aetherytegate', '150', '', '0', '-94.07', '4', '-543.16', '0', '0', '0', null);
@@ -979,3 +979,54 @@ INSERT INTO `server_spawn_locations` VALUES ('964', '1000822', 'caplan', '206', 
 INSERT INTO `server_spawn_locations` VALUES ('965', '1000821', 'nellaure', '206', '', '0', '-13.954', '10.75', '-1261.49', '1.576', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('966', '1080101', 'sys_chocoview_lim', '133', '', '0', '-436.185', '19', '206.26', '3.13', '0', '0', null);
 INSERT INTO `server_spawn_locations` VALUES ('967', '1080101', 'sys_chocoview_uld', '175', '', '0', '-36.611', '192.037', '18.759', '-0.81', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('968', '1500252', 'mauh_lihzeh', '151', '', '0', '1703.37', '20.57', '-850.32', '-3.04', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('969', '1600099', 'zehkrepf', '151', '', '0', '1700.51', '20.31', '-852.16', '2.79', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('970', '1500095', 'troegmoer', '151', '', '0', '1707.27', '20.47', '-854.72', '-2.41', '0', '1041', null);
+INSERT INTO `server_spawn_locations` VALUES ('971', '1500069', 'ahldwaen', '151', '', '0', '1710.52', '20.51', '-854.6', '-2.38', '0', '1016', null);
+INSERT INTO `server_spawn_locations` VALUES ('972', '1500214', 'serpent_sergeant_marquaile', '154', '', '0', '739.15', '-11.93', '1113.85', '2.16', '0', '1331', null);
+INSERT INTO `server_spawn_locations` VALUES ('973', '1600096', 'edwyn', '154', '', '0', '724.85', '-11.76', '1124.45', '1.74', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('974', '1500098', 'juliembert', '154', '', '0', '726.57', '-11.52', '1131.33', '2.33', '0', '1041', null);
+INSERT INTO `server_spawn_locations` VALUES ('975', '1500238', 'beneger', '154', '', '0', '723.07', '-11.45', '1127.25', '1.63', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('976', '1500229', 'pack_chocobo', '154', '', '0', '737.36', '-11.89', '1112.58', '2.66', '0', '1333', null);
+INSERT INTO `server_spawn_locations` VALUES ('977', '1090374', '', '154', '', '0', '734.57', '-11.92', '1126.5', '1.57', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('978', '1500217', 'belmont', '154', '', '0', '736.07', '-11.86', '1111.7', '1.58', '0', '1031', null);
+INSERT INTO `server_spawn_locations` VALUES ('979', '1500072', 'hab', '154', '', '0', '726.22', '-11.49', '1134.18', '2.41', '0', '1016', null);
+INSERT INTO `server_spawn_locations` VALUES ('980', '1500038', 'tranquil_battlewarden', '154', '', '0', '740.8', '-11.15', '1140.14', '0.59', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('981', '1000671', 'miraudont', '152', '', '0', '-1047.55', '20.6', '-1744.68', '-0.38', '0', '1056', null);
+INSERT INTO `server_spawn_locations` VALUES ('982', '1090076', '', '152', '', '0', '-1067.15', '20.25', '-1764.7', '0', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('983', '1500096', 'bubunakka', '152', '', '0', '-1046.8', '20.39', '-1768.75', '-0.78', '0', '1041', null);
+INSERT INTO `server_spawn_locations` VALUES ('984', '1600121', 'maenne', '152', '', '0', '-1049.49', '20.35', '-1771.81', '-1.07', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('985', '1500261', 'emanuel', '152', '', '0', '-1046.89', '20.5', '-1773.95', '-1.54', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('986', '1500070', 'rdyunbu', '152', '', '0', '-1045.87', '20.51', '-1771.25', '-0.76', '0', '1017', null);
+INSERT INTO `server_spawn_locations` VALUES ('987', '1600122', 'logedanrel', '171', '', '0', '1259.98', '264', '-547.6', '-2.55', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('988', '1500100', 'frediswitha', '171', '', '0', '1258.01', '264', '-542.71', '-1.58', '0', '1040', null);
+INSERT INTO `server_spawn_locations` VALUES ('989', '1500264', 'audouin', '171', '', '0', '1262.77', '264', '-547.56', '-2.54', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('990', '1500286', 'flame_sergeant_hanette', '171', '', '0', '1242.28', '264.02', '-526.07', '-0.2', '0', '1332', null);
+INSERT INTO `server_spawn_locations` VALUES ('991', '1090241', '', '171', '', '0', '1241.42', '264', '-548.82', '-2.42', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('992', '1500074', 'doesfolg', '171', '', '0', '1260.72', '264', '-544.44', '-1.54', '0', '1015', null);
+INSERT INTO `server_spawn_locations` VALUES ('993', '1000674', 'zllayan', '171', '', '0', '1238.51', '264', '-537.59', '-1.61', '0', '1056', null);
+INSERT INTO `server_spawn_locations` VALUES ('994', '1500230', 'pack_chocobo', '171', '', '0', '1243.61', '264.03', '-524.55', '-1.18', '0', '1333', null);
+INSERT INTO `server_spawn_locations` VALUES ('995', '1500289', 'raulin', '171', '', '0', '1244.71', '264.04', '-523.13', '-2.72', '0', '1031', null);
+INSERT INTO `server_spawn_locations` VALUES ('996', '1001511', 'bibiraka', '230', '', '0', '-244.1', '12.5', '197.19', '2.3', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('997', '1001509', 'syntberk', '230', '', '0', '-245.65', '12.5', '187.16', '0.73', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('998', '1500009', 'brunadier', '130', '', '0', '1130.47', '45.54', '-929.31', '-0.77', '0', '1040', null);
+INSERT INTO `server_spawn_locations` VALUES ('999', '1000614', 'kokomui', '130', '', '0', '1131.02', '45.51', '-926.48', '-0.6', '0', '1015', null);
+INSERT INTO `server_spawn_locations` VALUES ('1000', '1500016', 'bloodshore_battlewarden', '130', '', '0', '1110.33', '46.51', '-925.96', '-0.84', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('1001', '1000615', 'eptomi', '129', '', '0', '-990.78', '61.51', '-1131.11', '0', '0', '1017', null);
+INSERT INTO `server_spawn_locations` VALUES ('1002', '1000362', 'solelle', '129', '', '0', '-994', '61.8', '-1109', '0', '0', '1016', null);
+INSERT INTO `server_spawn_locations` VALUES ('1003', '1000361', 'ahldoen', '129', '', '0', '-992.57', '61.46', '-1133.43', '-0.01', '0', '1015', null);
+INSERT INTO `server_spawn_locations` VALUES ('1004', '1500014', 'skull_valley_battlewarden', '129', '', '0', '-1052.19', '42.76', '-858.79', '1.02', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('1005', '1001305', 'yalabali', '129', '', '0', '-1260.03', '6.91', '-647.88', '-2.68', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('1006', '1001303', 'duchesnelt', '129', '', '0', '-1296.32', '4.88', '-649.39', '-0.09', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('1007', '1001302', 'immodest_mouse', '129', '', '0', '-1301.88', '1.85', '-612.65', '2.69', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('1008', '1001300', 'myndeidin', '129', '', '0', '-1292.31', '11.39', '-592.56', '0.39', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('1009', '1001298', 'bubusha', '129', '', '0', '-1323.06', '0.61', '-597', '-1.31', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('1010', '1001301', 'fupepe', '129', '', '0', '-1332.09', '1.68', '-609', '-0.26', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('1011', '1001299', 'oadebh', '129', '', '0', '-1345', '1.72', '-563', '1', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('1012', '1001304', 'skribskoef', '129', '', '0', '-1385', '2.89', '-610', '-2', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('1013', '1500011', 'tsimh_panipahr', '129', '', '0', '-1364', '6.6', '-635', '0', '0', '1040', null);
+INSERT INTO `server_spawn_locations` VALUES ('1014', '1500008', 'guntard', '129', '', '0', '-1887.09', '53.52', '-1364.87', '-2.3', '0', '1040', null);
+INSERT INTO `server_spawn_locations` VALUES ('1015', '1000616', 'zabinie', '129', '', '0', '-1889.73', '53.51', '-1364.93', '-2.6', '0', '1017', null);
+INSERT INTO `server_spawn_locations` VALUES ('1016', '1500255', 'hortefense', '129', '', '0', '-1893.68', '53.41', '-1361.25', '3.12', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('1017', '1600137', 'dauid', '129', '', '0', '-1896.61', '53.42', '-1362.99', '2.82', '0', '0', null);
+INSERT INTO `server_spawn_locations` VALUES ('1018', '1500223', 'storm_sergeant_stemn', '129', '', '0', '-1878.12', '53.86', '-1374.38', '-0.79', '0', '1045', null);
