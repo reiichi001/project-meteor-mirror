@@ -983,6 +983,66 @@ namespace Meteor.Map.Actors
             
         }
 
+        public void GraphicChange(int slot, InventoryItem invItem)
+        {
+            if (invItem == null)
+                appearanceIds[slot] = 0;
+            else
+            {
+                ItemData item = Server.GetItemGamedata(invItem.itemId);
+
+                if (item is EquipmentItem)
+                {
+                    EquipmentItem eqItem = (EquipmentItem)item;
+
+                    uint mixedVariantId;
+
+                    if (eqItem.graphicsWeaponId == 0)
+                        mixedVariantId = ((eqItem.graphicsVariantId & 0x1F) << 5) | eqItem.graphicsColorId;
+                    else
+                        mixedVariantId = eqItem.graphicsVariantId;
+
+                    uint graphicId =
+                            (eqItem.graphicsWeaponId & 0x3FF) << 20 |
+                            (eqItem.graphicsEquipmentId & 0x3FF) << 10 |
+                            (mixedVariantId & 0x3FF);
+
+                    appearanceIds[slot] = graphicId;
+                }
+
+                //Handle offhand
+                if (slot == MAINHAND && item is WeaponItem)
+                {
+                    WeaponItem wpItem = (WeaponItem)item;
+
+                    uint graphicId =
+                            (wpItem.graphicsOffhandWeaponId & 0x3FF) << 20 |
+                            (wpItem.graphicsOffhandEquipmentId & 0x3FF) << 10 |
+                            (wpItem.graphicsOffhandVariantId & 0x3FF);
+
+                    if (graphicId != 0)
+                        appearanceIds[SetActorAppearancePacket.OFFHAND] = graphicId;
+                }
+
+                //Handle ALC offhand special case
+                if (slot == OFFHAND && item is WeaponItem && item.IsAlchemistWeapon())
+                {
+                    WeaponItem wpItem = (WeaponItem)item;
+
+                    uint graphicId =
+                            ((wpItem.graphicsWeaponId + 1) & 0x3FF) << 20 |
+                            (wpItem.graphicsEquipmentId & 0x3FF) << 10 |
+                            (wpItem.graphicsVariantId & 0x3FF);
+
+                    if (graphicId != 0)
+                        appearanceIds[SetActorAppearancePacket.SPOFFHAND] = graphicId;
+                }
+            }
+
+            Database.SavePlayerAppearance(this);
+            BroadcastPacket(CreateAppearancePacket(), true);
+        }
+
         public void SendAppearance()
         {
             BroadcastPacket(CreateAppearancePacket(), true);
@@ -1164,51 +1224,6 @@ namespace Meteor.Map.Actors
             propertyBuilder.AddProperty(String.Format("charaWork.battleSave.skillLevel[{0}]", classId-1));
             List<SubPacket> packets = propertyBuilder.Done();
             QueuePackets(packets);
-        }
-
-        public void GraphicChange(int slot, InventoryItem invItem)
-        {
-            if (invItem == null)            
-                appearanceIds[slot] = 0;            
-            else
-            {
-                ItemData item = Server.GetItemGamedata(invItem.itemId);
-
-                if (item is EquipmentItem)
-                {
-                    EquipmentItem eqItem = (EquipmentItem)item;
-
-                    uint mixedVariantId;
-                    
-                    if (eqItem.graphicsWeaponId == 0)
-                        mixedVariantId = ((eqItem.graphicsVariantId & 0x1F) << 5) | eqItem.graphicsColorId;
-                    else
-                        mixedVariantId = eqItem.graphicsVariantId;
-
-                    uint graphicId =
-                            (eqItem.graphicsWeaponId & 0x3FF) << 20 |
-                            (eqItem.graphicsEquipmentId & 0x3FF) << 10 |
-                            (mixedVariantId & 0x3FF);
-
-                    appearanceIds[slot] = graphicId;
-                }
-
-                //Handle offhand
-                if (slot == MAINHAND && item is WeaponItem)
-                {
-                    WeaponItem wpItem = (WeaponItem)item;
-
-                    uint graphicId =
-                            (wpItem.graphicsOffhandWeaponId & 0x3FF) << 20 |
-                            (wpItem.graphicsOffhandEquipmentId & 0x3FF) << 10 |
-                            (wpItem.graphicsOffhandVariantId & 0x3FF);
-
-                    appearanceIds[SetActorAppearancePacket.OFFHAND] = graphicId;
-                }
-            }
-
-            Database.SavePlayerAppearance(this);
-            BroadcastPacket(CreateAppearancePacket(), true);
         }
 
         public void SetRepairRequest(byte type)

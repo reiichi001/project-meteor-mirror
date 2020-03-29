@@ -153,6 +153,7 @@ function equipItem(player, equipSlot, item)
 
 		player:GetEquipment():Set(equipSlot, item);		
 		
+		--EquipSlot -> GraphicSlot
 		if 	   (equipSlot == EQUIPSLOT_MAINHAND and gItem:IsNailWeapon() == false) then graphicSlot = GRAPHICSLOT_MAINHAND;
 		elseif (equipSlot == EQUIPSLOT_OFFHAND) then graphicSlot = GRAPHICSLOT_OFFHAND;
 		elseif (equipSlot == EQUIPSLOT_THROWINGWEAPON) then graphicSlot = GRAPHICSLOT_THROWING;
@@ -168,12 +169,17 @@ function equipItem(player, equipSlot, item)
 		elseif (equipSlot == EQUIPSLOT_LFINGER) then graphicSlot = GRAPHICSLOT_L_RINGFINGER;
 		end
 				
+		--Special cases for WVR and GSM. Offhand goes to the special offhand slot.
+		if (equipSlot == EQUIPSLOT_OFFHAND) then
+			if (gItem:IsWeaverWeapon() == true) then graphicSlot = GRAPHICSLOT_SPOFFHAND; end
+			if (gItem:IsGoldSmithWeapon() == true) then graphicSlot = GRAPHICSLOT_SPOFFHAND; end
+		end
+				
 		--Graphic Slot was set, otherwise it's a special case
 		if (graphicSlot ~= nil) then
 			player:GraphicChange(graphicSlot, item);
 		elseif (gItem:IsNailWeapon()) then
 			player:GraphicChange(GRAPHICSLOT_MAINHAND, item);
-			player:GraphicChange(GRAPHICSLOT_OFFHAND, item);		
 		elseif (equipSlot == EQUIPSLOT_EARS) then
 			player:GraphicChange(GRAPHICSLOT_R_EAR, item);
 			player:GraphicChange(GRAPHICSLOT_L_EAR, item);
@@ -181,6 +187,33 @@ function equipItem(player, equipSlot, item)
 			player:GraphicChange(GRAPHICSLOT_R_WRIST, item);
 			player:GraphicChange(GRAPHICSLOT_L_WRIST, item);
 		end		
+		
+		--Special graphics for crafting classes
+		if (classId ~= nil) then					
+			if (gItem:IsCarpenterWeapon()) then
+				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 898,4,0,0);
+				player:GraphicChange(GRAPHICSLOT_SPOFFHAND,  898,4,0,0);
+			elseif (gItem:IsBlackSmithWeapon()) then
+				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 899,1,0,0);
+				player:GraphicChange(GRAPHICSLOT_SPOFFHAND,  899,1,0,0);
+			elseif (gItem:IsArmorerWeapon()) then
+				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 899,2,0,0);
+				player:GraphicChange(GRAPHICSLOT_SPOFFHAND,  899,2,0,0);
+			elseif (gItem:IsGoldSmithWeapon()) then
+				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 898,1,0,0);
+			elseif (gItem:IsTannerWeapon()) then
+				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 898,3,0,0);
+				player:GraphicChange(GRAPHICSLOT_SPOFFHAND,  898,3,0,0);
+			elseif (gItem:IsWeaverWeapon()) then 
+				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 000,0,0,0);
+			elseif (gItem:IsAlchemistWeapon()) then 
+				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 900,1,0,0);
+			elseif (gItem:IsCulinarianWeapon()) then 
+				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 900,2,0,0);
+				player:GraphicChange(GRAPHICSLOT_SPOFFHAND,  898,2,0,0);
+			end
+		end
+		
 	end
 end
 
