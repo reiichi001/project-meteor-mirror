@@ -11,11 +11,6 @@
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 
-
--- Dumping database structure for ffxiv_server
-CREATE DATABASE IF NOT EXISTS `ffxiv_server` /*!40100 DEFAULT CHARACTER SET latin1 */;
-USE `ffxiv_server`;
-
 -- Dumping structure for table ffxiv_server.gamedata_items_graphics
 DROP TABLE IF EXISTS `gamedata_items_graphics`;
 CREATE TABLE IF NOT EXISTS `gamedata_items_graphics` (

@@ -200,6 +200,7 @@ function equipItem(player, equipSlot, item)
 				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 899,2,0,0);
 				player:GraphicChange(GRAPHICSLOT_SPOFFHAND,  899,2,0,0);
 			elseif (gItem:IsGoldSmithWeapon()) then
+				player:GraphicChange(GRAPHICSLOT_OFFHAND, 	 729,1,0,0);
 				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 898,1,0,0);
 			elseif (gItem:IsTannerWeapon()) then
 				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 898,3,0,0);
@@ -211,6 +212,9 @@ function equipItem(player, equipSlot, item)
 			elseif (gItem:IsCulinarianWeapon()) then 
 				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 900,2,0,0);
 				player:GraphicChange(GRAPHICSLOT_SPOFFHAND,  898,2,0,0);
+			else
+				player:GraphicChange(GRAPHICSLOT_SPMAINHAND, 0,0,0,0);
+				player:GraphicChange(GRAPHICSLOT_SPOFFHAND,  0,0,0,0);
 			end
 		end
 		
@@ -248,6 +252,7 @@ function unequipItem(player, equipSlot, item)
 			elseif (equipSlot == EQUIPSLOT_LFINGER) then player:GraphicChange(GRAPHICSLOT_L_RINGFINGER, nil);
 			end
 		end	
+		
 		return true;
 	end
 end
