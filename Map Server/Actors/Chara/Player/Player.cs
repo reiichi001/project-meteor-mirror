@@ -2618,7 +2618,7 @@ namespace Meteor.Map.Actors
         private void EquipAbilitiesAtLevel(byte classId, short level, List<CommandResult> actionList = null)
         {
             //If there's any abilites that unlocks at this level, equip them.
-            List<ushort> commandIds = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, GetLevel());
+            List<ushort> commandIds = Server.GetWorldManager().GetBattleCommandIdByLevel(classId, level);
             foreach (ushort commandId in commandIds)
             {
                 EquipAbilityInFirstOpenSlot(classId, commandId, false);
