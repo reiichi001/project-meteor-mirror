@@ -22,17 +22,18 @@ eventPushStepPrvMarket(
   
   
 MarketEntrance City TriggerBox details
-Limsa    - !warp 230 -416.5 40 446
+Limsa    - !warp 230 -416.5 40 446              ActorClass Id = 1090238
     bgObj  Id - [0xB3B] 2875
     Layout Id - [0x79 ] 121  (0x29d90001)
     Condition - in
     reactName - dwti    - Not a typo compared to the other cities
-Gridania - !warp 206 -192.57 23.48 -1407.58
+Gridania - !warp 206 -192.57 23.48 -1407.58     ActorClass Id = 1090264
+
     bgObj  Id - [0xCFA] 3322
     Layout Id - [0x141]  321 (0x29b00001)
     Condition - in
     reactName - dtwi
-Ul'dah   - !warp 175 -235 189 50.5
+Ul'dah   - !warp 175 -235 189 50.5              ActorClass Id = 1500394
     bgObj  Id - [0x102F] 4143
     Layout Id - [0x1A5] 421  (0x615a0001)
     Condition - in

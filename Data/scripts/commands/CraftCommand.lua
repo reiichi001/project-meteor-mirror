@@ -79,7 +79,7 @@ craftCommandUI(classID, hasWait, command1, command2, command3, command4, command
 			* command1-5			- Five possible crafting commands (crafting skills).
 
 craftTuningUI(command1, command2, command3, command4, command5, command6, command7, command8)
-	Desc: Displays a full list of commands for the legacy "Tuning" phase that happens after crafting. Deprecated in 1.23b.
+	Desc: Displays only the provided  commands for the "Double Down" phase that happens after crafting.
 	Params: * command1-8			- The list of commands available.
 
 updateInfo(progress, durability, quality, tuningItem, tuningItemQuality, tuningItemQuantity, hqChance)
@@ -293,7 +293,7 @@ function onEventStarted(player, commandactor, triggerName, arg1, arg2, arg3, arg
         end
     end
     
-    player:ChangeMusic(51);
+    player:ChangeMusic(7); -- Need way to reset music back to the zone's default
     player:ChangeState(0);
     player:EndEvent();
 	
@@ -372,7 +372,7 @@ end
 function startCrafting(player, hand, quest, startDur, startQly, startHQ)
     
     local worldMaster = GetWorldMaster();
-    local proggers = 0;
+    local craftProg = 0;
     local attempts = 5;
     local craftedCount = 0;
     local craftTotal = 2;
@@ -388,11 +388,13 @@ function startCrafting(player, hand, quest, startDur, startQly, startHQ)
         local duraDiff = math.random(1,3);
         local qltyDiff = math.random(0,2);
 
-        if proggers >= 100 then
+        if craftProg >= 100 then
         
             testChoice2 = callClientFunction(player, "delegateCommand", craftJudge, "updateInfo", commandactor,  100, 10, 20, 5020111, 69, 70, 75);
-
-            testChoice = callClientFunction(player, "delegateCommand", craftJudge, "craftTuningUI", commandactor, 22503, 23033);
+            
+            -- From Lodestone: If the HQ odds are 1% or better, players will have the option of selecting either Finish or Double Down. 
+            -- By electing to double down, the player takes a chance on creating an HQ item at the risk of losing the completed item if the attempt fails
+            testChoice = callClientFunction(player, "delegateCommand", craftJudge, "craftTuningUI", commandactor, 22503, 22504);
             
             player:SendGameMessage(GetWorldMaster(), 40111, 0x20, player, itemId, 3, 8);  -- "You create <#3 quantity> <#1 item> <#2 quality>."
             callClientFunction(player, "delegateCommand", craftJudge, "closeCraftProgressWidget", commandactor);
@@ -401,7 +403,7 @@ function startCrafting(player, hand, quest, startDur, startQly, startHQ)
                 continueLeve = callClientFunction(player, "delegateCommand", craftJudge, "askContinueLocalLeve", 120001, itemId, craftedCount, craftTotal, attempts);
 
                 if continueLeve == true then
-                    proggers = 0;
+                    craftProg = 0;
                     callClientFunction(player, "delegateCommand", craftJudge, "openCraftProgressWidget", commandactor, startDur, startQly, startHQ);
                 else
                     break;
@@ -427,10 +429,10 @@ function startCrafting(player, hand, quest, startDur, startQly, startHQ)
             player:SendGameMessage(worldMaster, 40108, 0x20, choice,2);
             
             if choice ~= 29531 then
-                proggers = proggers + progDiff;
+                craftProg = craftProg + progDiff;
                 
-                if proggers >= 100 then 
-                    proggers = 100;
+                if craftProg >= 100 then 
+                    craftProg = 100;
                 end
                 
                 startDur = startDur - duraDiff;
@@ -441,7 +443,7 @@ function startCrafting(player, hand, quest, startDur, startQly, startHQ)
                 player:SendGameMessage(worldMaster, 40104, 0x20, qltyDiff);
             end
                                                                                                           --prg  dur  qly, ???, ???, ???,   HQ
-            callClientFunction(player, "delegateCommand", craftJudge, "updateInfo", commandactor, proggers, startDur, startQly, nil, nil, nil, nil, nil);
+            callClientFunction(player, "delegateCommand", craftJudge, "updateInfo", commandactor, craftProg, startDur, startQly, nil, nil, nil, nil, nil);
             
         end
     end
