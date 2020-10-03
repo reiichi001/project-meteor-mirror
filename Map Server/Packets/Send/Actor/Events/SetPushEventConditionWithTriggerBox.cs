@@ -26,7 +26,7 @@ using System.Text;
 
 using Meteor.Common;
 
-namespace  Meteor.Map.packets.send.actor.events
+namespace Meteor.Map.packets.send.actor.events
 {
     class SetPushEventConditionWithTriggerBox
     {
@@ -41,17 +41,19 @@ namespace  Meteor.Map.packets.send.actor.events
             {
                 using (BinaryWriter binWriter = new BinaryWriter(mem))
                 {
-                    binWriter.Write((UInt32)condition.size);
-                    binWriter.Write((UInt32)0x1A5);
-                    binWriter.Write((UInt32)4);
-                    binWriter.Seek(8, SeekOrigin.Current);
+                    binWriter.Write((UInt32)condition.bgObj);  // bgObj
+                    binWriter.Write((UInt32)condition.layout);   // Layout
+                    binWriter.Write((UInt32)4);       // Actor?  Always 4 in 1.23
+                    binWriter.Seek(8, SeekOrigin.Current); // Unknowns
                     binWriter.Write((Byte)(condition.outwards ? 0x11 : 0x0)); //If == 0x10, Inverted Bounding Box
                     binWriter.Write((Byte)3);
                     binWriter.Write((Byte)(condition.silent ? 0x1 : 0x0)); //Silent Trigger;
-                    binWriter.Write(Encoding.ASCII.GetBytes(condition.conditionName), 0, Encoding.ASCII.GetByteCount(condition.conditionName) >= 0x24 ? 0x24 : Encoding.ASCII.GetByteCount(condition.conditionName));
+                    binWriter.Write(Encoding.ASCII.GetBytes(condition.conditionName), 0, Encoding.ASCII.GetByteCount(condition.conditionName) >= 0x20 ? 0x20 : Encoding.ASCII.GetByteCount(condition.conditionName));
+                    binWriter.Seek(55, SeekOrigin.Begin);
+                    binWriter.Write((Byte)0);       // Unknown
+                    binWriter.Write(Encoding.ASCII.GetBytes(condition.reactName), 0, Encoding.ASCII.GetByteCount(condition.reactName) >= 0x04 ? 0x04 : Encoding.ASCII.GetByteCount(condition.reactName));
                 }
             }
-
             return new SubPacket(OPCODE, sourceActorId, data);
         }
     }

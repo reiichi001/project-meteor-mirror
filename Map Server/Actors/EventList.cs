@@ -79,8 +79,10 @@ namespace Meteor.Map.actors
 
         public class PushBoxEventCondition
         {
+            public uint bgObj;
+            public uint layout;
             public string conditionName = "";
-            public float size = 30.0f;
+            public string reactName = "";
             public bool outwards = false;
             public bool silent = true;
         }
