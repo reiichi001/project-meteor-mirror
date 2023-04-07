@@ -7,7 +7,7 @@ If you wish to discuss and help please join the Discord server.
 
 **Discord Server Invite**
 
-https://discord.gg/0ynLxiEl0zWhpKOW 
+Please check the main repository on <https://bitbucket.org/Ioncannon/project-meteor-server/> instead.
 
 Pull Requests
 ========
